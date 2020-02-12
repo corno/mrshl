@@ -20,13 +20,13 @@ function createNodeDeserializer(context: bc.ErrorContext, nodeDefinition: md.Nod
                             const $$ = $.type[1]
                             switch ($$["has instances"][0]) {
                                 case "no": {
-                                    return context.expectCollection(_key => {
+                                    return context.expectDictionary(_key => {
                                         throw new Error(`unexpected entries @ ...`)
                                     })
                                 }
                                 case "yes": {
                                     const $$$ = $$["has instances"][1]
-                                    return context.expectCollection(_key => {
+                                    return context.expectDictionary(_key => {
                                         const entry = collBuilder.createEntry()
                                         entry.insert() //might be problematic.. insertion before fully initialized
                                         return createNodeDeserializer(context, $$$.node, entry.node, isCompact)
@@ -41,13 +41,13 @@ function createNodeDeserializer(context: bc.ErrorContext, nodeDefinition: md.Nod
 
                             switch ($$["has instances"][0]) {
                                 case "no": {
-                                    return context.expectCollection(_key => {
+                                    return context.expectDictionary(_key => {
                                         throw new Error(`unexpected entries @ ...`)
                                     })
                                 }
                                 case "yes": {
                                     const $$$ = $$["has instances"][1]
-                                    return context.expectCollection(_key => {
+                                    return context.expectDictionary(_key => {
                                         const entry = collBuilder.createEntry()
                                         entry.insert()
                                         return createNodeDeserializer(context, $$$.node, entry.node, isCompact)
@@ -68,7 +68,7 @@ function createNodeDeserializer(context: bc.ErrorContext, nodeDefinition: md.Nod
                 }
                 case "state group": {
                     const $ = propDefinition.type[1]
-                    return context.expectTypedUnionOrArraySurrogate(stateName => {
+                    return context.expectTaggedUnionOrArraySurrogate(stateName => {
                         const stateDef = $.states.get(stateName) //FIX handle missing state more elegantly
                         const state = nodeBuilder.setStateGroup(propKey, stateName)
                         return createNodeDeserializer(context, stateDef.node, state.node, isCompact)
@@ -96,7 +96,7 @@ function createNodeDeserializer(context: bc.ErrorContext, nodeDefinition: md.Nod
             }
         })())
     })
-    return context.expectMetaArray(
+    return context.expectArrayType(
         expectedElements,
         () => { }
     )

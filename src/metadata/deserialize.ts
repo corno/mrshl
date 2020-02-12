@@ -5,32 +5,32 @@ import { Range } from "bass-clarinet"
 
 function deserializeMetaNode(context: bc.ErrorContext, componentTypes: g.IReadonlyDictionary<t.ComponentType>, callback: (node: t.Node) => void): bc.ValueHandler {
     const properties = new g.Dictionary<t.Property>({})
-    return context.expectMetaObject(
+    return context.expectType(
         {
-            "properties": context.expectCollection(
+            "properties": context.expectDictionary(
                 key => {
                     let targetPropertyType: t.PropertyType | null = null
-                    return context.expectMetaObject(
+                    return context.expectType(
                         {
-                            "type": context.expectTypedUnionOrArraySurrogate(propertyType => {
+                            "type": context.expectTaggedUnionOrArraySurrogate(propertyType => {
                                 switch (propertyType) {
                                     case "collection": {
                                         let targetCollectionType: t.CollectionType | null = null
-                                        return context.expectMetaObject(
+                                        return context.expectType(
                                             {
-                                                "type": context.expectTypedUnionOrArraySurrogate(sourceCollectionType => {
+                                                "type": context.expectTaggedUnionOrArraySurrogate(sourceCollectionType => {
                                                     switch (sourceCollectionType) {
                                                         case "dictionary": {
                                                             let targetHasInstances: t.DictionaryHasInstances | null = null
-                                                            return context.expectMetaObject(
+                                                            return context.expectType(
                                                                 {
-                                                                    "has instances": context.expectTypedUnionOrArraySurrogate(sourceHasInstances => {
+                                                                    "has instances": context.expectTaggedUnionOrArraySurrogate(sourceHasInstances => {
                                                                         switch (sourceHasInstances) {
                                                                             case "yes": {
                                                                                 let targetNode: t.Node | null = null
                                                                                 let targetKeyProperty: string | null = null
                                                                                 let targetKeyPropertyRange: Range | null = null
-                                                                                return context.expectMetaObject(
+                                                                                return context.expectType(
                                                                                     {
                                                                                         "node": deserializeMetaNode(context, componentTypes, node => targetNode = node),
                                                                                         "key property": context.expectString((sourceKeyProperty, range) => {
@@ -48,7 +48,7 @@ function deserializeMetaNode(context: bc.ErrorContext, componentTypes: g.IReadon
                                                                             }
                                                                             case "no": {
                                                                                 targetHasInstances = ["no", {}]
-                                                                                return context.expectMetaObject({}, () => { })
+                                                                                return context.expectType({}, () => { })
                                                                             }
                                                                             default:
                                                                                 throw new Error(`uncontext.expected has instances type ${sourceHasInstances}`)
@@ -64,13 +64,13 @@ function deserializeMetaNode(context: bc.ErrorContext, componentTypes: g.IReadon
                                                         }
                                                         case "list": {
                                                             let targetHasInstances: t.ListHasInstances | null = null
-                                                            return context.expectMetaObject(
+                                                            return context.expectType(
                                                                 {
-                                                                    "has instances": context.expectTypedUnionOrArraySurrogate(sourceHasInstances => {
+                                                                    "has instances": context.expectTaggedUnionOrArraySurrogate(sourceHasInstances => {
                                                                         switch (sourceHasInstances) {
                                                                             case "yes": {
                                                                                 let targetNode: t.Node | null = null
-                                                                                return context.expectMetaObject(
+                                                                                return context.expectType(
                                                                                     {
                                                                                         "node": deserializeMetaNode(context, componentTypes, node => targetNode = node)
                                                                                     },
@@ -84,7 +84,7 @@ function deserializeMetaNode(context: bc.ErrorContext, componentTypes: g.IReadon
                                                                             }
                                                                             case "no": {
                                                                                 targetHasInstances = ["no", {}]
-                                                                                return context.expectMetaObject({}, () => { })
+                                                                                return context.expectType({}, () => { })
                                                                             }
                                                                             default:
                                                                                 throw new Error(`uncontext.expected has instances type ${sourceHasInstances}`)
@@ -114,7 +114,7 @@ function deserializeMetaNode(context: bc.ErrorContext, componentTypes: g.IReadon
                                     case "component": {
                                         let targetComponentTypeName: string | null = null
                                         let targetComponentTypeNameRange: Range | null = null
-                                        return context.expectMetaObject(
+                                        return context.expectType(
                                             {
                                                 "type": context.expectString((sourceComponentTypeName, range) => { 
                                                     targetComponentTypeName = sourceComponentTypeName
@@ -130,11 +130,11 @@ function deserializeMetaNode(context: bc.ErrorContext, componentTypes: g.IReadon
                                     }
                                     case "state group": {
                                         const states = new g.Dictionary<t.State>({})
-                                        return context.expectMetaObject(
+                                        return context.expectType(
                                             {
-                                                "states": context.expectCollection(key => {
+                                                "states": context.expectDictionary(key => {
                                                     let targetNode: t.Node | null = null
-                                                    return context.expectMetaObject(
+                                                    return context.expectType(
                                                         {
                                                             "node": deserializeMetaNode(context, componentTypes, node => targetNode = node)
                                                         },
@@ -155,17 +155,17 @@ function deserializeMetaNode(context: bc.ErrorContext, componentTypes: g.IReadon
                                     }
                                     case "value": {
                                         let targetValueType: t.ValueType | null = null
-                                        return context.expectMetaObject(
+                                        return context.expectType(
                                             {
-                                                "type": context.expectTypedUnionOrArraySurrogate(sourceValueType => {
+                                                "type": context.expectTaggedUnionOrArraySurrogate(sourceValueType => {
                                                     switch (sourceValueType) {
                                                         case "number": {
                                                             targetValueType = ["number", {}]
-                                                            return context.expectMetaObject({}, () => { })
+                                                            return context.expectType({}, () => { })
                                                         }
                                                         case "text": {
                                                             targetValueType = ["string", {}]
-                                                            return context.expectMetaObject({}, () => { })
+                                                            return context.expectType({}, () => { })
                                                         }
                                                         default:
                                                             throw new Error(`uncontext.expected value type ${sourceValueType}`)
@@ -208,12 +208,12 @@ export function createDeserializer(callback: (metaData: t.Schema) => void): bc.O
 
     const context = new bc.ErrorContext(null, null)
 
-    return context.createMetaObjectHandler(
+    return context.createTypeHandler(
         {
-            "component types": context.expectCollection(
+            "component types": context.expectDictionary(
                 key => {
                     let targetNode: t.Node | null = null
-                    return context.expectMetaObject(
+                    return context.expectType(
                         {
                             "node": deserializeMetaNode(context, componentTypes, node => targetNode = node)
                         },

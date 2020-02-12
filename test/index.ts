@@ -7,39 +7,6 @@ import * as bc from "bass-clarinet"
 
 const schemas_dir = "./test/tests"
 
-
-
-
-// export function subscribeStackWithSchema(
-//     p: Parser,
-//     onSchemaReference: (schemaReference: string, startLocation: Location, range: Range) => RootHandler,
-//     _onError: (err: Error) => void
-// ) {
-
-//     let foundSchemaReference = false
-
-//     createDataSubscriber(p.onschemadata)
-
-//     p.onheaderdata.subscribe({
-//         onschemastart: () => { },
-//         onschemaend: () => {
-//         },
-//         // onschemareference: (schemaReference, startLocation, range) => {
-//         //     foundSchemaReference = true
-//         //     const vh = onReference(schemaReference, startLocation, range)
-//         //     subscribeStack(p, vh, onError)
-//         // },
-//         oncompact: () => { }
-//     })
-
-//     p.onready.subscribe(() => {
-//         if (!foundSchemaReference) {
-//             throw new Error("no schema found")
-//         }
-//     })
-// }
-
-
 class DummyCollectionBuilder implements CollectionBuilder {
     createEntry() {
         return new DummyEntryBuilder()
@@ -73,7 +40,6 @@ class DummyNodeBuilder implements NodeBuilder {
 class DummyStateBuilder {
     readonly node = new DummyNodeBuilder()
 }
-
 
 describe("main", () => {
     it("foo", () => {
@@ -146,7 +112,7 @@ describe("main", () => {
                             simpleValue() {
                                 throw new Error("unexpected value as schema")
                             },
-                            typedUnion() {
+                            taggedUnion() {
                                 throw new Error("unexpected typed union as schema")
                             }
                         },
@@ -158,7 +124,7 @@ describe("main", () => {
                     schemaParser.end()
 
                 },
-                typedUnion() {
+                taggedUnion() {
                     throw new Error("unexpected typed union as schema")
 
                 }
