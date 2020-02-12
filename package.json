@@ -1,7 +1,7 @@
 {
-  "name": "myProject",
+  "name": "mrshl",
   "version": "0.0.1",
-  "description": "****",
+  "description": "marshalling/unmarshalling (~serialiazation/deserialization) of data to/from JSON or extended JSON",
   "main": "dist/index.js",
   "scripts": {
     "build": "mkdir .\\dist & rd /s /q .\\dist && tsc",
@@ -13,17 +13,24 @@
     "test": "tsc && node ./dist/test",
     "u2l": "ncu -u --packageFile package.json && nsi"
   },
-  "keywords": [
-  ],
+  "keywords": [],
   "author": "****",
   "license": "ISC",
   "types": "dist/index.d.ts",
   "prepublish": "tsc",
   "repository": {
     "type": "git",
-    "url": "https://github.com/****/myProject.git"
+    "url": "https://github.com/corno/mrshl.git"
   },
   "files": [
     "dist/*"
-  ]
+  ],
+  "dependencies": {
+    "@types/mocha": "^7.0.1",
+    "@types/node": "^13.7.0",
+    "bass-clarinet": "^0.21.0"
+  },
+  "devDependencies": {
+    "mocha": "^7.0.1"
+  }
 }

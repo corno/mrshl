@@ -1,0 +1,14 @@
+(
+    "component types": {
+        "root": (
+            "node": (
+                "properties": {
+                    // "a": (
+                    //     "type": ! "value"
+                    // )
+                }
+            )
+        )
+    }
+    "root type": "root"
+)
