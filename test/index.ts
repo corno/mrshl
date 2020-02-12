@@ -48,7 +48,7 @@ describe("main", () => {
 
         const parser = new bc.Parser({
             allow: bc.lax,
-            require_schema_reference: true,
+            require_schema: true,
         })
 
         const nodeBuilder = new DummyNodeBuilder()
