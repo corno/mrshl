@@ -1,3 +1,4 @@
+//tslint:disable: interface-name max-classes-per-file
 
 export class StringStream {
     private readonly str: string[]
@@ -6,10 +7,10 @@ export class StringStream {
         this.str = str
         this.indentationLevel = indentationLevel
     }
-    add(str: string) {
+    public add(str: string) {
         this.str.push(str)
     }
-    newLine() {
+    public newLine() {
         if (this.indentationLevel !== null) {
 
             this.str.push("\r\n")
@@ -20,7 +21,7 @@ export class StringStream {
             this.str.push(indentString)
         }
     }
-    indent() {
+    public indent() {
         return new StringStream(this.str, this.indentationLevel !== null ? this.indentationLevel + 1 : null)
     }
 }
@@ -29,16 +30,16 @@ export interface ValueSerializer {
     boolean(value: boolean): void
     number(value: number): void
     string(value: string): void
-    metaObject(callback: (os: MetaObjectSerializer) => void): void
-    collection(callback: (os: CollectionSerializer) => void): void
-    metaArray(callback: (os: ArraySerializer) => void): void
+    type(callback: (os: TypeSerializer) => void): void
+    dictionary(callback: (os: DictionarySerializer) => void): void
+    arrayType(callback: (os: ArraySerializer) => void): void
     list(callback: (os: ArraySerializer) => void): void
-    unionType(option: string, callback: (vb: ValueSerializer) => void): void
+    taggedUnion(option: string, callback: (vb: ValueSerializer) => void): void
 }
 
 export interface RootSerializer {
-    schemaReference(value: string): void
     root: ValueSerializer
+    schemaReference(value: string): void
 }
 
 export class ArraySerializer {
@@ -48,30 +49,30 @@ export class ArraySerializer {
     constructor(onAdd: (isFirst: boolean) => ValueSerializer) {
         this.onAdd = onAdd
     }
-    add(callback: (vb: ValueSerializer) => void) {
+    public add(callback: (vb: ValueSerializer) => void) {
         callback(this.onAdd(this.isFirst))
         this.isFirst = false
     }
 }
 
-export class CollectionSerializer {
+export class DictionarySerializer {
     private isFirst = true
     private readonly onAdd: (key: string, isKeyProperty: boolean, isFirst: boolean) => ValueSerializer
     constructor(onAdd: (key: string, isFirst: boolean) => ValueSerializer) {
         this.onAdd = onAdd
     }
-    add(key: string, isKeyProperty: boolean, callback: (vb: ValueSerializer) => void) {
+    public add(key: string, isKeyProperty: boolean, callback: (vb: ValueSerializer) => void) {
         callback(this.onAdd(key, this.isFirst, isKeyProperty))
         this.isFirst = false
     }
 }
-export class MetaObjectSerializer {
+export class TypeSerializer {
     private isFirst = true
     private readonly onAdd: (key: string, isKeyProperty: boolean, isFirst: boolean) => ValueSerializer
     constructor(onAdd: (key: string, isFirst: boolean, isKeyProperty: boolean) => ValueSerializer) {
         this.onAdd = onAdd
     }
-    add(key: string, isKeyProperty: boolean, callback: (vb: ValueSerializer) => void) {
+    public add(key: string, isKeyProperty: boolean, callback: (vb: ValueSerializer) => void) {
         callback(this.onAdd(key, this.isFirst, isKeyProperty))
         this.isFirst = false
     }

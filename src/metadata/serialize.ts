@@ -1,33 +1,35 @@
-import * as t from "./types"
+//tslint:disable: no-shadowed-variable
+
 import { ValueSerializer } from "../serialize/api"
+import * as t from "./types"
 
 function assertUnreachable<RT>(_x: never): RT {
     throw new Error("unreachable")
 }
 
 function serializeNode(node: t.Node, serializer: ValueSerializer) {
-    return serializer.metaObject(t$ => {
-        t$.add("properties", false, t$ => t$.collection(propertiesBuilder => {
+    return serializer.type(t$ => {
+        t$.add("properties", false, t$ => t$.dictionary(propertiesBuilder => {
             node.properties.forEach((prop, propKey) => {
-                propertiesBuilder.add(propKey, false, t$ => t$.metaObject(t$ => {
+                propertiesBuilder.add(propKey, false, t$ => t$.type(t$ => {
                     t$.add("name", true, t$ => t$.string(propKey))
                     t$.add("type", false, t$ => {
                         switch (prop.type[0]) {
                             case "collection": {
                                 const $ = prop.type[1]
-                                return t$.unionType("collection", t$ => t$.metaObject(t$ => {
+                                return t$.taggedUnion("collection", t$ => t$.type(t$ => {
                                     t$.add("type", false, t$ => {
                                         switch ($.type[0]) {
                                             case "dictionary": {
                                                 const $$ = $.type[1]
-                                                return t$.unionType("dictionary", t$ => t$.metaObject(t$ => {
+                                                return t$.taggedUnion("dictionary", t$ => t$.type(t$ => {
 
                                                     t$.add("has instances", false, t$ => {
                                                         if ($$["has instances"][0] === "no") {
-                                                            return t$.unionType("no", t$ => t$.metaObject(() => { }))
+                                                            return t$.taggedUnion("no", t$ => t$.type(() => { }))
                                                         } else {
                                                             const $$$ = $$["has instances"][1]
-                                                            return t$.unionType("yes", t$ => t$.metaObject(t$ => {
+                                                            return t$.taggedUnion("yes", t$ => t$.type(t$ => {
                                                                 t$.add("key property", false, t$ => t$.string("name"))
                                                                 t$.add("node", false, t$ => serializeNode($$$.node, t$))
                                                             }))
@@ -37,14 +39,14 @@ function serializeNode(node: t.Node, serializer: ValueSerializer) {
                                             }
                                             case "list": {
                                                 const $$ = $.type[1]
-                                                return t$.unionType("list", t$ => t$.metaObject(t$ => {
+                                                return t$.taggedUnion("list", t$ => t$.type(t$ => {
 
                                                     t$.add("has instances", false, t$ => {
                                                         if ($$["has instances"][0] === "no") {
-                                                            return t$.unionType("no", t$ => t$.metaObject(() => { }))
+                                                            return t$.taggedUnion("no", t$ => t$.type(() => { }))
                                                         } else {
                                                             const $$$ = $$["has instances"][1]
-                                                            return t$.unionType("yes", t$ => t$.metaObject(t$ => {
+                                                            return t$.taggedUnion("yes", t$ => t$.type(t$ => {
                                                                 t$.add("node", false, t$ => serializeNode($$$.node, t$))
                                                             }))
                                                         }
@@ -59,7 +61,7 @@ function serializeNode(node: t.Node, serializer: ValueSerializer) {
                             }
                             case "component": {
                                 const $ = prop.type[1]
-                                return t$.unionType("component", t$ => t$.metaObject(t$ => {
+                                return t$.taggedUnion("component", t$ => t$.type(t$ => {
                                     t$.add("type", false, t$ => t$.string($.type.getName()))
 
                                 }))
@@ -67,8 +69,8 @@ function serializeNode(node: t.Node, serializer: ValueSerializer) {
                             case "state group": {
                                 const $ = prop.type[1]
 
-                                return t$.unionType("state group", t$ => t$.metaObject(t$ => {
-                                    t$.add("states", false, t$ => t$.collection(t$ => {
+                                return t$.taggedUnion("state group", t$ => t$.type(t$ => {
+                                    t$.add("states", false, t$ => t$.dictionary(t$ => {
                                         $.states.forEach((state, stateName) => {
                                             t$.add("name", true, t$ => t$.string(stateName))
                                             t$.add("node", false, t$ => serializeNode(state.node, t$))
@@ -78,18 +80,18 @@ function serializeNode(node: t.Node, serializer: ValueSerializer) {
                             }
                             case "value": {
                                 const $ = prop.type[1]
-                                return t$.unionType("value", t$ => t$.metaObject(t$ => {
+                                return t$.taggedUnion("value", t$ => t$.type(t$ => {
 
                                     t$.add("type", false, t$ => {
                                         switch ($.type[0]) {
                                             case "boolean": {
-                                                return t$.unionType("boolean", t$ => t$.metaObject(() => { }))
+                                                return t$.taggedUnion("boolean", t$ => t$.type(() => { }))
                                             }
                                             case "number": {
-                                                return t$.unionType("number", t$ => t$.metaObject(() => { }))
+                                                return t$.taggedUnion("number", t$ => t$.type(() => { }))
                                             }
                                             case "string": {
-                                                return t$.unionType("text", t$ => t$.metaObject(() => { }))
+                                                return t$.taggedUnion("text", t$ => t$.type(() => { }))
                                             }
                                             default:
                                                 return assertUnreachable($.type[0])
@@ -108,10 +110,10 @@ function serializeNode(node: t.Node, serializer: ValueSerializer) {
 }
 
 export function serialize(metaData: t.Schema, serializer: ValueSerializer): void {
-    serializer.metaObject(t$ => {
-        t$.add("component types", false, ctsBuilder => ctsBuilder.collection(ctBuilder => {
+    serializer.type(t$ => {
+        t$.add("component types", false, ctsBuilder => ctsBuilder.dictionary(ctBuilder => {
             metaData["component types"].forEach((ct, ctName) => {
-                ctBuilder.add(ctName, false, $ => $.metaObject($$ => {
+                ctBuilder.add(ctName, false, $ => $.type($$ => {
                     $$.add("node", false, $$$ => serializeNode(ct.node, $$$))
                 }))
             })

@@ -1,14 +1,15 @@
-import { ArraySerializer, CollectionSerializer, MetaObjectSerializer, ValueSerializer, StringStream, RootSerializer } from "../serialize/api"
+//tslint:disable: max-classes-per-file
+import { ArraySerializer, DictionarySerializer, RootSerializer, StringStream, TypeSerializer, ValueSerializer } from "../serialize/api"
 
 class DummySerializer implements ValueSerializer {
-    boolean() { }
-    number() { }
-    string() { }
-    metaObject() { }
-    collection() { }
-    metaArray() { }
-    list() { }
-    unionType() { }
+    public boolean() { }
+    public number() { }
+    public string() { }
+    public type() { }
+    public dictionary() { }
+    public arrayType() { }
+    public list() { }
+    public taggedUnion() { }
 }
 
 export class CustomFormatValueSerializer implements ValueSerializer {
@@ -16,20 +17,20 @@ export class CustomFormatValueSerializer implements ValueSerializer {
     constructor(out: StringStream) {
         this.out = out
     }
-    boolean(value: boolean) {
+    public boolean(value: boolean) {
         this.out.add(value.toString())
     }
-    number(value: number) {
+    public number(value: number) {
         this.out.add(value.toString())
     }
-    string(value: string) {
+    public string(value: string) {
         this.out.add(JSON.stringify(value))
 
     }
-    metaObject(callback: (os: MetaObjectSerializer) => void) {
+    public type(callback: (os: TypeSerializer) => void) {
         this.out.add(`(`)
         const indented = this.out.indent()
-        callback(new MetaObjectSerializer((key, _isFirst, isKeyProperty) => {
+        callback(new TypeSerializer((key, _isFirst, isKeyProperty) => {
             if (isKeyProperty) {
                 return new DummySerializer()
             } else {
@@ -42,11 +43,11 @@ export class CustomFormatValueSerializer implements ValueSerializer {
         this.out.add(`)`)
 
     }
-    collection(callback: (os: CollectionSerializer) => void) {
+    public dictionary(callback: (os: DictionarySerializer) => void) {
         this.out.add(`{`)
         const indented = this.out.indent()
-        callback(new CollectionSerializer(
-            (key) => {
+        callback(new DictionarySerializer(
+            key => {
                 indented.newLine()
                 indented.add(`"${key}": `)
                 return new CustomFormatValueSerializer(indented)
@@ -56,7 +57,7 @@ export class CustomFormatValueSerializer implements ValueSerializer {
         this.out.add(`}`)
 
     }
-    metaArray(callback: (os: ArraySerializer) => void) {
+    public arrayType(callback: (os: ArraySerializer) => void) {
         this.out.add(`<`)
         const indented = this.out.indent()
         callback(new ArraySerializer(
@@ -70,7 +71,7 @@ export class CustomFormatValueSerializer implements ValueSerializer {
         this.out.add(`>`)
 
     }
-    list(callback: (os: ArraySerializer) => void) {
+    public list(callback: (os: ArraySerializer) => void) {
         this.out.add(`[`)
         const indented = this.out.indent()
         callback(new ArraySerializer(
@@ -83,7 +84,7 @@ export class CustomFormatValueSerializer implements ValueSerializer {
         this.out.add(`]`)
 
     }
-    unionType(option: string, callback: (vb: ValueSerializer) => void): void {
+    public taggedUnion(option: string, callback: (vb: ValueSerializer) => void): void {
         this.out.add(`| "${option}" `)
         callback(new CustomFormatValueSerializer(this.out))
 

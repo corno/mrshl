@@ -1,7 +1,6 @@
+import * as bc from "bass-clarinet"
 import * as md from "../metadata"
 import { NodeBuilder } from "./api"
-import * as bc from "bass-clarinet"
-import { DataSubscriber } from "bass-clarinet"
 
 function assertUnreachable<RT>(_x: never): RT {
     throw new Error("Unreachable")
@@ -103,7 +102,7 @@ function createNodeDeserializer(context: bc.ErrorContext, nodeDefinition: md.Nod
 
 }
 
-export function createDeserializer(metaData: md.Schema, errorContext: bc.ErrorContext, nodeBuilder: NodeBuilder, isCompact: boolean): DataSubscriber {
+export function createDeserializer(metaData: md.Schema, errorContext: bc.ErrorContext, nodeBuilder: NodeBuilder, isCompact: boolean): bc.DataSubscriber {
     return bc.createStackedDataSubscriber(
         createNodeDeserializer(errorContext, metaData["root type"].get().node, nodeBuilder, isCompact),
         () => {

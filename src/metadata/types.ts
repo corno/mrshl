@@ -1,8 +1,8 @@
 import * as g from "./generics"
 
 export type CollectionType =
-    | [ "dictionary", Dictionary]
-    | [ "list", List ]
+    | ["dictionary", Dictionary]
+    | ["list", List]
 
 export type Collection = {
     readonly "type": CollectionType
@@ -63,7 +63,7 @@ export type State = {
 export type StateGroup = {
     readonly states: g.Dictionary<State>
 }
-    
+
 export type ValueType =
     | ["string", {}]
     | ["number", {}]

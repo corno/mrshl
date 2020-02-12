@@ -1,4 +1,4 @@
-
+//tslint:disable: interface-name
 export interface SerializableCollection {
     forEachEntry(callback: (entry: SerializableEntry) => void): void
 }

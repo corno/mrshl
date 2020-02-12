@@ -1,7 +1,8 @@
+//tslint:disable: object-literal-key-quotes
+
 import * as bc from "bass-clarinet"
 import * as g from "./generics"
 import * as t from "./types"
-import { Range } from "bass-clarinet"
 
 function deserializeMetaNode(context: bc.ErrorContext, componentTypes: g.IReadonlyDictionary<t.ComponentType>, callback: (node: t.Node) => void): bc.ValueHandler {
     const properties = new g.Dictionary<t.Property>({})
@@ -29,19 +30,24 @@ function deserializeMetaNode(context: bc.ErrorContext, componentTypes: g.IReadon
                                                                             case "yes": {
                                                                                 let targetNode: t.Node | null = null
                                                                                 let targetKeyProperty: string | null = null
-                                                                                let targetKeyPropertyRange: Range | null = null
+                                                                                let targetKeyPropertyRange: bc.Range | null = null
                                                                                 return context.expectType(
                                                                                     {
                                                                                         "node": deserializeMetaNode(context, componentTypes, node => targetNode = node),
                                                                                         "key property": context.expectString((sourceKeyProperty, range) => {
-                                                                                             targetKeyProperty = sourceKeyProperty
-                                                                                             targetKeyPropertyRange = range
-                                                                                        })
+                                                                                            targetKeyProperty = sourceKeyProperty
+                                                                                            targetKeyPropertyRange = range
+                                                                                        }),
                                                                                     },
                                                                                     () => {
                                                                                         targetHasInstances = ["yes", {
-                                                                                            node: targetNode!,
-                                                                                            "key property": g.createReference(targetKeyProperty!, () => targetNode!.properties.get(targetKeyProperty!, () => { throw new Error(`key property '${targetKeyProperty!}' not found @ ${bc.printRange(targetKeyPropertyRange!)}`)}))
+                                                                                            "node": targetNode!,
+                                                                                            "key property": g.createReference(
+                                                                                                targetKeyProperty!,
+                                                                                                () => targetNode!.properties.get(targetKeyProperty!, () => {
+                                                                                                    throw new Error(`key property '${targetKeyProperty!}' not found @ ${bc.printRange(targetKeyPropertyRange!)}`)
+                                                                                                })
+                                                                                            ),
                                                                                         }]
                                                                                     }
                                                                                 )
@@ -53,11 +59,11 @@ function deserializeMetaNode(context: bc.ErrorContext, componentTypes: g.IReadon
                                                                             default:
                                                                                 throw new Error(`uncontext.expected has instances type ${sourceHasInstances}`)
                                                                         }
-                                                                    })
+                                                                    }),
                                                                 },
                                                                 () => {
                                                                     targetCollectionType = ["dictionary", {
-                                                                        "has instances": targetHasInstances!
+                                                                        "has instances": targetHasInstances!,
                                                                     }]
                                                                 }
                                                             )
@@ -72,14 +78,14 @@ function deserializeMetaNode(context: bc.ErrorContext, componentTypes: g.IReadon
                                                                                 let targetNode: t.Node | null = null
                                                                                 return context.expectType(
                                                                                     {
-                                                                                        "node": deserializeMetaNode(context, componentTypes, node => targetNode = node)
+                                                                                        "node": deserializeMetaNode(context, componentTypes, node => targetNode = node),
                                                                                     },
                                                                                     () => {
 
                                                                                         targetHasInstances = ["yes", {
-                                                                                            node: targetNode!
+                                                                                            node: targetNode!,
                                                                                         }]
-                                                                                    }
+                                                                                    },
                                                                                 )
                                                                             }
                                                                             case "no": {
@@ -89,68 +95,73 @@ function deserializeMetaNode(context: bc.ErrorContext, componentTypes: g.IReadon
                                                                             default:
                                                                                 throw new Error(`uncontext.expected has instances type ${sourceHasInstances}`)
                                                                         }
-                                                                    })
+                                                                    }),
                                                                 },
                                                                 () => {
                                                                     targetCollectionType = ["list", {
-                                                                        "has instances": targetHasInstances!
+                                                                        "has instances": targetHasInstances!,
                                                                     }]
-                                                                }
+                                                                },
                                                             )
                                                         }
                                                         default:
                                                             throw new Error(`uncontext.expected collection type ${sourceCollectionType}`)
                                                     }
-                                                })
+                                                }),
                                             },
                                             () => {
                                                 targetPropertyType = ["collection", {
-                                                    "type": targetCollectionType!
+                                                    "type": targetCollectionType!,
                                                 }]
-                                            }
+                                            },
                                         )
 
                                     }
                                     case "component": {
                                         let targetComponentTypeName: string | null = null
-                                        let targetComponentTypeNameRange: Range | null = null
+                                        let targetComponentTypeNameRange: bc.Range | null = null
                                         return context.expectType(
                                             {
-                                                "type": context.expectString((sourceComponentTypeName, range) => { 
+                                                "type": context.expectString((sourceComponentTypeName, range) => {
                                                     targetComponentTypeName = sourceComponentTypeName
                                                     targetComponentTypeNameRange = range
-                                                })
+                                                }),
                                             },
                                             () => {
                                                 targetPropertyType = ["component", {
-                                                    "type": g.createReference(targetComponentTypeName!, () => componentTypes.get(targetComponentTypeName!, () => { throw new Error(`component type '${targetComponentTypeName!}' not found @ ${bc.printRange(targetComponentTypeNameRange!)}`)})),
+                                                    "type": g.createReference(
+                                                        targetComponentTypeName!,
+                                                        () => componentTypes.get(targetComponentTypeName!, () => {
+                                                            throw new Error(`component type '${targetComponentTypeName!}' not found @ ${bc.printRange(targetComponentTypeNameRange!)}`)
+                                                        }),
+                                                    ),
                                                 }]
-                                            }
+                                            },
                                         )
                                     }
                                     case "state group": {
                                         const states = new g.Dictionary<t.State>({})
                                         return context.expectType(
                                             {
-                                                "states": context.expectDictionary(key => {
+                                                "states": context.expectDictionary(stateKey => {
                                                     let targetNode: t.Node | null = null
                                                     return context.expectType(
                                                         {
-                                                            "node": deserializeMetaNode(context, componentTypes, node => targetNode = node)
+                                                            "node": deserializeMetaNode(context, componentTypes, node => targetNode = node),
                                                         },
                                                         () => {
-                                                            states.add(key, {
-                                                                node: targetNode!
+                                                            states.add(stateKey, {
+                                                                node: targetNode!,
                                                             })
-                                                        }
+                                                        },
                                                     )
-                                                })
+                                                }),
                                             },
                                             () => {
                                                 targetPropertyType = ["state group", {
-                                                    "states": states
+                                                    "states": states,
                                                 }]
-                                            }
+                                            },
                                         )
                                     }
                                     case "value": {
@@ -170,28 +181,28 @@ function deserializeMetaNode(context: bc.ErrorContext, componentTypes: g.IReadon
                                                         default:
                                                             throw new Error(`uncontext.expected value type ${sourceValueType}`)
                                                     }
-                                                })
+                                                }),
                                             },
                                             () => {
                                                 targetPropertyType = ["value", {
-                                                    "type": targetValueType!
+                                                    "type": targetValueType!,
                                                 }]
-                                            }
+                                            },
                                         )
                                     }
                                     default:
                                         throw new Error(`uncontext.expected property type ${propertyType}`)
                                 }
-                            })
+                            }),
                         },
                         () => {
                             properties.add(key, {
-                                type: targetPropertyType!
+                                type: targetPropertyType!,
                             })
                         }
                     )
                 }
-            )
+            ),
         },
         () => {
             callback({ properties: properties })
@@ -215,25 +226,25 @@ export function createDeserializer(callback: (metaData: t.Schema) => void): bc.O
                     let targetNode: t.Node | null = null
                     return context.expectType(
                         {
-                            "node": deserializeMetaNode(context, componentTypes, node => targetNode = node)
+                            "node": deserializeMetaNode(context, componentTypes, node => targetNode = node),
                         },
                         () => {
                             componentTypes.add(key, {
                                 node: targetNode!,
                             })
-                        }
+                        },
                     )
-                }
+                },
             ),
             "root type": context.expectString((sourceRootName, range) => {
                 rootName = sourceRootName
                 rootNameRange = range
-            })
+            }),
         },
         () => {
             callback({
                 "component types": componentTypes,
-                "root type": g.createReference(rootName!, () => componentTypes.get(rootName!, () => { throw new Error(`component type '${rootName!}' not found @ ${bc.printRange(rootNameRange!)}`)})),
+                "root type": g.createReference(rootName!, () => componentTypes.get(rootName!, () => { throw new Error(`component type '${rootName!}' not found @ ${bc.printRange(rootNameRange!)}`) })),
             })
         }
     )

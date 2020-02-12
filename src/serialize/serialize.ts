@@ -1,5 +1,5 @@
 import * as m from "../metadata"
-import { ValueSerializer, RootSerializer } from "./api"
+import { RootSerializer, ValueSerializer } from "./api"
 import { SerializableNode, SerializableRoot } from "./serializable"
 
 function assertUnreachable<RT>(_x: never): RT {
@@ -7,13 +7,13 @@ function assertUnreachable<RT>(_x: never): RT {
 }
 
 function serializeNode(definition: m.Node, node: SerializableNode, builder: ValueSerializer) {
-    return builder.metaArray(out => {
+    return builder.arrayType(out => {
         definition.properties.forEach((property, propertyKey) => {
-            out.add(builder => {
+            out.add(elementBuilder => {
                 switch (property.type[0]) {
                     case "component": {
                         const $ = property.type[1]
-                        return serializeNode($.type.get().node, node.getComponent(propertyKey).getNode(), builder)
+                        return serializeNode($.type.get().node, node.getComponent(propertyKey).getNode(), elementBuilder)
                     }
                     case "collection": {
                         const $ = property.type[1]
@@ -21,7 +21,7 @@ function serializeNode(definition: m.Node, node: SerializableNode, builder: Valu
                         switch ($.type[0]) {
                             case "dictionary": {
                                 const $$ = $.type[1]
-                                return builder.collection(dict => {
+                                return elementBuilder.dictionary(dict => {
                                     if ($$["has instances"][0] === "yes") {
                                         const $$$ = $$["has instances"][1]
                                         const keyPropDefinition = $$$["key property"]
@@ -36,7 +36,7 @@ function serializeNode(definition: m.Node, node: SerializableNode, builder: Valu
                             }
                             case "list": {
                                 const $$ = $.type[1]
-                                return builder.list(list => {
+                                return elementBuilder.list(list => {
                                     if ($$["has instances"][0] === "yes") {
                                         const $$$ = $$["has instances"][1]
                                         collection.forEachEntry(entry => {
@@ -54,7 +54,7 @@ function serializeNode(definition: m.Node, node: SerializableNode, builder: Valu
                     case "state group": {
                         const $ = property.type[1]
                         const sg = node.getStateGroup(propertyKey)
-                        return builder.unionType(sg.getCurrentState().getStateKey(), stateDataBuilder => {
+                        return elementBuilder.taggedUnion(sg.getCurrentState().getStateKey(), stateDataBuilder => {
                             return serializeNode($.states.get(sg.getCurrentState().getStateKey()).node, sg.getCurrentState().node, stateDataBuilder)
                         })
                     }
@@ -63,15 +63,15 @@ function serializeNode(definition: m.Node, node: SerializableNode, builder: Valu
                         switch ($.type[0]) {
                             case "boolean": {
                                 //const $$ = $.type[1]
-                                return builder.boolean(node.getBoolean(propertyKey).getValue())
+                                return elementBuilder.boolean(node.getBoolean(propertyKey).getValue())
                             }
                             case "number": {
                                 //const $$ = $.type[1]
-                                return builder.number(node.getNumber(propertyKey).getValue())
+                                return elementBuilder.number(node.getNumber(propertyKey).getValue())
                             }
                             case "string": {
                                 //const $$ = $.type[1]
-                                return builder.string(node.getString(propertyKey).getValue())
+                                return elementBuilder.string(node.getString(propertyKey).getValue())
                             }
                             default:
                                 return assertUnreachable($.type[0])
