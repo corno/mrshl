@@ -27,7 +27,7 @@
   ],
   "dependencies": {
     "@types/mocha": "^7.0.1",
-    "@types/node": "^13.7.0",
+    "@types/node": "^13.7.1",
     "bass-clarinet": "^0.21.0"
   },
   "devDependencies": {
