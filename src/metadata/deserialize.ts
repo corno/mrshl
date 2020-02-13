@@ -1,8 +1,17 @@
-//tslint:disable: object-literal-key-quotes
+/* eslint
+    quote-props: "off",
 
+*/
 import * as bc from "bass-clarinet"
 import * as g from "./generics"
 import * as t from "./types"
+
+function assertExists<T>(v: T | null) {
+    if (v === null) {
+        throw new Error("did not exist")
+    }
+    return v
+}
 
 function deserializeMetaNode(context: bc.ErrorContext, componentTypes: g.IReadonlyDictionary<t.ComponentType>, callback: (node: t.Node) => void): bc.ValueHandler {
     const properties = new g.Dictionary<t.Property>({})
@@ -40,12 +49,17 @@ function deserializeMetaNode(context: bc.ErrorContext, componentTypes: g.IReadon
                                                                                         }),
                                                                                     },
                                                                                     () => {
+                                                                                        const assertedTargetNode = assertExists(targetNode)
+                                                                                        const assertedTargetKeyProperty = assertExists(targetKeyProperty)
                                                                                         targetHasInstances = ["yes", {
-                                                                                            "node": targetNode!,
+                                                                                            "node": assertedTargetNode,
                                                                                             "key property": g.createReference(
-                                                                                                targetKeyProperty!,
-                                                                                                () => targetNode!.properties.get(targetKeyProperty!, () => {
-                                                                                                    throw new Error(`key property '${targetKeyProperty!}' not found @ ${bc.printRange(targetKeyPropertyRange!)}`)
+                                                                                                assertedTargetKeyProperty,
+                                                                                                () => assertedTargetNode.properties.get(assertedTargetKeyProperty, () => {
+                                                                                                    throw new Error(
+                                                                                                        `key property '${assertedTargetKeyProperty}' not found ` +
+                                                                                                        ` @ ${bc.printRange(assertExists(targetKeyPropertyRange))}`
+                                                                                                    )
                                                                                                 })
                                                                                             ),
                                                                                         }]
@@ -54,7 +68,9 @@ function deserializeMetaNode(context: bc.ErrorContext, componentTypes: g.IReadon
                                                                             }
                                                                             case "no": {
                                                                                 targetHasInstances = ["no", {}]
-                                                                                return context.expectType({}, () => { })
+                                                                                return context.expectType({}, () => {
+                                                                                    //
+                                                                                })
                                                                             }
                                                                             default:
                                                                                 throw new Error(`uncontext.expected has instances type ${sourceHasInstances}`)
@@ -63,7 +79,7 @@ function deserializeMetaNode(context: bc.ErrorContext, componentTypes: g.IReadon
                                                                 },
                                                                 () => {
                                                                     targetCollectionType = ["dictionary", {
-                                                                        "has instances": targetHasInstances!,
+                                                                        "has instances": assertExists(targetHasInstances),
                                                                     }]
                                                                 }
                                                             )
@@ -83,14 +99,16 @@ function deserializeMetaNode(context: bc.ErrorContext, componentTypes: g.IReadon
                                                                                     () => {
 
                                                                                         targetHasInstances = ["yes", {
-                                                                                            node: targetNode!,
+                                                                                            node: assertExists(targetNode),
                                                                                         }]
                                                                                     },
                                                                                 )
                                                                             }
                                                                             case "no": {
                                                                                 targetHasInstances = ["no", {}]
-                                                                                return context.expectType({}, () => { })
+                                                                                return context.expectType({}, () => {
+                                                                                    //
+                                                                                })
                                                                             }
                                                                             default:
                                                                                 throw new Error(`uncontext.expected has instances type ${sourceHasInstances}`)
@@ -99,7 +117,7 @@ function deserializeMetaNode(context: bc.ErrorContext, componentTypes: g.IReadon
                                                                 },
                                                                 () => {
                                                                     targetCollectionType = ["list", {
-                                                                        "has instances": targetHasInstances!,
+                                                                        "has instances": assertExists(targetHasInstances),
                                                                     }]
                                                                 },
                                                             )
@@ -111,7 +129,7 @@ function deserializeMetaNode(context: bc.ErrorContext, componentTypes: g.IReadon
                                             },
                                             () => {
                                                 targetPropertyType = ["collection", {
-                                                    "type": targetCollectionType!,
+                                                    "type": assertExists(targetCollectionType),
                                                 }]
                                             },
                                         )
@@ -128,11 +146,15 @@ function deserializeMetaNode(context: bc.ErrorContext, componentTypes: g.IReadon
                                                 }),
                                             },
                                             () => {
+                                                const assertedTargetComponentTypeName = assertExists(targetComponentTypeName)
                                                 targetPropertyType = ["component", {
                                                     "type": g.createReference(
-                                                        targetComponentTypeName!,
-                                                        () => componentTypes.get(targetComponentTypeName!, () => {
-                                                            throw new Error(`component type '${targetComponentTypeName!}' not found @ ${bc.printRange(targetComponentTypeNameRange!)}`)
+                                                        assertedTargetComponentTypeName,
+                                                        () => componentTypes.get(assertedTargetComponentTypeName, () => {
+                                                            throw new Error(
+                                                                `component type '${assertedTargetComponentTypeName}' not found` +
+                                                                ` @ ${bc.printRange(assertExists(targetComponentTypeNameRange))}`
+                                                            )
                                                         }),
                                                     ),
                                                 }]
@@ -151,7 +173,7 @@ function deserializeMetaNode(context: bc.ErrorContext, componentTypes: g.IReadon
                                                         },
                                                         () => {
                                                             states.add(stateKey, {
-                                                                node: targetNode!,
+                                                                node: assertExists(targetNode),
                                                             })
                                                         },
                                                     )
@@ -172,11 +194,15 @@ function deserializeMetaNode(context: bc.ErrorContext, componentTypes: g.IReadon
                                                     switch (sourceValueType) {
                                                         case "number": {
                                                             targetValueType = ["number", {}]
-                                                            return context.expectType({}, () => { })
+                                                            return context.expectType({}, () => {
+                                                                //
+                                                            })
                                                         }
                                                         case "text": {
                                                             targetValueType = ["string", {}]
-                                                            return context.expectType({}, () => { })
+                                                            return context.expectType({}, () => {
+                                                                //
+                                                            })
                                                         }
                                                         default:
                                                             throw new Error(`uncontext.expected value type ${sourceValueType}`)
@@ -185,7 +211,7 @@ function deserializeMetaNode(context: bc.ErrorContext, componentTypes: g.IReadon
                                             },
                                             () => {
                                                 targetPropertyType = ["value", {
-                                                    "type": targetValueType!,
+                                                    "type": assertExists(targetValueType),
                                                 }]
                                             },
                                         )
@@ -197,7 +223,7 @@ function deserializeMetaNode(context: bc.ErrorContext, componentTypes: g.IReadon
                         },
                         () => {
                             properties.add(key, {
-                                type: targetPropertyType!,
+                                type: assertExists(targetPropertyType),
                             })
                         }
                     )
@@ -230,7 +256,7 @@ export function createDeserializer(callback: (metaData: t.Schema) => void): bc.O
                         },
                         () => {
                             componentTypes.add(key, {
-                                node: targetNode!,
+                                node: assertExists(targetNode),
                             })
                         },
                     )
@@ -242,9 +268,18 @@ export function createDeserializer(callback: (metaData: t.Schema) => void): bc.O
             }),
         },
         () => {
+            const assertedRootName = assertExists(rootName)
             callback({
                 "component types": componentTypes,
-                "root type": g.createReference(rootName!, () => componentTypes.get(rootName!, () => { throw new Error(`component type '${rootName!}' not found @ ${bc.printRange(rootNameRange!)}`) })),
+                "root type": g.createReference(
+                    assertedRootName,
+                    () => componentTypes.get(
+                        assertedRootName,
+                        () => {
+                            throw new Error(`component type '${assertedRootName}' not found @ ${bc.printRange(assertExists(rootNameRange))}`)
+                        }
+                    )
+                ),
             })
         }
     )

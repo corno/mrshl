@@ -97,7 +97,9 @@ function createNodeDeserializer(context: bc.ErrorContext, nodeDefinition: md.Nod
     })
     return context.expectArrayType(
         expectedElements,
-        () => { }
+        () => {
+            //
+        }
     )
 
 }

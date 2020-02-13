@@ -1,5 +1,6 @@
-//tslint:disable: interface-name max-classes-per-file
-
+/* eslint
+    max-classes-per-file: "off",
+*/
 export class StringStream {
     private readonly str: string[]
     private readonly indentationLevel: null | number

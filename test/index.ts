@@ -1,4 +1,7 @@
-//tslint:disable: max-classes-per-file
+/* eslint
+    max-classes-per-file: "off",
+*/
+
 import * as assert from "assert"
 import * as bc from "bass-clarinet"
 import * as fs from "fs"
@@ -20,7 +23,9 @@ class DummyComponentBuilder implements ComponentBuilder {
 
 class DummyEntryBuilder implements EntryBuilder {
     public readonly node = new DummyNodeBuilder()
-    public insert() { }
+    public insert() {
+        //
+     }
 }
 
 class DummyNodeBuilder implements NodeBuilder {
@@ -33,9 +38,15 @@ class DummyNodeBuilder implements NodeBuilder {
     public setStateGroup(_name: string, _stateName: string) {
         return new DummyStateBuilder()
     }
-    public setString(_name: string, _value: string) { }
-    public setNumber(_name: string, _value: number) { }
-    public setBoolean(_name: string, _value: boolean) { }
+    public setString(_name: string, _value: string) {
+        //
+     }
+    public setNumber(_name: string, _value: number) {
+        //
+     }
+    public setBoolean(_name: string, _value: boolean) {
+        //
+     }
 }
 
 class DummyStateBuilder {
@@ -49,7 +60,9 @@ describe("main", () => {
 
         const parser = new bc.Parser({
             allow: bc.lax,
-            require_schema: true,
+            require: {
+                schema: true,
+            },
         })
 
         const nodeBuilder = new DummyNodeBuilder()
@@ -74,8 +87,12 @@ describe("main", () => {
                 }
                 parser.ondata.subscribe(createDeserializer(metaData, errorContext, nodeBuilder, isCompact))
             },
-            onschemastart: () => { },
-            onschemaend: () => { },
+            onschemastart: () => {
+                //
+             },
+            onschemaend: () => {
+                //
+             },
         })
 
         parser.onschemadata.subscribe(bc.createStackedDataSubscriber(

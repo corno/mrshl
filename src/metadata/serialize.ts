@@ -1,5 +1,6 @@
-//tslint:disable: no-shadowed-variable
-
+/* eslint
+    no-shadow: "off",
+*/
 import { ValueSerializer } from "../serialize/api"
 import * as t from "./types"
 
@@ -26,7 +27,9 @@ function serializeNode(node: t.Node, serializer: ValueSerializer) {
 
                                                     t$.add("has instances", false, t$ => {
                                                         if ($$["has instances"][0] === "no") {
-                                                            return t$.taggedUnion("no", t$ => t$.type(() => { }))
+                                                            return t$.taggedUnion("no", t$ => t$.type(() => {
+                                                                //
+                                                            }))
                                                         } else {
                                                             const $$$ = $$["has instances"][1]
                                                             return t$.taggedUnion("yes", t$ => t$.type(t$ => {
@@ -43,7 +46,9 @@ function serializeNode(node: t.Node, serializer: ValueSerializer) {
 
                                                     t$.add("has instances", false, t$ => {
                                                         if ($$["has instances"][0] === "no") {
-                                                            return t$.taggedUnion("no", t$ => t$.type(() => { }))
+                                                            return t$.taggedUnion("no", t$ => t$.type(() => {
+                                                                //
+                                                            }))
                                                         } else {
                                                             const $$$ = $$["has instances"][1]
                                                             return t$.taggedUnion("yes", t$ => t$.type(t$ => {
@@ -85,13 +90,19 @@ function serializeNode(node: t.Node, serializer: ValueSerializer) {
                                     t$.add("type", false, t$ => {
                                         switch ($.type[0]) {
                                             case "boolean": {
-                                                return t$.taggedUnion("boolean", t$ => t$.type(() => { }))
+                                                return t$.taggedUnion("boolean", t$ => t$.type(() => {
+                                                    //
+                                                }))
                                             }
                                             case "number": {
-                                                return t$.taggedUnion("number", t$ => t$.type(() => { }))
+                                                return t$.taggedUnion("number", t$ => t$.type(() => {
+                                                    //
+                                                }))
                                             }
                                             case "string": {
-                                                return t$.taggedUnion("text", t$ => t$.type(() => { }))
+                                                return t$.taggedUnion("text", t$ => t$.type(() => {
+                                                    //
+                                                }))
                                             }
                                             default:
                                                 return assertUnreachable($.type[0])

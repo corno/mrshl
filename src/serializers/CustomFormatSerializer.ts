@@ -1,15 +1,34 @@
-//tslint:disable: max-classes-per-file
+/* eslint
+    max-classes-per-file: "off",
+*/
+
 import { ArraySerializer, DictionarySerializer, RootSerializer, StringStream, TypeSerializer, ValueSerializer } from "../serialize/api"
 
 class DummySerializer implements ValueSerializer {
-    public boolean() { }
-    public number() { }
-    public string() { }
-    public type() { }
-    public dictionary() { }
-    public arrayType() { }
-    public list() { }
-    public taggedUnion() { }
+    public boolean() {
+        //
+    }
+    public number() {
+        //
+    }
+    public string() {
+        //
+    }
+    public type() {
+        //
+    }
+    public dictionary() {
+        //
+    }
+    public arrayType() {
+        //
+    }
+    public list() {
+        //
+    }
+    public taggedUnion() {
+        //
+    }
 }
 
 export class CustomFormatValueSerializer implements ValueSerializer {
