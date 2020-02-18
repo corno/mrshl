@@ -84,6 +84,10 @@ export function validateDocument(
         },
     })
 
+    parser.onerror.subscribe(err => {
+        onError(err.message, err.range)
+    })
+
     parser.onschemadata.subscribe(bc.createStackedDataSubscriber(
         {
             array: () => {
