@@ -1,0 +1,5 @@
+[
+    [ "unexpected property: 'a'", "error", 25, 5, 25, 8],
+    [ "expected 'number' but found 'string' ", "error", 26, 10, 26, 13],
+    [ "missing property: 'a1'", "error", 24, 1, 24, 2]
+]
