@@ -7,7 +7,7 @@ import * as fs from "fs"
 import { describe } from "mocha"
 import { validateDocument } from "../src"
 
-const schemasDir = "c:/schemas"
+const schemasDir = "./test/tests"
 
 describe("main", () => {
     it("foo", () => {
