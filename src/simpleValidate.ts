@@ -49,7 +49,12 @@ class DummyStateBuilder {
     public readonly node = new DummyNodeBuilder()
 }
 
-export function validateDocument(document: string, filePath: string, schemasDir: string) {
+export function validateDocument(
+    document: string,
+    schemasDir: string,
+    onError: (message: string, range: bc.Range) => void,
+    onWarning: (message: string, range: bc.Range) => void,
+) {
 
 
     const parser = new bc.Parser({
@@ -60,17 +65,7 @@ export function validateDocument(document: string, filePath: string, schemasDir:
     })
 
     const nodeBuilder = new DummyNodeBuilder()
-    const errorContext = new bc.ErrorContext(
-        (errorMessage, range) => {
-            console.error(`${filePath}${bc.printRange(range)} error: ${errorMessage}`)
-            //assert.fail(`error: ${errorMessage} @ ${bc.printLocation(location)}`)
-        },
-        (warningMessage, range) => {
-            console.error(`${filePath}${bc.printRange(range)} warning: ${warningMessage}`)
-            //assert.fail(`warning: ${warningMessage} @ ${bc.printLocation(location)}`)
-
-        }
-    )
+    const errorContext = new bc.ErrorContext(onError, onWarning)
 
     let metaData: Schema | null = null
 
