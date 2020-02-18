@@ -1,6 +1,6 @@
 {
   "name": "mrshl",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "marshalling/unmarshalling (~serialiazation/deserialization) of data to/from JSON or extended JSON",
   "main": "dist/src/index.js",
   "scripts": {
