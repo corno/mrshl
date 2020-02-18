@@ -2,7 +2,7 @@
   "name": "mrshl",
   "version": "0.1.1",
   "description": "marshalling/unmarshalling (~serialiazation/deserialization) of data to/from JSON or extended JSON",
-  "main": "dist/index.js",
+  "main": "dist/src/index.js",
   "scripts": {
     "build": "mkdir .\\dist & rd /s /q .\\dist && tsc",
     "lint": "node .\\node_modules\\eslint\\bin\\eslint.js src/**/*.ts",
@@ -16,7 +16,7 @@
   "keywords": [],
   "author": "corno",
   "license": "ISC",
-  "types": "dist/index.d.ts",
+  "types": "dist/src/index.d.ts",
   "prepublish": "tsc",
   "repository": {
     "type": "git",
