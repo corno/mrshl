@@ -7,8 +7,6 @@ import * as fs from "fs"
 import * as path from "path"
 import { CollectionBuilder, ComponentBuilder, createDeserializer, createMetaDataDeserializer, EntryBuilder, NodeBuilder, Schema } from "../src"
 
-const schemasDir = "./test/tests"
-
 class DummyCollectionBuilder implements CollectionBuilder {
     public createEntry() {
         return new DummyEntryBuilder()
@@ -51,7 +49,7 @@ class DummyStateBuilder {
     public readonly node = new DummyNodeBuilder()
 }
 
-export function validateDocument(document: string, filePath: string) {
+export function validateDocument(document: string, filePath: string, schemasDir: string) {
 
 
     const parser = new bc.Parser({
@@ -109,9 +107,6 @@ export function validateDocument(document: string, filePath: string) {
                 throw new Error("unexpected number as schema")
             },
             string: schemaReference => {
-                if (typeof schemaReference !== "string") {
-                    throw new Error("unexpected value as schema")
-                }
                 const serializedSchema = fs.readFileSync(path.join(schemasDir, schemaReference), { encoding: "utf-8" })
 
                 const schemaParser = new bc.Parser({
