@@ -3,9 +3,18 @@
         "root": (
             "node": (
                 "properties": {
-                    // "a": (
-                    //     "type": ! "value"
-                    // )
+                    "a": (
+                        "type": | "value" (
+                            "type": | "number" (
+                            )
+                        )
+                    )
+                    "b": (
+                        "type": | "value" (
+                            "type": | "number" (
+                            )
+                        )
+                    )
                 }
             )
         )
