@@ -6,7 +6,7 @@ function assertUnreachable<RT>(_x: never): RT {
     throw new Error("Unreachable")
 }
 
-function createPropertyDeserializer(context: bc.ErrorContext, propDefinition: md.Property, propKey: string, nodeBuilder: NodeBuilder, isCompact: boolean): bc.ValueHandler {
+function createPropertyDeserializer(context: bc.IssueContext, propDefinition: md.Property, propKey: string, nodeBuilder: NodeBuilder, isCompact: boolean): bc.ValueHandler {
     switch (propDefinition.type[0]) {
         case "collection": {
             const $ = propDefinition.type[1]
@@ -92,7 +92,7 @@ function createPropertyDeserializer(context: bc.ErrorContext, propDefinition: md
     }
 }
 
-function createNodeDeserializer(context: bc.ErrorContext, nodeDefinition: md.Node, nodeBuilder: NodeBuilder, isCompact: boolean): bc.ValueHandler {
+function createNodeDeserializer(context: bc.IssueContext, nodeDefinition: md.Node, nodeBuilder: NodeBuilder, isCompact: boolean): bc.ValueHandler {
     if (isCompact) {
         const expectedElements: bc.ValueHandler[] = []
         nodeDefinition.properties.forEach((propDefinition, propKey) => {
@@ -123,7 +123,7 @@ function createNodeDeserializer(context: bc.ErrorContext, nodeDefinition: md.Nod
 
 }
 
-export function createDeserializer(metaData: md.Schema, errorContext: bc.ErrorContext, nodeBuilder: NodeBuilder, isCompact: boolean): bc.DataSubscriber {
+export function createDeserializer(metaData: md.Schema, errorContext: bc.IssueContext, nodeBuilder: NodeBuilder, isCompact: boolean): bc.DataSubscriber {
     return bc.createStackedDataSubscriber(
         createNodeDeserializer(errorContext, metaData["root type"].get().node, nodeBuilder, isCompact),
         () => {

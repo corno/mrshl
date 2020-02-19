@@ -13,7 +13,7 @@ function assertExists<T>(v: T | null) {
     return v
 }
 
-function deserializeMetaNode(context: bc.ErrorContext, componentTypes: g.IReadonlyDictionary<t.ComponentType>, callback: (node: t.Node) => void): bc.ValueHandler {
+function deserializeMetaNode(context: bc.IssueContext, componentTypes: g.IReadonlyDictionary<t.ComponentType>, callback: (node: t.Node) => void): bc.ValueHandler {
     const properties = new g.Dictionary<t.Property>({})
     return context.expectType(
         {
@@ -243,7 +243,7 @@ export function createDeserializer(callback: (metaData: t.Schema) => void): bc.O
     let rootName: string | null = null
     let rootNameRange: bc.Range | null = null
 
-    const context = new bc.ErrorContext(null, null)
+    const context = new bc.IssueContext(null, null)
 
     return context.createTypeHandler(
         {

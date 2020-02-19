@@ -49,6 +49,14 @@ class DummyStateBuilder {
     public readonly node = new DummyNodeBuilder()
 }
 
+class InvalidSchemaError extends Error {
+    readonly range: bc.Range
+    constructor(message: string, range: bc.Range) {
+        super(message)
+        this.range = range
+    }
+}
+
 export function validateDocument(
     document: string,
     schemasDir: string,
@@ -65,14 +73,14 @@ export function validateDocument(
     })
 
     const nodeBuilder = new DummyNodeBuilder()
-    const errorContext = new bc.ErrorContext(onError, onWarning)
+    const errorContext = new bc.IssueContext(onError, onWarning)
 
     let metaData: Schema | null = null
 
     parser.onheaderdata.subscribe({
-        oncompact: isCompact => {
+        oncompact: (isCompact, range) => {
             if (metaData === null) {
-                throw new Error("unexpected; no meta data")
+                throw new InvalidSchemaError("unexpected; no meta data", range)
             }
             parser.ondata.subscribe(createDeserializer(metaData, errorContext, nodeBuilder, isCompact))
         },
@@ -90,20 +98,20 @@ export function validateDocument(
 
     parser.onschemadata.subscribe(bc.createStackedDataSubscriber(
         {
-            array: () => {
-                throw new Error("unexpected array as schema")
+            array: range => {
+                throw new InvalidSchemaError("unexpected array as schema", range)
             },
-            null: () => {
-                throw new Error("unexpected null as schema")
+            null: range => {
+                throw new InvalidSchemaError("unexpected null as schema", range)
             },
             object: createMetaDataDeserializer(md => {
                 metaData = md
             }),
-            boolean: () => {
-                throw new Error("unexpected boolean as schema")
+            boolean: (_value, range) => {
+                throw new InvalidSchemaError("unexpected boolean as schema", range)
             },
-            number: () => {
-                throw new Error("unexpected number as schema")
+            number: (_value, range) => {
+                throw new InvalidSchemaError("unexpected number as schema", range)
             },
             string: schemaReference => {
                 const serializedSchema = fs.readFileSync(path.join(schemasDir, schemaReference), { encoding: "utf-8" })
@@ -114,26 +122,26 @@ export function validateDocument(
 
                 schemaParser.ondata.subscribe(bc.createStackedDataSubscriber(
                     {
-                        array: () => {
-                            throw new Error("unexpected array as schema")
+                        array: range => {
+                            throw new InvalidSchemaError("unexpected array as schema", range)
                         },
-                        null: () => {
-                            throw new Error("unexpected null as schema")
+                        null: range => {
+                            throw new InvalidSchemaError("unexpected null as schema", range)
                         },
                         object: createMetaDataDeserializer(md => {
                             metaData = md
                         }),
-                        boolean: () => {
-                            throw new Error("unexpected value as schema")
+                        boolean: (_value, range) => {
+                            throw new InvalidSchemaError("unexpected value as schema", range)
                         },
-                        number: () => {
-                            throw new Error("unexpected value as schema")
+                        number: (_value, range) => {
+                            throw new InvalidSchemaError("unexpected value as schema", range)
                         },
-                        string: () => {
-                            throw new Error("unexpected value as schema")
+                        string: (_value, range) => {
+                            throw new InvalidSchemaError("unexpected value as schema", range)
                         },
-                        taggedUnion: () => {
-                            throw new Error("unexpected typed union as schema")
+                        taggedUnion: (_value, range) => {
+                            throw new InvalidSchemaError("unexpected typed union as schema", range)
                         },
                     },
                     () => {
@@ -141,15 +149,15 @@ export function validateDocument(
                     }
                 ))
                 schemaParser.onerror.subscribe(err => {
-                    throw new Error(`error in schema ${err.message} ${bc.printRange(err.range)}`)
+                    throw new InvalidSchemaError(`error in schema ${err.message} ${bc.printRange(err.range)}`, err.range)
                 })
                 const schemaTok = new bc.Tokenizer(schemaParser)
                 schemaTok.write(serializedSchema)
                 schemaTok.end()
 
             },
-            taggedUnion: () => {
-                throw new Error("unexpected typed union as schema")
+            taggedUnion: (_value, range) => {
+                throw new InvalidSchemaError("unexpected typed union as schema", range)
 
             },
         },
@@ -159,6 +167,16 @@ export function validateDocument(
     ))
 
     const tok = new bc.Tokenizer(parser)
-    tok.write(document)
+    try {
+        tok.write(document)
+    } catch (e) {
+        if (e instanceof bc.RangeError) {
+            onError(e.message, e.range)
+        } else if (e instanceof bc.LocationError) {
+            onError(e.message, { start: e.location, end: e.location})
+        } else {
+            throw e
+        }
+    }
     tok.end()
 }
