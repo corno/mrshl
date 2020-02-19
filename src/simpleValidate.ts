@@ -92,7 +92,7 @@ export function validateDocument(
     })
 
     parser.onerror.subscribe(err => {
-        onError(err.message, err.range)
+        onError(err.rangeLessMessage, err.range)
     })
 
     parser.onschemadata.subscribe(bc.createStackedDataSubscriber(
@@ -154,7 +154,7 @@ export function validateDocument(
                     }
                 ))
                 schemaParser.onerror.subscribe(err => {
-                    throw new InvalidSchemaError(`error in schema ${err.message} ${bc.printRange(err.range)}`, err.range)
+                    throw new InvalidSchemaError(`error in schema ${err.rangeLessMessage} ${bc.printRange(err.range)}`, err.range)
                 })
                 const schemaTok = new bc.Tokenizer(schemaParser)
                 try {
