@@ -27,7 +27,7 @@
   ],
   "dependencies": {
     "@types/chai": "^4.2.9",
-    "bass-clarinet": "^0.24.5",
+    "bass-clarinet": "^0.24.7",
     "chai": "^4.2.0"
   },
   "devDependencies": {

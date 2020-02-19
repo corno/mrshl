@@ -4,10 +4,10 @@ export interface IReference<T> {
     getName(): string
 }
 
-export function createReference<T>(name: string, getter: () => T): IReference<T> {
+export function createReference<T>(name: string, lookup: IReadonlyLookup<T>, onNotExists: () => T): IReference<T> {
     return {
         get: () => {
-            return getter()
+            return lookup.get(name, onNotExists)
         },
         getName: () => {
             return name
@@ -24,7 +24,7 @@ export interface IReadonlyDictionary<T> {
 }
 
 export interface IReadonlyLookup<T> {
-    get(key: string): T
+    get(key: string, onNotExists?: () => T): T
 }
 
 export class Dictionary<T> implements IReadonlyDictionary<T>, IReadonlyLookup<T> {

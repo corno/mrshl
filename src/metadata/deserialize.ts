@@ -6,9 +6,9 @@ import * as bc from "bass-clarinet"
 import * as g from "./generics"
 import * as t from "./types"
 
-function assertExists<T>(v: T | null) {
+function assertIsDeserialized<T>(v: T | null) {
     if (v === null) {
-        throw new Error("did not exist")
+        throw new Error("value was not deserialized")
     }
     return v
 }
@@ -22,19 +22,19 @@ function deserializeMetaNode(context: bc.IssueContext, componentTypes: g.IReadon
                     let targetPropertyType: t.PropertyType | null = null
                     return context.expectType(
                         {
-                            "type": context.expectTaggedUnionOrArraySurrogate(propertyType => {
+                            "type": context.expectTaggedUnionOrArraySurrogate((propertyType, ptRange) => {
                                 switch (propertyType) {
                                     case "collection": {
                                         let targetCollectionType: t.CollectionType | null = null
                                         return context.expectType(
                                             {
-                                                "type": context.expectTaggedUnionOrArraySurrogate(sourceCollectionType => {
+                                                "type": context.expectTaggedUnionOrArraySurrogate((sourceCollectionType, sctRange) => {
                                                     switch (sourceCollectionType) {
                                                         case "dictionary": {
                                                             let targetHasInstances: t.DictionaryHasInstances | null = null
                                                             return context.expectType(
                                                                 {
-                                                                    "has instances": context.expectTaggedUnionOrArraySurrogate(sourceHasInstances => {
+                                                                    "has instances": context.expectTaggedUnionOrArraySurrogate((sourceHasInstances, shiRange) => {
                                                                         switch (sourceHasInstances) {
                                                                             case "yes": {
                                                                                 let targetNode: t.Node | null = null
@@ -49,18 +49,19 @@ function deserializeMetaNode(context: bc.IssueContext, componentTypes: g.IReadon
                                                                                         }),
                                                                                     },
                                                                                     () => {
-                                                                                        const assertedTargetNode = assertExists(targetNode)
-                                                                                        const assertedTargetKeyProperty = assertExists(targetKeyProperty)
+                                                                                        const assertedTargetNode = assertIsDeserialized(targetNode)
+                                                                                        const assertedTargetKeyProperty = assertIsDeserialized(targetKeyProperty)
                                                                                         targetHasInstances = ["yes", {
                                                                                             "node": assertedTargetNode,
                                                                                             "key property": g.createReference(
                                                                                                 assertedTargetKeyProperty,
-                                                                                                () => assertedTargetNode.properties.get(assertedTargetKeyProperty, () => {
-                                                                                                    throw new Error(
-                                                                                                        `key property '${assertedTargetKeyProperty}' not found ` +
-                                                                                                        ` @ ${bc.printRange(assertExists(targetKeyPropertyRange))}`
+                                                                                                assertedTargetNode.properties,
+                                                                                                () => {
+                                                                                                    throw new bc.RangeError(
+                                                                                                        `key property '${assertedTargetKeyProperty}' not found `,
+                                                                                                        assertIsDeserialized(targetKeyPropertyRange),
                                                                                                     )
-                                                                                                })
+                                                                                                }
                                                                                             ),
                                                                                         }]
                                                                                     }
@@ -73,13 +74,13 @@ function deserializeMetaNode(context: bc.IssueContext, componentTypes: g.IReadon
                                                                                 })
                                                                             }
                                                                             default:
-                                                                                throw new Error(`uncontext.expected has instances type ${sourceHasInstances}`)
+                                                                                throw new bc.RangeError(`unexpected 'has instances' type ${sourceHasInstances}`, shiRange)
                                                                         }
                                                                     }),
                                                                 },
                                                                 () => {
                                                                     targetCollectionType = ["dictionary", {
-                                                                        "has instances": assertExists(targetHasInstances),
+                                                                        "has instances": assertIsDeserialized(targetHasInstances),
                                                                     }]
                                                                 }
                                                             )
@@ -88,7 +89,7 @@ function deserializeMetaNode(context: bc.IssueContext, componentTypes: g.IReadon
                                                             let targetHasInstances: t.ListHasInstances | null = null
                                                             return context.expectType(
                                                                 {
-                                                                    "has instances": context.expectTaggedUnionOrArraySurrogate(sourceHasInstances => {
+                                                                    "has instances": context.expectTaggedUnionOrArraySurrogate((sourceHasInstances, shiRange) => {
                                                                         switch (sourceHasInstances) {
                                                                             case "yes": {
                                                                                 let targetNode: t.Node | null = null
@@ -99,7 +100,7 @@ function deserializeMetaNode(context: bc.IssueContext, componentTypes: g.IReadon
                                                                                     () => {
 
                                                                                         targetHasInstances = ["yes", {
-                                                                                            node: assertExists(targetNode),
+                                                                                            node: assertIsDeserialized(targetNode),
                                                                                         }]
                                                                                     },
                                                                                 )
@@ -111,25 +112,25 @@ function deserializeMetaNode(context: bc.IssueContext, componentTypes: g.IReadon
                                                                                 })
                                                                             }
                                                                             default:
-                                                                                throw new Error(`uncontext.expected has instances type ${sourceHasInstances}`)
+                                                                                throw new bc.RangeError(`unexpected 'has instances' type ${sourceHasInstances}`, shiRange)
                                                                         }
                                                                     }),
                                                                 },
                                                                 () => {
                                                                     targetCollectionType = ["list", {
-                                                                        "has instances": assertExists(targetHasInstances),
+                                                                        "has instances": assertIsDeserialized(targetHasInstances),
                                                                     }]
                                                                 },
                                                             )
                                                         }
                                                         default:
-                                                            throw new Error(`uncontext.expected collection type ${sourceCollectionType}`)
+                                                            throw new bc.RangeError(`unexpected 'collection' type ${sourceCollectionType}`, sctRange)
                                                     }
                                                 }),
                                             },
                                             () => {
                                                 targetPropertyType = ["collection", {
-                                                    "type": assertExists(targetCollectionType),
+                                                    "type": assertIsDeserialized(targetCollectionType),
                                                 }]
                                             },
                                         )
@@ -146,16 +147,17 @@ function deserializeMetaNode(context: bc.IssueContext, componentTypes: g.IReadon
                                                 }),
                                             },
                                             () => {
-                                                const assertedTargetComponentTypeName = assertExists(targetComponentTypeName)
+                                                const assertedTargetComponentTypeName = assertIsDeserialized(targetComponentTypeName)
                                                 targetPropertyType = ["component", {
                                                     "type": g.createReference(
                                                         assertedTargetComponentTypeName,
-                                                        () => componentTypes.get(assertedTargetComponentTypeName, () => {
-                                                            throw new Error(
-                                                                `component type '${assertedTargetComponentTypeName}' not found` +
-                                                                ` @ ${bc.printRange(assertExists(targetComponentTypeNameRange))}`
+                                                        componentTypes,
+                                                        () => {
+                                                            throw new bc.RangeError(
+                                                                `component type '${assertedTargetComponentTypeName}' not found`,
+                                                                assertIsDeserialized(targetComponentTypeNameRange)
                                                             )
-                                                        }),
+                                                        },
                                                     ),
                                                 }]
                                             },
@@ -173,7 +175,7 @@ function deserializeMetaNode(context: bc.IssueContext, componentTypes: g.IReadon
                                                         },
                                                         () => {
                                                             states.add(stateKey, {
-                                                                node: assertExists(targetNode),
+                                                                node: assertIsDeserialized(targetNode),
                                                             })
                                                         },
                                                     )
@@ -190,7 +192,7 @@ function deserializeMetaNode(context: bc.IssueContext, componentTypes: g.IReadon
                                         let targetValueType: t.ValueType | null = null
                                         return context.expectType(
                                             {
-                                                "type": context.expectTaggedUnionOrArraySurrogate(sourceValueType => {
+                                                "type": context.expectTaggedUnionOrArraySurrogate((sourceValueType, range) => {
                                                     switch (sourceValueType) {
                                                         case "number": {
                                                             targetValueType = ["number", {}]
@@ -205,25 +207,25 @@ function deserializeMetaNode(context: bc.IssueContext, componentTypes: g.IReadon
                                                             })
                                                         }
                                                         default:
-                                                            throw new Error(`uncontext.expected value type ${sourceValueType}`)
+                                                            throw new bc.RangeError(`unexpected 'value' type ${sourceValueType}`, range)
                                                     }
                                                 }),
                                             },
                                             () => {
                                                 targetPropertyType = ["value", {
-                                                    "type": assertExists(targetValueType),
+                                                    "type": assertIsDeserialized(targetValueType),
                                                 }]
                                             },
                                         )
                                     }
                                     default:
-                                        throw new Error(`uncontext.expected property type ${propertyType}`)
+                                        throw new bc.RangeError(`unexpected 'property' type ${propertyType}`, ptRange)
                                 }
                             }),
                         },
                         () => {
                             properties.add(key, {
-                                type: assertExists(targetPropertyType),
+                                type: assertIsDeserialized(targetPropertyType),
                             })
                         }
                     )
@@ -256,7 +258,7 @@ export function createDeserializer(callback: (metaData: t.Schema) => void): bc.O
                         },
                         () => {
                             componentTypes.add(key, {
-                                node: assertExists(targetNode),
+                                node: assertIsDeserialized(targetNode),
                             })
                         },
                     )
@@ -268,19 +270,17 @@ export function createDeserializer(callback: (metaData: t.Schema) => void): bc.O
             }),
         },
         () => {
-            const assertedRootName = assertExists(rootName)
+            const assertedRootName = assertIsDeserialized(rootName)
             callback({
                 "component types": componentTypes,
                 "root type": g.createReference(
                     assertedRootName,
-                    () => componentTypes.get(
-                        assertedRootName,
-                        () => {
-                            throw new Error(`component type '${assertedRootName}' not found @ ${bc.printRange(assertExists(rootNameRange))}`)
-                        }
-                    )
+                    componentTypes,
+                    () => {
+                        throw new bc.RangeError(`component type '${assertedRootName}' not found`, assertIsDeserialized(rootNameRange))
+                    }
                 ),
             })
-        }
+}
     )
 }

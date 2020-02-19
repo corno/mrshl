@@ -16,8 +16,8 @@ function createPropertyDeserializer(context: bc.IssueContext, propDefinition: md
                     const $$ = $.type[1]
                     switch ($$["has instances"][0]) {
                         case "no": {
-                            return context.expectDictionary(_key => {
-                                throw new Error(`unexpected entries @ ...`)
+                            return context.expectDictionary((_key, range) => {
+                                throw new bc.RangeError(`unexpected entries`, range)
                             })
                         }
                         case "yes": {
@@ -37,8 +37,8 @@ function createPropertyDeserializer(context: bc.IssueContext, propDefinition: md
 
                     switch ($$["has instances"][0]) {
                         case "no": {
-                            return context.expectDictionary(_key => {
-                                throw new Error(`unexpected entries @ ...`)
+                            return context.expectDictionary((_key, range) => {
+                                throw new bc.RangeError(`unexpected entries`, range)
                             })
                         }
                         case "yes": {
