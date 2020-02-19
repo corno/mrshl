@@ -239,8 +239,6 @@ function deserializeMetaNode(context: bc.IssueContext, componentTypes: g.IReadon
 }
 
 export function createDeserializer(callback: (metaData: t.Schema) => void): bc.OnObject {
-
-
     const componentTypes = new g.Dictionary<t.ComponentType>({})
     let rootName: string | null = null
     let rootNameRange: bc.Range | null = null
@@ -281,6 +279,6 @@ export function createDeserializer(callback: (metaData: t.Schema) => void): bc.O
                     }
                 ),
             })
-}
+        }
     )
 }

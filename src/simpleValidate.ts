@@ -152,8 +152,18 @@ export function validateDocument(
                     throw new InvalidSchemaError(`error in schema ${err.message} ${bc.printRange(err.range)}`, err.range)
                 })
                 const schemaTok = new bc.Tokenizer(schemaParser)
-                schemaTok.write(serializedSchema)
-                schemaTok.end()
+                try {
+                    schemaTok.write(serializedSchema)
+                    schemaTok.end()
+                } catch (e) {
+                    if (e instanceof bc.RangeError) {
+                        onError(e.rangeLessMessage, e.range)
+                    } else if (e instanceof bc.LocationError) {
+                        onError(e.locationLessMessage, { start: e.location, end: e.location })
+                    } else {
+                        throw e
+                    }
+                }
 
             },
             taggedUnion: (_value, range) => {
@@ -169,14 +179,14 @@ export function validateDocument(
     const tok = new bc.Tokenizer(parser)
     try {
         tok.write(document)
+        tok.end()
     } catch (e) {
         if (e instanceof bc.RangeError) {
-            onError(e.message, e.range)
+            onError(e.rangeLessMessage, e.range)
         } else if (e instanceof bc.LocationError) {
-            onError(e.message, { start: e.location, end: e.location})
+            onError(e.locationLessMessage, { start: e.location, end: e.location })
         } else {
             throw e
         }
     }
-    tok.end()
 }
