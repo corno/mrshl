@@ -123,9 +123,17 @@ function createNodeDeserializer(context: bc.IssueContext, nodeDefinition: md.Nod
 
 }
 
-export function createDeserializer(metaData: md.Schema, errorContext: bc.IssueContext, nodeBuilder: NodeBuilder, isCompact: boolean): bc.DataSubscriber {
+export function createDeserializer(metaData: md.Schema, onError: bc.IssueHandler, onWarning: bc.IssueHandler, nodeBuilder: NodeBuilder, isCompact: boolean): bc.DataSubscriber {
+    const errorContext = new bc.IssueContext(onError, onWarning)
+
     return bc.createStackedDataSubscriber(
         createNodeDeserializer(errorContext, metaData["root type"].get().node, nodeBuilder, isCompact),
+        (message: string, range: bc.Range) => {
+            throw new bc.RangeError(message, range)
+        },
+        (message: string, location: bc.Location) => {
+            throw new bc.LocationError(message, location)
+        },
         () => {
             //ignoreEndComments
         }

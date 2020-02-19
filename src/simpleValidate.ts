@@ -73,7 +73,6 @@ export function validateDocument(
     })
 
     const nodeBuilder = new DummyNodeBuilder()
-    const errorContext = new bc.IssueContext(onError, onWarning)
 
     let metaData: Schema | null = null
 
@@ -82,7 +81,7 @@ export function validateDocument(
             if (metaData === null) {
                 throw new InvalidSchemaError("unexpected; no meta data", range)
             }
-            parser.ondata.subscribe(createDeserializer(metaData, errorContext, nodeBuilder, isCompact))
+            parser.ondata.subscribe(createDeserializer(metaData, onError, onWarning, nodeBuilder, isCompact))
         },
         onschemastart: () => {
             //
@@ -144,6 +143,12 @@ export function validateDocument(
                             throw new InvalidSchemaError("unexpected typed union as schema", range)
                         },
                     },
+                    (message: string, range: bc.Range) => {
+                       onError(message, range)
+                    },
+                    (message: string, location: bc.Location) => {
+                        onError(message, {start: location, end: location})
+                    },
                     () => {
                         //ignore end comments
                     }
@@ -170,6 +175,12 @@ export function validateDocument(
                 throw new InvalidSchemaError("unexpected typed union as schema", range)
 
             },
+        },
+        (message: string, range: bc.Range) => {
+           onError(message, range)
+        },
+        (message: string, location: bc.Location) => {
+            onError(message, {start: location, end: location})
         },
         () => {
             //ignore end commends
