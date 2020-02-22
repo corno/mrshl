@@ -7,7 +7,7 @@ import * as http from "http"
 import { createDeserializer, createMetaDataDeserializer, Schema } from "../src"
 import { NodeBuilder } from "./deserialize"
 
-type ResolveSchemaReference = (
+export type ResolveSchemaReference = (
     reference: string,
 ) => Promise<Schema>
 
@@ -390,12 +390,7 @@ export function resolveSchemaFromSite(
                 }
             ))
             res.on('data', chunk => {
-                try {
-                    schemaTok.write(chunk.toString())
-                } catch (e) {
-                    //need to catch, createMetaDataDeserializer throws errors
-                    rejectx(e.message)
-                }
+                schemaTok.write(chunk.toString())
             });
             res.on('end', () => {
                 schemaTok.end()
