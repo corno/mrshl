@@ -1,8 +1,8 @@
 [
     [ "ignoring internal schema", "warning", 1, 1, 1, 1],
-    [ "expected '(' but found '{'", "warning", 30, 1, 30, 2],
-    [ "unexpected property: 'a'", "error", 31, 5, 31, 8],
-    [ "expected 'number' but found 'string' ", "error", 32, 10, 32, 13],
-    [ "expected ')' but found '}'", "warning", 34, 1, 34, 2],
-    [ "missing property: 'a1'", "error", 30, 1, 30, 2]
+    [ "expected '(' but found '{'", "warning", 18, 1, 18, 2],
+    [ "unexpected property: 'a'", "error", 19, 5, 19, 8],
+    [ "expected 'number' but found 'string' ", "error", 20, 10, 20, 13],
+    [ "expected ')' but found '}'", "warning", 22, 1, 22, 2],
+    [ "missing property: 'a1'", "error", 18, 1, 18, 2]
 ]
