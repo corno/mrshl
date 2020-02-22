@@ -3,7 +3,6 @@
     no-console: "off",
 */
 
-import * as assert from "assert"
 import * as chai from "chai"
 import * as fs from "fs"
 import * as path from "path"
@@ -80,6 +79,8 @@ describe("main", () => {
         //     const schemasDir = "./test/schemas"
         //     return astn.deserializeSchema(fs.readFileSync(path.join(schemasDir, reference + ".astn-schema"), { encoding: "utf-8" }))
         // }
+
+        /***** THIS REQUIRES AN INTERNET CONNECTION TO www.astn.io */
         const schemaReferenceResolver = astn.resolveSchemaFromSite
 
         async function myFunc(): Promise<void> {
@@ -91,7 +92,7 @@ describe("main", () => {
                 .then(serializedSchema => {
                     astn.deserializeSchema(serializedSchema)
                         .then(schema => {
-                            astn.validateDocumentWithExternalSchema(
+                            return astn.validateDocument(
                                 data,
                                 new LoggingNodeBuilder(),
                                 schema,
@@ -108,9 +109,10 @@ describe("main", () => {
                 .catch(err => {
 
                     if (err.code === "ENOENT") {
-                        astn.validateDocumentWithoutExternalSchema(
+                        return astn.validateDocument(
                             data,
                             new LoggingNodeBuilder(),
+                            null,
                             schemaReferenceResolver,
                             (errorMessage, range) => {
                                 actualIssues.push([errorMessage, "error", range.start.line, range.start.column, range.end.line, range.end.column])
@@ -124,13 +126,12 @@ describe("main", () => {
                     }
                 })
 
-            chai.assert.deepEqual(actualIssues, expectedIssues)
-            assert.ok(true, "DUMMY")
-
         }
 
         it(dir, () => {
-            return myFunc()
+            return myFunc().then(() => {
+                chai.assert.deepEqual(actualIssues, expectedIssues)
+            })
         })
     })
 })

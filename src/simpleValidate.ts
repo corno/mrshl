@@ -84,16 +84,15 @@ export function deserializeSchema(serializedSchema: string): Promise<Schema> {
     })
 }
 
-export function validateDocumentWithoutExternalSchema(
+export function validateDocument(
     document: string,
     nodeBuilder: NodeBuilder,
+    schema: Schema | null,
     schemaReferenceResolver: ResolveSchemaReference,
     onError: (message: string, range: bc.Range) => void,
     onWarning: (message: string, range: bc.Range) => void,
-
 ): Promise<void> {
     return new Promise((resolve, _reject) => {
-
         const parser = new bc.Parser(
             (message, range) => {
                 onError(message, range)
@@ -101,11 +100,10 @@ export function validateDocumentWithoutExternalSchema(
             {
                 allow: bc.lax,
                 require: {
-                    schema: true,
+                    schema: schema === null, //if an external schema is provided, an internal schema is optional
                 },
             }
         )
-
 
         const tok = new bc.Tokenizer(
             parser,
@@ -118,26 +116,44 @@ export function validateDocumentWithoutExternalSchema(
             tok,
             parser,
             schemaReferenceResolver,
-            onError,
-            () => {
-                onError(
-                    "missing schema",
-                    {
-                        start: {
-                            position: 0,
-                            line: 1,
-                            column: 1,
-                        },
-                        end: {
-                            position: 0,
-                            line: 1,
-                            column: 1,
-                        },
-                    }
-                )
+            errors => {
+                errors.forEach(err => {
+                    onError(err.message, err.range)
+                })
             },
-            (schema, isCompact) => {
-                parser.ondata.subscribe(createDeserializer(schema, onError, onWarning, nodeBuilder, isCompact))
+            () => {
+                if (schema === null) {
+                    onError(`missing schema`, { start: { position: 0, line: 1, column: 1 }, end: { position: 0, line: 1, column: 1 } })
+                } else {
+                    //no internal schema, no problem
+                    parser.ondata.subscribe(createDeserializer(schema, onError, onWarning, nodeBuilder, false))
+                }
+
+            },
+            (internalSchema, isCompact) => {
+                if (schema === null) {
+                    parser.ondata.subscribe(createDeserializer(internalSchema, onError, onWarning, nodeBuilder, isCompact))
+                } else {
+                    if (isCompact) {
+                        throw new Error("IMPLEMENT ME, EXTERNAL AND INTERAL SCHEMA AND DATA IS COMPACT")
+                    }
+                    onWarning(
+                        "ignoring internal schema",
+                        {
+                            start: {
+                                position: 0,
+                                line: 1,
+                                column: 1,
+                            },
+                            end: {
+                                position: 0,
+                                line: 1,
+                                column: 1,
+                            },
+                        }
+                    )
+                    parser.ondata.subscribe(createDeserializer(schema, onError, onWarning, nodeBuilder, isCompact))
+                }
             }
         )
 
@@ -154,16 +170,22 @@ export function validateDocumentWithoutExternalSchema(
     })
 }
 
+
 interface Pauser {
     pause(): void
     continue(): void
+}
+
+type SchemaExtractorError = {
+    message: string
+    range: bc.Range
 }
 
 function registerSchemaExtracter(
     pauser: Pauser,
     parser: bc.Parser,
     schemaReferenceResolver: ResolveSchemaReference,
-    onError: (message: string, range: bc.Range) => void,
+    onErrors: (errors: SchemaExtractorError[]) => void,
     onSchemaNotFound: () => void,
     onSchemaFound: (schema: Schema, compact: boolean) => void,
 ) {
@@ -172,6 +194,12 @@ function registerSchemaExtracter(
     let foundSchema = false
 
     let metaData: Schema | null = null
+
+    const errors: SchemaExtractorError[] = []
+
+    function onError(message: string, range: bc.Range) {
+        errors.push({ message: message, range: range })
+    }
 
     parser.onschemadata.subscribe(bc.createStackedDataSubscriber(
         {
@@ -228,94 +256,24 @@ function registerSchemaExtracter(
         onschemastart: () => {
             foundSchema = true
         },
-        onheaderend: () => {
-            if (!foundSchema) {
-                onSchemaNotFound()
-            } else {
-                if (metaData !== null) {
-                    onSchemaFound(metaData, compact)
-                }
-            }
-        },
         oncompact: () => {
             compact = true
         },
-    })
-}
-
-
-export function validateDocumentWithExternalSchema(
-    document: string,
-    nodeBuilder: NodeBuilder,
-    schema: Schema,
-    schemaReferenceResolver: ResolveSchemaReference,
-    onError: (message: string, range: bc.Range) => void,
-    onWarning: (message: string, range: bc.Range) => void,
-): Promise<void> {
-    return new Promise((resolve, _reject) => {
-        const parser = new bc.Parser(
-            (message, range) => {
-                onError(message, range)
-            },
-            {
-                allow: bc.lax,
-                require: {
-                    //a schema is optional (not required because we have an external schema)
-                },
-            }
-        )
-
-        const tok = new bc.Tokenizer(
-            parser,
-            (message, location) => {
-                onError(message, { start: location, end: location })
-            }
-        )
-
-        registerSchemaExtracter(
-            tok,
-            parser,
-            schemaReferenceResolver,
-            onError,
-            () => {
-                //no schema, no problem
-                parser.ondata.subscribe(createDeserializer(schema, onError, onWarning, nodeBuilder, false))
-            },
-            (_schema, isCompact) => {
-                if (!isCompact) {
-                    onWarning(
-                        "ignoring internal schema",
-                        {
-                            start: {
-                                position: 0,
-                                line: 1,
-                                column: 1,
-                            },
-                            end: {
-                                position: 0,
-                                line: 1,
-                                column: 1,
-                            },
-                        }
-                    )
-                    parser.ondata.subscribe(createDeserializer(schema, onError, onWarning, nodeBuilder, isCompact))
+        onheaderend: () => {
+            if (errors.length > 0) {
+                onErrors(errors)
+            } else {
+                if (!foundSchema) {
+                    onSchemaNotFound()
                 } else {
-                    throw new Error("IMPLEMENT ME, EXTERNAL AND INTERAL SCHEMA AND DATA IS COMPACT")
+                    if (metaData !== null) {
+                        onSchemaFound(metaData, compact)
+                    } else {
+                        throw new Error("Unexpected: no errors and no schema")
+                    }
                 }
-
             }
-        )
-
-        tok.onreadyforwrite.subscribe(() => {
-            tok.end()
-            resolve()
-        })
-        try {
-            tok.write(document)
-        } catch (e) {
-            //need to catch, createMetaDataDeserializer throws errors
-            _reject(e.message)
-        }
+        },
     })
 }
 
@@ -330,6 +288,7 @@ export function resolveSchemaFromSite(
         const options = {
             host: 'www.astn.io',
             path: '/dev/schemas/' + encodeURI(reference),
+            timeout: 7000,
         }
         const request = http.request(options, res => {
 
@@ -365,13 +324,13 @@ export function resolveSchemaFromSite(
                         }
                     ),
                     boolean: (_value, range) => {
-                        reject("unexpected value as schema", range)
+                        reject("unexpected boolean as schema", range)
                     },
                     number: (_value, range) => {
-                        reject("unexpected value as schema", range)
+                        reject("unexpected number as schema", range)
                     },
                     string: (_value, range) => {
-                        reject("unexpected value as schema", range)
+                        reject("unexpected string as (referenced) schema", range)
                     },
                     taggedUnion: (_value, range) => {
                         reject("unexpected typed union as schema", range)
@@ -395,6 +354,10 @@ export function resolveSchemaFromSite(
             res.on('end', () => {
                 schemaTok.end()
             });
+        });
+        request.on('timeout', () => {
+            console.error("timeout")
+            rejectx("timeout")
         });
         request.on('error', e => {
             console.error(e.message)
