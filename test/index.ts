@@ -12,7 +12,6 @@ import * as astn from "../src"
 import * as bc from "bass-clarinet"
 
 const testsDir = "./test/tests"
-const schemasDir = "./test/schemas"
 
 type Issue = [string, "warning" | "error", number, number, number, number]
 
@@ -77,37 +76,42 @@ describe("main", () => {
 
         const actualIssues: Issues = []
 
-        const data = fs.readFileSync(filePath, { encoding: "utf-8" })
-        fs.readFile(schemaPath, { encoding: "utf-8" }, (err, serializedSchema) => {
-            if (err) {
-                if (err.code === "ENOENT") {
-                    astn.validateDocumentWithoutExternalSchema(
-                        data,
-                        new LoggingNodeBuilder(),
-                        reference => {
-                            return astn.deserializeSchema(fs.readFileSync(path.join(schemasDir, reference + ".astn-schema"), { encoding: "utf-8" }))
-                        },
-                        (errorMessage, range) => {
-                            actualIssues.push([errorMessage, "error", range.start.line, range.start.column, range.end.line, range.end.column])
-                        },
-                        (warningMessage, range) => {
-                            actualIssues.push([warningMessage, "warning", range.start.line, range.start.column, range.end.line, range.end.column])
-                        }
-                    )
-                } else {
-                    throw new Error("UNKNOWN FS ERROR")
-                }
-            } else {
-                astn.deserializeSchema(serializedSchema)
-                    .then(schema => {
+        // const schemaReferenceResolver = (reference: string) => {
+        //     const schemasDir = "./test/schemas"
+        //     return astn.deserializeSchema(fs.readFileSync(path.join(schemasDir, reference + ".astn-schema"), { encoding: "utf-8" }))
+        // }
+        const schemaReferenceResolver = astn.resolveSchemaFromSite
 
-                        astn.validateDocumentWithExternalSchema(
+        async function myFunc(): Promise<void> {
+
+            const data = await fs.promises.readFile(filePath, { encoding: "utf-8" })
+
+            const serializedSchemaPromise = fs.promises.readFile(schemaPath, { encoding: "utf-8" })
+            return serializedSchemaPromise
+                .then(serializedSchema => {
+                    astn.deserializeSchema(serializedSchema)
+                        .then(schema => {
+                            astn.validateDocumentWithExternalSchema(
+                                data,
+                                new LoggingNodeBuilder(),
+                                schema,
+                                schemaReferenceResolver,
+                                (errorMessage, range) => {
+                                    actualIssues.push([errorMessage, "error", range.start.line, range.start.column, range.end.line, range.end.column])
+                                },
+                                (warningMessage, range) => {
+                                    actualIssues.push([warningMessage, "warning", range.start.line, range.start.column, range.end.line, range.end.column])
+                                }
+                            )
+                        })
+                })
+                .catch(err => {
+
+                    if (err.code === "ENOENT") {
+                        astn.validateDocumentWithoutExternalSchema(
                             data,
                             new LoggingNodeBuilder(),
-                            schema,
-                            reference => {
-                                return astn.deserializeSchema(fs.readFileSync(path.join(schemasDir, reference + ".astn-schema"), { encoding: "utf-8" }))
-                            },
+                            schemaReferenceResolver,
                             (errorMessage, range) => {
                                 actualIssues.push([errorMessage, "error", range.start.line, range.start.column, range.end.line, range.end.column])
                             },
@@ -115,17 +119,18 @@ describe("main", () => {
                                 actualIssues.push([warningMessage, "warning", range.start.line, range.start.column, range.end.line, range.end.column])
                             }
                         )
-                    })
-                    .catch(message => {
-                        actualIssues.push([`could not resolve schema: ${message}`, "error", 1, 1, 1, 1])
-                    })
+                    } else {
+                        throw new Error("UNKNOWN FS ERROR")
+                    }
+                })
 
-            }
-        })
-
-        it(dir, () => {
             chai.assert.deepEqual(actualIssues, expectedIssues)
             assert.ok(true, "DUMMY")
+
+        }
+
+        it(dir, () => {
+            return myFunc()
         })
     })
 })
