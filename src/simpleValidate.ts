@@ -5,49 +5,8 @@
 import * as bc from "bass-clarinet"
 import * as fs from "fs"
 import * as path from "path"
-import { CollectionBuilder, ComponentBuilder, createDeserializer, createMetaDataDeserializer, EntryBuilder, NodeBuilder, Schema } from "../src"
-
-class DummyCollectionBuilder implements CollectionBuilder {
-    public createEntry() {
-        return new DummyEntryBuilder()
-    }
-}
-
-class DummyComponentBuilder implements ComponentBuilder {
-    public readonly node = new DummyNodeBuilder()
-}
-
-class DummyEntryBuilder implements EntryBuilder {
-    public readonly node = new DummyNodeBuilder()
-    public insert() {
-        //
-    }
-}
-
-class DummyNodeBuilder implements NodeBuilder {
-    public setCollection(_name: string) {
-        return new DummyCollectionBuilder()
-    }
-    public setComponent(_name: string) {
-        return new DummyComponentBuilder()
-    }
-    public setStateGroup(_name: string, _stateName: string) {
-        return new DummyStateBuilder()
-    }
-    public setString(_name: string, _value: string) {
-        //
-    }
-    public setNumber(_name: string, _value: number) {
-        //
-    }
-    public setBoolean(_name: string, _value: boolean) {
-        //
-    }
-}
-
-class DummyStateBuilder {
-    public readonly node = new DummyNodeBuilder()
-}
+import { createDeserializer, createMetaDataDeserializer, Schema } from "../src"
+import { NodeBuilder } from "./deserialize"
 
 class InvalidSchemaError extends Error {
     readonly range: bc.Range
@@ -60,19 +19,23 @@ class InvalidSchemaError extends Error {
 export function validateDocument(
     document: string,
     schemasDir: string,
+    nodeBuilder: NodeBuilder,
     onError: (message: string, range: bc.Range) => void,
     onWarning: (message: string, range: bc.Range) => void,
 ) {
 
 
-    const parser = new bc.Parser({
-        allow: bc.lax,
-        require: {
-            schema: true,
+    const parser = new bc.Parser(
+        err => {
+            onError(err.rangeLessMessage, err.range)
         },
-    })
-
-    const nodeBuilder = new DummyNodeBuilder()
+        {
+            allow: bc.lax,
+            require: {
+                schema: true,
+            },
+        }
+    )
 
     let metaData: Schema | null = null
 
@@ -89,10 +52,6 @@ export function validateDocument(
         onschemaend: () => {
             //
         },
-    })
-
-    parser.onerror.subscribe(err => {
-        onError(err.rangeLessMessage, err.range)
     })
 
     parser.onschemadata.subscribe(bc.createStackedDataSubscriber(
@@ -115,9 +74,15 @@ export function validateDocument(
             string: schemaReference => {
                 const serializedSchema = fs.readFileSync(path.join(schemasDir, schemaReference), { encoding: "utf-8" })
 
-                const schemaParser = new bc.Parser({
-                    allow: bc.lax,
-                })
+                const schemaParser = new bc.Parser(
+                    err => {
+                        throw new InvalidSchemaError(`error in schema ${err.rangeLessMessage} ${bc.printRange(err.range)}`, err.range)
+
+                    },
+                    {
+                        allow: bc.lax,
+                    }
+                )
 
                 schemaParser.ondata.subscribe(bc.createStackedDataSubscriber(
                     {
@@ -143,20 +108,23 @@ export function validateDocument(
                             throw new InvalidSchemaError("unexpected typed union as schema", range)
                         },
                     },
-                    (message: string, range: bc.Range) => {
-                       onError(message, range)
-                    },
-                    (message: string, location: bc.Location) => {
-                        onError(message, {start: location, end: location})
+                    error => {
+                        if (error.context[0] === "range") {
+                            onError(error.message, error.context[1])
+                        } else {
+                            onError(error.message, { start: error.context[1], end: error.context[1] })
+                        }
                     },
                     () => {
                         //ignore end comments
                     }
                 ))
-                schemaParser.onerror.subscribe(err => {
-                    throw new InvalidSchemaError(`error in schema ${err.rangeLessMessage} ${bc.printRange(err.range)}`, err.range)
-                })
-                const schemaTok = new bc.Tokenizer(schemaParser)
+                const schemaTok = new bc.Tokenizer(
+                    schemaParser,
+                    err => {
+                        onError(err.locationLessMessage, { start: err.location, end: err.location })
+                    }
+                )
                 try {
                     schemaTok.write(serializedSchema)
                     schemaTok.end()
@@ -176,18 +144,24 @@ export function validateDocument(
 
             },
         },
-        (message: string, range: bc.Range) => {
-           onError(message, range)
-        },
-        (message: string, location: bc.Location) => {
-            onError(message, {start: location, end: location})
+        error => {
+            if (error.context[0] === "range") {
+                onError(error.message, error.context[1])
+            } else {
+                onError(error.message, { start: error.context[1], end: error.context[1] })
+            }
         },
         () => {
             //ignore end commends
         }
     ))
 
-    const tok = new bc.Tokenizer(parser)
+    const tok = new bc.Tokenizer(
+        parser,
+        err => {
+            onError(err.locationLessMessage, { start: err.location, end: err.location })
+        }
+    )
     try {
         tok.write(document)
         tok.end()

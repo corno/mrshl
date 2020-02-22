@@ -13,37 +13,52 @@ function assertIsDeserialized<T>(v: T | null) {
     return v
 }
 
-function deserializeMetaNode(context: bc.IssueContext, componentTypes: g.IReadonlyDictionary<t.ComponentType>, callback: (node: t.Node) => void): bc.ValueHandler {
+function deserializeMetaNode(context: bc.ExpectContext, componentTypes: g.IReadonlyDictionary<t.ComponentType>, callback: (node: t.Node) => void): bc.ValueHandler {
     const properties = new g.Dictionary<t.Property>({})
     return context.expectType(
+        _startRange => {
+            //
+        },
         {
-            "properties": context.expectDictionary(
+            "properties": () => context.expectDictionary(
                 key => {
                     let targetPropertyType: t.PropertyType | null = null
                     return context.expectType(
+                        _startRange => {
+                            //
+                        },
                         {
-                            "type": context.expectTaggedUnionOrArraySurrogate((propertyType, ptRange) => {
-                                switch (propertyType) {
-                                    case "collection": {
+                            "type": () => context.expectTaggedUnion(
+                                {
+                                    "collection": () => {
                                         let targetCollectionType: t.CollectionType | null = null
                                         return context.expectType(
+                                            _startRange => {
+                                                //
+                                            },
                                             {
-                                                "type": context.expectTaggedUnionOrArraySurrogate((sourceCollectionType, sctRange) => {
-                                                    switch (sourceCollectionType) {
-                                                        case "dictionary": {
+                                                "type": () => context.expectTaggedUnion(
+                                                    {
+                                                        "dictionary": () => {
                                                             let targetHasInstances: t.DictionaryHasInstances | null = null
                                                             return context.expectType(
+                                                                _startRange => {
+                                                                    //
+                                                                },
                                                                 {
-                                                                    "has instances": context.expectTaggedUnionOrArraySurrogate((sourceHasInstances, shiRange) => {
-                                                                        switch (sourceHasInstances) {
-                                                                            case "yes": {
+                                                                    "has instances": () => context.expectTaggedUnion(
+                                                                        {
+                                                                            "yes": () => {
                                                                                 let targetNode: t.Node | null = null
                                                                                 let targetKeyProperty: string | null = null
                                                                                 let targetKeyPropertyRange: bc.Range | null = null
                                                                                 return context.expectType(
+                                                                                    _startRange => {
+                                                                                        //
+                                                                                    },
                                                                                     {
-                                                                                        "node": deserializeMetaNode(context, componentTypes, node => targetNode = node),
-                                                                                        "key property": context.expectString((sourceKeyProperty, range) => {
+                                                                                        "node": () => deserializeMetaNode(context, componentTypes, node => targetNode = node),
+                                                                                        "key property": () => context.expectString((sourceKeyProperty, range) => {
                                                                                             targetKeyProperty = sourceKeyProperty
                                                                                             targetKeyPropertyRange = range
                                                                                         }),
@@ -66,17 +81,20 @@ function deserializeMetaNode(context: bc.IssueContext, componentTypes: g.IReadon
                                                                                         }]
                                                                                     }
                                                                                 )
-                                                                            }
-                                                                            case "no": {
+                                                                            },
+                                                                            "no": () => {
                                                                                 targetHasInstances = ["no", {}]
-                                                                                return context.expectType({}, () => {
-                                                                                    //
-                                                                                })
-                                                                            }
-                                                                            default:
-                                                                                throw new bc.RangeError(`unexpected 'has instances' type ${sourceHasInstances}`, shiRange)
+                                                                                return context.expectType(
+                                                                                    _startRange => {
+                                                                                        //
+                                                                                    },
+                                                                                    {},
+                                                                                    () => {
+                                                                                        //
+                                                                                    })
+                                                                            },
                                                                         }
-                                                                    }),
+                                                                    ),
                                                                 },
                                                                 () => {
                                                                     targetCollectionType = ["dictionary", {
@@ -84,36 +102,43 @@ function deserializeMetaNode(context: bc.IssueContext, componentTypes: g.IReadon
                                                                     }]
                                                                 }
                                                             )
-                                                        }
-                                                        case "list": {
+                                                        },
+                                                        "list": () => {
                                                             let targetHasInstances: t.ListHasInstances | null = null
                                                             return context.expectType(
+                                                                _startRange => {
+                                                                    //
+                                                                },
                                                                 {
-                                                                    "has instances": context.expectTaggedUnionOrArraySurrogate((sourceHasInstances, shiRange) => {
-                                                                        switch (sourceHasInstances) {
-                                                                            case "yes": {
-                                                                                let targetNode: t.Node | null = null
-                                                                                return context.expectType(
-                                                                                    {
-                                                                                        "node": deserializeMetaNode(context, componentTypes, node => targetNode = node),
-                                                                                    },
-                                                                                    () => {
+                                                                    "has instances": () => context.expectTaggedUnion({
+                                                                        "yes": () => {
+                                                                            let targetNode: t.Node | null = null
+                                                                            return context.expectType(
+                                                                                _startRange => {
+                                                                                    //
+                                                                                },
+                                                                                {
+                                                                                    "node": () => deserializeMetaNode(context, componentTypes, node => targetNode = node),
+                                                                                },
+                                                                                () => {
 
-                                                                                        targetHasInstances = ["yes", {
-                                                                                            node: assertIsDeserialized(targetNode),
-                                                                                        }]
-                                                                                    },
-                                                                                )
-                                                                            }
-                                                                            case "no": {
-                                                                                targetHasInstances = ["no", {}]
-                                                                                return context.expectType({}, () => {
+                                                                                    targetHasInstances = ["yes", {
+                                                                                        node: assertIsDeserialized(targetNode),
+                                                                                    }]
+                                                                                },
+                                                                            )
+                                                                        },
+                                                                        "no": () => {
+                                                                            targetHasInstances = ["no", {}]
+                                                                            return context.expectType(
+                                                                                _startRange => {
+                                                                                    //
+                                                                                },
+                                                                                {},
+                                                                                () => {
                                                                                     //
                                                                                 })
-                                                                            }
-                                                                            default:
-                                                                                throw new bc.RangeError(`unexpected 'has instances' type ${sourceHasInstances}`, shiRange)
-                                                                        }
+                                                                        },
                                                                     }),
                                                                 },
                                                                 () => {
@@ -122,11 +147,9 @@ function deserializeMetaNode(context: bc.IssueContext, componentTypes: g.IReadon
                                                                     }]
                                                                 },
                                                             )
-                                                        }
-                                                        default:
-                                                            throw new bc.RangeError(`unexpected 'collection' type ${sourceCollectionType}`, sctRange)
+                                                        },
                                                     }
-                                                }),
+                                                ),
                                             },
                                             () => {
                                                 targetPropertyType = ["collection", {
@@ -135,13 +158,16 @@ function deserializeMetaNode(context: bc.IssueContext, componentTypes: g.IReadon
                                             },
                                         )
 
-                                    }
-                                    case "component": {
+                                    },
+                                    "component": () => {
                                         let targetComponentTypeName: string | null = null
                                         let targetComponentTypeNameRange: bc.Range | null = null
                                         return context.expectType(
+                                            _startRange => {
+                                                //
+                                            },
                                             {
-                                                "type": context.expectString((sourceComponentTypeName, range) => {
+                                                "type": () => context.expectString((sourceComponentTypeName, range) => {
                                                     targetComponentTypeName = sourceComponentTypeName
                                                     targetComponentTypeNameRange = range
                                                 }),
@@ -162,16 +188,22 @@ function deserializeMetaNode(context: bc.IssueContext, componentTypes: g.IReadon
                                                 }]
                                             },
                                         )
-                                    }
-                                    case "state group": {
+                                    },
+                                    "state group": () => {
                                         const states = new g.Dictionary<t.State>({})
                                         return context.expectType(
+                                            _startRange => {
+                                                //
+                                            },
                                             {
-                                                "states": context.expectDictionary(stateKey => {
+                                                "states": () => context.expectDictionary(stateKey => {
                                                     let targetNode: t.Node | null = null
                                                     return context.expectType(
+                                                        _startRange => {
+                                                            //
+                                                        },
                                                         {
-                                                            "node": deserializeMetaNode(context, componentTypes, node => targetNode = node),
+                                                            "node": () => deserializeMetaNode(context, componentTypes, node => targetNode = node),
                                                         },
                                                         () => {
                                                             states.add(stateKey, {
@@ -187,28 +219,37 @@ function deserializeMetaNode(context: bc.IssueContext, componentTypes: g.IReadon
                                                 }]
                                             },
                                         )
-                                    }
-                                    case "value": {
+                                    },
+                                    "value": () => {
                                         let targetValueType: t.ValueType | null = null
                                         return context.expectType(
+                                            _startRange => {
+                                                //
+                                            },
                                             {
-                                                "type": context.expectTaggedUnionOrArraySurrogate((sourceValueType, range) => {
-                                                    switch (sourceValueType) {
-                                                        case "number": {
-                                                            targetValueType = ["number", {}]
-                                                            return context.expectType({}, () => {
+                                                "type": () => context.expectTaggedUnion({
+                                                    "number": () => {
+                                                        targetValueType = ["number", {}]
+                                                        return context.expectType(
+                                                            _startRange => {
+                                                                //
+                                                            },
+                                                            {},
+                                                            () => {
                                                                 //
                                                             })
-                                                        }
-                                                        case "text": {
-                                                            targetValueType = ["string", {}]
-                                                            return context.expectType({}, () => {
+                                                    },
+                                                    "text": () => {
+                                                        targetValueType = ["string", {}]
+                                                        return context.expectType(
+                                                            _startRange => {
+                                                                //
+                                                            },
+                                                            {},
+                                                            () => {
                                                                 //
                                                             })
-                                                        }
-                                                        default:
-                                                            throw new bc.RangeError(`unexpected 'value' type ${sourceValueType}`, range)
-                                                    }
+                                                    },
                                                 }),
                                             },
                                             () => {
@@ -217,11 +258,9 @@ function deserializeMetaNode(context: bc.IssueContext, componentTypes: g.IReadon
                                                 }]
                                             },
                                         )
-                                    }
-                                    default:
-                                        throw new bc.RangeError(`unexpected 'property' type ${propertyType}`, ptRange)
+                                    },
                                 }
-                            }),
+                            ),
                         },
                         () => {
                             properties.add(key, {
@@ -243,16 +282,24 @@ export function createDeserializer(callback: (metaData: t.Schema) => void): bc.O
     let rootName: string | null = null
     let rootNameRange: bc.Range | null = null
 
-    const context = new bc.IssueContext(null, null)
+    const context = new bc.ExpectContext(null, null)
 
     return context.createTypeHandler(
+        _startRange => {
+            //
+        },
         {
-            "component types": context.expectDictionary(
+            "component types": () => context.expectDictionary(
                 key => {
                     let targetNode: t.Node | null = null
+                    const vh = deserializeMetaNode(context, componentTypes, node => targetNode = node)
+                    const castValueHandler = vh
                     return context.expectType(
+                        _startRange => {
+                            //
+                        },
                         {
-                            "node": deserializeMetaNode(context, componentTypes, node => targetNode = node),
+                            "node": () => castValueHandler,
                         },
                         () => {
                             componentTypes.add(key, {
@@ -262,7 +309,7 @@ export function createDeserializer(callback: (metaData: t.Schema) => void): bc.O
                     )
                 },
             ),
-            "root type": context.expectString((sourceRootName, range) => {
+            "root type": () => context.expectString((sourceRootName, range) => {
                 rootName = sourceRootName
                 rootNameRange = range
             }),

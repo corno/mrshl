@@ -1,3 +1,5 @@
+import { Range, Comment } from "bass-clarinet";
+
 // tslint:disable: interface-name
 
 export interface CollectionBuilder {
@@ -14,12 +16,12 @@ export interface EntryBuilder {
 }
 
 export interface NodeBuilder {
-    setCollection(name: string): CollectionBuilder
+    setCollection(name: string, range: Range, comments: Comment[]): CollectionBuilder
     setComponent(name: string): ComponentBuilder
-    setStateGroup(name: string, stateName: string): StateBuilder
-    setString(name: string, value: string): void
-    setNumber(name: string, value: number): void
-    setBoolean(name: string, value: boolean): void
+    setStateGroup(name: string, stateName: string, startRange: Range, tuComments: Comment[], optionRange: Range, optionComments: Comment[]): StateBuilder
+    setString(name: string, value: string, range: Range, comments: Comment[]): void
+    setNumber(name: string, value: number, range: Range, comments: Comment[]): void
+    setBoolean(name: string, value: boolean, range: Range, comments: Comment[]): void
 }
 
 export interface StateBuilder {

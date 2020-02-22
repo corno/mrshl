@@ -1,7 +1,7 @@
 {
-  "name": "mrshl",
+  "name": "astn",
   "version": "0.1.9",
-  "description": "marshalling/unmarshalling (~serialiazation/deserialization) of data to/from JSON or extended JSON",
+  "description": "utilities for ASTN (Abstract Syntax Tree Notation, pronounced 'Aston')",
   "main": "dist/src/index.js",
   "scripts": {
     "build": "mkdir .\\dist & rd /s /q .\\dist && tsc",
@@ -20,19 +20,19 @@
   "prepublish": "tsc",
   "repository": {
     "type": "git",
-    "url": "https://github.com/corno/mrshl.git"
+    "url": "https://github.com/corno/astn.git"
   },
   "files": [
     "dist/*"
   ],
   "dependencies": {
     "@types/chai": "^4.2.9",
-    "bass-clarinet": "^0.24.11",
+    "bass-clarinet": "^0.28.0",
     "chai": "^4.2.0"
   },
   "devDependencies": {
     "@types/mocha": "^7.0.1",
-    "@types/node": "^13.7.2",
+    "@types/node": "^13.7.4",
     "@typescript-eslint/eslint-plugin": "^2.20.0",
     "@typescript-eslint/eslint-plugin-tslint": "^2.20.0",
     "@typescript-eslint/parser": "^2.20.0",
