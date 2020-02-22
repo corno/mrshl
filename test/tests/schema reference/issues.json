@@ -1,0 +1,7 @@
+[
+    [ "expected '(' but found '{'", "warning", 2, 1, 2, 2],
+    [ "unexpected property: 'a'", "error", 3, 5, 3, 8],
+    [ "expected 'number' but found 'string' ", "error", 4, 10, 4, 13],
+    [ "expected ')' but found '}'", "warning", 6, 1, 6, 2],
+    [ "missing property: 'a1'", "error", 2, 1, 2, 2]
+]
