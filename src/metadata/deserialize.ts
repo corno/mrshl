@@ -6,11 +6,10 @@ import * as bc from "bass-clarinet"
 import * as g from "./generics"
 import * as t from "./types"
 
-function assertIsDeserialized<T>(v: T | null) {
-    if (v === null) {
-        throw new Error("value was not deserialized")
+function assertIsDeserialized<T>(v: T | null, callback: (t: T) => void) {
+    if (v !== null) {
+        callback(v)
     }
-    return v
 }
 
 function deserializeMetaNode(context: bc.ExpectContext, componentTypes: g.IReadonlyDictionary<t.ComponentType>, callback: (node: t.Node) => void): bc.ValueHandler {
@@ -64,21 +63,26 @@ function deserializeMetaNode(context: bc.ExpectContext, componentTypes: g.IReado
                                                                                         }),
                                                                                     },
                                                                                     () => {
-                                                                                        const assertedTargetNode = assertIsDeserialized(targetNode)
-                                                                                        const assertedTargetKeyProperty = assertIsDeserialized(targetKeyProperty)
-                                                                                        targetHasInstances = ["yes", {
-                                                                                            "node": assertedTargetNode,
-                                                                                            "key property": g.createReference(
-                                                                                                assertedTargetKeyProperty,
-                                                                                                assertedTargetNode.properties,
-                                                                                                () => {
-                                                                                                    throw new bc.RangeError(
-                                                                                                        `key property '${assertedTargetKeyProperty}' not found `,
-                                                                                                        assertIsDeserialized(targetKeyPropertyRange),
-                                                                                                    )
-                                                                                                }
-                                                                                            ),
-                                                                                        }]
+                                                                                        assertIsDeserialized(targetNode, assertedTargetNode => {
+                                                                                            assertIsDeserialized(targetKeyProperty, assertedTargetKeyProperty => {
+                                                                                                assertIsDeserialized(targetKeyPropertyRange, atkpr => {
+                                                                                                    targetHasInstances = ["yes", {
+                                                                                                        "node": assertedTargetNode,
+                                                                                                        "key property": g.createReference(
+                                                                                                            assertedTargetKeyProperty,
+                                                                                                            assertedTargetNode.properties,
+                                                                                                            () => {
+                                                                                                                throw new bc.RangeError(
+                                                                                                                    `key property '${assertedTargetKeyProperty}' not found `,
+                                                                                                                    atkpr,
+                                                                                                                )
+                                                                                                            }
+                                                                                                        ),
+                                                                                                    }]
+
+                                                                                                })
+                                                                                            })
+                                                                                        })
                                                                                     }
                                                                                 )
                                                                             },
@@ -97,9 +101,11 @@ function deserializeMetaNode(context: bc.ExpectContext, componentTypes: g.IReado
                                                                     ),
                                                                 },
                                                                 () => {
-                                                                    targetCollectionType = ["dictionary", {
-                                                                        "has instances": assertIsDeserialized(targetHasInstances),
-                                                                    }]
+                                                                    assertIsDeserialized(targetHasInstances, asserted => {
+                                                                        targetCollectionType = ["dictionary", {
+                                                                            "has instances": asserted,
+                                                                        }]
+                                                                    })
                                                                 }
                                                             )
                                                         },
@@ -121,10 +127,11 @@ function deserializeMetaNode(context: bc.ExpectContext, componentTypes: g.IReado
                                                                                     "node": () => deserializeMetaNode(context, componentTypes, node => targetNode = node),
                                                                                 },
                                                                                 () => {
-
-                                                                                    targetHasInstances = ["yes", {
-                                                                                        node: assertIsDeserialized(targetNode),
-                                                                                    }]
+                                                                                    assertIsDeserialized(targetNode, asserted => {
+                                                                                        targetHasInstances = ["yes", {
+                                                                                            node: asserted,
+                                                                                        }]
+                                                                                    })
                                                                                 },
                                                                             )
                                                                         },
@@ -142,9 +149,11 @@ function deserializeMetaNode(context: bc.ExpectContext, componentTypes: g.IReado
                                                                     }),
                                                                 },
                                                                 () => {
-                                                                    targetCollectionType = ["list", {
-                                                                        "has instances": assertIsDeserialized(targetHasInstances),
-                                                                    }]
+                                                                    assertIsDeserialized(targetHasInstances, asserted => {
+                                                                        targetCollectionType = ["list", {
+                                                                            "has instances": asserted,
+                                                                        }]
+                                                                    })
                                                                 },
                                                             )
                                                         },
@@ -152,9 +161,11 @@ function deserializeMetaNode(context: bc.ExpectContext, componentTypes: g.IReado
                                                 ),
                                             },
                                             () => {
-                                                targetPropertyType = ["collection", {
-                                                    "type": assertIsDeserialized(targetCollectionType),
-                                                }]
+                                                assertIsDeserialized(targetCollectionType, asserted => {
+                                                    targetPropertyType = ["collection", {
+                                                        "type": asserted,
+                                                    }]
+                                                })
                                             },
                                         )
 
@@ -173,19 +184,24 @@ function deserializeMetaNode(context: bc.ExpectContext, componentTypes: g.IReado
                                                 }),
                                             },
                                             () => {
-                                                const assertedTargetComponentTypeName = assertIsDeserialized(targetComponentTypeName)
-                                                targetPropertyType = ["component", {
-                                                    "type": g.createReference(
-                                                        assertedTargetComponentTypeName,
-                                                        componentTypes,
-                                                        () => {
-                                                            throw new bc.RangeError(
-                                                                `component type '${assertedTargetComponentTypeName}' not found`,
-                                                                assertIsDeserialized(targetComponentTypeNameRange)
-                                                            )
-                                                        },
-                                                    ),
-                                                }]
+                                                assertIsDeserialized(targetComponentTypeName, assertedTargetComponentTypeName => {
+                                                    assertIsDeserialized(targetComponentTypeNameRange, assertedRange => {
+                                                        targetPropertyType = ["component", {
+                                                            "type": g.createReference(
+                                                                assertedTargetComponentTypeName,
+                                                                componentTypes,
+                                                                () => {
+                                                                    throw new bc.RangeError(
+                                                                        `component type '${assertedTargetComponentTypeName}' not found`,
+                                                                        assertedRange
+                                                                    )
+                                                                },
+                                                            ),
+                                                        }]
+
+                                                    })
+
+                                                })
                                             },
                                         )
                                     },
@@ -206,8 +222,10 @@ function deserializeMetaNode(context: bc.ExpectContext, componentTypes: g.IReado
                                                             "node": () => deserializeMetaNode(context, componentTypes, node => targetNode = node),
                                                         },
                                                         () => {
-                                                            states.add(stateKey, {
-                                                                node: assertIsDeserialized(targetNode),
+                                                            assertIsDeserialized(targetNode, asserted => {
+                                                                states.add(stateKey, {
+                                                                    node: asserted,
+                                                                })
                                                             })
                                                         },
                                                     )
@@ -253,9 +271,11 @@ function deserializeMetaNode(context: bc.ExpectContext, componentTypes: g.IReado
                                                 }),
                                             },
                                             () => {
-                                                targetPropertyType = ["value", {
-                                                    "type": assertIsDeserialized(targetValueType),
-                                                }]
+                                                assertIsDeserialized(targetValueType, asserted => {
+                                                    targetPropertyType = ["value", {
+                                                        "type": asserted,
+                                                    }]
+                                                })
                                             },
                                         )
                                     },
@@ -263,8 +283,10 @@ function deserializeMetaNode(context: bc.ExpectContext, componentTypes: g.IReado
                             ),
                         },
                         () => {
-                            properties.add(key, {
-                                type: assertIsDeserialized(targetPropertyType),
+                            assertIsDeserialized(targetPropertyType, asserted => {
+                                properties.add(key, {
+                                    type: asserted,
+                                })
                             })
                         }
                     )
@@ -277,12 +299,19 @@ function deserializeMetaNode(context: bc.ExpectContext, componentTypes: g.IReado
     )
 }
 
-export function createDeserializer(callback: (metaData: t.Schema) => void): bc.OnObject {
+export function createDeserializer(onError: (message: string, range: bc.Range) => void, callback: (metaData: t.Schema) => void): bc.OnObject {
     const componentTypes = new g.Dictionary<t.ComponentType>({})
     let rootName: string | null = null
     let rootNameRange: bc.Range | null = null
 
-    const context = new bc.ExpectContext(null, null)
+    const context = new bc.ExpectContext(
+        (_errorMessage, _range) => {
+            onError(_errorMessage, _range)
+        },
+        _warningMessage => {
+            //ignore
+        }
+    )
 
     return context.createTypeHandler(
         _startRange => {
@@ -302,8 +331,10 @@ export function createDeserializer(callback: (metaData: t.Schema) => void): bc.O
                             "node": () => castValueHandler,
                         },
                         () => {
-                            componentTypes.add(key, {
-                                node: assertIsDeserialized(targetNode),
+                            assertIsDeserialized(targetNode, asserted => {
+                                componentTypes.add(key, {
+                                    node: asserted,
+                                })
                             })
                         },
                     )
@@ -315,16 +346,19 @@ export function createDeserializer(callback: (metaData: t.Schema) => void): bc.O
             }),
         },
         () => {
-            const assertedRootName = assertIsDeserialized(rootName)
-            callback({
-                "component types": componentTypes,
-                "root type": g.createReference(
-                    assertedRootName,
-                    componentTypes,
-                    () => {
-                        throw new bc.RangeError(`component type '${assertedRootName}' not found`, assertIsDeserialized(rootNameRange))
-                    }
-                ),
+            assertIsDeserialized(rootName, assertedRootName => {
+                assertIsDeserialized(rootNameRange, assertedRange => {
+                    callback({
+                        "component types": componentTypes,
+                        "root type": g.createReference(
+                            assertedRootName,
+                            componentTypes,
+                            () => {
+                                throw new bc.RangeError(`component type '${assertedRootName}' not found`, assertedRange)
+                            }
+                        ),
+                    })
+                })
             })
         }
     )

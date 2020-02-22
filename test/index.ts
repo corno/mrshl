@@ -84,8 +84,8 @@ describe("main", () => {
                     astn.validateDocumentWithoutExternalSchema(
                         data,
                         new LoggingNodeBuilder(),
-                        (reference, onError, onSuccess) => {
-                            astn.deserializeSchema(fs.readFileSync(path.join(schemasDir, reference + ".astn-schema"), { encoding: "utf-8" }), onError, onSuccess)
+                        reference => {
+                            return astn.deserializeSchema(fs.readFileSync(path.join(schemasDir, reference + ".astn-schema"), { encoding: "utf-8" }))
                         },
                         (errorMessage, range) => {
                             actualIssues.push([errorMessage, "error", range.start.line, range.start.column, range.end.line, range.end.column])
@@ -98,19 +98,15 @@ describe("main", () => {
                     throw new Error("UNKNOWN FS ERROR")
                 }
             } else {
+                astn.deserializeSchema(serializedSchema)
+                    .then(schema => {
 
-                astn.deserializeSchema(
-                    serializedSchema,
-                    (errorMessage, range) => {
-                        actualIssues.push([errorMessage, "error", range.start.line, range.start.column, range.end.line, range.end.column])
-                    },
-                    schema => {
                         astn.validateDocumentWithExternalSchema(
                             data,
                             new LoggingNodeBuilder(),
                             schema,
-                            (reference, onError, onSuccess) => {
-                                astn.deserializeSchema(fs.readFileSync(path.join(schemasDir, reference + ".astn-schema"), { encoding: "utf-8" }), onError, onSuccess)
+                            reference => {
+                                return astn.deserializeSchema(fs.readFileSync(path.join(schemasDir, reference + ".astn-schema"), { encoding: "utf-8" }))
                             },
                             (errorMessage, range) => {
                                 actualIssues.push([errorMessage, "error", range.start.line, range.start.column, range.end.line, range.end.column])
@@ -119,8 +115,11 @@ describe("main", () => {
                                 actualIssues.push([warningMessage, "warning", range.start.line, range.start.column, range.end.line, range.end.column])
                             }
                         )
-                    }
-                )
+                    })
+                    .catch(message => {
+                        actualIssues.push([`could not resolve schema: ${message}`, "error", 1, 1, 1, 1])
+                    })
+
             }
         })
 

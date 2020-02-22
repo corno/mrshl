@@ -7,79 +7,82 @@ import * as http from "http"
 import { createDeserializer, createMetaDataDeserializer, Schema } from "../src"
 import { NodeBuilder } from "./deserialize"
 
-class InvalidSchemaError extends Error {
-    readonly range: bc.Range
-    constructor(message: string, range: bc.Range) {
-        super(message)
-        this.range = range
-    }
-}
-
 type ResolveSchemaReference = (
     reference: string,
-    onError: (message: string) => void,
-    onSuccess: (schema: Schema) => void
-) => void
+) => Promise<Schema>
 
-export function deserializeSchema(
-    serializedSchema: string,
-    onError: (message: string, range: bc.Range) => void,
-    //onWarning: (message: string, range: bc.Range) => void,
-    onSuccess: (schema: Schema) => void
-) {
+export function deserializeSchema(serializedSchema: string): Promise<Schema> {
+    return new Promise((resolve, rejectx) => {
 
-    const schemaParser = new bc.Parser(
-        err => {
-            throw new InvalidSchemaError(`error in schema ${err.rangeLessMessage} ${bc.printRange(err.range)}`, err.range)
-
-        },
-        {
-            allow: bc.lax,
+        function reject(message: string, range: bc.Range) {
+            rejectx(`${message} @ ${bc.printRange(range)}`)
         }
-    )
-    const schemaTok = new bc.Tokenizer(
-        schemaParser,
-        err => {
-            onError(err.locationLessMessage, { start: err.location, end: err.location })
-        }
-    )
-    schemaParser.ondata.subscribe(bc.createStackedDataSubscriber(
-        {
-            array: range => {
-                throw new InvalidSchemaError("unexpected array as schema", range)
+
+        const schemaParser = new bc.Parser(
+            (message, range) => {
+                reject(`error in schema ${message}`, range)
+
             },
-            null: range => {
-                throw new InvalidSchemaError("unexpected null as schema", range)
-            },
-            object: createMetaDataDeserializer(md => {
-                onSuccess(md)
-            }),
-            boolean: (_value, range) => {
-                throw new InvalidSchemaError("unexpected value as schema", range)
-            },
-            number: (_value, range) => {
-                throw new InvalidSchemaError("unexpected value as schema", range)
-            },
-            string: (_value, range) => {
-                throw new InvalidSchemaError("unexpected value as schema", range)
-            },
-            taggedUnion: (_value, range) => {
-                throw new InvalidSchemaError("unexpected typed union as schema", range)
-            },
-        },
-        error => {
-            if (error.context[0] === "range") {
-                onError(error.message, error.context[1])
-            } else {
-                onError(error.message, { start: error.context[1], end: error.context[1] })
+            {
+                allow: bc.lax,
             }
-        },
-        () => {
-            //ignore end comments
+        )
+        const schemaTok = new bc.Tokenizer(
+            schemaParser,
+            (message, location) => {
+                reject(message, { start: location, end: location })
+            }
+        )
+        schemaParser.ondata.subscribe(bc.createStackedDataSubscriber(
+            {
+                array: range => {
+                    reject("unexpected array as schema", range)
+                    return bc.createDummyArrayHandler()
+                },
+                null: range => {
+                    reject("unexpected null as schema", range)
+                },
+                object: createMetaDataDeserializer(
+                    (errorMessage, range) => {
+                        reject(errorMessage, range)
+                    },
+                    md => {
+                        resolve(md)
+                    }
+                ),
+                boolean: (_value, range) => {
+                    reject("unexpected value as schema", range)
+                },
+                number: (_value, range) => {
+                    reject("unexpected value as schema", range)
+                },
+                string: (_value, range) => {
+                    reject("unexpected value as schema", range)
+                },
+                taggedUnion: (_value, range) => {
+                    reject("unexpected typed union as schema", range)
+                    return bc.createDummyValueHandler()
+                },
+            },
+            error => {
+                if (error.context[0] === "range") {
+                    reject(error.message, error.context[1])
+                } else {
+                    reject(error.message, { start: error.context[1], end: error.context[1] })
+                }
+            },
+            () => {
+                //ignore end comments
+            }
+        ))
+        try {
+            schemaTok.write(serializedSchema)
+            schemaTok.end()
+        } catch (e) {
+            //need to catch, createMetaDataDeserializer throws errors
+            rejectx(e.message)
         }
-    ))
-    schemaTok.write(serializedSchema)
-    schemaTok.end()
+    })
 }
 
 export function validateDocumentWithoutExternalSchema(
@@ -89,68 +92,67 @@ export function validateDocumentWithoutExternalSchema(
     onError: (message: string, range: bc.Range) => void,
     onWarning: (message: string, range: bc.Range) => void,
 
-) {
-    const parser = new bc.Parser(
-        err => {
-            onError(err.rangeLessMessage, err.range)
-        },
-        {
-            allow: bc.lax,
-            require: {
-                schema: true,
+): Promise<void> {
+    return new Promise((resolve, _reject) => {
+
+        const parser = new bc.Parser(
+            (message, range) => {
+                onError(message, range)
             },
-        }
-    )
+            {
+                allow: bc.lax,
+                require: {
+                    schema: true,
+                },
+            }
+        )
 
 
-    const tok = new bc.Tokenizer(
-        parser,
-        err => {
-            onError(err.locationLessMessage, { start: err.location, end: err.location })
-        }
-    )
+        const tok = new bc.Tokenizer(
+            parser,
+            (message, location) => {
+                onError(message, { start: location, end: location })
+            }
+        )
 
-    extractSchema(
-        tok,
-        parser,
-        schemaReferenceResolver,
-        onError,
-        () => {
-            onError(
-                "missing schema",
-                {
-                    start: {
-                        position: 0,
-                        line: 1,
-                        column: 1,
-                    },
-                    end: {
-                        position: 0,
-                        line: 1,
-                        column: 1,
-                    },
-                }
-            )
-        },
-        (schema, isCompact) => {
-            parser.ondata.subscribe(createDeserializer(schema, onError, onWarning, nodeBuilder, isCompact))
-        }
-    )
+        registerSchemaExtracter(
+            tok,
+            parser,
+            schemaReferenceResolver,
+            onError,
+            () => {
+                onError(
+                    "missing schema",
+                    {
+                        start: {
+                            position: 0,
+                            line: 1,
+                            column: 1,
+                        },
+                        end: {
+                            position: 0,
+                            line: 1,
+                            column: 1,
+                        },
+                    }
+                )
+            },
+            (schema, isCompact) => {
+                parser.ondata.subscribe(createDeserializer(schema, onError, onWarning, nodeBuilder, isCompact))
+            }
+        )
 
-    try {
         tok.onreadyforwrite.subscribe(() => {
             tok.end()
+            resolve()
         })
-        tok.write(document)
-    } catch (e) {
-        if (e instanceof bc.RangeError) {
-            onError(e.rangeLessMessage, e.range)
-        } else if (e instanceof bc.LocationError) {
-            onError(e.locationLessMessage, { start: e.location, end: e.location })
-        } else {
-            throw e
+        try {
+            tok.write(document)
+        } catch (e) {
+            //need to catch, createMetaDataDeserializer throws errors
+            _reject(e.message)
         }
-    }
+    })
 }
 
 interface Pauser {
@@ -158,7 +160,7 @@ interface Pauser {
     continue(): void
 }
 
-function extractSchema(
+function registerSchemaExtracter(
     pauser: Pauser,
     parser: bc.Parser,
     schemaReferenceResolver: ResolveSchemaReference,
@@ -175,37 +177,38 @@ function extractSchema(
     parser.onschemadata.subscribe(bc.createStackedDataSubscriber(
         {
             array: range => {
-                throw new InvalidSchemaError("unexpected array as schema", range)
+                onError("unexpected array as schema", range)
+                return bc.createDummyArrayHandler()
             },
             null: range => {
-                throw new InvalidSchemaError("unexpected null as schema", range)
+                onError("unexpected null as schema", range)
             },
-            object: createMetaDataDeserializer(md => {
-                metaData = md
-            }),
+            object: createMetaDataDeserializer(
+                (errorMessage, range) => {
+                    onError(errorMessage, range)
+                },
+                md => {
+                    metaData = md
+                }
+            ),
             boolean: (_value, range) => {
-                throw new InvalidSchemaError("unexpected boolean as schema", range)
+                onError("unexpected boolean as schema", range)
             },
             number: (_value, range) => {
-                throw new InvalidSchemaError("unexpected number as schema", range)
+                onError("unexpected number as schema", range)
             },
             string: (schemaReference, strRange) => {
                 pauser.pause()
-                schemaReferenceResolver(
-                    schemaReference,
-                    error => {
-                        console.error(error)
-                        onError("could not resolve referenced schema", strRange)
-                    },
-                    md => {
+                schemaReferenceResolver(schemaReference)
+                    .then(md => {
                         metaData = md
                         pauser.continue()
-                    }
-                )
+                    })
+                    .catch(errorMessage => onError(errorMessage, strRange))
             },
             taggedUnion: (_value, range) => {
-                throw new InvalidSchemaError("unexpected typed union as schema", range)
-
+                onError("unexpected typed union as schema", range)
+                return bc.createDummyValueHandler()
             },
         },
         error => {
@@ -230,10 +233,9 @@ function extractSchema(
             if (!foundSchema) {
                 onSchemaNotFound()
             } else {
-                if (metaData === null) {
-                    throw new Error("SCHEMA WAS NOT RESOLVED")
+                if (metaData !== null) {
+                    onSchemaFound(metaData, compact)
                 }
-                onSchemaFound(metaData, compact)
             }
         },
         oncompact: () => {
@@ -250,168 +252,160 @@ export function validateDocumentWithExternalSchema(
     schemaReferenceResolver: ResolveSchemaReference,
     onError: (message: string, range: bc.Range) => void,
     onWarning: (message: string, range: bc.Range) => void,
-
-) {
-    const parser = new bc.Parser(
-        err => {
-            onError(err.rangeLessMessage, err.range)
-        },
-        {
-            allow: bc.lax,
-            require: {
-                //a schema is optional (not required because we have an external schema)
+): Promise<void> {
+    return new Promise((resolve, _reject) => {
+        const parser = new bc.Parser(
+            (message, range) => {
+                onError(message, range)
             },
-        }
-    )
-
-    const tok = new bc.Tokenizer(
-        parser,
-        err => {
-            onError(err.locationLessMessage, { start: err.location, end: err.location })
-        }
-    )
-
-    extractSchema(
-        tok,
-        parser,
-        schemaReferenceResolver,
-        onError,
-        () => {
-            //no schema, no problem
-            parser.ondata.subscribe(createDeserializer(schema, onError, onWarning, nodeBuilder, false))
-        },
-        (_schema, isCompact) => {
-            if (!isCompact) {
-                onWarning(
-                    "ignoring internal schema",
-                    {
-                        start: {
-                            position: 0,
-                            line: 1,
-                            column: 1,
-                        },
-                        end: {
-                            position: 0,
-                            line: 1,
-                            column: 1,
-                        },
-                    }
-                )
-                parser.ondata.subscribe(createDeserializer(schema, onError, onWarning, nodeBuilder, isCompact))
-            } else {
-                throw new Error("IMPLEMENT ME, EXTERNAL AND INTERAL SCHEMA AND DATA IS COMPACT")
+            {
+                allow: bc.lax,
+                require: {
+                    //a schema is optional (not required because we have an external schema)
+                },
             }
+        )
 
-        }
-    )
+        const tok = new bc.Tokenizer(
+            parser,
+            (message, location) => {
+                onError(message, { start: location, end: location })
+            }
+        )
 
-    try {
+        registerSchemaExtracter(
+            tok,
+            parser,
+            schemaReferenceResolver,
+            onError,
+            () => {
+                //no schema, no problem
+                parser.ondata.subscribe(createDeserializer(schema, onError, onWarning, nodeBuilder, false))
+            },
+            (_schema, isCompact) => {
+                if (!isCompact) {
+                    onWarning(
+                        "ignoring internal schema",
+                        {
+                            start: {
+                                position: 0,
+                                line: 1,
+                                column: 1,
+                            },
+                            end: {
+                                position: 0,
+                                line: 1,
+                                column: 1,
+                            },
+                        }
+                    )
+                    parser.ondata.subscribe(createDeserializer(schema, onError, onWarning, nodeBuilder, isCompact))
+                } else {
+                    throw new Error("IMPLEMENT ME, EXTERNAL AND INTERAL SCHEMA AND DATA IS COMPACT")
+                }
+
+            }
+        )
+
         tok.onreadyforwrite.subscribe(() => {
             tok.end()
+            resolve()
         })
-        tok.write(document)
-    } catch (e) {
-        if (e instanceof bc.RangeError) {
-            onError(e.rangeLessMessage, e.range)
-        } else if (e instanceof bc.LocationError) {
-            onError(e.locationLessMessage, { start: e.location, end: e.location })
-        } else {
-            throw e
+        try {
+            tok.write(document)
+        } catch (e) {
+            //need to catch, createMetaDataDeserializer throws errors
+            _reject(e.message)
         }
-    }
+    })
 }
 
 export function resolveSchemaFromSite(
     reference: string,
-    onError: (message: string) => void,
-    onSuccess: (schema: Schema) => void,
-) {
-    const options = {
-        host: 'www.astn.io',
-        path: '/dev/schemas/' + encodeURI(reference),
-    }
-    const request = http.request(options, res => {
+): Promise<Schema> {
+    return new Promise((resolve, rejectx) => {
 
-        const schemaParser = new bc.Parser(
-            err => {
-                throw new InvalidSchemaError(`error in schema ${err.rangeLessMessage} ${bc.printRange(err.range)}`, err.range)
+        function reject(message: string, range: bc.Range) {
+            rejectx(`${message} @ ${bc.printRange(range)}`)
+        }
+        const options = {
+            host: 'www.astn.io',
+            path: '/dev/schemas/' + encodeURI(reference),
+        }
+        const request = http.request(options, res => {
 
-            },
-            {
-                allow: bc.lax,
-            }
-        )
-        const schemaTok = new bc.Tokenizer(
-            schemaParser,
-            err => {
-                onError(err.locationLessMessage)
-            }
-        )
-        schemaParser.ondata.subscribe(bc.createStackedDataSubscriber(
-            {
-                array: range => {
-                    throw new InvalidSchemaError("unexpected array as schema", range)
+            const schemaParser = new bc.Parser(
+                (message, range) => {
+                    reject(`error in schema ${message} ${bc.printRange(range)}`, range)
                 },
-                null: range => {
-                    throw new InvalidSchemaError("unexpected null as schema", range)
-                },
-                object: createMetaDataDeserializer(md => {
-                    onSuccess(md)
-                }),
-                boolean: (_value, range) => {
-                    throw new InvalidSchemaError("unexpected value as schema", range)
-                },
-                number: (_value, range) => {
-                    throw new InvalidSchemaError("unexpected value as schema", range)
-                },
-                string: (_value, range) => {
-                    throw new InvalidSchemaError("unexpected value as schema", range)
-                },
-                taggedUnion: (_value, range) => {
-                    throw new InvalidSchemaError("unexpected typed union as schema", range)
-                },
-            },
-            error => {
-                if (error.context[0] === "range") {
-                    onError(error.message)
-                } else {
-                    onError(error.message)
+                {
+                    allow: bc.lax,
                 }
-            },
-            () => {
-                //ignore end comments
-            }
-        ))
-        res.on('data', chunk => {
-            try {
-                schemaTok.write(chunk.toString())
-            } catch (e) {
-                if (e instanceof bc.RangeError) {
-                    onError(e.rangeLessMessage)
-                } else if (e instanceof bc.LocationError) {
-                    onError(e.locationLessMessage)
-                } else {
-                    throw e
+            )
+            const schemaTok = new bc.Tokenizer(
+                schemaParser,
+                message => {
+                    rejectx(message)
                 }
-            }
-        });
-        res.on('end', () => {
-            try {
+            )
+            schemaParser.ondata.subscribe(bc.createStackedDataSubscriber(
+                {
+                    array: range => {
+                        reject("unexpected array as schema", range)
+                        return bc.createDummyArrayHandler()
+                    },
+                    null: range => {
+                        reject("unexpected null as schema", range)
+                    },
+                    object: createMetaDataDeserializer(
+                        (errorMessage, range) => {
+                            reject(errorMessage, range)
+                        },
+                        md => {
+                            resolve(md)
+                        }
+                    ),
+                    boolean: (_value, range) => {
+                        reject("unexpected value as schema", range)
+                    },
+                    number: (_value, range) => {
+                        reject("unexpected value as schema", range)
+                    },
+                    string: (_value, range) => {
+                        reject("unexpected value as schema", range)
+                    },
+                    taggedUnion: (_value, range) => {
+                        reject("unexpected typed union as schema", range)
+                        return bc.createDummyValueHandler()
+                    },
+                },
+                error => {
+                    if (error.context[0] === "range") {
+                        rejectx(error.message)
+                    } else {
+                        rejectx(error.message)
+                    }
+                },
+                () => {
+                    //ignore end comments
+                }
+            ))
+            res.on('data', chunk => {
+                try {
+                    schemaTok.write(chunk.toString())
+                } catch (e) {
+                    //need to catch, createMetaDataDeserializer throws errors
+                    rejectx(e.message)
+                }
+            });
+            res.on('end', () => {
                 schemaTok.end()
-            } catch (e) {
-                if (e instanceof bc.RangeError) {
-                    onError(e.rangeLessMessage)
-                } else if (e instanceof bc.LocationError) {
-                    onError(e.locationLessMessage)
-                } else {
-                    throw e
-                }
-            }
+            });
         });
-    });
-    request.on('error', e => {
-        console.error(e.message)
-        onError(e.message)
-    });
-    request.end();
+        request.on('error', e => {
+            console.error(e.message)
+            rejectx(e.message)
+        });
+        request.end();
+    })
 }

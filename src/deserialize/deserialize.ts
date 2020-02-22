@@ -10,9 +10,9 @@ export function createDeserializer(metaData: md.Schema, onError: bc.IssueHandler
         createNodeDeserializer(context, metaData["root type"].get().node, nodeBuilder, isCompact),
         error => {
             if (error.context[0] === "range") {
-                throw new bc.RangeError(error.message, error.context[1])
+                onError(error.message, error.context[1])
             } else {
-                throw new bc.LocationError(error.message, error.context[1])
+                onError(error.message, { start: error.context[1], end: error.context[1]})
             }
         },
         () => {
