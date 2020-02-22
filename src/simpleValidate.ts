@@ -21,7 +21,6 @@ export function deserializeSchema(serializedSchema: string): Promise<Schema> {
         const schemaParser = new bc.Parser(
             (message, range) => {
                 reject(`error in schema ${message}`, range)
-
             },
             {
                 allow: bc.lax,
