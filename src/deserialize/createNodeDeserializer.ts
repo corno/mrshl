@@ -43,13 +43,13 @@ function createPropertyDeserializer(context: bc.ExpectContext, propDefinition: m
 
                     switch ($$["has instances"][0]) {
                         case "no": {
-                            return context.expectDictionary(_key => {
+                            return context.expectList(_key => {
                                 return context.expectNothing()
                             })
                         }
                         case "yes": {
                             const $$$ = $$["has instances"][1]
-                            return context.expectDictionary((_key, range, comments) => {
+                            return context.expectList((range, comments) => {
                                 const collBuilder = nodeBuilder.setCollection(propKey, range, comments)
 
                                 const entry = collBuilder.createEntry()
