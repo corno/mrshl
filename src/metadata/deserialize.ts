@@ -12,7 +12,7 @@ function assertIsDeserialized<T>(v: T | null, callback: (t: T) => void) {
     }
 }
 
-function deserializeMetaNode(context: bc.ExpectContext, componentTypes: g.IReadonlyDictionary<t.ComponentType>, callback: (node: t.Node) => void): bc.ValueHandler {
+function deserializeMetaNode(context: bc.ExpectContext, componentTypes: g.IReadonlyDictionary<t.ComponentType>, callback: (node: t.Node) => void, resolveRegistry: g.ResolveRegistry): bc.ValueHandler {
     const properties = new g.Dictionary<t.Property>({})
     return context.expectType(
         _startRange => {
@@ -56,7 +56,7 @@ function deserializeMetaNode(context: bc.ExpectContext, componentTypes: g.IReado
                                                                                         //
                                                                                     },
                                                                                     {
-                                                                                        "node": () => deserializeMetaNode(context, componentTypes, node => targetNode = node),
+                                                                                        "node": () => deserializeMetaNode(context, componentTypes, node => targetNode = node, resolveRegistry),
                                                                                         "key property": () => context.expectString((sourceKeyProperty, range) => {
                                                                                             targetKeyProperty = sourceKeyProperty
                                                                                             targetKeyPropertyRange = range
@@ -71,8 +71,9 @@ function deserializeMetaNode(context: bc.ExpectContext, componentTypes: g.IReado
                                                                                                         "key property": g.createReference(
                                                                                                             assertedTargetKeyProperty,
                                                                                                             assertedTargetNode.properties,
+                                                                                                            resolveRegistry,
                                                                                                             () => {
-                                                                                                                throw new bc.RangeError(
+                                                                                                                context.raiseError(
                                                                                                                     `key property '${assertedTargetKeyProperty}' not found `,
                                                                                                                     atkpr,
                                                                                                                 )
@@ -124,7 +125,7 @@ function deserializeMetaNode(context: bc.ExpectContext, componentTypes: g.IReado
                                                                                     //
                                                                                 },
                                                                                 {
-                                                                                    "node": () => deserializeMetaNode(context, componentTypes, node => targetNode = node),
+                                                                                    "node": () => deserializeMetaNode(context, componentTypes, node => targetNode = node, resolveRegistry),
                                                                                 },
                                                                                 () => {
                                                                                     assertIsDeserialized(targetNode, asserted => {
@@ -190,8 +191,9 @@ function deserializeMetaNode(context: bc.ExpectContext, componentTypes: g.IReado
                                                             "type": g.createReference(
                                                                 assertedTargetComponentTypeName,
                                                                 componentTypes,
+                                                                resolveRegistry,
                                                                 () => {
-                                                                    throw new bc.RangeError(
+                                                                    context.raiseError(
                                                                         `component type '${assertedTargetComponentTypeName}' not found`,
                                                                         assertedRange
                                                                     )
@@ -219,7 +221,7 @@ function deserializeMetaNode(context: bc.ExpectContext, componentTypes: g.IReado
                                                             //
                                                         },
                                                         {
-                                                            "node": () => deserializeMetaNode(context, componentTypes, node => targetNode = node),
+                                                            "node": () => deserializeMetaNode(context, componentTypes, node => targetNode = node, resolveRegistry),
                                                         },
                                                         () => {
                                                             assertIsDeserialized(targetNode, asserted => {
@@ -312,6 +314,7 @@ export function createDeserializer(onError: (message: string, range: bc.Range) =
             //ignore
         }
     )
+    const resolveRegistry = new g.ResolveRegistry()
 
     return context.createTypeHandler(
         _startRange => {
@@ -321,7 +324,7 @@ export function createDeserializer(onError: (message: string, range: bc.Range) =
             "component types": () => context.expectDictionary(
                 key => {
                     let targetNode: t.Node | null = null
-                    const vh = deserializeMetaNode(context, componentTypes, node => targetNode = node)
+                    const vh = deserializeMetaNode(context, componentTypes, node => targetNode = node, resolveRegistry)
                     const castValueHandler = vh
                     return context.expectType(
                         _startRange => {
@@ -348,16 +351,21 @@ export function createDeserializer(onError: (message: string, range: bc.Range) =
         () => {
             assertIsDeserialized(rootName, assertedRootName => {
                 assertIsDeserialized(rootNameRange, assertedRange => {
-                    callback({
+                    const schema = {
                         "component types": componentTypes,
                         "root type": g.createReference(
                             assertedRootName,
                             componentTypes,
+                            resolveRegistry,
                             () => {
-                                throw new bc.RangeError(`component type '${assertedRootName}' not found`, assertedRange)
+                                context.raiseError(`component type '${assertedRootName}' not found`, assertedRange)
                             }
                         ),
-                    })
+                    }
+                    const success = resolveRegistry.resolve()
+                    if (success) {
+                        callback(schema)
+                    }
                 })
             })
         }

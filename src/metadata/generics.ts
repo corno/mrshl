@@ -4,10 +4,41 @@ export interface IReference<T> {
     getName(): string
 }
 
-export function createReference<T>(name: string, lookup: IReadonlyLookup<T>, onNotExists: () => T): IReference<T> {
+type Resolve = () => boolean
+
+export class ResolveRegistry {
+    public readonly references: Resolve[] = []
+    public register(reference: Resolve) {
+        this.references.push(reference)
+    }
+    public resolve() {
+        let foundErrors = false
+        this.references.forEach(r => {
+            const success = r()
+            if (!success) {
+                foundErrors = true
+            }
+        })
+        return !foundErrors
+    }
+}
+
+export function createReference<T>(name: string, lookup: IReadonlyLookup<T>, resolver: ResolveRegistry, onError: () => void): IReference<T> {
+    let t: T | null = null
+    resolver.register(() => {
+        t = lookup.get(name)
+        if (t === null) {
+            onError()
+            return false
+        }
+        return true
+    })
     return {
         get: () => {
-            return lookup.get(name, onNotExists)
+            if (t === null) {
+                throw new Error("UNEXPECTED: not resolved")
+            }
+            return t
         },
         getName: () => {
             return name
@@ -19,12 +50,12 @@ export type RawObject<T> = { [key: string]: T }
 
 export interface IReadonlyDictionary<T> {
     forEach(callback: (entry: T, key: string) => void): void
-    get(key: string, onNotExists?: () => T): T
+    get(key: string): T | null
     isEmpty(): boolean
 }
 
 export interface IReadonlyLookup<T> {
-    get(key: string, onNotExists?: () => T): T
+    get(key: string): T | null
 }
 
 export class Dictionary<T> implements IReadonlyDictionary<T>, IReadonlyLookup<T> {
@@ -55,13 +86,10 @@ export class Dictionary<T> implements IReadonlyDictionary<T>, IReadonlyLookup<T>
     public add(key: string, value: T) {
         this.imp[key] = value
     }
-    public get(key: string, onNotExists?: () => T) {
+    public get(key: string) {
         const entry = this.imp[key]
         if (entry === undefined) {
-            if (onNotExists) {
-                return onNotExists()
-            }
-            throw new Error(`no such entry: ${key}, options: ${Object.keys(this.imp).join(", ")}`)
+            return null
         }
         return entry
     }

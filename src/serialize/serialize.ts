@@ -55,7 +55,11 @@ function serializeNode(definition: m.Node, node: SerializableNode, builder: Valu
                         const $ = property.type[1]
                         const sg = node.getStateGroup(propertyKey)
                         return elementBuilder.taggedUnion(sg.getCurrentState().getStateKey(), stateDataBuilder => {
-                            return serializeNode($.states.get(sg.getCurrentState().getStateKey()).node, sg.getCurrentState().node, stateDataBuilder)
+                            const state = $.states.get(sg.getCurrentState().getStateKey())
+                            if (state === null) {
+                                throw new Error("UNEXPECTED: INVALID DATA")
+                            }
+                            return serializeNode(state.node, sg.getCurrentState().node, stateDataBuilder)
                         })
                     }
                     case "value": {
