@@ -3,7 +3,7 @@ import * as md from "../internalSchema"
 import { NodeBuilder } from "./api"
 import { createNodeDeserializer } from "./createNodeDeserializer"
 
-export function createDeserializer(metaData: md.Schema, onError: bc.IssueHandler, onWarning: bc.IssueHandler, nodeBuilder: NodeBuilder, isCompact: boolean): bc.DataSubscriber {
+export function createDeserializer(metaData: md.Schema, onError: bc.IssueHandler, onWarning: bc.IssueHandler, nodeBuilder: NodeBuilder, isCompact: boolean, onEnd: () => void): bc.DataSubscriber {
     const context = new bc.ExpectContext(onError, onWarning)
 
     return bc.createStackedDataSubscriber(
@@ -16,7 +16,7 @@ export function createDeserializer(metaData: md.Schema, onError: bc.IssueHandler
             }
         },
         () => {
-            //ignoreEndComments
+            onEnd()
         }
     )
 }

@@ -34,12 +34,6 @@ export function validateDocument(
             }
         )
 
-        const tok = new bc.Tokenizer(
-            parser,
-            (message, location) => {
-                onError(message, { start: location, end: location })
-            }
-        )
         let compact = false
 
         let foundSchema = false
@@ -80,17 +74,16 @@ export function validateDocument(
                 number: (_value, range) => {
                     onSchemaError("unexpected number as schema", range)
                 },
-                string: (schemaReference, strRange) => {
-                    tok.pause()
+                string: (schemaReference, strRange, _comments, pauser) => {
+                    pauser.pause()
                     schemaReferenceResolver(schemaReference, nodeBuilder)
                         .then(md => {
                             metaData = md
-                            tok.continue()
+                            pauser.continue()
                         })
                         .catch(errorMessage => {
                             onSchemaError(errorMessage, strRange)
-                            tok.continue()
-
+                            pauser.continue()
                         })
                 },
                 taggedUnion: (_value, range) => {
@@ -111,9 +104,6 @@ export function validateDocument(
         ))
         parser.onheaderdata.subscribe({
             onheaderstart: () => {
-                //
-            },
-            onschemastart: () => {
                 foundSchema = true
             },
             oncompact: () => {
@@ -124,9 +114,10 @@ export function validateDocument(
 
                     if (externalSchema === null) {
                         onError(`missing schema`, { start: { position: 0, line: 1, column: 1 }, end: { position: 0, line: 1, column: 1 } })
+                        reject("errors in schema")
                     } else {
                         //no internal schema, no problem
-                        parser.ondata.subscribe(createDeserializer(externalSchema, onError, onWarning, nodeBuilder, false))
+                        parser.ondata.subscribe(createDeserializer(externalSchema, onError, onWarning, nodeBuilder, false, resolve))
                     }
                 } else {
                     if (metaData === null) {
@@ -136,7 +127,7 @@ export function validateDocument(
                         reject("errors in schema")
                     } else {
                         if (externalSchema === null) {
-                            parser.ondata.subscribe(createDeserializer(metaData.schema, onError, onWarning, metaData.nodeBuilder, compact))
+                            parser.ondata.subscribe(createDeserializer(metaData.schema, onError, onWarning, metaData.nodeBuilder, compact, resolve))
                         } else {
                             if (compact) {
                                 throw new Error("IMPLEMENT ME, EXTERNAL AND INTERAL SCHEMA AND DATA IS COMPACT")
@@ -156,16 +147,19 @@ export function validateDocument(
                                     },
                                 }
                             )
-                            parser.ondata.subscribe(createDeserializer(externalSchema, onError, onWarning, nodeBuilder, compact))
+                            parser.ondata.subscribe(createDeserializer(externalSchema, onError, onWarning, nodeBuilder, compact, resolve))
                         }
                     }
                 }
             },
         })
-        tok.onreadyforwrite.subscribe(() => {
-            tok.end()
-            resolve()
-        })
-        tok.write(document)
+
+        bc.tokenizeString(
+            parser,
+            (message, range) => {
+                onError(message, range)
+            },
+            document,
+        )
     })
 }

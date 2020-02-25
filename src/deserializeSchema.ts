@@ -17,7 +17,7 @@ const schemaSchemas: {
 }
 
 const schemasDir = path.join(__dirname, "/metaDeserializers")
-fs.readdirSync(schemasDir, { encoding: "utf-8"}).forEach(dir => {
+fs.readdirSync(schemasDir, { encoding: "utf-8" }).forEach(dir => {
     schemaSchemas[dir] = require(path.join(schemasDir, dir)).deserialize
 })
 
@@ -38,8 +38,8 @@ export function deserializeSchema(nodeBuilder: NodeBuilder, onError: (message: s
     )
     const schemaTok = new bc.Tokenizer(
         schemaParser,
-        (message, location) => {
-            onSchemaError(message, { start: location, end: location })
+        (message, range) => {
+            onSchemaError(message, range)
         }
     )
     let schemaDefinitionFound = false
@@ -90,9 +90,6 @@ export function deserializeSchema(nodeBuilder: NodeBuilder, onError: (message: s
     ))
     schemaParser.onheaderdata.subscribe({
         onheaderstart: () => {
-            //
-        },
-        onschemastart: () => {
             schemaDefinitionFound = true
         },
         oncompact: () => {
@@ -126,7 +123,14 @@ export function deserializeSchemaFromString(serializedSchema: string, nodeBuilde
                 resolve(schema)
             }
         })
-        schemaTok.write(serializedSchema)
+        schemaTok.write(serializedSchema, {
+            pause: () => {
+                //
+            },
+            continue: () => {
+                //
+            },
+        })
         schemaTok.end()
     })
 }
@@ -148,6 +152,7 @@ export function createFromURLSchemaDeserializer(host: string, pathStart: string,
             const request = http.request(options, res => {
 
                 const schemaTok = deserializeSchema(nodeBuilder, onSchemaError, schema => {
+
                     if (schema !== null) {
                         resolve(schema)
                     } else {
@@ -155,9 +160,17 @@ export function createFromURLSchemaDeserializer(host: string, pathStart: string,
                     }
                 })
                 res.on('data', chunk => {
-                    schemaTok.write(chunk.toString())
+                    schemaTok.write(chunk.toString(), {
+                        pause: () => {
+                            //
+                        },
+                        continue: () => {
+                            //
+                        },
+                    })
                 });
                 res.on('end', () => {
+
                     schemaTok.end()
                 });
             });
@@ -169,7 +182,7 @@ export function createFromURLSchemaDeserializer(host: string, pathStart: string,
                 console.error(e.message)
                 reject(e.message)
             });
-            request.end();
+            request.end()
         })
     }
 }

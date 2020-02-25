@@ -115,7 +115,7 @@ describe("main", () => {
                             }
                         ).catch(e => {
                             if (e !== "errors in schema") {
-                                throw new Error("UNEXPECTED: SCHEMA EXCEPTION")
+                                throw new Error(`UNEXPECTED: SCHEMA EXCEPTION, ${e}`)
                             }
                             if (actualIssues.length === 0) {
                                 throw new Error("MISSING ISSUES")
@@ -138,7 +138,7 @@ describe("main", () => {
                             }
                         ).catch(e => {
                             if (e !== "errors in schema") {
-                                throw new Error("UNEXPECTED: SCHEMA EXCEPTION")
+                                throw new Error(`UNEXPECTED: SCHEMA EXCEPTION, ${e}`)
                             }
                             if (actualIssues.length === 0) {
                                 throw new Error("MISSING ISSUES")
