@@ -1,4 +1,4 @@
-import * as md from "../types"
+import * as md from "../internalSchema"
 import { NodeBuilder } from "./api"
 import * as bc from "bass-clarinet"
 

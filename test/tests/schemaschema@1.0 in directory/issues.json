@@ -1,0 +1,8 @@
+[
+    [ "expected '(' but found '{'", "warning", 1, 1, 1, 2],
+    [ "unexpected property: 'a'", "error", 2, 5, 2, 8],
+    [ "expected 'number' but found 'string' ", "error", 3, 10, 3, 13],
+    [ "expected ')' but found '}'", "warning", 5, 1, 5, 2],
+    [ "missing property: 'a dict'", "error", 1, 1, 1, 2],
+    [ "missing property: 'a1'", "error", 1, 1, 1, 2]
+]

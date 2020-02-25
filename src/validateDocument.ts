@@ -1,6 +1,7 @@
 import * as bc from "bass-clarinet"
-import { createDeserializer, Schema } from "../src"
-import { createDeserializer as createMetaDataDeserializer } from "../src/metaDeserializers/metadata@1.0/deserialize"
+import { createDeserializer } from "./deserialize"
+import { Schema } from "./internalSchema"
+import { createDeserializer as createMetaDataDeserializer } from "./internalSchema"
 import { NodeBuilder } from "./deserialize"
 import { SchemaAndNodeBuilder } from "./deserializeSchema"
 

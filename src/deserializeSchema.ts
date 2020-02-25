@@ -1,8 +1,9 @@
 import * as bc from "bass-clarinet"
+import * as fs from "fs"
 import * as http from "http"
+import * as path from "path"
 import * as url from "url"
-import { Schema } from "../src"
-import { metadata10 } from "../src/metaDeserializers/metadata@1.0"
+import { Schema } from "../src/internalSchema"
 import { NodeBuilder } from "./deserialize/api"
 
 export type SchemaAndNodeBuilder = {
@@ -13,8 +14,12 @@ export type SchemaAndNodeBuilder = {
 const schemaSchemas: {
     [key: string]: (nodeBuilder: NodeBuilder, onError: (message: string, range: bc.Range) => void, callback: (schema: SchemaAndNodeBuilder | null) => void) => bc.DataSubscriber
 } = {
-    "metadata@1.0": metadata10,
 }
+
+const schemasDir = path.join(__dirname, "/metaDeserializers")
+fs.readdirSync(schemasDir, { encoding: "utf-8"}).forEach(dir => {
+    schemaSchemas[dir] = require(path.join(schemasDir, dir)).deserialize
+})
 
 export function deserializeSchema(nodeBuilder: NodeBuilder, onError: (message: string, range: bc.Range) => void, callback: (schema: SchemaAndNodeBuilder | null) => void): bc.Tokenizer {
     let foundError = false

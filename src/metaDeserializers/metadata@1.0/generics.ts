@@ -52,6 +52,7 @@ export interface IReadonlyDictionary<T> {
     forEach(callback: (entry: T, key: string) => void): void
     get(key: string): T | null
     isEmpty(): boolean
+    map<RT>(callback: (entry: T, key: string) => RT): RawObject<RT>
 }
 
 export interface IReadonlyLookup<T> {

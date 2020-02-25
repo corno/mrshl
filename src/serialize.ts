@@ -2,7 +2,7 @@
     no-shadow: "off",
 */
 import { ValueSerializer } from "./serialize/api"
-import * as t from "./types"
+import * as t from "./internalSchema"
 
 function assertUnreachable<RT>(_x: never): RT {
     throw new Error("unreachable")

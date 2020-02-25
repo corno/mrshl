@@ -1,4 +1,4 @@
-import * as m from "../types"
+import * as m from "../internalSchema"
 import { RootSerializer, ValueSerializer } from "./api"
 import { SerializableNode, SerializableRoot } from "./serializable"
 

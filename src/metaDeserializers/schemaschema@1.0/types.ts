@@ -17,25 +17,12 @@ export type ComponentType = {
 }
 
 export type Dictionary = {
-    "has instances": DictionaryHasInstances //FIX this is not 'readonly'
-}
-
-export type DictionaryHasInstances =
-    | ["no", {}]
-    | ["yes", {
-        readonly "node": Node
-        readonly "key property": g.IReference<Property>
-    }]
+    readonly "node": Node
+    readonly "key property": g.IReference<Property>}
 
 export type List = {
-    "has instances": ListHasInstances //FIX this is not 'readonly'
+    readonly "node": Node
 }
-
-export type ListHasInstances =
-    | ["no", {}]
-    | ["yes", {
-        readonly "node": Node
-    }]
 
 export type Node = {
     readonly properties: g.Dictionary<Property>

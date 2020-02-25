@@ -1,0 +1,46 @@
+! "schemaschema@1.0" (
+    'component types': {
+        'root': (
+            'node': (
+                'properties': {
+                    'a dict': (
+                        'type': | 'collection' (
+                            'type': | 'dictionary' (
+                                'node': (
+                                    'properties': (
+                                        'name': (
+                                            'type': | 'value' (
+                                                'type': | 'text' (
+                                                )
+                                            )
+                                        )
+                                    )
+                                )
+                                'key property': 'name'
+                            )
+                        )
+                    )
+                    'a1': (
+                        'type': | 'value' (
+                            'type': | 'number' (
+                            )
+                        )
+                    )
+                    'b': (
+                        'type': | 'value' (
+                            'type': | 'number' (
+                            )
+                        )
+                    )
+                    'c': (
+                        'type': | 'value' (
+                            'type': | 'text' (
+                            )
+                        )
+                    )
+                }
+            )
+        )
+    }
+    'root type': 'root'
+)
