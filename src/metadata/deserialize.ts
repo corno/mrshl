@@ -6,9 +6,17 @@ import * as bc from "bass-clarinet"
 import * as g from "./generics"
 import * as t from "./types"
 
-function assertIsDeserialized<T>(v: T | null, callback: (t: T) => void) {
+function unguaranteedAssertIsDeserialized<T>(v: T | null, callback: (t: T) => void) {
     if (v !== null) {
         callback(v)
+    }
+}
+
+function guaranteedAssertIsDeserialized<T>(v: T | null, onNull: () => void, onNotNull: (t: T) => void) {
+    if (v !== null) {
+        onNotNull(v)
+    } else {
+        onNull()
     }
 }
 
@@ -63,9 +71,9 @@ function deserializeMetaNode(context: bc.ExpectContext, componentTypes: g.IReado
                                                                                         }),
                                                                                     },
                                                                                     () => {
-                                                                                        assertIsDeserialized(targetNode, assertedTargetNode => {
-                                                                                            assertIsDeserialized(targetKeyProperty, assertedTargetKeyProperty => {
-                                                                                                assertIsDeserialized(targetKeyPropertyRange, atkpr => {
+                                                                                        unguaranteedAssertIsDeserialized(targetNode, assertedTargetNode => {
+                                                                                            unguaranteedAssertIsDeserialized(targetKeyProperty, assertedTargetKeyProperty => {
+                                                                                                unguaranteedAssertIsDeserialized(targetKeyPropertyRange, atkpr => {
                                                                                                     targetHasInstances = ["yes", {
                                                                                                         "node": assertedTargetNode,
                                                                                                         "key property": g.createReference(
@@ -102,7 +110,7 @@ function deserializeMetaNode(context: bc.ExpectContext, componentTypes: g.IReado
                                                                     ),
                                                                 },
                                                                 () => {
-                                                                    assertIsDeserialized(targetHasInstances, asserted => {
+                                                                    unguaranteedAssertIsDeserialized(targetHasInstances, asserted => {
                                                                         targetCollectionType = ["dictionary", {
                                                                             "has instances": asserted,
                                                                         }]
@@ -128,7 +136,7 @@ function deserializeMetaNode(context: bc.ExpectContext, componentTypes: g.IReado
                                                                                     "node": () => deserializeMetaNode(context, componentTypes, node => targetNode = node, resolveRegistry),
                                                                                 },
                                                                                 () => {
-                                                                                    assertIsDeserialized(targetNode, asserted => {
+                                                                                    unguaranteedAssertIsDeserialized(targetNode, asserted => {
                                                                                         targetHasInstances = ["yes", {
                                                                                             node: asserted,
                                                                                         }]
@@ -150,7 +158,7 @@ function deserializeMetaNode(context: bc.ExpectContext, componentTypes: g.IReado
                                                                     }),
                                                                 },
                                                                 () => {
-                                                                    assertIsDeserialized(targetHasInstances, asserted => {
+                                                                    unguaranteedAssertIsDeserialized(targetHasInstances, asserted => {
                                                                         targetCollectionType = ["list", {
                                                                             "has instances": asserted,
                                                                         }]
@@ -162,7 +170,7 @@ function deserializeMetaNode(context: bc.ExpectContext, componentTypes: g.IReado
                                                 ),
                                             },
                                             () => {
-                                                assertIsDeserialized(targetCollectionType, asserted => {
+                                                unguaranteedAssertIsDeserialized(targetCollectionType, asserted => {
                                                     targetPropertyType = ["collection", {
                                                         "type": asserted,
                                                     }]
@@ -185,8 +193,8 @@ function deserializeMetaNode(context: bc.ExpectContext, componentTypes: g.IReado
                                                 }),
                                             },
                                             () => {
-                                                assertIsDeserialized(targetComponentTypeName, assertedTargetComponentTypeName => {
-                                                    assertIsDeserialized(targetComponentTypeNameRange, assertedRange => {
+                                                unguaranteedAssertIsDeserialized(targetComponentTypeName, assertedTargetComponentTypeName => {
+                                                    unguaranteedAssertIsDeserialized(targetComponentTypeNameRange, assertedRange => {
                                                         targetPropertyType = ["component", {
                                                             "type": g.createReference(
                                                                 assertedTargetComponentTypeName,
@@ -224,7 +232,7 @@ function deserializeMetaNode(context: bc.ExpectContext, componentTypes: g.IReado
                                                             "node": () => deserializeMetaNode(context, componentTypes, node => targetNode = node, resolveRegistry),
                                                         },
                                                         () => {
-                                                            assertIsDeserialized(targetNode, asserted => {
+                                                            unguaranteedAssertIsDeserialized(targetNode, asserted => {
                                                                 states.add(stateKey, {
                                                                     node: asserted,
                                                                 })
@@ -273,7 +281,7 @@ function deserializeMetaNode(context: bc.ExpectContext, componentTypes: g.IReado
                                                 }),
                                             },
                                             () => {
-                                                assertIsDeserialized(targetValueType, asserted => {
+                                                unguaranteedAssertIsDeserialized(targetValueType, asserted => {
                                                     targetPropertyType = ["value", {
                                                         "type": asserted,
                                                     }]
@@ -285,7 +293,7 @@ function deserializeMetaNode(context: bc.ExpectContext, componentTypes: g.IReado
                             ),
                         },
                         () => {
-                            assertIsDeserialized(targetPropertyType, asserted => {
+                            unguaranteedAssertIsDeserialized(targetPropertyType, asserted => {
                                 properties.add(key, {
                                     type: asserted,
                                 })
@@ -301,7 +309,7 @@ function deserializeMetaNode(context: bc.ExpectContext, componentTypes: g.IReado
     )
 }
 
-export function createDeserializer(onError: (message: string, range: bc.Range) => void, callback: (metaData: t.Schema) => void): bc.OnObject {
+export function createDeserializer(onError: (message: string, range: bc.Range) => void, callback: (metaData: null | t.Schema) => void): bc.OnObject {
     const componentTypes = new g.Dictionary<t.ComponentType>({})
     let rootName: string | null = null
     let rootNameRange: bc.Range | null = null
@@ -334,7 +342,7 @@ export function createDeserializer(onError: (message: string, range: bc.Range) =
                             "node": () => castValueHandler,
                         },
                         () => {
-                            assertIsDeserialized(targetNode, asserted => {
+                            unguaranteedAssertIsDeserialized(targetNode, asserted => {
                                 componentTypes.add(key, {
                                     node: asserted,
                                 })
@@ -349,25 +357,37 @@ export function createDeserializer(onError: (message: string, range: bc.Range) =
             }),
         },
         () => {
-            assertIsDeserialized(rootName, assertedRootName => {
-                assertIsDeserialized(rootNameRange, assertedRange => {
-                    const schema = {
-                        "component types": componentTypes,
-                        "root type": g.createReference(
-                            assertedRootName,
-                            componentTypes,
-                            resolveRegistry,
-                            () => {
-                                context.raiseError(`component type '${assertedRootName}' not found`, assertedRange)
+            guaranteedAssertIsDeserialized(
+                rootName,
+                () => {
+                    callback(null)
+                },
+                assertedRootName => {
+                    guaranteedAssertIsDeserialized(
+                        rootNameRange,
+                        () => {
+                            callback(null)
+                        },
+                        assertedRange => {
+                            const schema = {
+                                "component types": componentTypes,
+                                "root type": g.createReference(
+                                    assertedRootName,
+                                    componentTypes,
+                                    resolveRegistry,
+                                    () => {
+                                        context.raiseError(`component type '${assertedRootName}' not found`, assertedRange)
+                                    }
+                                ),
                             }
-                        ),
-                    }
-                    const success = resolveRegistry.resolve()
-                    if (success) {
-                        callback(schema)
-                    }
+                            const success = resolveRegistry.resolve()
+                            if (success) {
+                                callback(schema)
+                            } else {
+                                callback(null)
+                            }
+                        })
                 })
-            })
         }
     )
 }

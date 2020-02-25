@@ -81,7 +81,7 @@ describe("main", () => {
         // }
 
         /***** THIS REQUIRES AN INTERNET CONNECTION TO www.astn.io */
-        const schemaReferenceResolver = astn.resolveSchemaFromSite
+        const schemaReferenceResolver = astn.createFromURLSchemaDeserializer('www.astn.io', '/dev/schemas/', 7000)
 
         async function myFunc(): Promise<void> {
 
@@ -90,21 +90,32 @@ describe("main", () => {
             const serializedSchemaPromise = fs.promises.readFile(schemaPath, { encoding: "utf-8" })
             return serializedSchemaPromise
                 .then(serializedSchema => {
-                    astn.deserializeSchema(serializedSchema)
-                        .then(schema => {
-                            return astn.validateDocument(
-                                data,
-                                new LoggingNodeBuilder(),
-                                schema,
-                                schemaReferenceResolver,
-                                (errorMessage, range) => {
-                                    actualIssues.push([errorMessage, "error", range.start.line, range.start.column, range.end.line, range.end.column])
-                                },
-                                (warningMessage, range) => {
-                                    actualIssues.push([warningMessage, "warning", range.start.line, range.start.column, range.end.line, range.end.column])
-                                }
-                            )
+                    astn.deserializeSchemaFromString(
+                        serializedSchema,
+                        (errorMessage, range) => {
+                            actualIssues.push([errorMessage, "error", range.start.line, range.start.column, range.end.line, range.end.column])
+                        },
+                    ).then(schema => {
+                        return astn.validateDocument(
+                            data,
+                            new LoggingNodeBuilder(),
+                            schema,
+                            schemaReferenceResolver,
+                            (errorMessage, range) => {
+                                actualIssues.push([errorMessage, "error", range.start.line, range.start.column, range.end.line, range.end.column])
+                            },
+                            (warningMessage, range) => {
+                                actualIssues.push([warningMessage, "warning", range.start.line, range.start.column, range.end.line, range.end.column])
+                            }
+                        ).catch(e => {
+                            if (e !== "errors in schema") {
+                                throw new Error("UNEXPECTED: SCHEMA EXCEPTION")
+                            }
+                            if (actualIssues.length === 0) {
+                                throw new Error("MISSING ISSUES")
+                            }
                         })
+                    })
                 })
                 .catch(err => {
 
@@ -120,7 +131,14 @@ describe("main", () => {
                             (warningMessage, range) => {
                                 actualIssues.push([warningMessage, "warning", range.start.line, range.start.column, range.end.line, range.end.column])
                             }
-                        )
+                        ).catch(e => {
+                            if (e !== "errors in schema") {
+                                throw new Error("UNEXPECTED: SCHEMA EXCEPTION")
+                            }
+                            if (actualIssues.length === 0) {
+                                throw new Error("MISSING ISSUES")
+                            }
+                        })
                     } else {
                         throw new Error("UNKNOWN FS ERROR")
                     }
