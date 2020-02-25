@@ -85,7 +85,7 @@ describe("main", () => {
         //     )
         // }
 
-        /***** THIS REQUIRES AN INTERNET CONNECTION TO www.astn.io */
+        /***** THIS REQUIRES AN INTERNET CONNECTION */
         const schemaReferenceResolver = astn.createFromURLSchemaDeserializer('www.astn.io', '/dev/schemas/', 7000)
 
         async function myFunc(): Promise<void> {
@@ -97,14 +97,15 @@ describe("main", () => {
                 .then(serializedSchema => {
                     astn.deserializeSchemaFromString(
                         serializedSchema,
+                        new LoggingNodeBuilder(),
                         (errorMessage, range) => {
                             actualIssues.push([errorMessage, "error", range.start.line, range.start.column, range.end.line, range.end.column])
                         },
-                    ).then(schema => {
+                    ).then(schemaAndNodeBuilder => {
                         return astn.validateDocument(
                             data,
-                            new LoggingNodeBuilder(),
-                            schema,
+                            schemaAndNodeBuilder.nodeBuilder,
+                            schemaAndNodeBuilder.schema,
                             schemaReferenceResolver,
                             (errorMessage, range) => {
                                 actualIssues.push([errorMessage, "error", range.start.line, range.start.column, range.end.line, range.end.column])
@@ -123,7 +124,6 @@ describe("main", () => {
                     })
                 })
                 .catch(err => {
-
                     if (err.code === "ENOENT") {
                         return astn.validateDocument(
                             data,

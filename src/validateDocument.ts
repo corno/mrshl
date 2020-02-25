@@ -2,10 +2,12 @@ import * as bc from "bass-clarinet"
 import { createDeserializer, Schema } from "../src"
 import { createDeserializer as createMetaDataDeserializer } from "../src/metaDeserializers/metadata@1.0/deserialize"
 import { NodeBuilder } from "./deserialize"
+import { SchemaAndNodeBuilder } from "./deserializeSchema"
 
 export type ResolveSchemaReference = (
     reference: string,
-) => Promise<Schema>
+    nodeBuilder: NodeBuilder,
+) => Promise<SchemaAndNodeBuilder>
 
 /**
  * this function returns a Promise<void> and the promise is resolved when the validation has been completed
@@ -41,7 +43,7 @@ export function validateDocument(
 
         let foundSchema = false
         let foundSchemaErrors = false
-        let metaData: Schema | null = null
+        let metaData: SchemaAndNodeBuilder | null = null
 
         function onSchemaError(message: string, range: bc.Range) {
             onError(message, range)
@@ -62,7 +64,13 @@ export function validateDocument(
                         onSchemaError(errorMessage, range)
                     },
                     md => {
-                        metaData = md
+                        if (md !== null) {
+                            metaData = {
+                                schema: md,
+                                nodeBuilder: nodeBuilder,
+                            }
+
+                        }
                     }
                 ),
                 boolean: (_value, range) => {
@@ -73,7 +81,7 @@ export function validateDocument(
                 },
                 string: (schemaReference, strRange) => {
                     tok.pause()
-                    schemaReferenceResolver(schemaReference)
+                    schemaReferenceResolver(schemaReference, nodeBuilder)
                         .then(md => {
                             metaData = md
                             tok.continue()
@@ -127,7 +135,7 @@ export function validateDocument(
                         reject("errors in schema")
                     } else {
                         if (externalSchema === null) {
-                            parser.ondata.subscribe(createDeserializer(metaData, onError, onWarning, nodeBuilder, compact))
+                            parser.ondata.subscribe(createDeserializer(metaData.schema, onError, onWarning, metaData.nodeBuilder, compact))
                         } else {
                             if (compact) {
                                 throw new Error("IMPLEMENT ME, EXTERNAL AND INTERAL SCHEMA AND DATA IS COMPACT")

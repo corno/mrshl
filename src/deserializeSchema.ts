@@ -3,12 +3,20 @@ import * as http from "http"
 import * as url from "url"
 import { Schema } from "../src"
 import { metadata10 } from "../src/metaDeserializers/metadata@1.0"
+import { NodeBuilder } from "./deserialize/api"
 
-const schemaSchemas: { [key: string]: (onError: (message: string, range: bc.Range) => void, callback: (schema: Schema | null) => void) => bc.DataSubscriber } = {
+export type SchemaAndNodeBuilder = {
+    schema: Schema
+    nodeBuilder: NodeBuilder
+}
+
+const schemaSchemas: {
+    [key: string]: (nodeBuilder: NodeBuilder, onError: (message: string, range: bc.Range) => void, callback: (schema: SchemaAndNodeBuilder | null) => void) => bc.DataSubscriber
+} = {
     "metadata@1.0": metadata10,
 }
 
-export function deserializeSchema(onError: (message: string, range: bc.Range) => void, callback: (schema: Schema | null) => void): bc.Tokenizer {
+export function deserializeSchema(nodeBuilder: NodeBuilder, onError: (message: string, range: bc.Range) => void, callback: (schema: SchemaAndNodeBuilder | null) => void): bc.Tokenizer {
     let foundError = false
     function onSchemaError(message: string, range: bc.Range) {
         onError(message, range)
@@ -56,7 +64,7 @@ export function deserializeSchema(onError: (message: string, range: bc.Range) =>
                 if (schemaSchema === undefined) {
                     onSchemaError(`unknown schema schema ${schemaSchemaReference}`, strRange)
                 } else {
-                    schemaProcessor = schemaSchema(onError, callback)
+                    schemaProcessor = schemaSchema(nodeBuilder, onError, callback)
                 }
             },
             taggedUnion: (_value, range) => {
@@ -104,9 +112,9 @@ export function deserializeSchema(onError: (message: string, range: bc.Range) =>
     return schemaTok
 }
 
-export function deserializeSchemaFromString(serializedSchema: string, onError: (message: string, range: bc.Range) => void): Promise<Schema> {
+export function deserializeSchemaFromString(serializedSchema: string, nodeBuilder: NodeBuilder, onError: (message: string, range: bc.Range) => void): Promise<SchemaAndNodeBuilder> {
     return new Promise((resolve, reject) => {
-        const schemaTok = deserializeSchema(onError, schema => {
+        const schemaTok = deserializeSchema(nodeBuilder, onError, schema => {
             if (schema === null) {
                 reject("missing schema")
             } else {
@@ -120,7 +128,7 @@ export function deserializeSchemaFromString(serializedSchema: string, onError: (
 
 
 export function createFromURLSchemaDeserializer(host: string, pathStart: string, timeout: number) {
-    return (reference: string): Promise<Schema> => {
+    return (reference: string, nodeBuilder: NodeBuilder): Promise<SchemaAndNodeBuilder> => {
         return new Promise((resolve, reject) => {
 
             const errors: string[] = []
@@ -134,7 +142,7 @@ export function createFromURLSchemaDeserializer(host: string, pathStart: string,
             }
             const request = http.request(options, res => {
 
-                const schemaTok = deserializeSchema(onSchemaError, schema => {
+                const schemaTok = deserializeSchema(nodeBuilder, onSchemaError, schema => {
                     if (schema !== null) {
                         resolve(schema)
                     } else {

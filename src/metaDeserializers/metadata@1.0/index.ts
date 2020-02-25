@@ -1,8 +1,10 @@
 import * as bc from "bass-clarinet"
 import { Schema } from "../../types"
 import { createDeserializer } from "./deserialize"
+import { SchemaAndNodeBuilder } from "../../deserializeSchema"
+import { NodeBuilder } from "../../deserialize"
 
-export function metadata10(onError: (message: string, range: bc.Range) => void, callback: (schema: Schema | null) => void) {
+export function metadata10(nodeBuilder: NodeBuilder, onError: (message: string, range: bc.Range) => void, callback: (schema: SchemaAndNodeBuilder | null) => void) {
     let foundError = false
     function onSchemaError(message: string, range: bc.Range) {
         onError(message, range)
@@ -56,7 +58,10 @@ export function metadata10(onError: (message: string, range: bc.Range) => void, 
                 }
                 callback(null)
             } else {
-                callback(metadata)
+                callback({
+                    schema: metadata,
+                    nodeBuilder: nodeBuilder,
+                })
             }
         }
     )
