@@ -1,5 +1,6 @@
 import * as bc from "bass-clarinet"
-import { createDeserializer, createMetaDataDeserializer, Schema } from "../src"
+import { createDeserializer, Schema } from "../src"
+import { createDeserializer as createMetaDataDeserializer } from "../src/metaDeserializers/metadata@1.0/deserialize"
 import { NodeBuilder } from "./deserialize"
 
 export type ResolveSchemaReference = (
@@ -77,7 +78,11 @@ export function validateDocument(
                             metaData = md
                             tok.continue()
                         })
-                        .catch(errorMessage => onSchemaError(errorMessage, strRange))
+                        .catch(errorMessage => {
+                            onSchemaError(errorMessage, strRange)
+                            tok.continue()
+
+                        })
                 },
                 taggedUnion: (_value, range) => {
                     onSchemaError("unexpected typed union as schema", range)

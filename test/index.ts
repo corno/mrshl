@@ -77,7 +77,12 @@ describe("main", () => {
 
         // const schemaReferenceResolver = (reference: string) => {
         //     const schemasDir = "./test/schemas"
-        //     return astn.deserializeSchema(fs.readFileSync(path.join(schemasDir, reference + ".astn-schema"), { encoding: "utf-8" }))
+        //     return astn.deserializeSchemaFromString(
+        //         fs.readFileSync(path.join(schemasDir, reference + ".astn-schema"), { encoding: "utf-8" }),
+        //         (errorMessage, range) => {
+        //             actualIssues.push([errorMessage, "error", range.start.line, range.start.column, range.end.line, range.end.column])
+        //         },
+        //     )
         // }
 
         /***** THIS REQUIRES AN INTERNET CONNECTION TO www.astn.io */

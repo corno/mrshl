@@ -5,6 +5,4 @@ export * from "./serializers/CustomFormatSerializer"
 export * from "./deserializeSchema"
 export * from "./validateDocument"
 
-export { serialize as serializeMetaData } from "./metadata"
-export { createDeserializer as createMetaDataDeserializer } from "./metadata"
-export * from "./metadata/types"
+export * from "./types"

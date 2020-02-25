@@ -1,4 +1,4 @@
-import * as m from "../metadata"
+import * as m from "../types"
 import { RootSerializer, ValueSerializer } from "./api"
 import { SerializableNode, SerializableRoot } from "./serializable"
 

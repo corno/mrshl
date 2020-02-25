@@ -1,7 +1,7 @@
 /* eslint
     no-shadow: "off",
 */
-import { ValueSerializer } from "../serialize/api"
+import { ValueSerializer } from "./serialize/api"
 import * as t from "./types"
 
 function assertUnreachable<RT>(_x: never): RT {

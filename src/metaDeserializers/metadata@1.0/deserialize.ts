@@ -3,8 +3,8 @@
 
 */
 import * as bc from "bass-clarinet"
-import * as g from "./generics"
-import * as t from "./types"
+import * as g from "../../generics"
+import * as t from "../../types"
 
 function unguaranteedAssertIsDeserialized<T>(v: T | null, callback: (t: T) => void) {
     if (v !== null) {

@@ -1,5 +1,5 @@
 import * as bc from "bass-clarinet"
-import * as md from "../metadata"
+import * as md from "../types"
 import { NodeBuilder } from "./api"
 import { createNodeDeserializer } from "./createNodeDeserializer"
 
