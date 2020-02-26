@@ -17,16 +17,14 @@ function serializeNode(definition: m.Node, node: SerializableNode, builder: Valu
                     }
                     case "collection": {
                         const $ = property.type[1]
-                        const collection = node.getCollection(propertyKey)
                         switch ($.type[0]) {
                             case "dictionary": {
                                 const $$ = $.type[1]
                                 return elementBuilder.dictionary(dict => {
                                     if ($$["has instances"][0] === "yes") {
                                         const $$$ = $$["has instances"][1]
-                                        const keyPropDefinition = $$$["key property"]
-                                        collection.forEachEntry(entry => {
-                                            const keyValue = entry.getNode().getString(keyPropDefinition.getName()).getValue()
+                                        const collection = node.getDictionary(propertyKey)
+                                        collection.forEachEntry((entry, keyValue) => {
                                             dict.add(keyValue, false, entryBuilder => {
                                                 return serializeNode($$$.node, entry.getNode(), entryBuilder)
                                             })
@@ -39,6 +37,7 @@ function serializeNode(definition: m.Node, node: SerializableNode, builder: Valu
                                 return elementBuilder.list(list => {
                                     if ($$["has instances"][0] === "yes") {
                                         const $$$ = $$["has instances"][1]
+                                        const collection = node.getList(propertyKey)
                                         collection.forEachEntry(entry => {
                                             list.add(entryBuilder => {
                                                 return serializeNode($$$.node, entry.getNode(), entryBuilder)

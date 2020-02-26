@@ -111,7 +111,6 @@ export function validateDocument(
             },
             onheaderend: () => {
                 if (!foundSchema) {
-
                     if (externalSchema === null) {
                         onError(`missing schema`, { start: { position: 0, line: 1, column: 1 }, end: { position: 0, line: 1, column: 1 } })
                         reject("errors in schema")

@@ -1,5 +1,5 @@
 import * as bc from "bass-clarinet"
-import { Schema, Node } from "./types"
+import { Schema, Node, Property } from "./types"
 import * as internal from "../../internalSchema"
 import { createDeserializer } from "./deserialize"
 import { SchemaAndNodeBuilder } from "../../deserializeSchema"
@@ -13,7 +13,6 @@ export function deserialize(nodeBuilder: NodeBuilder, onError: (message: string,
         foundError = true
     }
     let metadata: null | Schema = null
-
 
     return bc.createStackedDataSubscriber(
         {
@@ -73,90 +72,91 @@ function assertUnreachable<RT>(_x: never): RT {
     throw new Error("Unreachable")
 }
 
-function convertNode(node: Node, componentTypes: g.IReadonlyLookup<internal.ComponentType>, resolveRegistry: g.ResolveRegistry): internal.Node {
-    return {
-        properties: new g.Dictionary(node.properties.map(prop => {
-            return {
-                type: ((): internal.PropertyType => {
-                    switch (prop.type[0]) {
-                        case "collection": {
-                            const $ = prop.type[1]
-                            return ["collection", {
+function convertNode(node: Node, componentTypes: g.IReadonlyLookup<internal.ComponentType>, keyProperty: null | Property, resolveRegistry: g.ResolveRegistry): internal.Node {
+    const properties = new g.Dictionary<internal.Property>({})
+    node.properties.map((prop, key) => {
+        if (prop === keyProperty) {
+            return
+        }
+        properties.add(key, {
+            type: ((): internal.PropertyType => {
+                switch (prop.type[0]) {
+                    case "collection": {
+                        const $ = prop.type[1]
 
-                                type: ((): internal.CollectionType => {
-                                    switch ($.type[0]) {
-                                        case "dictionary": {
-                                            const $$ = $.type[1]
-                                            const targetNode = convertNode($$.node, componentTypes, resolveRegistry)
-                                            return [ "dictionary", {
-                                                "has instances": [ "yes", {
-                                                    "node": targetNode,
-                                                    "key property": g.createReference($$["key property"].getName(), targetNode.properties, resolveRegistry, () => {
-                                                        throw new Error("UNEXPECTED")
-                                                    }),
-                                                }],
-                                            }]
-                                        }
-                                        case "list": {
-                                            const $$ = $.type[1]
+                        return ["collection", {
 
-                                            const targetNode = convertNode($$.node, componentTypes, resolveRegistry)
-                                            return [ "list", {
-                                                "has instances": [ "yes", {
-                                                    node: targetNode,
-                                                }],
-                                            }]
-                                        }
-                                        default:
-                                            return assertUnreachable($.type[0])
+                            type: ((): internal.CollectionType => {
+                                switch ($.type[0]) {
+                                    case "dictionary": {
+                                        const $$ = $.type[1]
+                                        const targetNode = convertNode($.node, componentTypes, $$["key property"].get(), resolveRegistry)
+                                        return [ "dictionary", {
+                                            "has instances": [ "yes", {
+                                                node: targetNode,
+                                            }],
+                                        }]
                                     }
-                                })(),
-                            }]
-                        }
-                        case "component": {
-                            const $ = prop.type[1]
-                            return ["component", {
-                                type: g.createReference($.type.getName(), componentTypes, resolveRegistry, () => {
-                                    throw new Error("UNEXPECTED")
-                                }),
-                            }]
-                        }
-                        case "state group": {
-                            const $ = prop.type[1]
-                            return ["state group", {
-                                states: new g.Dictionary($.states.map(state => {
-                                    return {
-                                        node: convertNode(state.node, componentTypes, resolveRegistry),
+                                    case "list": {
+                                        const targetNode = convertNode($.node, componentTypes, null, resolveRegistry)
+                                        return [ "list", {
+                                            "has instances": [ "yes", {
+                                                node: targetNode,
+                                            }],
+                                        }]
                                     }
-                                })),
-                            }]
-                        }
-                        case "value": {
-                            const $ = prop.type[1]
-                            return ["value", {
-                                type: ((): internal.ValueType => {
-                                    switch ($.type[0]) {
-                                        case "boolean": {
-                                            return [ "boolean", {}]
-                                        }
-                                        case "number": {
-                                            return [ "number", {}]
-                                        }
-                                        case "string": {
-                                            return [ "string", {}]
-                                        }
-                                        default:
-                                            return assertUnreachable($.type[0])
-                                    }
-                                })(),
-                            }]
-                        }
-                        default:
-                            return assertUnreachable(prop.type[0])
+                                    default:
+                                        return assertUnreachable($.type[0])
+                                }
+                            })(),
+                        }]
                     }
-                })(),
-            }
-        })),
+                    case "component": {
+                        const $ = prop.type[1]
+                        return ["component", {
+                            type: g.createReference($.type.getName(), componentTypes, resolveRegistry, () => {
+                                throw new Error("UNEXPECTED")
+                            }),
+                        }]
+                    }
+                    case "state group": {
+                        const $ = prop.type[1]
+                        return ["state group", {
+                            states: new g.Dictionary($.states.map(state => {
+                                return {
+                                    node: convertNode(state.node, componentTypes, null, resolveRegistry),
+                                }
+                            })),
+                        }]
+                    }
+                    case "value": {
+                        const $ = prop.type[1]
+                        return ["value", {
+                            type: ((): internal.ValueType => {
+                                switch ($.type[0]) {
+                                    case "boolean": {
+                                        return [ "boolean", {}]
+                                    }
+                                    case "number": {
+                                        return [ "number", {}]
+                                    }
+                                    case "string": {
+                                        return [ "string", {}]
+                                    }
+                                    default:
+                                        return assertUnreachable($.type[0])
+                                }
+                            })(),
+                        }]
+                    }
+                    default:
+                        return assertUnreachable(prop.type[0])
+                }
+            })(),
+        })
+    })
+    return {
+        properties: properties,
     }
 }
 
@@ -165,7 +165,7 @@ function convert(schema: Schema): internal.Schema {
     const componentTypes: g.Dictionary<internal.ComponentType> = new g.Dictionary({})
     schema["component types"].forEach((ct, ctName) => {
         componentTypes.add(ctName, {
-            node: convertNode(ct.node, componentTypes, resolveRegistry),
+            node: convertNode(ct.node, componentTypes, null, resolveRegistry),
         })
     })
     const rootType = g.createReference(schema["root type"].getName(), componentTypes, resolveRegistry, () => {

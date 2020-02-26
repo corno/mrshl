@@ -24,7 +24,6 @@ export type DictionaryHasInstances =
     | ["no", {}]
     | ["yes", {
         readonly "node": Node
-        readonly "key property": g.IReference<Property>
     }]
 
 export type List = {

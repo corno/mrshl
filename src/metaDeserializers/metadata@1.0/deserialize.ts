@@ -57,40 +57,18 @@ function deserializeMetaNode(context: bc.ExpectContext, componentTypes: g.IReado
                                                                         {
                                                                             "yes": () => {
                                                                                 let targetNode: t.Node | null = null
-                                                                                let targetKeyProperty: string | null = null
-                                                                                let targetKeyPropertyRange: bc.Range | null = null
                                                                                 return context.expectType(
                                                                                     _startRange => {
                                                                                         //
                                                                                     },
                                                                                     {
                                                                                         "node": () => deserializeMetaNode(context, componentTypes, node => targetNode = node, resolveRegistry),
-                                                                                        "key property": () => context.expectString((sourceKeyProperty, range) => {
-                                                                                            targetKeyProperty = sourceKeyProperty
-                                                                                            targetKeyPropertyRange = range
-                                                                                        }),
                                                                                     },
                                                                                     () => {
                                                                                         unguaranteedAssertIsDeserialized(targetNode, assertedTargetNode => {
-                                                                                            unguaranteedAssertIsDeserialized(targetKeyProperty, assertedTargetKeyProperty => {
-                                                                                                unguaranteedAssertIsDeserialized(targetKeyPropertyRange, atkpr => {
-                                                                                                    targetHasInstances = ["yes", {
-                                                                                                        "node": assertedTargetNode,
-                                                                                                        "key property": g.createReference(
-                                                                                                            assertedTargetKeyProperty,
-                                                                                                            assertedTargetNode.properties,
-                                                                                                            resolveRegistry,
-                                                                                                            () => {
-                                                                                                                context.raiseError(
-                                                                                                                    `key property '${assertedTargetKeyProperty}' not found `,
-                                                                                                                    atkpr,
-                                                                                                                )
-                                                                                                            }
-                                                                                                        ),
-                                                                                                    }]
-
-                                                                                                })
-                                                                                            })
+                                                                                            targetHasInstances = ["yes", {
+                                                                                                "node": assertedTargetNode,
+                                                                                            }]
                                                                                         })
                                                                                     }
                                                                                 )

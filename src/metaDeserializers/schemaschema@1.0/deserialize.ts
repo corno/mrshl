@@ -39,15 +39,18 @@ function deserializeMetaNode(context: bc.ExpectContext, componentTypes: g.IReado
                                 {
                                     "collection": () => {
                                         let targetCollectionType: t.CollectionType | null = null
+                                        let targetNode: t.Node | null = null
+
                                         return context.expectType(
                                             _startRange => {
                                                 //
                                             },
                                             {
+                                                "node": () => deserializeMetaNode(context, componentTypes, node => targetNode = node, resolveRegistry),
+
                                                 "type": () => context.expectTaggedUnion(
                                                     {
                                                         "dictionary": () => {
-                                                            let targetNode: t.Node | null = null
                                                             let targetKeyProperty: string | null = null
                                                             let targetKeyPropertyRange: bc.Range | null = null
                                                             return context.expectType(
@@ -55,7 +58,6 @@ function deserializeMetaNode(context: bc.ExpectContext, componentTypes: g.IReado
                                                                     //
                                                                 },
                                                                 {
-                                                                    "node": () => deserializeMetaNode(context, componentTypes, node => targetNode = node, resolveRegistry),
                                                                     "key property": () => context.expectString((sourceKeyProperty, range) => {
                                                                         targetKeyProperty = sourceKeyProperty
                                                                         targetKeyPropertyRange = range
@@ -63,10 +65,10 @@ function deserializeMetaNode(context: bc.ExpectContext, componentTypes: g.IReado
                                                                 },
                                                                 () => {
                                                                     unguaranteedAssertIsDeserialized(targetNode, assertedTargetNode => {
+
                                                                         unguaranteedAssertIsDeserialized(targetKeyProperty, assertedTargetKeyProperty => {
                                                                             unguaranteedAssertIsDeserialized(targetKeyPropertyRange, atkpr => {
                                                                                 targetCollectionType = ["dictionary", {
-                                                                                    "node": assertedTargetNode,
                                                                                     "key property": g.createReference(
                                                                                         assertedTargetKeyProperty,
                                                                                         assertedTargetNode.properties,
@@ -87,20 +89,16 @@ function deserializeMetaNode(context: bc.ExpectContext, componentTypes: g.IReado
                                                             )
                                                         },
                                                         "list": () => {
-                                                            let targetNode: t.Node | null = null
                                                             return context.expectType(
                                                                 _startRange => {
                                                                     //
                                                                 },
                                                                 {
-                                                                    "node": () => deserializeMetaNode(context, componentTypes, node => targetNode = node, resolveRegistry),
                                                                 },
                                                                 () => {
-                                                                    unguaranteedAssertIsDeserialized(targetNode, asserted => {
-                                                                        targetCollectionType = ["list", {
-                                                                            node: asserted,
-                                                                        }]
-                                                                    })
+
+                                                                    targetCollectionType = ["list", {
+                                                                    }]
                                                                 },
                                                             )
                                                         },
@@ -108,10 +106,13 @@ function deserializeMetaNode(context: bc.ExpectContext, componentTypes: g.IReado
                                                 ),
                                             },
                                             () => {
-                                                unguaranteedAssertIsDeserialized(targetCollectionType, asserted => {
-                                                    targetPropertyType = ["collection", {
-                                                        "type": asserted,
-                                                    }]
+                                                unguaranteedAssertIsDeserialized(targetNode, assertedTargetNode => {
+                                                    unguaranteedAssertIsDeserialized(targetCollectionType, asserted => {
+                                                        targetPropertyType = ["collection", {
+                                                            "type": asserted,
+                                                            "node": assertedTargetNode,
+                                                        }]
+                                                    })
                                                 })
                                             },
                                         )
@@ -178,6 +179,9 @@ function deserializeMetaNode(context: bc.ExpectContext, componentTypes: g.IReado
                                                         },
                                                     )
                                                 }),
+                                                "default state": () => context.expectString((_value, _range, _comments) => {
+                                                    //
+                                                }),
                                             },
                                             () => {
                                                 targetPropertyType = ["state group", {
@@ -216,6 +220,9 @@ function deserializeMetaNode(context: bc.ExpectContext, componentTypes: g.IReado
                                                                 //
                                                             })
                                                     },
+                                                }),
+                                                "default value": () => context.expectString((_value, _range, _comments) => {
+                                                    //
                                                 }),
                                             },
                                             () => {

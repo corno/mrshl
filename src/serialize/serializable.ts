@@ -1,6 +1,10 @@
 //tslint:disable: interface-name
-export interface SerializableCollection {
+export interface SerializableList {
     forEachEntry(callback: (entry: SerializableEntry) => void): void
+}
+
+export interface SerializableDictionary {
+    forEachEntry(callback: (entry: SerializableEntry, key: string) => void): void
 }
 
 export interface SerializableComponent {
@@ -12,7 +16,8 @@ export interface SerializableEntry {
 }
 
 export interface SerializableNode {
-    getCollection(name: string): SerializableCollection
+    getList(name: string): SerializableList
+    getDictionary(name: string): SerializableDictionary
     getComponent(name: string): SerializableComponent
     getStateGroup(name: string): SerializableStateGroup
     getString(name: string): SerializableString
