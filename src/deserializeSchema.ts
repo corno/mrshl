@@ -11,14 +11,13 @@ export type SchemaAndNodeBuilder = {
     nodeBuilder: NodeBuilder
 }
 
-const schemaSchemas: {
-    [key: string]: (nodeBuilder: NodeBuilder, onError: (message: string, range: bc.Range) => void, callback: (schema: SchemaAndNodeBuilder | null) => void) => bc.DataSubscriber
-} = {
-}
+type AttachSchemaDeserializer = (parser: bc.Parser, nodeBuilder: NodeBuilder, onError: (message: string, range: bc.Range) => void, callback: (schema: SchemaAndNodeBuilder | null) => void) => void
+
+const schemaSchemas: { [key: string]: AttachSchemaDeserializer } = {}
 
 const schemasDir = path.join(__dirname, "/metaDeserializers")
 fs.readdirSync(schemasDir, { encoding: "utf-8" }).forEach(dir => {
-    schemaSchemas[dir] = require(path.join(schemasDir, dir)).deserialize
+    schemaSchemas[dir] = require(path.join(schemasDir, dir)).attachDeserializer
 })
 
 export function deserializeSchema(nodeBuilder: NodeBuilder, onError: (message: string, range: bc.Range) => void, callback: (schema: SchemaAndNodeBuilder | null) => void): bc.Tokenizer {
@@ -32,9 +31,6 @@ export function deserializeSchema(nodeBuilder: NodeBuilder, onError: (message: s
         (message, range) => {
             onSchemaError(`error in schema ${message}`, range)
         },
-        {
-            allow: bc.lax,
-        }
     )
     const schemaTok = new bc.Tokenizer(
         schemaParser,
@@ -43,37 +39,38 @@ export function deserializeSchema(nodeBuilder: NodeBuilder, onError: (message: s
         }
     )
     let schemaDefinitionFound = false
-    let schemaProcessor: null | bc.DataSubscriber = null
+    let schemaProcessor: null | AttachSchemaDeserializer = null
 
+    //attach the schema schema deserializer
     schemaParser.onschemadata.subscribe(bc.createStackedDataSubscriber(
         {
             array: range => {
-                onSchemaError("unexpected array as schema", range)
+                onSchemaError("unexpected array as schema schema", range)
                 return bc.createDummyArrayHandler()
             },
             null: range => {
-                onSchemaError("unexpected null as schema", range)
+                onSchemaError("unexpected null as schema schema", range)
             },
             object: range => {
-                onSchemaError("unexpected object as schema", range)
+                onSchemaError("unexpected object as schema schema", range)
                 return bc.createDummyObjectHandler()
             },
             boolean: (_value, range) => {
-                onSchemaError("unexpected boolean as schema", range)
+                onSchemaError("unexpected boolean as schema schema", range)
             },
             number: (_value, range) => {
-                onSchemaError("unexpected number as schema", range)
+                onSchemaError("unexpected number as schema schema", range)
             },
             string: (schemaSchemaReference, strRange) => {
                 const schemaSchema = schemaSchemas[schemaSchemaReference]
                 if (schemaSchema === undefined) {
-                    onSchemaError(`unknown schema schema ${schemaSchemaReference}`, strRange)
+                    onSchemaError(`unknown schema schema ${schemaSchemaReference}, (options: ${Object.keys(schemaSchemas)})`, strRange)
                 } else {
-                    schemaProcessor = schemaSchema(nodeBuilder, onError, callback)
+                    schemaProcessor = schemaSchema
                 }
             },
             taggedUnion: (_value, range) => {
-                onSchemaError("unexpected typed union as schema", range)
+                onSchemaError("unexpected typed union as schema schema", range)
                 return bc.createDummyValueHandler()
             },
         },
@@ -89,13 +86,13 @@ export function deserializeSchema(nodeBuilder: NodeBuilder, onError: (message: s
         }
     ))
     schemaParser.onheaderdata.subscribe({
-        onheaderstart: () => {
+        onHeaderStart: () => {
             schemaDefinitionFound = true
         },
-        oncompact: () => {
+        onCompact: () => {
             //compact = true
         },
-        onheaderend: range => {
+        onHeaderEnd: range => {
             if (!schemaDefinitionFound) {
                 onSchemaError(`missing schema schema definition`, range)
                 callback(null)
@@ -106,7 +103,7 @@ export function deserializeSchema(nodeBuilder: NodeBuilder, onError: (message: s
                     }
                     callback(null)
                 } else {
-                    schemaParser.ondata.subscribe(schemaProcessor)
+                    schemaProcessor(schemaParser, nodeBuilder, onError, callback)
                 }
             }
         },
@@ -153,11 +150,13 @@ export function createFromURLSchemaDeserializer(host: string, pathStart: string,
 
                 if (res.statusCode !== 200) {
                     reject("schema not found")
+                    return
                 }
                 const schemaTok = deserializeSchema(
                     nodeBuilder,
-                    () => {
+                    message => {
                         //do nothing with errors
+                        console.error("SCHEMA ERROR", message)
                     },
                     schema => {
                         if (schema !== null) {
@@ -165,7 +164,8 @@ export function createFromURLSchemaDeserializer(host: string, pathStart: string,
                         } else {
                             reject("errors in schema")
                         }
-                    })
+                    }
+                )
                 res.on('data', chunk => {
                     schemaTok.write(chunk.toString(), {
                         pause: () => {
@@ -177,7 +177,6 @@ export function createFromURLSchemaDeserializer(host: string, pathStart: string,
                     })
                 });
                 res.on('end', () => {
-
                     schemaTok.end()
                 })
             })

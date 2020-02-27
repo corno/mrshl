@@ -4,7 +4,7 @@ import { createDeserializer } from "./deserialize"
 import { SchemaAndNodeBuilder } from "../../deserializeSchema"
 import { NodeBuilder } from "../../deserialize"
 
-export function deserialize(nodeBuilder: NodeBuilder, onError: (message: string, range: bc.Range) => void, callback: (schema: SchemaAndNodeBuilder | null) => void) {
+export function attachDeserializer(parser: bc.Parser, nodeBuilder: NodeBuilder, onError: (message: string, range: bc.Range) => void, callback: (schema: SchemaAndNodeBuilder | null) => void) {
     let foundError = false
     function onSchemaError(message: string, range: bc.Range) {
         onError(message, range)
@@ -13,7 +13,7 @@ export function deserialize(nodeBuilder: NodeBuilder, onError: (message: string,
     let metadata: null | Schema = null
 
 
-    return bc.createStackedDataSubscriber(
+    parser.ondata.subscribe(bc.createStackedDataSubscriber(
         {
             array: range => {
                 onSchemaError("unexpected array as schema", range)
@@ -64,5 +64,5 @@ export function deserialize(nodeBuilder: NodeBuilder, onError: (message: string,
                 })
             }
         }
-    )
+    ))
 }

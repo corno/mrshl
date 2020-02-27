@@ -1,4 +1,3 @@
 [
-    [ "expecting schema start (!)", "error", 1, 1, 1, 2],
     [ "missing schema", "error", 1, 1, 1, 1]
 ]

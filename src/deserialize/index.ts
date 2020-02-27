@@ -1,3 +1,3 @@
-export { createDeserializer } from "./deserialize"
+export { attachDeserializer } from "./deserialize"
 export * from "./api"
 export * from "./dummyBuilders"

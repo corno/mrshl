@@ -1,5 +1,5 @@
 import * as bc from "bass-clarinet"
-import { createDeserializer } from "./deserialize"
+import { attachDeserializer } from "./deserialize"
 import { Schema } from "./internalSchema"
 import { createMetaDataDeserializer } from "./internalSchema"
 import { NodeBuilder } from "./deserialize"
@@ -26,12 +26,6 @@ export function validateDocument(
             (message, range) => {
                 onError(message, range)
             },
-            {
-                allow: bc.lax,
-                require: {
-                    schema: externalSchema === null, //if an external schema is provided, an internal schema is optional
-                },
-            }
         )
 
         let compact = false
@@ -103,20 +97,20 @@ export function validateDocument(
             }
         ))
         parser.onheaderdata.subscribe({
-            onheaderstart: () => {
+            onHeaderStart: () => {
                 foundSchema = true
             },
-            oncompact: () => {
+            onCompact: () => {
                 compact = true
             },
-            onheaderend: () => {
+            onHeaderEnd: () => {
                 if (!foundSchema) {
                     if (externalSchema === null) {
                         onError(`missing schema`, { start: { position: 0, line: 1, column: 1 }, end: { position: 0, line: 1, column: 1 } })
                         reject("errors in schema")
                     } else {
                         //no internal schema, no problem
-                        parser.ondata.subscribe(createDeserializer(externalSchema, onError, onWarning, nodeBuilder, false, resolve))
+                        attachDeserializer(parser, externalSchema, onError, onWarning, nodeBuilder, false, resolve)
                     }
                 } else {
                     if (metaData === null) {
@@ -126,7 +120,7 @@ export function validateDocument(
                         reject("errors in schema")
                     } else {
                         if (externalSchema === null) {
-                            parser.ondata.subscribe(createDeserializer(metaData.schema, onError, onWarning, metaData.nodeBuilder, compact, resolve))
+                            attachDeserializer(parser, metaData.schema, onError, onWarning, metaData.nodeBuilder, compact, resolve)
                         } else {
                             if (compact) {
                                 throw new Error("IMPLEMENT ME, EXTERNAL AND INTERAL SCHEMA AND DATA IS COMPACT")
@@ -146,7 +140,7 @@ export function validateDocument(
                                     },
                                 }
                             )
-                            parser.ondata.subscribe(createDeserializer(externalSchema, onError, onWarning, nodeBuilder, compact, resolve))
+                            attachDeserializer(parser, externalSchema, onError, onWarning, nodeBuilder, compact, resolve)
                         }
                     }
                 }

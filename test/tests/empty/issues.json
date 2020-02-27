@@ -1,4 +1,4 @@
 [
-    [ "expected the schema start (!)", "error", 1, 1, 1, 1],
+    [ "expected the schema start (!) or root value", "error", 1, 1, 1, 1],
     [ "missing schema", "error", 1, 1, 1, 1]
 ]
