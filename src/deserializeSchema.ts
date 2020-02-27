@@ -140,10 +140,10 @@ export function createFromURLSchemaDeserializer(host: string, pathStart: string,
     return (reference: string, nodeBuilder: NodeBuilder): Promise<SchemaAndNodeBuilder> => {
         return new Promise((resolve, reject) => {
 
-            const errors: string[] = []
-            function onSchemaError(message: string, _range: bc.Range) {
-                errors.push(message)
-            }
+            // //const errors: string[] = []
+            // function onSchemaError(_message: string, _range: bc.Range) {
+            //     //errors.push(message)
+            // }
             const options = {
                 host: host,
                 path: url.resolve(pathStart, encodeURI(reference)),
@@ -151,14 +151,21 @@ export function createFromURLSchemaDeserializer(host: string, pathStart: string,
             }
             const request = http.request(options, res => {
 
-                const schemaTok = deserializeSchema(nodeBuilder, onSchemaError, schema => {
-
-                    if (schema !== null) {
-                        resolve(schema)
-                    } else {
-                        reject("missing schema")
-                    }
-                })
+                if (res.statusCode !== 200) {
+                    reject("schema not found")
+                }
+                const schemaTok = deserializeSchema(
+                    nodeBuilder,
+                    () => {
+                        //do nothing with errors
+                    },
+                    schema => {
+                        if (schema !== null) {
+                            resolve(schema)
+                        } else {
+                            reject("errors in schema")
+                        }
+                    })
                 res.on('data', chunk => {
                     schemaTok.write(chunk.toString(), {
                         pause: () => {
@@ -172,8 +179,8 @@ export function createFromURLSchemaDeserializer(host: string, pathStart: string,
                 res.on('end', () => {
 
                     schemaTok.end()
-                });
-            });
+                })
+            })
             request.on('timeout', () => {
                 console.error("timeout")
                 reject("timeout")
