@@ -1,0 +1,24 @@
+! (
+	'component types': {
+		'x': (
+			'node': (
+				'properties': {
+					'foo': (
+						'type': | 'value' (
+							'type': | 'number'
+						)
+					)
+					'bar': (
+						'type': | 'taggedunion' (
+							'type': | 'number'
+						)
+					)
+				}
+			)
+		)
+	}
+	'root type': "x"
+)
+(
+	'foov': 42
+)
