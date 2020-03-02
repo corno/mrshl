@@ -19,7 +19,7 @@
     [ "missing property value", "error", 21, 1, 21, 2],
     [ "unexpected end of tagged union", "error", 21, 2, 21, 2],
     [ "expected key", "error", 22, 1, 22, 2],
-    [ "expected 'type' but found 'number' ", "error", 23, 13, 23, 15],
+    [ "expected 'type' but found 'unquoted token' ", "error", 23, 13, 23, 15],
     [ "unexpected end of document, still in nested type", "error", 25, 1, 25, 1],
     [ "unexpected end of document, still in nested type", "error", 25, 1, 25, 1],
     [ "unexpected end of document, still in nested type", "error", 25, 1, 25, 1],

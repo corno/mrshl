@@ -1,6 +1,6 @@
 import * as bc from "bass-clarinet"
 import { attachDeserializer } from "./deserialize"
-import { createMetaDataDeserializer } from "./internalSchema"
+import { createMetaDataDeserializer, createNodeValidator } from "./internalSchema"
 import { NodeBuilder } from "./deserialize"
 import { SchemaAndNodeValidator } from "./deserializeSchema"
 
@@ -44,9 +44,6 @@ export function validateDocument(
                     onSchemaError("unexpected array as schema", range)
                     return bc.createDummyArrayHandler()
                 },
-                null: range => {
-                    onSchemaError("unexpected null as schema", range)
-                },
                 object: createMetaDataDeserializer(
                     (errorMessage, range) => {
                         onSchemaError(errorMessage, range)
@@ -55,19 +52,16 @@ export function validateDocument(
                         if (md !== null) {
                             metaData = {
                                 schema: md,
-                                nodeValidator: nodeBuilder,
+                                nodeValidator: createNodeValidator(),
                             }
 
                         }
                     }
                 ),
-                boolean: (_value, range) => {
-                    onSchemaError("unexpected boolean as schema", range)
+                unquotedToken: (_value, range) => {
+                    onSchemaError("unexpected unquoted token as schema", range)
                 },
-                number: (_value, range) => {
-                    onSchemaError("unexpected number as schema", range)
-                },
-                string: (schemaReference, strRange, _comments, pauser) => {
+                quotedString: (schemaReference, strRange, _comments, pauser) => {
                     pauser.pause()
                     schemaReferenceResolver(schemaReference, nodeBuilder)
                         .then(md => {

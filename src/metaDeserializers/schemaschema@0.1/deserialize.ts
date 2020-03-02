@@ -58,7 +58,7 @@ function deserializeMetaNode(context: bc.ExpectContext, componentTypes: g.IReado
                                                                     //
                                                                 },
                                                                 {
-                                                                    "key property": () => context.expectString((sourceKeyProperty, range) => {
+                                                                    "key property": () => context.expectQuotedString((sourceKeyProperty, range) => {
                                                                         targetKeyProperty = sourceKeyProperty
                                                                         targetKeyPropertyRange = range
                                                                     }),
@@ -126,7 +126,7 @@ function deserializeMetaNode(context: bc.ExpectContext, componentTypes: g.IReado
                                                 //
                                             },
                                             {
-                                                "type": () => context.expectString((sourceComponentTypeName, range) => {
+                                                "type": () => context.expectQuotedString((sourceComponentTypeName, range) => {
                                                     targetComponentTypeName = sourceComponentTypeName
                                                     targetComponentTypeNameRange = range
                                                 }),
@@ -179,7 +179,7 @@ function deserializeMetaNode(context: bc.ExpectContext, componentTypes: g.IReado
                                                         },
                                                     )
                                                 }),
-                                                "default state": () => context.expectString((_value, _range, _comments) => {
+                                                "default state": () => context.expectQuotedString((_value, _range, _comments) => {
                                                     //
                                                 }),
                                             },
@@ -221,7 +221,7 @@ function deserializeMetaNode(context: bc.ExpectContext, componentTypes: g.IReado
                                                             })
                                                     },
                                                 }),
-                                                "default value": () => context.expectString((_value, _range, _comments) => {
+                                                "default value": () => context.expectQuotedString((_value, _range, _comments) => {
                                                     //
                                                 }),
                                             },
@@ -296,7 +296,7 @@ export function createDeserializer(onError: (message: string, range: bc.Range) =
                     )
                 },
             ),
-            "root type": () => context.expectString((sourceRootName, range) => {
+            "root type": () => context.expectQuotedString((sourceRootName, range) => {
                 rootName = sourceRootName
                 rootNameRange = range
             }),

@@ -115,20 +115,11 @@ function createPropertyDeserializer(
             }))
         }
         case "value": {
-
             const $ = propDefinition.type[1]
-            switch ($.type[0]) {
-                case "number": {
-                    return context.expectNumber((value, range, comments) => nodeBuilder.setNumber(propKey, value, range, comments))
-                }
-                case "boolean": {
-                    return context.expectBoolean((value, range, comments) => nodeBuilder.setBoolean(propKey, value, range, comments))
-                }
-                case "string": {
-                    return context.expectString((value, range, comments) => nodeBuilder.setString(propKey, value, range, comments))
-                }
-                default:
-                    return assertUnreachable($.type[0])
+            if ($.quoted) {
+                return context.expectQuotedString((value, range, comments) => nodeBuilder.setSimpleValue(propKey, value, true, range, comments))
+            } else {
+                return context.expectUnquotedToken((value, range, comments) => nodeBuilder.setSimpleValue(propKey, value, false, range, comments))
             }
         }
         default:

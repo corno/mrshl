@@ -13,7 +13,7 @@ function serializeNode(node: t.Node, serializer: ValueSerializer) {
         t$.add("properties", false, t$ => t$.dictionary(propertiesBuilder => {
             node.properties.forEach((prop, propKey) => {
                 propertiesBuilder.add(propKey, false, t$ => t$.type(t$ => {
-                    t$.add("name", true, t$ => t$.string(propKey))
+                    t$.add("name", true, t$ => t$.quotedString(propKey))
                     t$.add("type", false, t$ => {
                         switch (prop.type[0]) {
                             case "collection": {
@@ -33,7 +33,7 @@ function serializeNode(node: t.Node, serializer: ValueSerializer) {
                                                         } else {
                                                             const $$$ = $$["has instances"][1]
                                                             return t$.taggedUnion("yes", t$ => t$.type(t$ => {
-                                                                t$.add("key property", false, t$ => t$.string("name"))
+                                                                t$.add("key property", false, t$ => t$.quotedString("name"))
                                                                 t$.add("node", false, t$ => serializeNode($$$.node, t$))
                                                             }))
                                                         }
@@ -67,7 +67,7 @@ function serializeNode(node: t.Node, serializer: ValueSerializer) {
                             case "component": {
                                 const $ = prop.type[1]
                                 return t$.taggedUnion("component", t$ => t$.type(t$ => {
-                                    t$.add("type", false, t$ => t$.string($.type.getName()))
+                                    t$.add("type", false, t$ => t$.quotedString($.type.getName()))
 
                                 }))
                             }
@@ -77,7 +77,7 @@ function serializeNode(node: t.Node, serializer: ValueSerializer) {
                                 return t$.taggedUnion("state group", t$ => t$.type(t$ => {
                                     t$.add("states", false, t$ => t$.dictionary(t$ => {
                                         $.states.forEach((state, stateName) => {
-                                            t$.add("name", true, t$ => t$.string(stateName))
+                                            t$.add("name", true, t$ => t$.quotedString(stateName))
                                             t$.add("node", false, t$ => serializeNode(state.node, t$))
                                         })
                                     }))
@@ -87,26 +87,8 @@ function serializeNode(node: t.Node, serializer: ValueSerializer) {
                                 const $ = prop.type[1]
                                 return t$.taggedUnion("value", t$ => t$.type(t$ => {
 
-                                    t$.add("type", false, t$ => {
-                                        switch ($.type[0]) {
-                                            case "boolean": {
-                                                return t$.taggedUnion("boolean", t$ => t$.type(() => {
-                                                    //
-                                                }))
-                                            }
-                                            case "number": {
-                                                return t$.taggedUnion("number", t$ => t$.type(() => {
-                                                    //
-                                                }))
-                                            }
-                                            case "string": {
-                                                return t$.taggedUnion("text", t$ => t$.type(() => {
-                                                    //
-                                                }))
-                                            }
-                                            default:
-                                                return assertUnreachable($.type[0])
-                                        }
+                                    t$.add("quoted", false, t$ => {
+                                        return t$.unquotedToken($.quoted ? "true" : "false")
                                     })
                                 }))
                             }
@@ -129,6 +111,6 @@ export function serialize(metaData: t.Schema, serializer: ValueSerializer): void
                 }))
             })
         }))
-        t$.add("root type", false, $ => $.string(metaData["root type"].getName()))
+        t$.add("root type", false, $ => $.quotedString(metaData["root type"].getName()))
     })
 }

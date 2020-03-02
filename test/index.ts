@@ -47,7 +47,7 @@ export class LoggingNodeBuilder implements astn.NodeBuilder {
     public setStateGroup(_name: string, _stateName: string, _range: bc.Range) {
         return new LoggingStateBuilder()
     }
-    public setString(_name: string, _value: string, _range: bc.Range, _comments: bc.Comment[]) {
+    public setSimpleValue(_name: string, _value: string, _quoted: boolean, _range: bc.Range, _comments: bc.Comment[]) {
         // console.log(`${bc.printLocation(_range.start)} string begin`)
         // console.log(`${bc.printLocation(_range.end)} string end`)
     }

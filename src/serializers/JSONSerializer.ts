@@ -4,13 +4,10 @@
 import { ArraySerializer, DictionarySerializer as DictionarySerializer, RootSerializer, StringStream, TypeSerializer, ValueSerializer } from "../serialize/api"
 
 class DummySerializer implements ValueSerializer {
-    public boolean() {
+    public quotedString() {
         //
     }
-    public number() {
-        //
-    }
-    public string() {
+    public unquotedToken() {
         //
     }
     public type() {
@@ -35,17 +32,11 @@ export class JSONValueSerializer implements ValueSerializer {
     constructor(out: StringStream) {
         this.out = out
     }
-    public boolean(value: boolean) {
-        this.out.add(value ? "true" : "false")
-
+    public unquotedToken(value: string) {
+        this.out.add(value)
     }
-    public number(value: number) {
-        this.out.add(value.toString())
-
-    }
-    public string(value: string) {
+    public quotedString(value: string) {
         this.out.add(JSON.stringify(value))
-
     }
     public type(callback: (os: TypeSerializer) => void) {
         this.out.add(`{`)

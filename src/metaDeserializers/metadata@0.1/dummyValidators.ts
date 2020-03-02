@@ -31,17 +31,15 @@ export class DummyNodeValidator implements validators.NodeValidator {
     public setStateGroup(_name: string, _stateName: string) {
         return new DummyStateValidator()
     }
-    public setString(_name: string, _value: string) {
-        //
-    }
-    public setNumber(_name: string, _value: number) {
-        //
-    }
-    public setBoolean(_name: string, _value: boolean) {
+    public setSimpleValue(_name: string, _value: string) {
         //
     }
 }
 
 export class DummyStateValidator {
     public readonly node = new DummyNodeValidator()
+}
+
+export function createNodeValidator() {
+    return new DummyNodeValidator()
 }

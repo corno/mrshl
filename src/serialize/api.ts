@@ -28,9 +28,8 @@ export class StringStream {
 }
 
 export interface ValueSerializer {
-    boolean(value: boolean): void
-    number(value: number): void
-    string(value: string): void
+    unquotedToken(value: string): void
+    quotedString(value: string): void
     type(callback: (os: TypeSerializer) => void): void
     dictionary(callback: (os: DictionarySerializer) => void): void
     arrayType(callback: (os: ArraySerializer) => void): void

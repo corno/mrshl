@@ -31,7 +31,7 @@ export class DummyNodeBuilder implements NodeBuilder {
     public setStateGroup(_name: string, _stateName: string) {
         return new DummyStateBuilder()
     }
-    public setString(_name: string, _value: string) {
+    public setSimpleValue(_name: string, _value: string) {
         //
     }
     public setNumber(_name: string, _value: number) {

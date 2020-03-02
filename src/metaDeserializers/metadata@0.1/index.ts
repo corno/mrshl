@@ -19,9 +19,6 @@ export function attachSchemaDeserializer(parser: bc.Parser, onError: (message: s
                 onSchemaError("unexpected array as schema", range)
                 return bc.createDummyArrayHandler()
             },
-            null: range => {
-                onSchemaError("unexpected null as schema", range)
-            },
             object: createDeserializer(
                 (errorMessage, range) => {
                     onSchemaError(errorMessage, range)
@@ -30,13 +27,10 @@ export function attachSchemaDeserializer(parser: bc.Parser, onError: (message: s
                     metadata = md
                 }
             ),
-            boolean: (_value, range) => {
-                onSchemaError("unexpected boolean as schema", range)
+            unquotedToken: (_value, range) => {
+                onSchemaError("unexpected unquoted token as schema", range)
             },
-            number: (_value, range) => {
-                onSchemaError("unexpected number as schema", range)
-            },
-            string: (_value, range) => {
+            quotedString: (_value, range) => {
                 onSchemaError("unexpected string as schema", range)
             },
             taggedUnion: (_value, range) => {

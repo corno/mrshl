@@ -63,11 +63,6 @@ export type StateGroup = {
     readonly states: g.IReadonlyDictionary<State>
 }
 
-export type ValueType =
-    | ["string", {}]
-    | ["number", {}]
-    | ["boolean", {}]
-
 export type Value = {
-    readonly type: ValueType
+    readonly quoted: boolean
 }

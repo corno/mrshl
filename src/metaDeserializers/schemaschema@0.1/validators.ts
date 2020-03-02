@@ -85,13 +85,7 @@ export class NodeValidator implements validators.NodeValidator {
         }
         return new StateValidator(stateDef, this.onError)
     }
-    public setString(_name: string, _value: string) {
-        //
-    }
-    public setNumber(_name: string, _value: number) {
-        //
-    }
-    public setBoolean(_name: string, _value: boolean) {
+    public setSimpleValue(_name: string, _value: string) {
         //
     }
 }

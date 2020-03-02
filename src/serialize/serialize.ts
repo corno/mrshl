@@ -63,22 +63,26 @@ function serializeNode(definition: m.Node, node: SerializableNode, builder: Valu
                     }
                     case "value": {
                         const $ = property.type[1]
-                        switch ($.type[0]) {
-                            case "boolean": {
-                                //const $$ = $.type[1]
-                                return elementBuilder.boolean(node.getBoolean(propertyKey).getValue())
-                            }
-                            case "number": {
-                                //const $$ = $.type[1]
-                                return elementBuilder.number(node.getNumber(propertyKey).getValue())
-                            }
-                            case "string": {
-                                //const $$ = $.type[1]
-                                return elementBuilder.string(node.getString(propertyKey).getValue())
-                            }
-                            default:
-                                return assertUnreachable($.type[0])
+                        if ($.quoted) {
+                            return elementBuilder.quotedString(node.getString(propertyKey).getValue())
+                        } else {
+                            return elementBuilder.unquotedToken(node.getString(propertyKey).getValue())
                         }
+                        // switch ($.type[0]) {
+                        //     case "boolean": {
+                        //         //const $$ = $.type[1]
+                        //         return elementBuilder.boolean(node.getBoolean(propertyKey).getValue())
+                        //     }
+                        //     case "number": {
+                        //         //const $$ = $.type[1]
+                        //         return elementBuilder.number(node.getNumber(propertyKey).getValue())
+                        //     }
+                        //     case "string": {
+                        //         //const $$ = $.type[1]
+                        //     }
+                        //     default:
+                        //         return assertUnreachable($.type[0])
+                        // }
                     }
                     default:
                         return assertUnreachable(property.type[0])

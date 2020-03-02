@@ -20,9 +20,6 @@ export function attachSchemaDeserializer(parser: bc.Parser, onError: (message: s
                 onSchemaError("unexpected array as schema", range)
                 return bc.createDummyArrayHandler()
             },
-            null: range => {
-                onSchemaError("unexpected null as schema", range)
-            },
             object: createDeserializer(
                 (errorMessage, range) => {
                     onSchemaError(errorMessage, range)
@@ -31,13 +28,10 @@ export function attachSchemaDeserializer(parser: bc.Parser, onError: (message: s
                     metadata = md
                 }
             ),
-            boolean: (_value, range) => {
-                onSchemaError("unexpected boolean as schema", range)
+            unquotedToken: (_value, range) => {
+                onSchemaError("unexpected unquoted token as schema", range)
             },
-            number: (_value, range) => {
-                onSchemaError("unexpected number as schema", range)
-            },
-            string: (_value, range) => {
+            quotedString: (_value, range) => {
                 onSchemaError("unexpected string as schema", range)
             },
             taggedUnion: (_value, range) => {
@@ -132,16 +126,16 @@ function convertNode(node: Node, componentTypes: g.IReadonlyLookup<internal.Comp
                     case "value": {
                         const $ = prop.type[1]
                         return ["value", {
-                            type: ((): internal.ValueType => {
+                            quoted: ((): boolean => {
                                 switch ($.type[0]) {
                                     case "boolean": {
-                                        return [ "boolean", {}]
+                                        return false
                                     }
                                     case "number": {
-                                        return [ "number", {}]
+                                        return false
                                     }
                                     case "string": {
-                                        return [ "string", {}]
+                                        return true
                                     }
                                     default:
                                         return assertUnreachable($.type[0])

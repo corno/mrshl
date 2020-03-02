@@ -57,20 +57,14 @@ export function deserializeSchema(onError: (message: string, range: bc.Range) =>
                 onSchemaError("unexpected array as schema schema", range)
                 return bc.createDummyArrayHandler()
             },
-            null: range => {
-                onSchemaError("unexpected null as schema schema", range)
-            },
             object: range => {
                 onSchemaError("unexpected object as schema schema", range)
                 return bc.createDummyObjectHandler()
             },
-            boolean: (_value, range) => {
-                onSchemaError("unexpected boolean as schema schema", range)
+            unquotedToken: (_value, range) => {
+                onSchemaError("unexpected unquoted token as schema schema", range)
             },
-            number: (_value, range) => {
-                onSchemaError("unexpected number as schema schema", range)
-            },
-            string: (schemaSchemaReference, strRange) => {
+            quotedString: (schemaSchemaReference, strRange) => {
                 const schemaSchema = schemaSchemas[schemaSchemaReference]
                 if (schemaSchema === undefined) {
                     onSchemaError(`unknown schema schema ${schemaSchemaReference}, (options: ${Object.keys(schemaSchemas)})`, strRange)
