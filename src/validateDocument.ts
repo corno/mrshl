@@ -1,22 +1,21 @@
 import * as bc from "bass-clarinet"
 import { attachDeserializer } from "./deserialize"
-import { Schema } from "./internalSchema"
 import { createMetaDataDeserializer } from "./internalSchema"
 import { NodeBuilder } from "./deserialize"
-import { SchemaAndNodeBuilder } from "./deserializeSchema"
+import { SchemaAndNodeValidator } from "./deserializeSchema"
 
 export type ResolveSchemaReference = (
     reference: string,
     nodeBuilder: NodeBuilder,
-) => Promise<SchemaAndNodeBuilder>
+) => Promise<SchemaAndNodeValidator>
 
 /**
  * this function returns a Promise<void> and the promise is resolved when the validation has been completed
  */
 export function validateDocument(
     document: string,
+    externalSchema: SchemaAndNodeValidator | null,
     nodeBuilder: NodeBuilder,
-    externalSchema: Schema | null,
     schemaReferenceResolver: ResolveSchemaReference,
     onError: (message: string, range: bc.Range) => void,
     onWarning: (message: string, range: bc.Range) => void,
@@ -32,7 +31,7 @@ export function validateDocument(
 
         let foundSchema = false
         let foundSchemaErrors = false
-        let metaData: SchemaAndNodeBuilder | null = null
+        let metaData: SchemaAndNodeValidator | null = null
 
         function onSchemaError(message: string, range: bc.Range) {
             onError(message, range)
@@ -56,7 +55,7 @@ export function validateDocument(
                         if (md !== null) {
                             metaData = {
                                 schema: md,
-                                nodeBuilder: nodeBuilder,
+                                nodeValidator: nodeBuilder,
                             }
 
                         }
@@ -107,10 +106,18 @@ export function validateDocument(
                 if (!foundSchema) {
                     if (externalSchema === null) {
                         onError(`missing schema`, { start: { position: 0, line: 1, column: 1 }, end: { position: 0, line: 1, column: 1 } })
-                        reject("errors in schema")
+                        reject("no schema")
                     } else {
                         //no internal schema, no problem
-                        attachDeserializer(parser, externalSchema, onError, onWarning, nodeBuilder, false, resolve)
+                        attachDeserializer(
+                            parser,
+                            externalSchema,
+                            onError,
+                            onWarning,
+                            nodeBuilder,
+                            false,
+                            resolve
+                        )
                     }
                 } else {
                     if (metaData === null) {
@@ -120,7 +127,15 @@ export function validateDocument(
                         reject("errors in schema")
                     } else {
                         if (externalSchema === null) {
-                            attachDeserializer(parser, metaData.schema, onError, onWarning, metaData.nodeBuilder, compact, resolve)
+                            attachDeserializer(
+                                parser,
+                                metaData,
+                                onError,
+                                onWarning,
+                                nodeBuilder,
+                                compact,
+                                resolve
+                            )
                         } else {
                             if (compact) {
                                 throw new Error("IMPLEMENT ME, EXTERNAL AND INTERAL SCHEMA AND DATA IS COMPACT")
@@ -140,13 +155,20 @@ export function validateDocument(
                                     },
                                 }
                             )
-                            attachDeserializer(parser, externalSchema, onError, onWarning, nodeBuilder, compact, resolve)
+                            attachDeserializer(
+                                parser,
+                                externalSchema,
+                                onError,
+                                onWarning,
+                                nodeBuilder,
+                                compact,
+                                resolve
+                            )
                         }
                     }
                 }
             },
         })
-
         bc.tokenizeString(
             parser,
             (message, range) => {

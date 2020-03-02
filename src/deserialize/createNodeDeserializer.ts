@@ -1,12 +1,19 @@
 import * as md from "../internalSchema"
-import { NodeBuilder } from "./api"
+import { NodeBuilder, NodeValidator } from "./api"
 import * as bc from "bass-clarinet"
 
 function assertUnreachable<RT>(_x: never): RT {
     throw new Error("Unreachable")
 }
 
-function createPropertyDeserializer(context: bc.ExpectContext, propDefinition: md.Property, propKey: string, nodeBuilder: NodeBuilder, isCompact: boolean): bc.ValueHandler {
+function createPropertyDeserializer(
+    context: bc.ExpectContext,
+    propDefinition: md.Property,
+    propKey: string,
+    nodeBuilder: NodeBuilder,
+    nodeValidator: NodeValidator,
+    isCompact: boolean
+): bc.ValueHandler {
     switch (propDefinition.type[0]) {
         case "collection": {
             const $ = propDefinition.type[1]
@@ -26,10 +33,17 @@ function createPropertyDeserializer(context: bc.ExpectContext, propDefinition: m
 
                                 const entry = collBuilder.createEntry()
                                 entry.insert() //might be problematic.. insertion before fully initialized
+
+                                const collValidator = nodeValidator.setCollection(propKey, range, comments)
+
+                                const entryValidator = collValidator.createEntry()
+                                entryValidator.insert() //might be problematic.. insertion before fully initialized
+
                                 return createNodeDeserializer(
                                     context,
                                     $$$.node,
                                     entry.node,
+                                    entryValidator.node,
                                     isCompact
                                 )
                             })
@@ -54,10 +68,18 @@ function createPropertyDeserializer(context: bc.ExpectContext, propDefinition: m
 
                                 const entry = collBuilder.createEntry()
                                 entry.insert()
+
+
+                                const collValidator = nodeValidator.setCollection(propKey, range, comments)
+
+                                const entryValidator = collValidator.createEntry()
+                                entryValidator.insert()
+
                                 return createNodeDeserializer(
                                     context,
                                     $$$.node,
                                     entry.node,
+                                    entryValidator.node,
                                     isCompact
                                 )
                             })
@@ -73,10 +95,12 @@ function createPropertyDeserializer(context: bc.ExpectContext, propDefinition: m
         case "component": {
             const $ = propDefinition.type[1]
             const componentBuilder = nodeBuilder.setComponent(propKey)
+            const componentValidator = nodeValidator.setComponent(propKey)
             return createNodeDeserializer(
                 context,
                 $.type.get().node,
                 componentBuilder.node,
+                componentValidator.node,
                 isCompact,
             )
         }
@@ -85,7 +109,8 @@ function createPropertyDeserializer(context: bc.ExpectContext, propDefinition: m
             return context.expectTaggedUnion($.states.map((stateDef, stateName) => {
                 return (startRange, tuComments, optionRange, optionComments) => {
                     const state = nodeBuilder.setStateGroup(propKey, stateName, startRange, tuComments, optionRange, optionComments)
-                    return createNodeDeserializer(context, stateDef.node, state.node, isCompact)
+                    const stateValidator = nodeValidator.setStateGroup(propKey, stateName, startRange, tuComments, optionRange, optionComments)
+                    return createNodeDeserializer(context, stateDef.node, state.node, stateValidator.node, isCompact)
                 }
             }))
         }
@@ -111,12 +136,12 @@ function createPropertyDeserializer(context: bc.ExpectContext, propDefinition: m
     }
 }
 
-export function createNodeDeserializer(context: bc.ExpectContext, nodeDefinition: md.Node, nodeBuilder: NodeBuilder, isCompact: boolean): bc.ValueHandler {
+export function createNodeDeserializer(context: bc.ExpectContext, nodeDefinition: md.Node, nodeBuilder: NodeBuilder, nodeValidator: NodeValidator, isCompact: boolean): bc.ValueHandler {
     if (isCompact) {
         const expectedElements: (() => bc.ValueHandler)[] = []
         nodeDefinition.properties.forEach((propDefinition, propKey) => {
             expectedElements.push(((): () => bc.ValueHandler => {
-                return () => createPropertyDeserializer(context, propDefinition, propKey, nodeBuilder, isCompact)
+                return () => createPropertyDeserializer(context, propDefinition, propKey, nodeBuilder, nodeValidator, isCompact)
             })())
         })
         return context.expectArrayType(
@@ -132,7 +157,7 @@ export function createNodeDeserializer(context: bc.ExpectContext, nodeDefinition
     } else {
         const expectedEntries: { [key: string]: () => bc.ValueHandler } = {}
         nodeDefinition.properties.forEach((propDefinition, propKey) => {
-            expectedEntries[propKey] = () => createPropertyDeserializer(context, propDefinition, propKey, nodeBuilder, isCompact)
+            expectedEntries[propKey] = () => createPropertyDeserializer(context, propDefinition, propKey, nodeBuilder, nodeValidator, isCompact)
         })
         return context.expectType(
             _startRange => {

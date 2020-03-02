@@ -4,23 +4,32 @@ import * as http from "http"
 import * as path from "path"
 import * as url from "url"
 import { Schema } from "../src/internalSchema"
-import { NodeBuilder } from "./deserialize/api"
+import { NodeValidator } from "./deserialize/api"
 
-export type SchemaAndNodeBuilder = {
+export type SchemaAndNodeValidator = {
     schema: Schema
-    nodeBuilder: NodeBuilder
+    nodeValidator: NodeValidator
 }
 
-type AttachSchemaDeserializer = (parser: bc.Parser, nodeBuilder: NodeBuilder, onError: (message: string, range: bc.Range) => void, callback: (schema: SchemaAndNodeBuilder | null) => void) => void
+type AttachSchemaDeserializer = (parser: bc.Parser, onError: (message: string, range: bc.Range) => void, callback: (schema: SchemaAndNodeValidator | null) => void) => void
 
 const schemaSchemas: { [key: string]: AttachSchemaDeserializer } = {}
 
 const schemasDir = path.join(__dirname, "/metaDeserializers")
 fs.readdirSync(schemasDir, { encoding: "utf-8" }).forEach(dir => {
-    schemaSchemas[dir] = require(path.join(schemasDir, dir)).attachDeserializer
+    const attachFunc = require(path.join(schemasDir, dir)).attachSchemaDeserializer
+    if (attachFunc === undefined) {
+        console.error(`skipping schema '${dir}, no attachSchemaDeserializer function`)
+        return
+    }
+    if (typeof attachFunc !== "function") {
+        console.error(`skipping schema '${dir}, no attachSchemaDeserializer function`)
+        return
+    }
+    schemaSchemas[dir] = attachFunc
 })
 
-export function deserializeSchema(nodeBuilder: NodeBuilder, onError: (message: string, range: bc.Range) => void, callback: (schema: SchemaAndNodeBuilder | null) => void): bc.Tokenizer {
+export function deserializeSchema(onError: (message: string, range: bc.Range) => void, callback: (schema: SchemaAndNodeValidator | null) => void): bc.Tokenizer {
     let foundError = false
     function onSchemaError(message: string, range: bc.Range) {
         onError(message, range)
@@ -103,7 +112,7 @@ export function deserializeSchema(nodeBuilder: NodeBuilder, onError: (message: s
                     }
                     callback(null)
                 } else {
-                    schemaProcessor(schemaParser, nodeBuilder, onError, callback)
+                    schemaProcessor(schemaParser, onError, callback)
                 }
             }
         },
@@ -111,9 +120,9 @@ export function deserializeSchema(nodeBuilder: NodeBuilder, onError: (message: s
     return schemaTok
 }
 
-export function deserializeSchemaFromString(serializedSchema: string, nodeBuilder: NodeBuilder, onError: (message: string, range: bc.Range) => void): Promise<SchemaAndNodeBuilder> {
+export function deserializeSchemaFromString(serializedSchema: string, onError: (message: string, range: bc.Range) => void): Promise<SchemaAndNodeValidator> {
     return new Promise((resolve, reject) => {
-        const schemaTok = deserializeSchema(nodeBuilder, onError, schema => {
+        const schemaTok = deserializeSchema(onError, schema => {
             if (schema === null) {
                 reject("missing schema")
             } else {
@@ -134,7 +143,7 @@ export function deserializeSchemaFromString(serializedSchema: string, nodeBuilde
 
 
 export function createFromURLSchemaDeserializer(host: string, pathStart: string, timeout: number) {
-    return (reference: string, nodeBuilder: NodeBuilder): Promise<SchemaAndNodeBuilder> => {
+    return (reference: string): Promise<SchemaAndNodeValidator> => {
         return new Promise((resolve, reject) => {
 
             // //const errors: string[] = []
@@ -149,11 +158,10 @@ export function createFromURLSchemaDeserializer(host: string, pathStart: string,
             const request = http.request(options, res => {
 
                 if (res.statusCode !== 200) {
-                    reject("schema not found")
+                    reject(`schema '${reference}' not found`)
                     return
                 }
                 const schemaTok = deserializeSchema(
-                    nodeBuilder,
                     message => {
                         //do nothing with errors
                         console.error("SCHEMA ERROR", message)
@@ -162,7 +170,7 @@ export function createFromURLSchemaDeserializer(host: string, pathStart: string,
                         if (schema !== null) {
                             resolve(schema)
                         } else {
-                            reject("errors in schema")
+                            reject(`errors in schema '${host}${url.resolve(pathStart, encodeURI(reference))}'`)
                         }
                     }
                 )

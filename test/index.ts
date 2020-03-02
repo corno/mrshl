@@ -97,15 +97,14 @@ describe("main", () => {
                 .then(serializedSchema => {
                     astn.deserializeSchemaFromString(
                         serializedSchema,
-                        new LoggingNodeBuilder(),
                         (errorMessage, range) => {
                             actualIssues.push([errorMessage, "error", range.start.line, range.start.column, range.end.line, range.end.column])
                         },
-                    ).then(schemaAndNodeBuilder => {
+                    ).then(schemaAndNodeValidator => {
                         return astn.validateDocument(
                             data,
-                            schemaAndNodeBuilder.nodeBuilder,
-                            schemaAndNodeBuilder.schema,
+                            schemaAndNodeValidator,
+                            new LoggingNodeBuilder(),
                             schemaReferenceResolver,
                             (errorMessage, range) => {
                                 actualIssues.push([errorMessage, "error", range.start.line, range.start.column, range.end.line, range.end.column])
@@ -114,7 +113,7 @@ describe("main", () => {
                                 actualIssues.push([warningMessage, "warning", range.start.line, range.start.column, range.end.line, range.end.column])
                             }
                         ).catch(e => {
-                            if (e !== "errors in schema") {
+                            if (e !== "errors in schema" && e !== "no schema") {
                                 throw new Error(`UNEXPECTED: SCHEMA EXCEPTION, ${e}`)
                             }
                             if (actualIssues.length === 0) {
@@ -127,8 +126,8 @@ describe("main", () => {
                     if (err.code === "ENOENT") {
                         return astn.validateDocument(
                             data,
-                            new LoggingNodeBuilder(),
                             null,
+                            new LoggingNodeBuilder(),
                             schemaReferenceResolver,
                             (errorMessage, range) => {
                                 actualIssues.push([errorMessage, "error", range.start.line, range.start.column, range.end.line, range.end.column])
@@ -137,7 +136,7 @@ describe("main", () => {
                                 actualIssues.push([warningMessage, "warning", range.start.line, range.start.column, range.end.line, range.end.column])
                             }
                         ).catch(e => {
-                            if (e !== "errors in schema") {
+                            if (e !== "errors in schema" && e !== "no schema") {
                                 throw new Error(`UNEXPECTED: SCHEMA EXCEPTION, ${e}`)
                             }
                             if (actualIssues.length === 0) {

@@ -28,3 +28,30 @@ export interface StateBuilder {
     node: NodeBuilder
 }
 
+
+export interface CollectionValidator {
+    createEntry(): EntryValidator
+}
+
+export interface ComponentValidator {
+    node: NodeValidator
+}
+
+export interface EntryValidator {
+    node: NodeValidator
+    insert(): void
+}
+
+export interface NodeValidator {
+    setCollection(name: string, range: Range, comments: Comment[]): CollectionValidator
+    setComponent(name: string): ComponentValidator
+    setStateGroup(name: string, stateName: string, startRange: Range, tuComments: Comment[], optionRange: Range, optionComments: Comment[]): StateValidator
+    setString(name: string, value: string, range: Range, comments: Comment[]): void
+    setNumber(name: string, value: number, range: Range, comments: Comment[]): void
+    setBoolean(name: string, value: boolean, range: Range, comments: Comment[]): void
+}
+
+export interface StateValidator {
+    node: NodeValidator
+}
+
