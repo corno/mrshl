@@ -5,12 +5,11 @@
                 'properties': {
                     'y': (
                         'type': | 'value' (
-                            'type' | 'number' (
-
+                            'type' | 'unquoted' (
+                                'type': 'number'
                             )
                         )
                     )
-
                 }
             )
         )

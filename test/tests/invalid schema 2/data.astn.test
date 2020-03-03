@@ -5,12 +5,12 @@
 				'properties': {
 					'foo': (
 						'type': | 'value' (
-							'type': | 'number'
+							'type': | 'unquoted'
 						)
 					)
 					'bar': (
 						'type': | 'taggedunion' (
-							'type': | 'number'
+							'type': | 'unquoted'
 						)
 					)
 				}

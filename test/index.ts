@@ -48,16 +48,9 @@ export class LoggingNodeBuilder implements astn.NodeBuilder {
         return new LoggingStateBuilder()
     }
     public setSimpleValue(_name: string, _value: string, _quoted: boolean, _range: bc.Range, _comments: bc.Comment[]) {
+
         // console.log(`${bc.printLocation(_range.start)} string begin`)
         // console.log(`${bc.printLocation(_range.end)} string end`)
-    }
-    public setNumber(_name: string, _value: number, _range: bc.Range) {
-        // console.log(`${bc.printLocation(_range.start)} number begin`)
-        // console.log(`${bc.printLocation(_range.end)} number end`)
-    }
-    public setBoolean(_name: string, _value: boolean, _range: bc.Range) {
-        // console.log(`${bc.printLocation(_range.start)} boolean begin`)
-        // console.log(`${bc.printLocation(_range.end)} boolean end`)
     }
 }
 

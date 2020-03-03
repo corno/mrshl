@@ -44,7 +44,7 @@ export interface NodeValidator {
     setCollection(name: string, range: Range, comments: Comment[]): CollectionValidator
     setComponent(name: string): ComponentValidator
     setStateGroup(name: string, stateName: string, startRange: Range, tuComments: Comment[], optionRange: Range, optionComments: Comment[]): StateValidator
-    setSimpleValue(name: string, value: string, range: Range, comments: Comment[]): void
+    setSimpleValue(name: string, value: string, quoted: boolean, range: Range, comments: Comment[]): void
 }
 
 export interface StateValidator {

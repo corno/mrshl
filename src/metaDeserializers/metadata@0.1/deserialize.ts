@@ -227,15 +227,15 @@ function deserializeMetaNode(context: bc.ExpectContext, componentTypes: g.IReado
                                         )
                                     },
                                     "value": () => {
-                                        let targetValueQuoted: boolean | null = null
+                                        let targetValueQuoted: t.ValueType | null = null
                                         return context.expectType(
                                             _startRange => {
                                                 //
                                             },
                                             {
                                                 "type": () => context.expectTaggedUnion({
-                                                    "number": () => {
-                                                        targetValueQuoted = false
+                                                    "quoted": () => {
+                                                        targetValueQuoted = ["quoted", {}]
                                                         return context.expectType(
                                                             _startRange => {
                                                                 //
@@ -245,15 +245,21 @@ function deserializeMetaNode(context: bc.ExpectContext, componentTypes: g.IReado
                                                                 //
                                                             })
                                                     },
-                                                    "text": () => {
-                                                        targetValueQuoted = true
+                                                    "unquoted": () => {
+                                                        let type: string | null = null
                                                         return context.expectType(
                                                             _startRange => {
                                                                 //
                                                             },
-                                                            {},
+                                                            {
+                                                                "type": () => context.expectQuotedString(value => {
+                                                                    type = value
+                                                                }),
+                                                            },
                                                             () => {
-                                                                //
+                                                                unguaranteedAssertIsDeserialized(type, asserted => {
+                                                                    targetValueQuoted = ["unquoted", { type: asserted }]
+                                                                })
                                                             })
                                                     },
                                                 }),
@@ -261,7 +267,7 @@ function deserializeMetaNode(context: bc.ExpectContext, componentTypes: g.IReado
                                             () => {
                                                 unguaranteedAssertIsDeserialized(targetValueQuoted, asserted => {
                                                     targetPropertyType = ["value", {
-                                                        quoted: asserted,
+                                                        type: asserted,
                                                     }]
                                                 })
                                             },

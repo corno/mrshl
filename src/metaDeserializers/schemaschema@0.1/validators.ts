@@ -6,6 +6,10 @@ import * as types from "./types"
     max-classes-per-file: "off",
 */
 
+function assertUnreachable(_x: never) {
+    throw new Error("unreachable")
+}
+
 type OnError = (message: string, range: bc.Range) => void
 
 export class CollectionValidator implements validators.CollectionValidator {
@@ -85,8 +89,46 @@ export class NodeValidator implements validators.NodeValidator {
         }
         return new StateValidator(stateDef, this.onError)
     }
-    public setSimpleValue(_name: string, _value: string) {
-        //
+    public setSimpleValue(name: string, value: string, quoted: boolean, range: bc.Range) {
+
+        const propDef = this.definition.properties.get(name)
+        if (propDef === null) {
+            throw new Error(`UNEXPECTED: no such property: ${name}`)
+        }
+        if (propDef.type[0] !== "value") {
+            throw new Error(`UNEXPECTED: property '${name}' is not a value`)
+        }
+        const $ = propDef.type[1]
+        switch ($.type[0]) {
+            case "boolean": {
+                if (quoted) {
+                    this.onError(`value '${value}' is not a boolean but a string`, range)
+                }
+                if (value !== "true" && value !== "false") {
+                    this.onError(`value '${value}' is not a boolean`, range)
+                }
+                break
+            }
+            case "number": {
+                if (quoted) {
+                    this.onError(`value '${value}' is not a number but a string`, range)
+                }
+                /* eslint no-new-wrappers: "off" */
+                const nr = new Number(value).valueOf()
+                if (isNaN(nr)) {
+                    this.onError(`value '${value}' is not a number`, range)
+                }
+                break
+            }
+            case "string": {
+                if (!quoted) {
+                    this.onError(`value '${value}' is not quoted`, range)
+                }
+                break
+            }
+            default:
+                return assertUnreachable($.type[0])
+        }
     }
 }
 

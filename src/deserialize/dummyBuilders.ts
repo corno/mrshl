@@ -34,12 +34,6 @@ export class DummyNodeBuilder implements NodeBuilder {
     public setSimpleValue(_name: string, _value: string) {
         //
     }
-    public setNumber(_name: string, _value: number) {
-        //
-    }
-    public setBoolean(_name: string, _value: boolean) {
-        //
-    }
 }
 
 export class DummyStateBuilder {

@@ -63,10 +63,15 @@ function serializeNode(definition: m.Node, node: SerializableNode, builder: Valu
                     }
                     case "value": {
                         const $ = property.type[1]
-                        if ($.quoted) {
-                            return elementBuilder.quotedString(node.getString(propertyKey).getValue())
-                        } else {
-                            return elementBuilder.unquotedToken(node.getString(propertyKey).getValue())
+                        switch ($.type[0]) {
+                            case "quoted": {
+                                return elementBuilder.quotedString(node.getString(propertyKey).getValue())
+                            }
+                            case "unquoted": {
+                                return elementBuilder.unquotedToken(node.getString(propertyKey).getValue())
+                            }
+                            default:
+                                return assertUnreachable($.type[0])
                         }
                         // switch ($.type[0]) {
                         //     case "boolean": {

@@ -5,20 +5,20 @@
                 'properties': {
                     'a1': (
                         'type': | 'value' (
-                            'type': | 'number' (
-                            )
+                            'type': | 'unquoted' ( 'type': 'number' )
+
                         )
                     )
                     'b': (
                         'type': | 'value' (
-                            'type': | 'number' (
-                            )
+                            'type': | 'unquoted' ( 'type': 'number' )
+
                         )
                     )
                     'c': (
                         'type': | 'value' (
-                            'type': | 'text' (
-                            )
+                            'type': | 'quoted' ( )
+
                         )
                     )
                 }

@@ -85,16 +85,16 @@ function convertNode(node: Node, componentTypes: g.IReadonlyLookup<internal.Comp
                                     case "dictionary": {
                                         const $$ = $.type[1]
                                         const targetNode = convertNode($.node, componentTypes, $$["key property"].get(), resolveRegistry)
-                                        return [ "dictionary", {
-                                            "has instances": [ "yes", {
+                                        return ["dictionary", {
+                                            "has instances": ["yes", {
                                                 node: targetNode,
                                             }],
                                         }]
                                     }
                                     case "list": {
                                         const targetNode = convertNode($.node, componentTypes, null, resolveRegistry)
-                                        return [ "list", {
-                                            "has instances": [ "yes", {
+                                        return ["list", {
+                                            "has instances": ["yes", {
                                                 node: targetNode,
                                             }],
                                         }]
@@ -126,16 +126,16 @@ function convertNode(node: Node, componentTypes: g.IReadonlyLookup<internal.Comp
                     case "value": {
                         const $ = prop.type[1]
                         return ["value", {
-                            quoted: ((): boolean => {
+                            type: ((): internal.ValueType => {
                                 switch ($.type[0]) {
                                     case "boolean": {
-                                        return false
+                                        return ["unquoted", { type: "boolean" }]
                                     }
                                     case "number": {
-                                        return false
+                                        return ["unquoted", { type: "number" }]
                                     }
                                     case "string": {
-                                        return true
+                                        return ["quoted", {}]
                                     }
                                     default:
                                         return assertUnreachable($.type[0])

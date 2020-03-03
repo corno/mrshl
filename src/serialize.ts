@@ -87,8 +87,23 @@ function serializeNode(node: t.Node, serializer: ValueSerializer) {
                                 const $ = prop.type[1]
                                 return t$.taggedUnion("value", t$ => t$.type(t$ => {
 
-                                    t$.add("quoted", false, t$ => {
-                                        return t$.unquotedToken($.quoted ? "true" : "false")
+                                    t$.add("type", false, t$ => {
+                                        switch ($.type[0]) {
+                                            case "quoted": {
+                                                return t$.taggedUnion("quoted", t$ => t$.type(_t$ => {
+                                                    //
+                                                }))
+                                            }
+                                            case "unquoted": {
+                                                const $$ = $.type[1]
+                                                return t$.taggedUnion("unquoted", t$ => t$.type(t$ => {
+                                                    t$.add("type", false, t$ => t$.quotedString($$.type))
+                                                }))
+                                            }
+                                            default:
+                                                return assertUnreachable($.type[0])
+                                        }
+                                        //return t$.unquotedToken($.quoted ? "true" : "false")
                                     })
                                 }))
                             }
