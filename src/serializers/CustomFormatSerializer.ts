@@ -8,7 +8,7 @@ class DummySerializer implements ValueSerializer {
     public unquotedToken() {
         //
     }
-    public quotedString() {
+    public simpleValue() {
         //
     }
     public type() {
@@ -33,7 +33,7 @@ export class CustomFormatValueSerializer implements ValueSerializer {
     constructor(out: StringStream) {
         this.out = out
     }
-    public quotedString(value: string) {
+    public simpleValue(value: string) {
         this.out.add(JSON.stringify(value))
     }
     public unquotedToken(value: string) {

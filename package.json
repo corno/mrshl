@@ -26,7 +26,7 @@
     "dist/*"
   ],
   "dependencies": {
-    "bass-clarinet": "^0.38.0"
+    "bass-clarinet": "^0.39.0"
   },
   "devDependencies": {
     "@types/chai": "^4.2.10",

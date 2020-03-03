@@ -62,32 +62,7 @@ function serializeNode(definition: m.Node, node: SerializableNode, builder: Valu
                         })
                     }
                     case "value": {
-                        const $ = property.type[1]
-                        switch ($.type[0]) {
-                            case "quoted": {
-                                return elementBuilder.quotedString(node.getString(propertyKey).getValue())
-                            }
-                            case "unquoted": {
-                                return elementBuilder.unquotedToken(node.getString(propertyKey).getValue())
-                            }
-                            default:
-                                return assertUnreachable($.type[0])
-                        }
-                        // switch ($.type[0]) {
-                        //     case "boolean": {
-                        //         //const $$ = $.type[1]
-                        //         return elementBuilder.boolean(node.getBoolean(propertyKey).getValue())
-                        //     }
-                        //     case "number": {
-                        //         //const $$ = $.type[1]
-                        //         return elementBuilder.number(node.getNumber(propertyKey).getValue())
-                        //     }
-                        //     case "string": {
-                        //         //const $$ = $.type[1]
-                        //     }
-                        //     default:
-                        //         return assertUnreachable($.type[0])
-                        // }
+                        return elementBuilder.simpleValue(node.getString(propertyKey).getValue(), true)
                     }
                     default:
                         return assertUnreachable(property.type[0])

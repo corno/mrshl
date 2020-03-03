@@ -4,11 +4,7 @@
             'node': (
                 'properties': {
                     'y': (
-                        'type': | 'value' (
-                            'type' | 'unquoted' (
-                                'type': 'number'
-                            )
-                        )
+                        'type': | 'value' ()
                     )
                 }
             )

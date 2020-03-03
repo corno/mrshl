@@ -124,23 +124,7 @@ function convertNode(node: Node, componentTypes: g.IReadonlyLookup<internal.Comp
                         }]
                     }
                     case "value": {
-                        const $ = prop.type[1]
                         return ["value", {
-                            type: ((): internal.ValueType => {
-                                switch ($.type[0]) {
-                                    case "boolean": {
-                                        return ["unquoted", { type: "boolean" }]
-                                    }
-                                    case "number": {
-                                        return ["unquoted", { type: "number" }]
-                                    }
-                                    case "string": {
-                                        return ["quoted", {}]
-                                    }
-                                    default:
-                                        return assertUnreachable($.type[0])
-                                }
-                            })(),
                         }]
                     }
                     default:

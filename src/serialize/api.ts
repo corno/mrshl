@@ -28,8 +28,7 @@ export class StringStream {
 }
 
 export interface ValueSerializer {
-    unquotedToken(value: string): void
-    quotedString(value: string): void
+    simpleValue(value: string, quoted: boolean): void
     type(callback: (os: TypeSerializer) => void): void
     dictionary(callback: (os: DictionarySerializer) => void): void
     arrayType(callback: (os: ArraySerializer) => void): void

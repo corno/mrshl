@@ -227,49 +227,15 @@ function deserializeMetaNode(context: bc.ExpectContext, componentTypes: g.IReado
                                         )
                                     },
                                     "value": () => {
-                                        let targetValueQuoted: t.ValueType | null = null
                                         return context.expectType(
                                             _startRange => {
                                                 //
                                             },
                                             {
-                                                "type": () => context.expectTaggedUnion({
-                                                    "quoted": () => {
-                                                        targetValueQuoted = ["quoted", {}]
-                                                        return context.expectType(
-                                                            _startRange => {
-                                                                //
-                                                            },
-                                                            {},
-                                                            () => {
-                                                                //
-                                                            })
-                                                    },
-                                                    "unquoted": () => {
-                                                        let type: string | null = null
-                                                        return context.expectType(
-                                                            _startRange => {
-                                                                //
-                                                            },
-                                                            {
-                                                                "type": () => context.expectQuotedString(value => {
-                                                                    type = value
-                                                                }),
-                                                            },
-                                                            () => {
-                                                                unguaranteedAssertIsDeserialized(type, asserted => {
-                                                                    targetValueQuoted = ["unquoted", { type: asserted }]
-                                                                })
-                                                            })
-                                                    },
-                                                }),
                                             },
                                             () => {
-                                                unguaranteedAssertIsDeserialized(targetValueQuoted, asserted => {
-                                                    targetPropertyType = ["value", {
-                                                        type: asserted,
-                                                    }]
-                                                })
+                                                targetPropertyType = ["value", {
+                                                }]
                                             },
                                         )
                                     },

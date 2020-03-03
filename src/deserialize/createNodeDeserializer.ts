@@ -115,24 +115,10 @@ function createPropertyDeserializer(
             }))
         }
         case "value": {
-            const $ = propDefinition.type[1]
-            switch ($.type[0]) {
-                case "quoted": {
-                    return context.expectQuotedString((value, range, comments) => {
-                        nodeBuilder.setSimpleValue(propKey, value, true, range, comments)
-                        nodeValidator.setSimpleValue(propKey, value, true, range, comments)
-                    })
-                }
-                case "unquoted": {
-                    const $$ = $.type[1]
-                    return context.expectUnquotedToken($$.type, (value, range, comments) => {
-                        nodeBuilder.setSimpleValue(propKey, value, false, range, comments)
-                        nodeValidator.setSimpleValue(propKey, value, false, range, comments)
-                    })
-                }
-                default:
-                    return assertUnreachable($.type[0])
-            }
+            return context.expectSimpleValue((value, quoted, range, comments) => {
+                nodeBuilder.setSimpleValue(propKey, value, quoted, range, comments)
+                nodeValidator.setSimpleValue(propKey, value, quoted, range, comments)
+            })
         }
         default:
             return assertUnreachable(propDefinition.type[0])

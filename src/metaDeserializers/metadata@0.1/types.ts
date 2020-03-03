@@ -63,12 +63,5 @@ export type StateGroup = {
     readonly states: g.IReadonlyDictionary<State>
 }
 
-export type ValueType =
-    | ["quoted", {}]
-    | ["unquoted", {
-        readonly "type": string
-    }]
-
 export type Value = {
-    readonly type: ValueType
 }

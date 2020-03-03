@@ -4,7 +4,7 @@
 import { ArraySerializer, DictionarySerializer as DictionarySerializer, RootSerializer, StringStream, TypeSerializer, ValueSerializer } from "../serialize/api"
 
 class DummySerializer implements ValueSerializer {
-    public quotedString() {
+    public simpleValue() {
         //
     }
     public unquotedToken() {
@@ -35,7 +35,7 @@ export class JSONValueSerializer implements ValueSerializer {
     public unquotedToken(value: string) {
         this.out.add(value)
     }
-    public quotedString(value: string) {
+    public simpleValue(value: string) {
         this.out.add(JSON.stringify(value))
     }
     public type(callback: (os: TypeSerializer) => void) {

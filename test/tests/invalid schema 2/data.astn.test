@@ -4,14 +4,10 @@
 			'node': (
 				'properties': {
 					'foo': (
-						'type': | 'value' (
-							'type': | 'unquoted'
-						)
+						'type': | 'value' ()
 					)
 					'bar': (
-						'type': | 'taggedunion' (
-							'type': | 'unquoted'
-						)
+						'type': | 'value'
 					)
 				}
 			)
