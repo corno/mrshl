@@ -27,226 +27,258 @@ function deserializeMetaNode(context: bc.ExpectContext, componentTypes: g.IReado
             //
         },
         {
-            "properties": () => context.expectDictionary(
-                key => {
-                    let targetPropertyType: t.PropertyType | null = null
-                    return context.expectType(
-                        _startRange => {
-                            //
-                        },
-                        {
-                            "type": () => context.expectTaggedUnion(
-                                {
-                                    "collection": () => {
-                                        let targetCollectionType: t.CollectionType | null = null
-                                        let targetNode: t.Node | null = null
+            "properties": {
+                onExists: () => context.expectDictionary(
+                    key => {
+                        let targetPropertyType: t.PropertyType | null = null
+                        return context.expectType(
+                            _startRange => {
+                                //
+                            },
+                            {
+                                "type": {
+                                    onExists: () => context.expectTaggedUnion(
+                                        {
+                                            "collection": () => {
+                                                let targetCollectionType: t.CollectionType | null = null
+                                                let targetNode: t.Node | null = null
 
-                                        return context.expectType(
-                                            _startRange => {
-                                                //
-                                            },
-                                            {
-                                                "node": () => deserializeMetaNode(context, componentTypes, node => targetNode = node, resolveRegistry),
-
-                                                "type": () => context.expectTaggedUnion(
+                                                return context.expectType(
+                                                    _startRange => {
+                                                        //
+                                                    },
                                                     {
-                                                        "dictionary": () => {
-                                                            let targetKeyProperty: string | null = null
-                                                            let targetKeyPropertyRange: bc.Range | null = null
-                                                            return context.expectType(
-                                                                _startRange => {
-                                                                    //
-                                                                },
+                                                        "node": {
+                                                            onExists: () => deserializeMetaNode(context, componentTypes, node => targetNode = node, resolveRegistry),
+                                                            onNotExists: null,
+                                                        },
+                                                        "type": {
+                                                            onExists: () => context.expectTaggedUnion(
                                                                 {
-                                                                    "key property": () => context.expectQuotedString((sourceKeyProperty, range) => {
-                                                                        targetKeyProperty = sourceKeyProperty
-                                                                        targetKeyPropertyRange = range
-                                                                    }),
-                                                                },
-                                                                () => {
-                                                                    unguaranteedAssertIsDeserialized(targetNode, assertedTargetNode => {
+                                                                    "dictionary": () => {
+                                                                        let targetKeyProperty: string | null = null
+                                                                        let targetKeyPropertyRange: bc.Range | null = null
+                                                                        return context.expectType(
+                                                                            _startRange => {
+                                                                                //
+                                                                            },
+                                                                            {
+                                                                                "key property": {
+                                                                                    onExists: () => context.expectQuotedString((sourceKeyProperty, range) => {
+                                                                                        targetKeyProperty = sourceKeyProperty
+                                                                                        targetKeyPropertyRange = range
+                                                                                    }),
+                                                                                    onNotExists: null,
+                                                                                },
+                                                                            },
+                                                                            () => {
+                                                                                unguaranteedAssertIsDeserialized(targetNode, assertedTargetNode => {
 
-                                                                        unguaranteedAssertIsDeserialized(targetKeyProperty, assertedTargetKeyProperty => {
-                                                                            unguaranteedAssertIsDeserialized(targetKeyPropertyRange, atkpr => {
-                                                                                targetCollectionType = ["dictionary", {
-                                                                                    "key property": g.createReference(
-                                                                                        assertedTargetKeyProperty,
-                                                                                        assertedTargetNode.properties,
-                                                                                        resolveRegistry,
-                                                                                        () => {
-                                                                                            context.raiseError(
-                                                                                                `key property '${assertedTargetKeyProperty}' not found `,
-                                                                                                atkpr,
-                                                                                            )
-                                                                                        }
-                                                                                    ),
+                                                                                    unguaranteedAssertIsDeserialized(targetKeyProperty, assertedTargetKeyProperty => {
+                                                                                        unguaranteedAssertIsDeserialized(targetKeyPropertyRange, atkpr => {
+                                                                                            targetCollectionType = ["dictionary", {
+                                                                                                "key property": g.createReference(
+                                                                                                    assertedTargetKeyProperty,
+                                                                                                    assertedTargetNode.properties,
+                                                                                                    resolveRegistry,
+                                                                                                    () => {
+                                                                                                        context.raiseError(
+                                                                                                            `key property '${assertedTargetKeyProperty}' not found `,
+                                                                                                            atkpr,
+                                                                                                        )
+                                                                                                    }
+                                                                                                ),
+                                                                                            }]
+
+                                                                                        })
+                                                                                    })
+                                                                                })
+                                                                            }
+                                                                        )
+                                                                    },
+                                                                    "list": () => {
+                                                                        return context.expectType(
+                                                                            _startRange => {
+                                                                                //
+                                                                            },
+                                                                            {
+                                                                            },
+                                                                            () => {
+
+                                                                                targetCollectionType = ["list", {
                                                                                 }]
+                                                                            },
+                                                                        )
+                                                                    },
+                                                                }
+                                                            ),
+                                                            onNotExists: null,
+                                                        },
+                                                    },
+                                                    () => {
+                                                        unguaranteedAssertIsDeserialized(targetNode, assertedTargetNode => {
+                                                            unguaranteedAssertIsDeserialized(targetCollectionType, asserted => {
+                                                                targetPropertyType = ["collection", {
+                                                                    "type": asserted,
+                                                                    "node": assertedTargetNode,
+                                                                }]
+                                                            })
+                                                        })
+                                                    },
+                                                )
 
+                                            },
+                                            "component": () => {
+                                                let targetComponentTypeName: string | null = null
+                                                let targetComponentTypeNameRange: bc.Range | null = null
+                                                return context.expectType(
+                                                    _startRange => {
+                                                        //
+                                                    },
+                                                    {
+                                                        "type": {
+                                                            onExists: () => context.expectQuotedString((sourceComponentTypeName, range) => {
+                                                                targetComponentTypeName = sourceComponentTypeName
+                                                                targetComponentTypeNameRange = range
+                                                            }),
+                                                            onNotExists: null,
+                                                        },
+                                                    },
+                                                    () => {
+                                                        unguaranteedAssertIsDeserialized(targetComponentTypeName, assertedTargetComponentTypeName => {
+                                                            unguaranteedAssertIsDeserialized(targetComponentTypeNameRange, assertedRange => {
+                                                                targetPropertyType = ["component", {
+                                                                    "type": g.createReference(
+                                                                        assertedTargetComponentTypeName,
+                                                                        componentTypes,
+                                                                        resolveRegistry,
+                                                                        () => {
+                                                                            context.raiseError(
+                                                                                `component type '${assertedTargetComponentTypeName}' not found`,
+                                                                                assertedRange
+                                                                            )
+                                                                        },
+                                                                    ),
+                                                                }]
+
+                                                            })
+
+                                                        })
+                                                    },
+                                                )
+                                            },
+                                            "state group": () => {
+                                                const states = new g.Dictionary<t.State>({})
+                                                return context.expectType(
+                                                    _startRange => {
+                                                        //
+                                                    },
+                                                    {
+                                                        "states": {
+                                                            onExists: () => context.expectDictionary(stateKey => {
+                                                                let targetNode: t.Node | null = null
+                                                                return context.expectType(
+                                                                    _startRange => {
+                                                                        //
+                                                                    },
+                                                                    {
+                                                                        "node": {
+                                                                            onExists: () => deserializeMetaNode(context, componentTypes, node => targetNode = node, resolveRegistry),
+                                                                            onNotExists: null,
+                                                                        },
+                                                                    },
+                                                                    () => {
+                                                                        unguaranteedAssertIsDeserialized(targetNode, asserted => {
+                                                                            states.add(stateKey, {
+                                                                                node: asserted,
                                                                             })
                                                                         })
-                                                                    })
-                                                                }
-                                                            )
+                                                                    },
+                                                                )
+                                                            }),
+                                                            onNotExists: null,
                                                         },
-                                                        "list": () => {
-                                                            return context.expectType(
-                                                                _startRange => {
-                                                                    //
-                                                                },
-                                                                {
-                                                                },
-                                                                () => {
-
-                                                                    targetCollectionType = ["list", {
-                                                                    }]
-                                                                },
-                                                            )
-                                                        },
-                                                    }
-                                                ),
-                                            },
-                                            () => {
-                                                unguaranteedAssertIsDeserialized(targetNode, assertedTargetNode => {
-                                                    unguaranteedAssertIsDeserialized(targetCollectionType, asserted => {
-                                                        targetPropertyType = ["collection", {
-                                                            "type": asserted,
-                                                            "node": assertedTargetNode,
-                                                        }]
-                                                    })
-                                                })
-                                            },
-                                        )
-
-                                    },
-                                    "component": () => {
-                                        let targetComponentTypeName: string | null = null
-                                        let targetComponentTypeNameRange: bc.Range | null = null
-                                        return context.expectType(
-                                            _startRange => {
-                                                //
-                                            },
-                                            {
-                                                "type": () => context.expectQuotedString((sourceComponentTypeName, range) => {
-                                                    targetComponentTypeName = sourceComponentTypeName
-                                                    targetComponentTypeNameRange = range
-                                                }),
-                                            },
-                                            () => {
-                                                unguaranteedAssertIsDeserialized(targetComponentTypeName, assertedTargetComponentTypeName => {
-                                                    unguaranteedAssertIsDeserialized(targetComponentTypeNameRange, assertedRange => {
-                                                        targetPropertyType = ["component", {
-                                                            "type": g.createReference(
-                                                                assertedTargetComponentTypeName,
-                                                                componentTypes,
-                                                                resolveRegistry,
-                                                                () => {
-                                                                    context.raiseError(
-                                                                        `component type '${assertedTargetComponentTypeName}' not found`,
-                                                                        assertedRange
-                                                                    )
-                                                                },
-                                                            ),
-                                                        }]
-
-                                                    })
-
-                                                })
-                                            },
-                                        )
-                                    },
-                                    "state group": () => {
-                                        const states = new g.Dictionary<t.State>({})
-                                        return context.expectType(
-                                            _startRange => {
-                                                //
-                                            },
-                                            {
-                                                "states": () => context.expectDictionary(stateKey => {
-                                                    let targetNode: t.Node | null = null
-                                                    return context.expectType(
-                                                        _startRange => {
-                                                            //
-                                                        },
-                                                        {
-                                                            "node": () => deserializeMetaNode(context, componentTypes, node => targetNode = node, resolveRegistry),
-                                                        },
-                                                        () => {
-                                                            unguaranteedAssertIsDeserialized(targetNode, asserted => {
-                                                                states.add(stateKey, {
-                                                                    node: asserted,
-                                                                })
-                                                            })
-                                                        },
-                                                    )
-                                                }),
-                                                "default state": () => context.expectQuotedString((_value, _range, _comments) => {
-                                                    //
-                                                }),
-                                            },
-                                            () => {
-                                                targetPropertyType = ["state group", {
-                                                    "states": states,
-                                                }]
-                                            },
-                                        )
-                                    },
-                                    "value": () => {
-                                        let targetValueType: t.ValueType | null = null
-                                        return context.expectType(
-                                            _startRange => {
-                                                //
-                                            },
-                                            {
-                                                "type": () => context.expectTaggedUnion({
-                                                    "number": () => {
-                                                        targetValueType = ["number", {}]
-                                                        return context.expectType(
-                                                            _startRange => {
+                                                        "default state": {
+                                                            onExists: () => context.expectQuotedString((_value, _range, _comments) => {
                                                                 //
-                                                            },
-                                                            {},
-                                                            () => {
-                                                                //
-                                                            })
+                                                            }),
+                                                            onNotExists: null,
+                                                        },
                                                     },
-                                                    "text": () => {
-                                                        targetValueType = ["string", {}]
-                                                        return context.expectType(
-                                                            _startRange => {
-                                                                //
-                                                            },
-                                                            {},
-                                                            () => {
-                                                                //
-                                                            })
+                                                    () => {
+                                                        targetPropertyType = ["state group", {
+                                                            "states": states,
+                                                        }]
                                                     },
-                                                }),
-                                                "default value": () => context.expectQuotedString((_value, _range, _comments) => {
-                                                    //
-                                                }),
+                                                )
                                             },
-                                            () => {
-                                                unguaranteedAssertIsDeserialized(targetValueType, asserted => {
-                                                    targetPropertyType = ["value", {
-                                                        "type": asserted,
-                                                    }]
-                                                })
+                                            "value": () => {
+                                                let targetValueType: t.ValueType | null = null
+                                                return context.expectType(
+                                                    _startRange => {
+                                                        //
+                                                    },
+                                                    {
+                                                        "type": {
+                                                            onExists: () => context.expectTaggedUnion({
+                                                                "number": () => {
+                                                                    targetValueType = ["number", {}]
+                                                                    return context.expectType(
+                                                                        _startRange => {
+                                                                            //
+                                                                        },
+                                                                        {},
+                                                                        () => {
+                                                                            //
+                                                                        })
+                                                                },
+                                                                "text": () => {
+                                                                    targetValueType = ["string", {}]
+                                                                    return context.expectType(
+                                                                        _startRange => {
+                                                                            //
+                                                                        },
+                                                                        {},
+                                                                        () => {
+                                                                            //
+                                                                        })
+                                                                },
+                                                            }),
+                                                            onNotExists: null,
+                                                        },
+                                                        "default value": {
+                                                            onExists: () => context.expectQuotedString((_value, _range, _comments) => {
+                                                                //
+                                                            }),
+                                                            onNotExists: null,
+                                                        },
+                                                    },
+                                                    () => {
+                                                        unguaranteedAssertIsDeserialized(targetValueType, asserted => {
+                                                            targetPropertyType = ["value", {
+                                                                "type": asserted,
+                                                            }]
+                                                        })
+                                                    },
+                                                )
                                             },
-                                        )
-                                    },
-                                }
-                            ),
-                        },
-                        () => {
-                            unguaranteedAssertIsDeserialized(targetPropertyType, asserted => {
-                                properties.add(key, {
-                                    type: asserted,
+                                        }
+                                    ),
+                                    onNotExists: null,
+                                },
+                            },
+                            () => {
+                                unguaranteedAssertIsDeserialized(targetPropertyType, asserted => {
+                                    properties.add(key, {
+                                        type: asserted,
+                                    })
                                 })
-                            })
-                        }
-                    )
-                }
-            ),
+                            }
+                        )
+                    }
+                ),
+                onNotExists: null,
+            },
         },
         () => {
             callback({ properties: properties })
@@ -274,32 +306,41 @@ export function createDeserializer(onError: (message: string, range: bc.Range) =
             //
         },
         {
-            "component types": () => context.expectDictionary(
-                key => {
-                    let targetNode: t.Node | null = null
-                    const vh = deserializeMetaNode(context, componentTypes, node => targetNode = node, resolveRegistry)
-                    const castValueHandler = vh
-                    return context.expectType(
-                        _startRange => {
-                            //
-                        },
-                        {
-                            "node": () => castValueHandler,
-                        },
-                        () => {
-                            unguaranteedAssertIsDeserialized(targetNode, asserted => {
-                                componentTypes.add(key, {
-                                    node: asserted,
+            "component types": {
+                onExists: () => context.expectDictionary(
+                    key => {
+                        let targetNode: t.Node | null = null
+                        const vh = deserializeMetaNode(context, componentTypes, node => targetNode = node, resolveRegistry)
+                        const castValueHandler = vh
+                        return context.expectType(
+                            _startRange => {
+                                //
+                            },
+                            {
+                                "node": {
+                                    onExists: () => castValueHandler,
+                                    onNotExists: null,
+                                },
+                            },
+                            () => {
+                                unguaranteedAssertIsDeserialized(targetNode, asserted => {
+                                    componentTypes.add(key, {
+                                        node: asserted,
+                                    })
                                 })
-                            })
-                        },
-                    )
-                },
-            ),
-            "root type": () => context.expectQuotedString((sourceRootName, range) => {
-                rootName = sourceRootName
-                rootNameRange = range
-            }),
+                            },
+                        )
+                    },
+                ),
+                onNotExists: null,
+            },
+            "root type": {
+                onExists: () => context.expectQuotedString((sourceRootName, range) => {
+                    rootName = sourceRootName
+                    rootNameRange = range
+                }),
+                onNotExists: null,
+            },
         },
         () => {
             guaranteedAssertIsDeserialized(

@@ -144,15 +144,18 @@ export function createNodeDeserializer(context: bc.ExpectContext, nodeDefinition
         )
 
     } else {
-        const expectedEntries: { [key: string]: () => bc.ValueHandler } = {}
+        const expectedProperties: bc.ExpectedProperties = {}
         nodeDefinition.properties.forEach((propDefinition, propKey) => {
-            expectedEntries[propKey] = () => createPropertyDeserializer(context, propDefinition, propKey, nodeBuilder, nodeValidator, isCompact)
+            expectedProperties[propKey] = {
+                onExists: () => createPropertyDeserializer(context, propDefinition, propKey, nodeBuilder, nodeValidator, isCompact),
+                onNotExists: null,
+            }
         })
         return context.expectType(
             _startRange => {
                 //
             },
-            expectedEntries,
+            expectedProperties,
             () => {
                 //nothing to do on end
             }

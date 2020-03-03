@@ -27,231 +27,261 @@ function deserializeMetaNode(context: bc.ExpectContext, componentTypes: g.IReado
             //
         },
         {
-            "properties": () => context.expectDictionary(
-                key => {
-                    let targetPropertyType: t.PropertyType | null = null
-                    return context.expectType(
-                        _startRange => {
-                            //
-                        },
-                        {
-                            "type": () => context.expectTaggedUnion(
-                                {
-                                    "collection": () => {
-                                        let targetCollectionType: t.CollectionType | null = null
-                                        return context.expectType(
-                                            _startRange => {
-                                                //
-                                            },
-                                            {
-                                                "type": () => context.expectTaggedUnion(
+            "properties": {
+                onExists: () => context.expectDictionary(
+                    key => {
+                        let targetPropertyType: t.PropertyType | null = null
+                        return context.expectType(
+                            _startRange => {
+                                //
+                            },
+                            {
+                                "type": {
+                                    onExists: () => context.expectTaggedUnion(
+                                        {
+                                            "collection": () => {
+                                                let targetCollectionType: t.CollectionType | null = null
+                                                return context.expectType(
+                                                    _startRange => {
+                                                        //
+                                                    },
                                                     {
-                                                        "dictionary": () => {
-                                                            let targetHasInstances: t.DictionaryHasInstances | null = null
-                                                            return context.expectType(
-                                                                _startRange => {
-                                                                    //
-                                                                },
+                                                        "type": {
+                                                            onExists: () => context.expectTaggedUnion(
                                                                 {
-                                                                    "has instances": () => context.expectTaggedUnion(
-                                                                        {
-                                                                            "yes": () => {
-                                                                                let targetNode: t.Node | null = null
-                                                                                return context.expectType(
-                                                                                    _startRange => {
-                                                                                        //
-                                                                                    },
-                                                                                    {
-                                                                                        "node": () => deserializeMetaNode(context, componentTypes, node => targetNode = node, resolveRegistry),
-                                                                                    },
-                                                                                    () => {
-                                                                                        unguaranteedAssertIsDeserialized(targetNode, assertedTargetNode => {
-                                                                                            targetHasInstances = ["yes", {
-                                                                                                "node": assertedTargetNode,
-                                                                                            }]
-                                                                                        })
-                                                                                    }
-                                                                                )
+                                                                    "dictionary": () => {
+                                                                        let targetHasInstances: t.DictionaryHasInstances | null = null
+                                                                        return context.expectType(
+                                                                            _startRange => {
+                                                                                //
                                                                             },
-                                                                            "no": () => {
-                                                                                targetHasInstances = ["no", {}]
-                                                                                return context.expectType(
-                                                                                    _startRange => {
-                                                                                        //
-                                                                                    },
-                                                                                    {},
-                                                                                    () => {
-                                                                                        //
-                                                                                    })
+                                                                            {
+                                                                                "has instances": {
+                                                                                    onExists: () => context.expectTaggedUnion(
+                                                                                        {
+                                                                                            "yes": () => {
+                                                                                                let targetNode: t.Node | null = null
+                                                                                                return context.expectType(
+                                                                                                    _startRange => {
+                                                                                                        //
+                                                                                                    },
+                                                                                                    {
+                                                                                                        "node": {
+                                                                                                            onExists: () => deserializeMetaNode(context, componentTypes, node => targetNode = node, resolveRegistry),
+                                                                                                            onNotExists: null,
+                                                                                                        },
+                                                                                                    },
+                                                                                                    () => {
+                                                                                                        unguaranteedAssertIsDeserialized(targetNode, assertedTargetNode => {
+                                                                                                            targetHasInstances = ["yes", {
+                                                                                                                "node": assertedTargetNode,
+                                                                                                            }]
+                                                                                                        })
+                                                                                                    }
+                                                                                                )
+                                                                                            },
+                                                                                            "no": () => {
+                                                                                                targetHasInstances = ["no", {}]
+                                                                                                return context.expectType(
+                                                                                                    _startRange => {
+                                                                                                        //
+                                                                                                    },
+                                                                                                    {},
+                                                                                                    () => {
+                                                                                                        //
+                                                                                                    })
+                                                                                            },
+                                                                                        }
+                                                                                    ),
+                                                                                    onNotExists: null,
+                                                                                },
                                                                             },
-                                                                        }
-                                                                    ),
-                                                                },
-                                                                () => {
-                                                                    unguaranteedAssertIsDeserialized(targetHasInstances, asserted => {
-                                                                        targetCollectionType = ["dictionary", {
-                                                                            "has instances": asserted,
-                                                                        }]
-                                                                    })
+                                                                            () => {
+                                                                                unguaranteedAssertIsDeserialized(targetHasInstances, asserted => {
+                                                                                    targetCollectionType = ["dictionary", {
+                                                                                        "has instances": asserted,
+                                                                                    }]
+                                                                                })
+                                                                            }
+                                                                        )
+                                                                    },
+                                                                    "list": () => {
+                                                                        let targetHasInstances: t.ListHasInstances | null = null
+                                                                        return context.expectType(
+                                                                            _startRange => {
+                                                                                //
+                                                                            },
+                                                                            {
+                                                                                "has instances": {
+                                                                                    onExists: () => context.expectTaggedUnion({
+                                                                                        "yes": () => {
+                                                                                            let targetNode: t.Node | null = null
+                                                                                            return context.expectType(
+                                                                                                _startRange => {
+                                                                                                    //
+                                                                                                },
+                                                                                                {
+                                                                                                    "node": {
+                                                                                                        onExists: () => deserializeMetaNode(context, componentTypes, node => targetNode = node, resolveRegistry),
+                                                                                                        onNotExists: null,
+                                                                                                    },
+                                                                                                },
+                                                                                                () => {
+                                                                                                    unguaranteedAssertIsDeserialized(targetNode, asserted => {
+                                                                                                        targetHasInstances = ["yes", {
+                                                                                                            node: asserted,
+                                                                                                        }]
+                                                                                                    })
+                                                                                                },
+                                                                                            )
+                                                                                        },
+                                                                                        "no": () => {
+                                                                                            targetHasInstances = ["no", {}]
+                                                                                            return context.expectType(
+                                                                                                _startRange => {
+                                                                                                    //
+                                                                                                },
+                                                                                                {},
+                                                                                                () => {
+                                                                                                    //
+                                                                                                })
+                                                                                        },
+                                                                                    }),
+                                                                                    onNotExists: null,
+                                                                                },
+                                                                            },
+                                                                            () => {
+                                                                                unguaranteedAssertIsDeserialized(targetHasInstances, asserted => {
+                                                                                    targetCollectionType = ["list", {
+                                                                                        "has instances": asserted,
+                                                                                    }]
+                                                                                })
+                                                                            },
+                                                                        )
+                                                                    },
                                                                 }
-                                                            )
+                                                            ),
+                                                            onNotExists: null,
                                                         },
-                                                        "list": () => {
-                                                            let targetHasInstances: t.ListHasInstances | null = null
-                                                            return context.expectType(
-                                                                _startRange => {
-                                                                    //
-                                                                },
-                                                                {
-                                                                    "has instances": () => context.expectTaggedUnion({
-                                                                        "yes": () => {
-                                                                            let targetNode: t.Node | null = null
-                                                                            return context.expectType(
-                                                                                _startRange => {
-                                                                                    //
-                                                                                },
-                                                                                {
-                                                                                    "node": () => deserializeMetaNode(context, componentTypes, node => targetNode = node, resolveRegistry),
-                                                                                },
-                                                                                () => {
-                                                                                    unguaranteedAssertIsDeserialized(targetNode, asserted => {
-                                                                                        targetHasInstances = ["yes", {
-                                                                                            node: asserted,
-                                                                                        }]
-                                                                                    })
-                                                                                },
+                                                    },
+                                                    () => {
+                                                        unguaranteedAssertIsDeserialized(targetCollectionType, asserted => {
+                                                            targetPropertyType = ["collection", {
+                                                                "type": asserted,
+                                                            }]
+                                                        })
+                                                    },
+                                                )
+
+                                            },
+                                            "component": () => {
+                                                let targetComponentTypeName: string | null = null
+                                                let targetComponentTypeNameRange: bc.Range | null = null
+                                                return context.expectType(
+                                                    _startRange => {
+                                                        //
+                                                    },
+                                                    {
+                                                        "type": {
+                                                            onExists: () => context.expectQuotedString((sourceComponentTypeName, range) => {
+                                                                targetComponentTypeName = sourceComponentTypeName
+                                                                targetComponentTypeNameRange = range
+                                                            }),
+                                                            onNotExists: null,
+                                                        },
+                                                    },
+                                                    () => {
+                                                        unguaranteedAssertIsDeserialized(targetComponentTypeName, assertedTargetComponentTypeName => {
+                                                            unguaranteedAssertIsDeserialized(targetComponentTypeNameRange, assertedRange => {
+                                                                targetPropertyType = ["component", {
+                                                                    "type": g.createReference(
+                                                                        assertedTargetComponentTypeName,
+                                                                        componentTypes,
+                                                                        resolveRegistry,
+                                                                        () => {
+                                                                            context.raiseError(
+                                                                                `component type '${assertedTargetComponentTypeName}' not found`,
+                                                                                assertedRange
                                                                             )
                                                                         },
-                                                                        "no": () => {
-                                                                            targetHasInstances = ["no", {}]
-                                                                            return context.expectType(
-                                                                                _startRange => {
-                                                                                    //
-                                                                                },
-                                                                                {},
-                                                                                () => {
-                                                                                    //
-                                                                                })
-                                                                        },
-                                                                    }),
-                                                                },
-                                                                () => {
-                                                                    unguaranteedAssertIsDeserialized(targetHasInstances, asserted => {
-                                                                        targetCollectionType = ["list", {
-                                                                            "has instances": asserted,
-                                                                        }]
-                                                                    })
-                                                                },
-                                                            )
-                                                        },
-                                                    }
-                                                ),
-                                            },
-                                            () => {
-                                                unguaranteedAssertIsDeserialized(targetCollectionType, asserted => {
-                                                    targetPropertyType = ["collection", {
-                                                        "type": asserted,
-                                                    }]
-                                                })
-                                            },
-                                        )
+                                                                    ),
+                                                                }]
 
-                                    },
-                                    "component": () => {
-                                        let targetComponentTypeName: string | null = null
-                                        let targetComponentTypeNameRange: bc.Range | null = null
-                                        return context.expectType(
-                                            _startRange => {
-                                                //
-                                            },
-                                            {
-                                                "type": () => context.expectQuotedString((sourceComponentTypeName, range) => {
-                                                    targetComponentTypeName = sourceComponentTypeName
-                                                    targetComponentTypeNameRange = range
-                                                }),
-                                            },
-                                            () => {
-                                                unguaranteedAssertIsDeserialized(targetComponentTypeName, assertedTargetComponentTypeName => {
-                                                    unguaranteedAssertIsDeserialized(targetComponentTypeNameRange, assertedRange => {
-                                                        targetPropertyType = ["component", {
-                                                            "type": g.createReference(
-                                                                assertedTargetComponentTypeName,
-                                                                componentTypes,
-                                                                resolveRegistry,
-                                                                () => {
-                                                                    context.raiseError(
-                                                                        `component type '${assertedTargetComponentTypeName}' not found`,
-                                                                        assertedRange
-                                                                    )
-                                                                },
-                                                            ),
-                                                        }]
-
-                                                    })
-
-                                                })
-                                            },
-                                        )
-                                    },
-                                    "state group": () => {
-                                        const states = new g.Dictionary<t.State>({})
-                                        return context.expectType(
-                                            _startRange => {
-                                                //
-                                            },
-                                            {
-                                                "states": () => context.expectDictionary(stateKey => {
-                                                    let targetNode: t.Node | null = null
-                                                    return context.expectType(
-                                                        _startRange => {
-                                                            //
-                                                        },
-                                                        {
-                                                            "node": () => deserializeMetaNode(context, componentTypes, node => targetNode = node, resolveRegistry),
-                                                        },
-                                                        () => {
-                                                            unguaranteedAssertIsDeserialized(targetNode, asserted => {
-                                                                states.add(stateKey, {
-                                                                    node: asserted,
-                                                                })
                                                             })
+
+                                                        })
+                                                    },
+                                                )
+                                            },
+                                            "state group": () => {
+                                                const states = new g.Dictionary<t.State>({})
+                                                return context.expectType(
+                                                    _startRange => {
+                                                        //
+                                                    },
+                                                    {
+                                                        "states": {
+                                                            onExists: () => context.expectDictionary(stateKey => {
+                                                                let targetNode: t.Node | null = null
+                                                                return context.expectType(
+                                                                    _startRange => {
+                                                                        //
+                                                                    },
+                                                                    {
+                                                                        "node": {
+                                                                            onExists: () => deserializeMetaNode(context, componentTypes, node => targetNode = node, resolveRegistry),
+                                                                            onNotExists: null,
+                                                                        },
+                                                                    },
+                                                                    () => {
+                                                                        unguaranteedAssertIsDeserialized(targetNode, asserted => {
+                                                                            states.add(stateKey, {
+                                                                                node: asserted,
+                                                                            })
+                                                                        })
+                                                                    },
+                                                                )
+                                                            }),
+                                                            onNotExists: null,
                                                         },
-                                                    )
-                                                }),
+                                                    },
+                                                    () => {
+                                                        targetPropertyType = ["state group", {
+                                                            "states": states,
+                                                        }]
+                                                    },
+                                                )
                                             },
-                                            () => {
-                                                targetPropertyType = ["state group", {
-                                                    "states": states,
-                                                }]
+                                            "value": () => {
+                                                return context.expectType(
+                                                    _startRange => {
+                                                        //
+                                                    },
+                                                    {
+                                                    },
+                                                    () => {
+                                                        targetPropertyType = ["value", {
+                                                        }]
+                                                    },
+                                                )
                                             },
-                                        )
-                                    },
-                                    "value": () => {
-                                        return context.expectType(
-                                            _startRange => {
-                                                //
-                                            },
-                                            {
-                                            },
-                                            () => {
-                                                targetPropertyType = ["value", {
-                                                }]
-                                            },
-                                        )
-                                    },
-                                }
-                            ),
-                        },
-                        () => {
-                            unguaranteedAssertIsDeserialized(targetPropertyType, asserted => {
-                                properties.add(key, {
-                                    type: asserted,
+                                        }
+                                    ),
+                                    onNotExists: null,
+                                },
+                            },
+                            () => {
+                                unguaranteedAssertIsDeserialized(targetPropertyType, asserted => {
+                                    properties.add(key, {
+                                        type: asserted,
+                                    })
                                 })
-                            })
-                        }
-                    )
-                }
-            ),
+                            }
+                        )
+                    }
+                ),
+                onNotExists: null,
+            },
         },
         () => {
             callback({ properties: properties })
@@ -279,32 +309,41 @@ export function createDeserializer(onError: (message: string, range: bc.Range) =
             //
         },
         {
-            "component types": () => context.expectDictionary(
-                key => {
-                    let targetNode: t.Node | null = null
-                    const vh = deserializeMetaNode(context, componentTypes, node => targetNode = node, resolveRegistry)
-                    const castValueHandler = vh
-                    return context.expectType(
-                        _startRange => {
-                            //
-                        },
-                        {
-                            "node": () => castValueHandler,
-                        },
-                        () => {
-                            unguaranteedAssertIsDeserialized(targetNode, asserted => {
-                                componentTypes.add(key, {
-                                    node: asserted,
+            "component types": {
+                onExists: () => context.expectDictionary(
+                    key => {
+                        let targetNode: t.Node | null = null
+                        const vh = deserializeMetaNode(context, componentTypes, node => targetNode = node, resolveRegistry)
+                        const castValueHandler = vh
+                        return context.expectType(
+                            _startRange => {
+                                //
+                            },
+                            {
+                                "node": {
+                                    onExists: () => castValueHandler,
+                                    onNotExists: null,
+                                },
+                            },
+                            () => {
+                                unguaranteedAssertIsDeserialized(targetNode, asserted => {
+                                    componentTypes.add(key, {
+                                        node: asserted,
+                                    })
                                 })
-                            })
-                        },
-                    )
-                },
-            ),
-            "root type": () => context.expectQuotedString((sourceRootName, range) => {
-                rootName = sourceRootName
-                rootNameRange = range
-            }),
+                            },
+                        )
+                    },
+                ),
+                onNotExists: null,
+            },
+            "root type": {
+                onExists: () => context.expectQuotedString((sourceRootName, range) => {
+                    rootName = sourceRootName
+                    rootNameRange = range
+                }),
+                onNotExists: null,
+            },
         },
         () => {
             guaranteedAssertIsDeserialized(
