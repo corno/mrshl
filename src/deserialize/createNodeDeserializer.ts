@@ -228,7 +228,6 @@ function createPropertyDeserializer(
                     registerSnippetGenerators(
                         tuData.optionRange,
                         () => {
-                            console.log("OPTIONS", Object.keys($.states.map(s => s)))
                             return Object.keys($.states.map(s => s))
                         },
                         null
