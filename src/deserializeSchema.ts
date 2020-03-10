@@ -53,27 +53,24 @@ export function deserializeSchema(onError: (message: string, range: bc.Range) =>
     //attach the schema schema deserializer
     schemaParser.onschemadata.subscribe(bc.createStackedDataSubscriber(
         {
-            array: range => {
-                onSchemaError("unexpected array as schema schema", range)
+            array: openData => {
+                onSchemaError("unexpected array as schema schema", openData.start)
                 return bc.createDummyArrayHandler()
             },
-            object: range => {
-                onSchemaError("unexpected object as schema schema", range)
+            object: openData => {
+                onSchemaError("unexpected object as schema schema", openData.start)
                 return bc.createDummyObjectHandler()
             },
-            unquotedToken: (_value, range) => {
-                onSchemaError("unexpected unquoted token as schema schema", range)
-            },
-            quotedString: (schemaSchemaReference, strRange) => {
+            simpleValue: (schemaSchemaReference, svData) => {
                 const schemaSchema = schemaSchemas[schemaSchemaReference]
                 if (schemaSchema === undefined) {
-                    onSchemaError(`unknown schema schema ${schemaSchemaReference}, (options: ${Object.keys(schemaSchemas)})`, strRange)
+                    onSchemaError(`unknown schema schema ${schemaSchemaReference}, (options: ${Object.keys(schemaSchemas)})`, svData.range)
                 } else {
                     schemaProcessor = schemaSchema
                 }
             },
-            taggedUnion: (_value, range) => {
-                onSchemaError("unexpected typed union as schema schema", range)
+            taggedUnion: (_value, tuData) => {
+                onSchemaError("unexpected typed union as schema schema", tuData.startRange)
                 return bc.createDummyValueHandler()
             },
         },

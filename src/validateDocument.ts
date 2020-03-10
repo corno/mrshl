@@ -1,7 +1,7 @@
 import * as bc from "bass-clarinet"
 import { attachDeserializer } from "./deserialize"
 import { createMetaDataDeserializer, createNodeValidator } from "./internalSchema"
-import { NodeBuilder } from "./deserialize"
+import { NodeBuilder, RegisterSnippetsGenerators } from "./deserialize"
 import { SchemaAndNodeValidator } from "./deserializeSchema"
 
 export type ResolveSchemaReference = (
@@ -19,6 +19,7 @@ export function validateDocument(
     schemaReferenceResolver: ResolveSchemaReference,
     onError: (message: string, range: bc.Range) => void,
     onWarning: (message: string, range: bc.Range) => void,
+    registerSnippetGenerators: RegisterSnippetsGenerators,
 ): Promise<void> {
     return new Promise((resolve, reject) => {
         const parser = new bc.Parser(
@@ -40,8 +41,8 @@ export function validateDocument(
 
         parser.onschemadata.subscribe(bc.createStackedDataSubscriber(
             {
-                array: range => {
-                    onSchemaError("unexpected array as schema", range)
+                array: openData => {
+                    onSchemaError("unexpected array as schema", openData.start)
                     return bc.createDummyArrayHandler()
                 },
                 object: createMetaDataDeserializer(
@@ -58,23 +59,23 @@ export function validateDocument(
                         }
                     }
                 ),
-                unquotedToken: (_value, range) => {
-                    onSchemaError("unexpected unquoted token as schema", range)
-                },
-                quotedString: (schemaReference, strRange, _comments, pauser) => {
-                    pauser.pause()
+                // unquotedToken: (_value, range) => {
+                //     onSchemaError("unexpected unquoted token as schema", range)
+                // },
+                simpleValue: (schemaReference, svData) => {
+                    svData.pauser.pause()
                     schemaReferenceResolver(schemaReference, nodeBuilder)
                         .then(md => {
                             metaData = md
-                            pauser.continue()
+                            svData.pauser.continue()
                         })
                         .catch(errorMessage => {
-                            onSchemaError(errorMessage, strRange)
-                            pauser.continue()
+                            onSchemaError(errorMessage, svData.range)
+                            svData.pauser.continue()
                         })
                 },
-                taggedUnion: (_value, range) => {
-                    onSchemaError("unexpected typed union as schema", range)
+                taggedUnion: (_value, tuData) => {
+                    onSchemaError("unexpected typed union as schema", tuData.startRange)
                     return bc.createDummyValueHandler()
                 },
             },
@@ -110,6 +111,7 @@ export function validateDocument(
                             onWarning,
                             nodeBuilder,
                             false,
+                            registerSnippetGenerators,
                             resolve
                         )
                     }
@@ -128,6 +130,7 @@ export function validateDocument(
                                 onWarning,
                                 nodeBuilder,
                                 compact,
+                                registerSnippetGenerators,
                                 resolve
                             )
                         } else {
@@ -156,6 +159,7 @@ export function validateDocument(
                                 onWarning,
                                 nodeBuilder,
                                 compact,
+                                registerSnippetGenerators,
                                 resolve
                             )
                         }

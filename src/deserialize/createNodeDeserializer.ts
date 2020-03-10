@@ -1,9 +1,65 @@
+import * as bc from "bass-clarinet"
+import * as fp from "fountain-pen"
 import * as md from "../internalSchema"
 import { NodeBuilder, NodeValidator } from "./api"
-import * as bc from "bass-clarinet"
+import { RegisterSnippetsGenerators } from "./registerSnippetGenerators"
 
 function assertUnreachable<RT>(_x: never): RT {
     throw new Error("Unreachable")
+}
+
+function createPropertySnippet(prop: md.Property): fp.InlinePart {
+    switch (prop.type[0]) {
+        case "collection": {
+            const $ = prop.type[1]
+            switch ($.type[0]) {
+                case "dictionary": {
+                    return `{}`
+                }
+                case "list": {
+                    return `[]`
+                }
+                default:
+                    return assertUnreachable($.type[0])
+            }
+        }
+        case "component": {
+            const $ = prop.type[1]
+
+            return createNodeSnippet($.type.get().node)
+        }
+        case "state group": {
+            //const $ = prop.type[1]
+            return `| '' ()`
+        }
+        case "value": {
+            //const $ = prop.type[1]
+            return `"${""}"`
+        }
+        default:
+            return assertUnreachable(prop.type[0])
+    }
+}
+
+function createPropertiesSnippet(node: md.Node): fp.IParagraph {
+    const x: fp.ParagraphPart[] = []
+    node.properties.map((prop, propKey) => {
+        x.push(fp.line([
+            `'${propKey}': `,
+            createPropertySnippet(prop),
+        ]))
+    })
+    return x
+}
+
+function createNodeSnippet(node: md.Node): fp.InlinePart {
+    return [
+        '(',
+        () => {
+            return createPropertiesSnippet(node)
+        },
+        ')',
+    ]
 }
 
 function createPropertyDeserializer(
@@ -12,7 +68,8 @@ function createPropertyDeserializer(
     propKey: string,
     nodeBuilder: NodeBuilder,
     nodeValidator: NodeValidator,
-    isCompact: boolean
+    isCompact: boolean,
+    registerSnippetGenerators: RegisterSnippetsGenerators,
 ): bc.ValueHandler {
     switch (propDefinition.type[0]) {
         case "collection": {
@@ -22,31 +79,66 @@ function createPropertyDeserializer(
                     const $$ = $.type[1]
                     switch ($$["has instances"][0]) {
                         case "no": {
-                            return context.expectDictionary(_key => {
-                                return context.expectNothing()
-                            })
+                            return context.expectDictionary(
+                                openData => {
+                                    registerSnippetGenerators(openData.start, null, null)
+                                },
+                                (_key, propertyData) => {
+                                    registerSnippetGenerators(propertyData.keyRange, null, null)
+                                    return context.expectNothing()
+                                },
+                                endData => {
+                                    registerSnippetGenerators(endData.range, null, null)
+                                },
+                            )
                         }
                         case "yes": {
                             const $$$ = $$["has instances"][1]
-                            return context.expectDictionary((_key, range, comments) => {
-                                const collBuilder = nodeBuilder.setCollection(propKey, range, comments)
+                            const collBuilder = nodeBuilder.setCollection(propKey)
+                            const collValidator = nodeValidator.setCollection(propKey)
+                            return context.expectDictionary(
+                                beginData => {
+                                    registerSnippetGenerators(beginData.start, null, null)
+                                },
+                                (_key, propertyData, _preData) => {
+                                    registerSnippetGenerators(
+                                        propertyData.keyRange,
+                                        null,
+                                        () => {
+                                            const out: string[] = []
+                                            fp.serialize(
+                                                [createNodeSnippet($$$.node)], "    ", true, snippet => {
+                                                    out.push(snippet)
+                                                })
+                                            return [out.map((line, index) => {
+                                                //don't indent the first line
+                                                if (index === 0) {
+                                                    return line
+                                                }
+                                                return line
+                                                //return preData.indentation + line
+                                            }).join("\n")]
+                                        }
+                                    )
 
-                                const entry = collBuilder.createEntry()
-                                entry.insert() //might be problematic.. insertion before fully initialized
+                                    const entry = collBuilder.createEntry()
+                                    entry.insert() //might be problematic.. insertion before fully initialized
+                                    const entryValidator = collValidator.createEntry()
+                                    entryValidator.insert() //might be problematic.. insertion before fully initialized
 
-                                const collValidator = nodeValidator.setCollection(propKey, range, comments)
-
-                                const entryValidator = collValidator.createEntry()
-                                entryValidator.insert() //might be problematic.. insertion before fully initialized
-
-                                return createNodeDeserializer(
-                                    context,
-                                    $$$.node,
-                                    entry.node,
-                                    entryValidator.node,
-                                    isCompact
-                                )
-                            })
+                                    return createNodeDeserializer(
+                                        context,
+                                        $$$.node,
+                                        entry.node,
+                                        entryValidator.node,
+                                        isCompact,
+                                        registerSnippetGenerators,
+                                    )
+                                },
+                                endData => {
+                                    registerSnippetGenerators(endData.range, null, null)
+                                },
+                            )
                         }
                         default:
                             return assertUnreachable($$["has instances"][0])
@@ -57,32 +149,46 @@ function createPropertyDeserializer(
 
                     switch ($$["has instances"][0]) {
                         case "no": {
-                            return context.expectList(_key => {
-                                return context.expectNothing()
-                            })
+                            return context.expectList(
+                                beginData => {
+                                    registerSnippetGenerators(beginData.start, null, null)
+                                },
+                                () => {
+                                    return context.expectNothing()
+                                },
+                                endData => {
+                                    registerSnippetGenerators(endData.range, null, null)
+                                },
+                            )
                         }
                         case "yes": {
                             const $$$ = $$["has instances"][1]
-                            return context.expectList((range, comments) => {
-                                const collBuilder = nodeBuilder.setCollection(propKey, range, comments)
+                            const collBuilder = nodeBuilder.setCollection(propKey)
+                            const collValidator = nodeValidator.setCollection(propKey)
+                            return context.expectList(
+                                beginData => {
+                                    registerSnippetGenerators(beginData.start, null, null)
+                                },
+                                () => {
+                                    const entry = collBuilder.createEntry()
+                                    entry.insert()
 
-                                const entry = collBuilder.createEntry()
-                                entry.insert()
+                                    const entryValidator = collValidator.createEntry()
+                                    entryValidator.insert()
 
-
-                                const collValidator = nodeValidator.setCollection(propKey, range, comments)
-
-                                const entryValidator = collValidator.createEntry()
-                                entryValidator.insert()
-
-                                return createNodeDeserializer(
-                                    context,
-                                    $$$.node,
-                                    entry.node,
-                                    entryValidator.node,
-                                    isCompact
-                                )
-                            })
+                                    return createNodeDeserializer(
+                                        context,
+                                        $$$.node,
+                                        entry.node,
+                                        entryValidator.node,
+                                        isCompact,
+                                        registerSnippetGenerators,
+                                    )
+                                },
+                                endData => {
+                                    registerSnippetGenerators(endData.range, null, null)
+                                },
+                            )
                         }
                         default:
                             return assertUnreachable($$["has instances"][0])
@@ -102,22 +208,39 @@ function createPropertyDeserializer(
                 componentBuilder.node,
                 componentValidator.node,
                 isCompact,
+                registerSnippetGenerators,
             )
         }
         case "state group": {
             const $ = propDefinition.type[1]
-            return context.expectTaggedUnion($.states.map((stateDef, stateName) => {
-                return (startRange, tuComments, optionRange, optionComments) => {
-                    const state = nodeBuilder.setStateGroup(propKey, stateName, startRange, tuComments, optionRange, optionComments)
-                    const stateValidator = nodeValidator.setStateGroup(propKey, stateName, startRange, tuComments, optionRange, optionComments)
-                    return createNodeDeserializer(context, stateDef.node, state.node, stateValidator.node, isCompact)
-                }
-            }))
+            return context.expectTaggedUnion(
+                $.states.map((stateDef, stateName) => {
+                    return (tuData, tuPreData, optionPreData) => {
+                        registerSnippetGenerators(tuData.startRange, null, null)
+                        registerSnippetGenerators(tuData.optionRange, null, null)
+                        const state = nodeBuilder.setStateGroup(propKey, stateName, tuData.startRange, tuPreData, tuData.optionRange, optionPreData)
+                        const stateValidator = nodeValidator.setStateGroup(propKey, stateName, tuData.startRange, tuPreData, tuData.optionRange, optionPreData)
+                        return createNodeDeserializer(context, stateDef.node, state.node, stateValidator.node, isCompact, registerSnippetGenerators)
+                    }
+                }),
+                (_option, tuData) => {
+                    registerSnippetGenerators(tuData.startRange, null, null)
+                    registerSnippetGenerators(
+                        tuData.optionRange,
+                        () => {
+                            console.log("OPTIONS", Object.keys($.states.map(s => s)))
+                            return Object.keys($.states.map(s => s))
+                        },
+                        null
+                    )
+                },
+            )
         }
         case "value": {
-            return context.expectSimpleValue((value, quoted, range, comments) => {
-                nodeBuilder.setSimpleValue(propKey, value, quoted, range, comments)
-                nodeValidator.setSimpleValue(propKey, value, quoted, range, comments)
+            return context.expectSimpleValue((value, svData, comments) => {
+                registerSnippetGenerators(svData.range, null, null)
+                nodeBuilder.setSimpleValue(propKey, value, svData.quote !== null, svData.range, comments)
+                nodeValidator.setSimpleValue(propKey, value, svData.quote !== null, svData.range, comments)
             })
         }
         default:
@@ -125,21 +248,28 @@ function createPropertyDeserializer(
     }
 }
 
-export function createNodeDeserializer(context: bc.ExpectContext, nodeDefinition: md.Node, nodeBuilder: NodeBuilder, nodeValidator: NodeValidator, isCompact: boolean): bc.ValueHandler {
+export function createNodeDeserializer(
+    context: bc.ExpectContext,
+    nodeDefinition: md.Node,
+    nodeBuilder: NodeBuilder,
+    nodeValidator: NodeValidator,
+    isCompact: boolean,
+    registerSnippetGenerators: RegisterSnippetsGenerators,
+): bc.ValueHandler {
     if (isCompact) {
-        const expectedElements: (() => bc.ValueHandler)[] = []
+        const expectedElements: bc.ExpectedElements = []
         nodeDefinition.properties.forEach((propDefinition, propKey) => {
-            expectedElements.push(((): () => bc.ValueHandler => {
-                return () => createPropertyDeserializer(context, propDefinition, propKey, nodeBuilder, nodeValidator, isCompact)
-            })())
+            expectedElements.push(() => {
+                return createPropertyDeserializer(context, propDefinition, propKey, nodeBuilder, nodeValidator, isCompact, registerSnippetGenerators)
+            })
         })
         return context.expectArrayType(
-            _startRange => {
-                //
+            startData => {
+                registerSnippetGenerators(startData.start, null, null)
             },
             expectedElements,
-            () => {
-                //nothing to do on end
+            endData => {
+                registerSnippetGenerators(endData.range, null, null)
             }
         )
 
@@ -147,18 +277,80 @@ export function createNodeDeserializer(context: bc.ExpectContext, nodeDefinition
         const expectedProperties: bc.ExpectedProperties = {}
         nodeDefinition.properties.forEach((propDefinition, propKey) => {
             expectedProperties[propKey] = {
-                onExists: () => createPropertyDeserializer(context, propDefinition, propKey, nodeBuilder, nodeValidator, isCompact),
-                onNotExists: null,
+                onExists: propertyData => {
+                    registerSnippetGenerators(
+                        propertyData.keyRange,
+                        null,
+                        () => {
+                            const out: string[] = []
+                            fp.serialize(
+                                [createPropertySnippet(propDefinition)], "    ", true, snippet => {
+                                    out.push(snippet)
+                                })
+                            return [out.map((line, index) => {
+                                //don't indent the first line
+                                if (index === 0) {
+                                    return line
+                                }
+                                return line
+                                //return preData.indentation + line
+                            }).join("\n")]
+                        },
+                    )
+                    return createPropertyDeserializer(context, propDefinition, propKey, nodeBuilder, nodeValidator, isCompact, registerSnippetGenerators)
+                },
+                onNotExists: () => {
+                    //
+                },
             }
         })
         return context.expectType(
-            _startRange => {
-                //
+            startRange => {
+                registerSnippetGenerators(
+                    startRange,
+                    null,
+                    () => {
+                        const out: string[] = []
+                        fp.serialize(
+                            [
+                                '',
+                                () => {
+                                    return createPropertiesSnippet(nodeDefinition)
+                                },
+                                '',
+                            ],
+                            "    ",
+                            true,
+                            snippet => {
+                                out.push(snippet)
+                            }
+                        )
+                        return [
+                            out.map((line, index) => {
+                                //don't indent the first line
+                                if (index === 0) {
+                                    return line
+                                }
+                                return line
+                                //return preData.indentation + line
+                            }).join("\n"),
+                        ]
+                    },
+                )
             },
             expectedProperties,
-            () => {
-                //nothing to do on end
-            }
+            (_hasErrors, endRange) => {
+                registerSnippetGenerators(endRange, null, null)
+            },
+            (_key, metaData, _preData) => {
+                registerSnippetGenerators(
+                    metaData.keyRange,
+                    () => {
+                        return Object.keys(expectedProperties)
+                    },
+                    null
+                )
+            },
         )
 
     }

@@ -38,7 +38,7 @@ export class LoggingNodeBuilder implements astn.NodeBuilder {
     constructor() {
         //
     }
-    public setCollection(_name: string, _range: bc.Range) {
+    public setCollection(_name: string) {
         return new LoggingCollectionBuilder()
     }
     public setComponent(_name: string) {
@@ -47,7 +47,7 @@ export class LoggingNodeBuilder implements astn.NodeBuilder {
     public setStateGroup(_name: string, _stateName: string, _range: bc.Range) {
         return new LoggingStateBuilder()
     }
-    public setSimpleValue(_name: string, _value: string, _quoted: boolean, _range: bc.Range, _comments: bc.Comment[]) {
+    public setSimpleValue(_name: string, _value: string, _quoted: boolean, _range: bc.Range, _preData: bc.PreData) {
 
         // console.log(`${bc.printLocation(_range.start)} string begin`)
         // console.log(`${bc.printLocation(_range.end)} string end`)
@@ -104,7 +104,10 @@ describe("main", () => {
                             },
                             (warningMessage, range) => {
                                 actualIssues.push([warningMessage, "warning", range.start.line, range.start.column, range.end.line, range.end.column])
-                            }
+                            },
+                            () => {
+                                //
+                            },
                         ).catch(e => {
                             if (e !== "errors in schema" && e !== "no schema") {
                                 throw new Error(`UNEXPECTED: SCHEMA EXCEPTION, ${e}`)
@@ -127,7 +130,10 @@ describe("main", () => {
                             },
                             (warningMessage, range) => {
                                 actualIssues.push([warningMessage, "warning", range.start.line, range.start.column, range.end.line, range.end.column])
-                            }
+                            },
+                            () => {
+                                //
+                            },
                         ).catch(e => {
                             if (e !== "errors in schema" && e !== "no schema") {
                                 throw new Error(`UNEXPECTED: SCHEMA EXCEPTION, ${e}`)

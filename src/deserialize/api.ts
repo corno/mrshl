@@ -1,4 +1,4 @@
-import { Range, Comment } from "bass-clarinet";
+import { Range, PreData } from "bass-clarinet";
 
 // tslint:disable: interface-name
 
@@ -16,10 +16,10 @@ export interface EntryBuilder {
 }
 
 export interface NodeBuilder {
-    setCollection(name: string, range: Range, comments: Comment[]): CollectionBuilder
+    setCollection(name: string): CollectionBuilder
     setComponent(name: string): ComponentBuilder
-    setStateGroup(name: string, stateName: string, startRange: Range, tuComments: Comment[], optionRange: Range, optionComments: Comment[]): StateBuilder
-    setSimpleValue(name: string, value: string, quoted: boolean, range: Range, comments: Comment[]): void
+    setStateGroup(name: string, stateName: string, startRange: Range, tuPreData: PreData, optionRange: Range, optionPreData: PreData): StateBuilder
+    setSimpleValue(name: string, value: string, quoted: boolean, range: Range, preData: PreData): void
 }
 
 export interface StateBuilder {
@@ -41,10 +41,10 @@ export interface EntryValidator {
 }
 
 export interface NodeValidator {
-    setCollection(name: string, range: Range, comments: Comment[]): CollectionValidator
+    setCollection(name: string): CollectionValidator
     setComponent(name: string): ComponentValidator
-    setStateGroup(name: string, stateName: string, startRange: Range, tuComments: Comment[], optionRange: Range, optionComments: Comment[]): StateValidator
-    setSimpleValue(name: string, value: string, quoted: boolean, range: Range, comments: Comment[]): void
+    setStateGroup(name: string, stateName: string, startRange: Range, tuPreData: PreData, optionRange: Range, optionPreData: PreData): StateValidator
+    setSimpleValue(name: string, value: string, quoted: boolean, range: Range, preData: PreData): void
 }
 
 export interface StateValidator {

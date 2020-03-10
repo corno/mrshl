@@ -16,8 +16,8 @@ export function attachSchemaDeserializer(parser: bc.Parser, onError: (message: s
 
     parser.ondata.subscribe(bc.createStackedDataSubscriber(
         {
-            array: range => {
-                onSchemaError("unexpected array as schema", range)
+            array: openData => {
+                onSchemaError("unexpected array as schema", openData.start)
                 return bc.createDummyArrayHandler()
             },
             object: createDeserializer(
@@ -28,14 +28,11 @@ export function attachSchemaDeserializer(parser: bc.Parser, onError: (message: s
                     metadata = md
                 }
             ),
-            unquotedToken: (_value, range) => {
-                onSchemaError("unexpected unquoted token as schema", range)
+            simpleValue: (_value, svData) => {
+                onSchemaError("unexpected string as schema", svData.range)
             },
-            quotedString: (_value, range) => {
-                onSchemaError("unexpected string as schema", range)
-            },
-            taggedUnion: (_value, range) => {
-                onSchemaError("unexpected typed union as schema", range)
+            taggedUnion: (_value, tuData) => {
+                onSchemaError("unexpected typed union as schema", tuData.startRange)
                 return bc.createDummyValueHandler()
             },
         },

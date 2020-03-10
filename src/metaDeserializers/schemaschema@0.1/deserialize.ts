@@ -29,6 +29,9 @@ function deserializeMetaNode(context: bc.ExpectContext, componentTypes: g.IReado
         {
             "properties": {
                 onExists: () => context.expectDictionary(
+                    () => {
+                        //
+                    },
                     key => {
                         let targetPropertyType: t.PropertyType | null = null
                         return context.expectType(
@@ -64,9 +67,9 @@ function deserializeMetaNode(context: bc.ExpectContext, componentTypes: g.IReado
                                                                             },
                                                                             {
                                                                                 "key property": {
-                                                                                    onExists: () => context.expectQuotedString((sourceKeyProperty, range) => {
+                                                                                    onExists: () => context.expectSimpleValue((sourceKeyProperty, metaData) => {
                                                                                         targetKeyProperty = sourceKeyProperty
-                                                                                        targetKeyPropertyRange = range
+                                                                                        targetKeyPropertyRange = metaData.range
                                                                                     }),
                                                                                     onNotExists: null,
                                                                                 },
@@ -137,9 +140,9 @@ function deserializeMetaNode(context: bc.ExpectContext, componentTypes: g.IReado
                                                     },
                                                     {
                                                         "type": {
-                                                            onExists: () => context.expectQuotedString((sourceComponentTypeName, range) => {
+                                                            onExists: () => context.expectSimpleValue((sourceComponentTypeName, metaData) => {
                                                                 targetComponentTypeName = sourceComponentTypeName
-                                                                targetComponentTypeNameRange = range
+                                                                targetComponentTypeNameRange = metaData.range
                                                             }),
                                                             onNotExists: null,
                                                         },
@@ -175,31 +178,39 @@ function deserializeMetaNode(context: bc.ExpectContext, componentTypes: g.IReado
                                                     },
                                                     {
                                                         "states": {
-                                                            onExists: () => context.expectDictionary(stateKey => {
-                                                                let targetNode: t.Node | null = null
-                                                                return context.expectType(
-                                                                    _startRange => {
-                                                                        //
-                                                                    },
-                                                                    {
-                                                                        "node": {
-                                                                            onExists: () => deserializeMetaNode(context, componentTypes, node => targetNode = node, resolveRegistry),
-                                                                            onNotExists: null,
+                                                            onExists: () => context.expectDictionary(
+                                                                () => {
+                                                                    //
+                                                                },
+                                                                stateKey => {
+                                                                    let targetNode: t.Node | null = null
+                                                                    return context.expectType(
+                                                                        _startRange => {
+                                                                            //
                                                                         },
-                                                                    },
-                                                                    () => {
-                                                                        unguaranteedAssertIsDeserialized(targetNode, asserted => {
-                                                                            states.add(stateKey, {
-                                                                                node: asserted,
+                                                                        {
+                                                                            "node": {
+                                                                                onExists: () => deserializeMetaNode(context, componentTypes, node => targetNode = node, resolveRegistry),
+                                                                                onNotExists: null,
+                                                                            },
+                                                                        },
+                                                                        () => {
+                                                                            unguaranteedAssertIsDeserialized(targetNode, asserted => {
+                                                                                states.add(stateKey, {
+                                                                                    node: asserted,
+                                                                                })
                                                                             })
-                                                                        })
-                                                                    },
-                                                                )
-                                                            }),
+                                                                        },
+                                                                    )
+                                                                },
+                                                                () => {
+                                                                    //
+                                                                },
+                                                            ),
                                                             onNotExists: null,
                                                         },
                                                         "default state": {
-                                                            onExists: () => context.expectQuotedString((_value, _range, _comments) => {
+                                                            onExists: () => context.expectSimpleValue(_value => {
                                                                 //
                                                             }),
                                                             onNotExists: null,
@@ -247,7 +258,7 @@ function deserializeMetaNode(context: bc.ExpectContext, componentTypes: g.IReado
                                                             onNotExists: null,
                                                         },
                                                         "default value": {
-                                                            onExists: () => context.expectQuotedString((_value, _range, _comments) => {
+                                                            onExists: () => context.expectSimpleValue((_value, _metaData) => {
                                                                 //
                                                             }),
                                                             onNotExists: null,
@@ -275,7 +286,10 @@ function deserializeMetaNode(context: bc.ExpectContext, componentTypes: g.IReado
                                 })
                             }
                         )
-                    }
+                    },
+                    () => {
+                        //
+                    },
                 ),
                 onNotExists: null,
             },
@@ -297,7 +311,11 @@ export function createDeserializer(onError: (message: string, range: bc.Range) =
         },
         _warningMessage => {
             //ignore
-        }
+        },
+        () => bc.createDummyArrayHandler(),
+        () => bc.createDummyObjectHandler(),
+        () => bc.createDummyValueHandler(),
+        () => bc.createDummyValueHandler(),
     )
     const resolveRegistry = new g.ResolveRegistry()
 
@@ -308,6 +326,9 @@ export function createDeserializer(onError: (message: string, range: bc.Range) =
         {
             "component types": {
                 onExists: () => context.expectDictionary(
+                    () => {
+                        //
+                    },
                     key => {
                         let targetNode: t.Node | null = null
                         const vh = deserializeMetaNode(context, componentTypes, node => targetNode = node, resolveRegistry)
@@ -331,13 +352,16 @@ export function createDeserializer(onError: (message: string, range: bc.Range) =
                             },
                         )
                     },
+                    () => {
+                        //
+                    },
                 ),
                 onNotExists: null,
             },
             "root type": {
-                onExists: () => context.expectQuotedString((sourceRootName, range) => {
+                onExists: () => context.expectSimpleValue((sourceRootName, svData) => {
                     rootName = sourceRootName
-                    rootNameRange = range
+                    rootNameRange = svData.range
                 }),
                 onNotExists: null,
             },
