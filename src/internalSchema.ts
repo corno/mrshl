@@ -1,3 +1,3 @@
 export { createDeserializer as createMetaDataDeserializer } from "./metaDeserializers/metadata@0.1/deserialize"
 export * from "./metaDeserializers/metadata@0.1/types"
-export { createNodeValidator } from "./metaDeserializers/metadata@0.1/dummyValidators"
+export { createNodeBuilder } from "./metaDeserializers/metadata@0.1/builders"

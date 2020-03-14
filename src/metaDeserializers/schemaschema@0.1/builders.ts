@@ -1,5 +1,5 @@
 import * as bc from "bass-clarinet"
-import * as validators from "../../deserialize/api"
+import * as builders from "../../deserialize/api"
 import * as types from "./types"
 
 /* eslint
@@ -12,7 +12,7 @@ function assertUnreachable(_x: never) {
 
 type OnError = (message: string, range: bc.Range) => void
 
-export class CollectionValidator implements validators.CollectionValidator {
+export class CollectionBuilder implements builders.CollectionBuilder {
     private readonly definition: types.Collection
     private readonly onError: OnError
 
@@ -21,34 +21,34 @@ export class CollectionValidator implements validators.CollectionValidator {
         this.onError = onError
     }
     public createEntry() {
-        return new EntryValidator(this.definition, this.onError)
+        return new EntryBuilder(this.definition, this.onError)
     }
 }
 
-export class ComponentValidator implements validators.ComponentValidator {
+export class ComponentBuilder implements builders.ComponentBuilder {
     //private readonly definition: types.Component
-    public readonly node: NodeValidator
+    public readonly node: NodeBuilder
     constructor(definition: types.Component, onError: OnError) {
         //this.definition = definition
-        this.node = new NodeValidator(definition.type.get().node, onError)
+        this.node = new NodeBuilder(definition.type.get().node, onError)
     }
 }
 
-export class EntryValidator implements validators.EntryValidator {
+export class EntryBuilder implements builders.EntryBuilder {
     //private readonly definition: types.Collection
     //private readonly onError: OnError
-    public readonly node: NodeValidator
+    public readonly node: NodeBuilder
     constructor(definition: types.Collection, onError: OnError) {
         //this.definition = definition
         //this.onError = onError
-        this.node = new NodeValidator(definition.node, onError)
+        this.node = new NodeBuilder(definition.node, onError)
     }
     public insert() {
         //
     }
 }
 
-export class NodeValidator implements validators.NodeValidator {
+export class NodeBuilder implements builders.NodeBuilder {
     private readonly definition: types.Node
     private readonly onError: OnError
     constructor(definition: types.Node, onError: OnError) {
@@ -63,7 +63,7 @@ export class NodeValidator implements validators.NodeValidator {
         if (propDef.type[0] !== "collection") {
             throw new Error(`UNEXPECTED: property '${name}' is not a collection`)
         }
-        return new CollectionValidator(propDef.type[1], this.onError)
+        return new CollectionBuilder(propDef.type[1], this.onError)
     }
     public setComponent(name: string) {
         const propDef = this.definition.properties.get(name)
@@ -73,7 +73,7 @@ export class NodeValidator implements validators.NodeValidator {
         if (propDef.type[0] !== "component") {
             throw new Error(`UNEXPECTED: property '${name}' is not a component`)
         }
-        return new ComponentValidator(propDef.type[1], this.onError)
+        return new ComponentBuilder(propDef.type[1], this.onError)
     }
     public setStateGroup(name: string, stateName: string) {
         const propDef = this.definition.properties.get(name)
@@ -87,7 +87,7 @@ export class NodeValidator implements validators.NodeValidator {
         if (stateDef === null) {
             throw new Error(`UNEXPECTED: no such state: ${stateName}`)
         }
-        return new StateValidator(stateDef, this.onError)
+        return new StateBuilder(stateDef, this.onError)
     }
     public setSimpleValue(name: string, value: string, quoted: boolean, range: bc.Range) {
 
@@ -127,18 +127,25 @@ export class NodeValidator implements validators.NodeValidator {
                 break
             }
             default:
-                return assertUnreachable($.type[0])
+                assertUnreachable($.type[0])
         }
+        return new ValueBuilder()
     }
 }
 
-export class StateValidator {
+export class ValueBuilder implements builders.ValueBuilder {
+    getSuggestions() {
+        return []
+    }
+}
+
+export class StateBuilder {
     //private readonly definition: types.State
     //private readonly onError: OnError
-    public readonly node: NodeValidator
+    public readonly node: NodeBuilder
     constructor(definition: types.State, onError: OnError) {
         //this.onError = onError
         //this.definition = definition
-        this.node = new NodeValidator(definition.node, onError)
+        this.node = new NodeBuilder(definition.node, onError)
     }
 }

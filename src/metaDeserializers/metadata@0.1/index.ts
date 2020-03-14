@@ -1,10 +1,10 @@
 import * as bc from "bass-clarinet"
 import { Schema } from "./types"
 import { createDeserializer } from "./deserialize"
-import { SchemaAndNodeValidator } from "../../deserializeSchema"
-import { DummyNodeValidator } from "./dummyValidators"
+import { SchemaAndNodeBuilder } from "../../deserializeSchema"
+import { NodeBuilder } from "./builders"
 
-export function attachSchemaDeserializer(parser: bc.Parser, onError: (message: string, range: bc.Range) => void, callback: (schema: SchemaAndNodeValidator | null) => void) {
+export function attachSchemaDeserializer(parser: bc.Parser, onError: (message: string, range: bc.Range) => void, callback: (schema: SchemaAndNodeBuilder | null) => void) {
     let foundError = false
     function onSchemaError(message: string, range: bc.Range) {
         onError(message, range)
@@ -51,7 +51,7 @@ export function attachSchemaDeserializer(parser: bc.Parser, onError: (message: s
             } else {
                 callback({
                     schema: metadata,
-                    nodeValidator: new DummyNodeValidator(),
+                    nodeBuilder: new NodeBuilder(),
                 })
             }
         }

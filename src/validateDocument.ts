@@ -1,21 +1,19 @@
 import * as bc from "bass-clarinet"
 import { attachDeserializer } from "./deserialize"
-import { createMetaDataDeserializer, createNodeValidator } from "./internalSchema"
-import { NodeBuilder, RegisterSnippetsGenerators } from "./deserialize"
-import { SchemaAndNodeValidator } from "./deserializeSchema"
+import { createMetaDataDeserializer, createNodeBuilder } from "./internalSchema"
+import { RegisterSnippetsGenerators } from "./deserialize"
+import { SchemaAndNodeBuilder } from "./deserializeSchema"
 
 export type ResolveSchemaReference = (
     reference: string,
-    nodeBuilder: NodeBuilder,
-) => Promise<SchemaAndNodeValidator>
+) => Promise<SchemaAndNodeBuilder>
 
 /**
  * this function returns a Promise<void> and the promise is resolved when the validation has been completed
  */
 export function validateDocument(
     document: string,
-    externalSchema: SchemaAndNodeValidator | null,
-    nodeBuilder: NodeBuilder,
+    externalSchema: SchemaAndNodeBuilder | null,
     schemaReferenceResolver: ResolveSchemaReference,
     onError: (message: string, range: bc.Range) => void,
     onWarning: (message: string, range: bc.Range) => void,
@@ -32,7 +30,7 @@ export function validateDocument(
 
         let foundSchema = false
         let foundSchemaErrors = false
-        let metaData: SchemaAndNodeValidator | null = null
+        let metaData: SchemaAndNodeBuilder | null = null
 
         function onSchemaError(message: string, range: bc.Range) {
             onError(message, range)
@@ -53,7 +51,7 @@ export function validateDocument(
                         if (md !== null) {
                             metaData = {
                                 schema: md,
-                                nodeValidator: createNodeValidator(),
+                                nodeBuilder: createNodeBuilder(),
                             }
 
                         }
@@ -64,7 +62,7 @@ export function validateDocument(
                 // },
                 simpleValue: (schemaReference, svData) => {
                     svData.pauser.pause()
-                    schemaReferenceResolver(schemaReference, nodeBuilder)
+                    schemaReferenceResolver(schemaReference)
                         .then(md => {
                             metaData = md
                             svData.pauser.continue()
@@ -109,7 +107,6 @@ export function validateDocument(
                             externalSchema,
                             onError,
                             onWarning,
-                            nodeBuilder,
                             false,
                             registerSnippetGenerators,
                             resolve
@@ -128,7 +125,6 @@ export function validateDocument(
                                 metaData,
                                 onError,
                                 onWarning,
-                                nodeBuilder,
                                 compact,
                                 registerSnippetGenerators,
                                 resolve
@@ -157,7 +153,6 @@ export function validateDocument(
                                 externalSchema,
                                 onError,
                                 onWarning,
-                                nodeBuilder,
                                 compact,
                                 registerSnippetGenerators,
                                 resolve

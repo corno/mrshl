@@ -4,14 +4,14 @@ import * as http from "http"
 import * as path from "path"
 import * as url from "url"
 import { Schema } from "../src/internalSchema"
-import { NodeValidator } from "./deserialize/api"
+import { NodeBuilder } from "./deserialize/api"
 
-export type SchemaAndNodeValidator = {
+export type SchemaAndNodeBuilder = {
     schema: Schema
-    nodeValidator: NodeValidator
+    nodeBuilder: NodeBuilder
 }
 
-type AttachSchemaDeserializer = (parser: bc.Parser, onError: (message: string, range: bc.Range) => void, callback: (schema: SchemaAndNodeValidator | null) => void) => void
+type AttachSchemaDeserializer = (parser: bc.Parser, onError: (message: string, range: bc.Range) => void, callback: (schema: SchemaAndNodeBuilder | null) => void) => void
 
 const schemaSchemas: { [key: string]: AttachSchemaDeserializer } = {}
 
@@ -29,7 +29,7 @@ fs.readdirSync(schemasDir, { encoding: "utf-8" }).forEach(dir => {
     schemaSchemas[dir] = attachFunc
 })
 
-export function deserializeSchema(onError: (message: string, range: bc.Range) => void, callback: (schema: SchemaAndNodeValidator | null) => void): bc.Tokenizer {
+export function deserializeSchema(onError: (message: string, range: bc.Range) => void, callback: (schema: SchemaAndNodeBuilder | null) => void): bc.Tokenizer {
     let foundError = false
     function onSchemaError(message: string, range: bc.Range) {
         onError(message, range)
@@ -111,7 +111,7 @@ export function deserializeSchema(onError: (message: string, range: bc.Range) =>
     return schemaTok
 }
 
-export function deserializeSchemaFromString(serializedSchema: string, onError: (message: string, range: bc.Range) => void): Promise<SchemaAndNodeValidator> {
+export function deserializeSchemaFromString(serializedSchema: string, onError: (message: string, range: bc.Range) => void): Promise<SchemaAndNodeBuilder> {
     return new Promise((resolve, reject) => {
         const schemaTok = deserializeSchema(onError, schema => {
             if (schema === null) {
@@ -134,7 +134,7 @@ export function deserializeSchemaFromString(serializedSchema: string, onError: (
 
 
 export function createFromURLSchemaDeserializer(host: string, pathStart: string, timeout: number) {
-    return (reference: string): Promise<SchemaAndNodeValidator> => {
+    return (reference: string): Promise<SchemaAndNodeBuilder> => {
         return new Promise((resolve, reject) => {
 
             // //const errors: string[] = []

@@ -1,8 +1,7 @@
 import * as bc from "bass-clarinet"
-import { NodeBuilder } from "./api"
 import { RegisterSnippetsGenerators } from "./registerSnippetGenerators"
 import { createNodeDeserializer } from "./createNodeDeserializer"
-import { SchemaAndNodeValidator } from "../deserializeSchema"
+import { SchemaAndNodeBuilder } from "../deserializeSchema"
 
 function createDummyPropertyHandler(
     _key: string,
@@ -59,10 +58,9 @@ function createDummyObjectHandler(beginRange: bc.Range, registerSnippetGenerator
 
 export function attachDeserializer(
     parser: bc.Parser,
-    metaData: SchemaAndNodeValidator,
+    metaData: SchemaAndNodeBuilder,
     onError: bc.IssueHandler,
     onWarning: bc.IssueHandler,
-    nodeBuilder: NodeBuilder,
     isCompact: boolean,
     registerSnippetGenerators: RegisterSnippetsGenerators,
     onEnd: () => void,
@@ -77,7 +75,7 @@ export function attachDeserializer(
     )
 
     parser.ondata.subscribe(bc.createStackedDataSubscriber(
-        createNodeDeserializer(context, metaData.schema["root type"].get().node, nodeBuilder, metaData.nodeValidator, isCompact, registerSnippetGenerators),
+        createNodeDeserializer(context, metaData.schema["root type"].get().node, metaData.nodeBuilder, isCompact, registerSnippetGenerators),
         error => {
             if (error.context[0] === "range") {
                 onError(error.message, error.context[1])

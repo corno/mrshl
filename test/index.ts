@@ -8,55 +8,12 @@ import * as fs from "fs"
 import * as path from "path"
 import { describe } from "mocha"
 import * as astn from "../src"
-import * as bc from "bass-clarinet"
 
 const testsDir = "./test/tests"
 
 type Issue = [string, "warning" | "error", number, number, number, number]
 
 type Issues = Issue[]
-
-
-export class LoggingCollectionBuilder implements astn.CollectionBuilder {
-    public createEntry() {
-        return new LoggingEntryBuilder()
-    }
-}
-
-export class LoggingComponentBuilder implements astn.ComponentBuilder {
-    public readonly node = new LoggingNodeBuilder()
-}
-
-export class LoggingEntryBuilder implements astn.EntryBuilder {
-    public readonly node = new LoggingNodeBuilder()
-    public insert() {
-        //
-    }
-}
-
-export class LoggingNodeBuilder implements astn.NodeBuilder {
-    constructor() {
-        //
-    }
-    public setCollection(_name: string) {
-        return new LoggingCollectionBuilder()
-    }
-    public setComponent(_name: string) {
-        return new LoggingComponentBuilder()
-    }
-    public setStateGroup(_name: string, _stateName: string, _range: bc.Range) {
-        return new LoggingStateBuilder()
-    }
-    public setSimpleValue(_name: string, _value: string, _quoted: boolean, _range: bc.Range, _preData: bc.PreData) {
-
-        // console.log(`${bc.printLocation(_range.start)} string begin`)
-        // console.log(`${bc.printLocation(_range.end)} string end`)
-    }
-}
-
-export class LoggingStateBuilder {
-    public readonly node = new LoggingNodeBuilder()
-}
 
 describe("main", () => {
     fs.readdirSync(testsDir).forEach(dir => {
@@ -97,7 +54,6 @@ describe("main", () => {
                         return astn.validateDocument(
                             data,
                             schemaAndNodeValidator,
-                            new LoggingNodeBuilder(),
                             schemaReferenceResolver,
                             (errorMessage, range) => {
                                 actualIssues.push([errorMessage, "error", range.start.line, range.start.column, range.end.line, range.end.column])
@@ -123,7 +79,6 @@ describe("main", () => {
                         return astn.validateDocument(
                             data,
                             null,
-                            new LoggingNodeBuilder(),
                             schemaReferenceResolver,
                             (errorMessage, range) => {
                                 actualIssues.push([errorMessage, "error", range.start.line, range.start.column, range.end.line, range.end.column])

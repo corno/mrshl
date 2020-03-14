@@ -2,11 +2,11 @@ import * as bc from "bass-clarinet"
 import { Schema, Node, Property } from "./types"
 import * as internal from "../../internalSchema"
 import { createDeserializer } from "./deserialize"
-import { SchemaAndNodeValidator } from "../../deserializeSchema"
+import { SchemaAndNodeBuilder } from "../../deserializeSchema"
 import * as g from "./generics"
-import { NodeValidator } from "./validators"
+import { NodeBuilder } from "./builders"
 
-export function attachSchemaDeserializer(parser: bc.Parser, onError: (message: string, range: bc.Range) => void, callback: (schema: SchemaAndNodeValidator | null) => void) {
+export function attachSchemaDeserializer(parser: bc.Parser, onError: (message: string, range: bc.Range) => void, callback: (schema: SchemaAndNodeBuilder | null) => void) {
     let foundError = false
     function onSchemaError(message: string, range: bc.Range) {
         onError(message, range)
@@ -52,7 +52,7 @@ export function attachSchemaDeserializer(parser: bc.Parser, onError: (message: s
             } else {
                 callback({
                     schema: convert(metadata),
-                    nodeValidator: new NodeValidator(metadata["root type"].get().node, onError),
+                    nodeBuilder: new NodeBuilder(metadata["root type"].get().node, onError),
                 })
             }
         }
