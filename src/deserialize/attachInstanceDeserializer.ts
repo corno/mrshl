@@ -56,7 +56,7 @@ function createDummyObjectHandler(beginRange: bc.Range, registerSnippetGenerator
 }
 
 
-export function attachDeserializer(
+export function attachInstanceDeserializer(
     parser: bc.Parser,
     metaData: SchemaAndNodeBuilderPair,
     onError: bc.IssueHandler,
