@@ -112,7 +112,7 @@ export function validateDocument(
                         )
                     }
                 } else {
-                    if (metaData === null) {
+                    if (metaData === undefined) {
                         if (!foundSchemaErrors) {
                             throw new Error("Unexpected: no schema errors and no schema")
                         }

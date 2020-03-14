@@ -7,7 +7,7 @@ type AttachSchemaDeserializer = (parser: bc.Parser, onError: (message: string, r
 
 const schemaSchemas: { [key: string]: AttachSchemaDeserializer } = {}
 
-const schemasDir = path.join(__dirname, "/metaDeserializers")
+const schemasDir = path.join(__dirname, "/../schemas")
 fs.readdirSync(schemasDir, { encoding: "utf-8" }).forEach(dir => {
     const attachFunc = require(path.join(schemasDir, dir)).attachSchemaDeserializer
     if (attachFunc === undefined) {
