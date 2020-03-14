@@ -1,7 +1,7 @@
 import * as bc from "bass-clarinet"
 import { RegisterSnippetsGenerators } from "./registerSnippetGenerators"
 import { createNodeDeserializer } from "./createNodeDeserializer"
-import { SchemaAndNodeBuilder } from "../deserializeSchema"
+import { SchemaAndNodeBuilderPair } from "../SchemaAndNodeBuilderPair"
 
 function createDummyPropertyHandler(
     _key: string,
@@ -58,7 +58,7 @@ function createDummyObjectHandler(beginRange: bc.Range, registerSnippetGenerator
 
 export function attachDeserializer(
     parser: bc.Parser,
-    metaData: SchemaAndNodeBuilder,
+    metaData: SchemaAndNodeBuilderPair,
     onError: bc.IssueHandler,
     onWarning: bc.IssueHandler,
     isCompact: boolean,

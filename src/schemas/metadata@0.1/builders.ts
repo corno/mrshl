@@ -1,4 +1,4 @@
-import * as builders from "../../deserialize/api"
+import * as builders from "../../builderAPI"
 
 /* eslint
     max-classes-per-file: "off",

@@ -1,5 +1,5 @@
 import * as bc from "bass-clarinet"
-import * as builders from "../../deserialize/api"
+import * as builders from "../../builderAPI"
 import * as types from "./types"
 
 /* eslint

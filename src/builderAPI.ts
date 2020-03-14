@@ -1,4 +1,4 @@
-import { Range, PreData } from "bass-clarinet";
+import { Range, PreData } from "bass-clarinet"
 
 // tslint:disable: interface-name
 

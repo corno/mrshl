@@ -1,9 +1,9 @@
 /* eslint
     max-classes-per-file: "off",
 */
-import { ArraySerializer, DictionarySerializer as DictionarySerializer, RootSerializer, StringStream, TypeSerializer, ValueSerializer } from "../serialize/api"
+import * as serializers from "../serializerAPI"
 
-class DummySerializer implements ValueSerializer {
+class DummySerializer implements serializers.ValueSerializer {
     public simpleValue() {
         //
     }
@@ -27,9 +27,9 @@ class DummySerializer implements ValueSerializer {
     }
 }
 
-export class JSONValueSerializer implements ValueSerializer {
-    private readonly out: StringStream
-    constructor(out: StringStream) {
+export class JSONValueSerializer implements serializers.ValueSerializer {
+    private readonly out: serializers.StringStream
+    constructor(out: serializers.StringStream) {
         this.out = out
     }
     public unquotedToken(value: string) {
@@ -38,9 +38,9 @@ export class JSONValueSerializer implements ValueSerializer {
     public simpleValue(value: string) {
         this.out.add(JSON.stringify(value))
     }
-    public type(callback: (os: TypeSerializer) => void) {
+    public type(callback: (os: serializers.TypeSerializer) => void) {
         this.out.add(`{`)
-        callback(new TypeSerializer(
+        callback(new serializers.TypeSerializer(
             (key, isFirst, isKeyProperty) => {
                 if (isKeyProperty) {
                     return new DummySerializer()
@@ -59,9 +59,9 @@ export class JSONValueSerializer implements ValueSerializer {
         this.out.add(`}`)
 
     }
-    public dictionary(callback: (os: DictionarySerializer) => void) {
+    public dictionary(callback: (os: serializers.DictionarySerializer) => void) {
         this.out.add(`{`)
-        callback(new DictionarySerializer(
+        callback(new serializers.DictionarySerializer(
             (key, isFirst) => {
                 if (!isFirst) {
                     this.out.add(`,`)
@@ -75,9 +75,9 @@ export class JSONValueSerializer implements ValueSerializer {
         this.out.add(`}`)
 
     }
-    public arrayType(callback: (os: ArraySerializer) => void) {
+    public arrayType(callback: (os: serializers.ArraySerializer) => void) {
         this.out.add(`[`)
-        callback(new ArraySerializer(
+        callback(new serializers.ArraySerializer(
             isFirst => {
                 if (!isFirst) {
                     this.out.add(`,`)
@@ -90,9 +90,9 @@ export class JSONValueSerializer implements ValueSerializer {
         this.out.add(`]`)
 
     }
-    public list(callback: (os: ArraySerializer) => void) {
+    public list(callback: (os: serializers.ArraySerializer) => void) {
         this.out.add(`[`)
-        callback(new ArraySerializer(
+        callback(new serializers.ArraySerializer(
             isFirst => {
                 if (!isFirst) {
                     this.out.add(`,`)
@@ -105,7 +105,7 @@ export class JSONValueSerializer implements ValueSerializer {
         this.out.add(`]`)
 
     }
-    public taggedUnion(option: string, callback: (vb: ValueSerializer) => void): void {
+    public taggedUnion(option: string, callback: (vb: serializers.ValueSerializer) => void): void {
         this.out.add(`[ "${option}", `)
         callback(new JSONValueSerializer(this.out))
         this.out.add(` ]`)
@@ -113,10 +113,10 @@ export class JSONValueSerializer implements ValueSerializer {
     }
 }
 
-export class JSONSerializer implements RootSerializer {
+export class JSONSerializer implements serializers.RootSerializer {
     public root: JSONValueSerializer
     //private readonly out: StringStream
-    constructor(out: StringStream) {
+    constructor(out: serializers.StringStream) {
         //this.out = out
         this.root = new JSONValueSerializer(out)
     }

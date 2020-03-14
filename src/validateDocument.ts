@@ -1,19 +1,19 @@
 import * as bc from "bass-clarinet"
 import { attachDeserializer } from "./deserialize"
-import { createMetaDataDeserializer, createNodeBuilder } from "./internalSchema"
+import { createMetaDataDeserializer, createNodeBuilder } from "./metaDataSchema"
 import { RegisterSnippetsGenerators } from "./deserialize"
-import { SchemaAndNodeBuilder } from "./deserializeSchema"
+import { SchemaAndNodeBuilderPair } from "./SchemaAndNodeBuilderPair"
 
 export type ResolveSchemaReference = (
     reference: string,
-) => Promise<SchemaAndNodeBuilder>
+) => Promise<SchemaAndNodeBuilderPair>
 
 /**
  * this function returns a Promise<void> and the promise is resolved when the validation has been completed
  */
 export function validateDocument(
     document: string,
-    externalSchema: SchemaAndNodeBuilder | null,
+    externalSchema: SchemaAndNodeBuilderPair | null,
     schemaReferenceResolver: ResolveSchemaReference,
     onError: (message: string, range: bc.Range) => void,
     onWarning: (message: string, range: bc.Range) => void,
@@ -30,8 +30,7 @@ export function validateDocument(
 
         let foundSchema = false
         let foundSchemaErrors = false
-        let metaData: SchemaAndNodeBuilder | null = null
-
+        let metaData: SchemaAndNodeBuilderPair
         function onSchemaError(message: string, range: bc.Range) {
             onError(message, range)
             foundSchemaErrors = true

@@ -1,5 +1,5 @@
-import * as m from "../internalSchema"
-import { RootSerializer, ValueSerializer } from "./api"
+import * as m from "../metaDataSchema"
+import { RootSerializer, ValueSerializer } from "./serializerAPI"
 import { SerializableNode, SerializableRoot } from "./serializable"
 
 function assertUnreachable<RT>(_x: never): RT {

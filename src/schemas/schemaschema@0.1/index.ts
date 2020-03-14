@@ -1,12 +1,12 @@
 import * as bc from "bass-clarinet"
-import { Schema, Node, Property } from "./types"
-import * as internal from "../../internalSchema"
-import { createDeserializer } from "./deserialize"
-import { SchemaAndNodeBuilder } from "../../deserializeSchema"
-import * as g from "./generics"
+import * as internal from "../../metaDataSchema"
+import { SchemaAndNodeBuilderPair } from "../../SchemaAndNodeBuilderPair"
 import { NodeBuilder } from "./builders"
+import { createDeserializer } from "./deserialize"
+import * as g from "./generics"
+import { Schema, Node, Property } from "./types"
 
-export function attachSchemaDeserializer(parser: bc.Parser, onError: (message: string, range: bc.Range) => void, callback: (schema: SchemaAndNodeBuilder | null) => void) {
+export function attachSchemaDeserializer(parser: bc.Parser, onError: (message: string, range: bc.Range) => void, callback: (schema: SchemaAndNodeBuilderPair | null) => void) {
     let foundError = false
     function onSchemaError(message: string, range: bc.Range) {
         onError(message, range)

@@ -1,4 +1,6 @@
 export { attachDeserializer } from "./deserialize"
-export * from "./api"
+export * from "../builderAPI"
 export * from "./registerSnippetGenerators"
+export * from "./createSchemaDeserializer"
+export * from "./createFromURLSchemaDeserializer"
 //export * from "./dummyBuilders"

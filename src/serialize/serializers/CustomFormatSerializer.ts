@@ -2,9 +2,9 @@
     max-classes-per-file: "off",
 */
 
-import { ArraySerializer, DictionarySerializer, RootSerializer, StringStream, TypeSerializer, ValueSerializer } from "../serialize/api"
+import * as serializers from "../serializerAPI"
 
-class DummySerializer implements ValueSerializer {
+class DummySerializer implements serializers.ValueSerializer {
     public unquotedToken() {
         //
     }
@@ -28,9 +28,9 @@ class DummySerializer implements ValueSerializer {
     }
 }
 
-export class CustomFormatValueSerializer implements ValueSerializer {
-    private readonly out: StringStream
-    constructor(out: StringStream) {
+export class CustomFormatValueSerializer implements serializers.ValueSerializer {
+    private readonly out: serializers.StringStream
+    constructor(out: serializers.StringStream) {
         this.out = out
     }
     public simpleValue(value: string) {
@@ -39,10 +39,10 @@ export class CustomFormatValueSerializer implements ValueSerializer {
     public unquotedToken(value: string) {
         this.out.add(value)
     }
-    public type(callback: (os: TypeSerializer) => void) {
+    public type(callback: (os: serializers.TypeSerializer) => void) {
         this.out.add(`(`)
         const indented = this.out.indent()
-        callback(new TypeSerializer((key, _isFirst, isKeyProperty) => {
+        callback(new serializers.TypeSerializer((key, _isFirst, isKeyProperty) => {
             if (isKeyProperty) {
                 return new DummySerializer()
             } else {
@@ -55,10 +55,10 @@ export class CustomFormatValueSerializer implements ValueSerializer {
         this.out.add(`)`)
 
     }
-    public dictionary(callback: (os: DictionarySerializer) => void) {
+    public dictionary(callback: (os: serializers.DictionarySerializer) => void) {
         this.out.add(`{`)
         const indented = this.out.indent()
-        callback(new DictionarySerializer(
+        callback(new serializers.DictionarySerializer(
             key => {
                 indented.newLine()
                 indented.add(`"${key}": `)
@@ -69,10 +69,10 @@ export class CustomFormatValueSerializer implements ValueSerializer {
         this.out.add(`}`)
 
     }
-    public arrayType(callback: (os: ArraySerializer) => void) {
+    public arrayType(callback: (os: serializers.ArraySerializer) => void) {
         this.out.add(`<`)
         const indented = this.out.indent()
-        callback(new ArraySerializer(
+        callback(new serializers.ArraySerializer(
             () => {
 
                 indented.newLine()
@@ -83,10 +83,10 @@ export class CustomFormatValueSerializer implements ValueSerializer {
         this.out.add(`>`)
 
     }
-    public list(callback: (os: ArraySerializer) => void) {
+    public list(callback: (os: serializers.ArraySerializer) => void) {
         this.out.add(`[`)
         const indented = this.out.indent()
-        callback(new ArraySerializer(
+        callback(new serializers.ArraySerializer(
             () => {
                 indented.newLine()
                 return new CustomFormatValueSerializer(indented)
@@ -96,17 +96,17 @@ export class CustomFormatValueSerializer implements ValueSerializer {
         this.out.add(`]`)
 
     }
-    public taggedUnion(option: string, callback: (vb: ValueSerializer) => void): void {
+    public taggedUnion(option: string, callback: (vb: serializers.ValueSerializer) => void): void {
         this.out.add(`| "${option}" `)
         callback(new CustomFormatValueSerializer(this.out))
 
     }
 }
 
-export class CustomFormatSerializer implements RootSerializer {
+export class CustomFormatSerializer implements serializers.RootSerializer {
     public root: CustomFormatValueSerializer
-    private readonly out: StringStream
-    constructor(out: StringStream) {
+    private readonly out: serializers.StringStream
+    constructor(out: serializers.StringStream) {
         this.out = out
         this.root = new CustomFormatValueSerializer(out)
     }

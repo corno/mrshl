@@ -1,17 +1,9 @@
 import * as bc from "bass-clarinet"
 import * as fs from "fs"
-import * as http from "http"
 import * as path from "path"
-import * as url from "url"
-import { Schema } from "../src/internalSchema"
-import { NodeBuilder } from "./deserialize/api"
+import { SchemaAndNodeBuilderPair } from "../SchemaAndNodeBuilderPair"
 
-export type SchemaAndNodeBuilder = {
-    schema: Schema
-    nodeBuilder: NodeBuilder
-}
-
-type AttachSchemaDeserializer = (parser: bc.Parser, onError: (message: string, range: bc.Range) => void, callback: (schema: SchemaAndNodeBuilder | null) => void) => void
+type AttachSchemaDeserializer = (parser: bc.Parser, onError: (message: string, range: bc.Range) => void, callback: (schema: SchemaAndNodeBuilderPair | null) => void) => void
 
 const schemaSchemas: { [key: string]: AttachSchemaDeserializer } = {}
 
@@ -29,7 +21,7 @@ fs.readdirSync(schemasDir, { encoding: "utf-8" }).forEach(dir => {
     schemaSchemas[dir] = attachFunc
 })
 
-export function deserializeSchema(onError: (message: string, range: bc.Range) => void, callback: (schema: SchemaAndNodeBuilder | null) => void): bc.Tokenizer {
+export function createSchemaDeserializer(onError: (message: string, range: bc.Range) => void, callback: (schema: SchemaAndNodeBuilderPair | null) => void): bc.Tokenizer {
     let foundError = false
     function onSchemaError(message: string, range: bc.Range) {
         onError(message, range)
@@ -111,9 +103,9 @@ export function deserializeSchema(onError: (message: string, range: bc.Range) =>
     return schemaTok
 }
 
-export function deserializeSchemaFromString(serializedSchema: string, onError: (message: string, range: bc.Range) => void): Promise<SchemaAndNodeBuilder> {
+export function deserializeSchemaFromString(serializedSchema: string, onError: (message: string, range: bc.Range) => void): Promise<SchemaAndNodeBuilderPair> {
     return new Promise((resolve, reject) => {
-        const schemaTok = deserializeSchema(onError, schema => {
+        const schemaTok = createSchemaDeserializer(onError, schema => {
             if (schema === null) {
                 reject("missing schema")
             } else {
@@ -132,62 +124,3 @@ export function deserializeSchemaFromString(serializedSchema: string, onError: (
     })
 }
 
-
-export function createFromURLSchemaDeserializer(host: string, pathStart: string, timeout: number) {
-    return (reference: string): Promise<SchemaAndNodeBuilder> => {
-        return new Promise((resolve, reject) => {
-
-            // //const errors: string[] = []
-            // function onSchemaError(_message: string, _range: bc.Range) {
-            //     //errors.push(message)
-            // }
-            const options = {
-                host: host,
-                path: url.resolve(pathStart, encodeURI(reference)),
-                timeout: timeout,
-            }
-            const request = http.request(options, res => {
-
-                if (res.statusCode !== 200) {
-                    reject(`schema '${reference}' not found`)
-                    return
-                }
-                const schemaTok = deserializeSchema(
-                    message => {
-                        //do nothing with errors
-                        console.error("SCHEMA ERROR", message)
-                    },
-                    schema => {
-                        if (schema !== null) {
-                            resolve(schema)
-                        } else {
-                            reject(`errors in schema '${host}${url.resolve(pathStart, encodeURI(reference))}'`)
-                        }
-                    }
-                )
-                res.on('data', chunk => {
-                    schemaTok.write(chunk.toString(), {
-                        pause: () => {
-                            //
-                        },
-                        continue: () => {
-                            //
-                        },
-                    })
-                });
-                res.on('end', () => {
-                    schemaTok.end()
-                })
-            })
-            request.on('timeout', () => {
-                console.error("timeout")
-                reject("timeout")
-            });
-            request.on('error', e => {
-                console.error(e.message)
-                reject(e.message)
-            });
-            request.end()
-        })
-    }
-}

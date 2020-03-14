@@ -1,7 +1,7 @@
 import * as bc from "bass-clarinet"
 import * as fp from "fountain-pen"
-import * as md from "../internalSchema"
-import { NodeBuilder } from "./api"
+import * as md from "../metaDataSchema"
+import { NodeBuilder } from "../builderAPI"
 import { RegisterSnippetsGenerators } from "./registerSnippetGenerators"
 
 function assertUnreachable<RT>(_x: never): RT {
