@@ -1,7 +1,7 @@
-export { attachInstanceDeserializer as attachDeserializer } from "./attachInstanceDeserializer"
 export * from "../builderAPI"
 export * from "./registerSnippetGenerators"
 export * from "./createSchemaDeserializer"
 export * from "./createFromURLSchemaDeserializer"
 export * from "./deserializeSchemaFromString"
+export * from "./createNodeDeserializer"
 //export * from "./dummyBuilders"

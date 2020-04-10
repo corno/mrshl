@@ -1,5 +1,5 @@
 import * as bc from "bass-clarinet"
-import { SchemaAndNodeBuilderPair } from "../SchemaAndNodeBuilderPair"
+import { SchemaAndNodeBuilderPair } from "../processDocument"
 import { createSchemaDeserializer } from "./createSchemaDeserializer"
 
 export function deserializeSchemaFromString(serializedSchema: string, onError: (message: string, range: bc.Range) => void): Promise<SchemaAndNodeBuilderPair> {

@@ -1,7 +1,7 @@
 import * as bc from "bass-clarinet"
 import * as fs from "fs"
 import * as path from "path"
-import { SchemaAndNodeBuilderPair } from "../SchemaAndNodeBuilderPair"
+import { SchemaAndNodeBuilderPair } from "../processDocument"
 
 type AttachSchemaDeserializer = (parser: bc.Parser, onError: (message: string, range: bc.Range) => void, callback: (schema: SchemaAndNodeBuilderPair | null) => void) => void
 

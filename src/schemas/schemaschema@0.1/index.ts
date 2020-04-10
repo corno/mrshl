@@ -1,6 +1,6 @@
 import * as bc from "bass-clarinet"
 import * as internal from "../../metaDataSchema"
-import { SchemaAndNodeBuilderPair } from "../../SchemaAndNodeBuilderPair"
+import { SchemaAndNodeBuilderPair } from "../../processDocument"
 import { NodeBuilder } from "./builders"
 import { createDeserializer } from "./deserialize"
 import * as g from "./generics"
