@@ -1,6 +1,9 @@
 /* eslint
     max-classes-per-file: "off",
 */
+import * as types from "../metaDataSchema"
+import { SerializableNode } from "./serializable"
+
 export class StringStream {
     private readonly str: string[]
     private readonly indentationLevel: null | number
@@ -38,7 +41,7 @@ export interface ValueSerializer {
 
 export interface RootSerializer {
     root: ValueSerializer
-    schemaReference(value: string): void
+    serializeSchema(definition: types.Node, node: SerializableNode): void
 }
 
 export class ArraySerializer {

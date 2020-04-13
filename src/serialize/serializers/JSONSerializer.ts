@@ -120,7 +120,7 @@ export class JSONSerializer implements serializers.RootSerializer {
         //this.out = out
         this.root = new JSONValueSerializer(out)
     }
-    public schemaReference(_sr: string) {
+    public serializeSchema() {
         //this.out.add(`! ${JSON.stringify(sr)}`)
     }
 }

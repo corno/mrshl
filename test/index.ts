@@ -9,6 +9,7 @@ import * as path from "path"
 import { describe } from "mocha"
 import * as astn from "../src"
 import { SnippetGenerator } from "../src/SnippetGenerator"
+import { CustomFormatSerializer, StringStream } from "../src"
 
 const testsDir = "./test/tests"
 
@@ -55,8 +56,14 @@ describe("main", () => {
                         actualIssues.push([warningMessage, "warning", range.start.line, range.start.column, range.end.line, range.end.column])
                     },
                     new SnippetGenerator(() => {}),
-                ).then(_x => {
-                    //console.log(x)
+                ).then(x => {
+                    const out: string[] = []
+                    astn.serialize(
+                        x.rootNodeDefinition,
+                        x.nodeBuilder,
+                        new CustomFormatSerializer(new StringStream(out, null))
+                    )
+                    console.log(out.join(""))
                 })
                 .catch(e => {
                     if (e !== "errors in schema" && e !== "no schema") {

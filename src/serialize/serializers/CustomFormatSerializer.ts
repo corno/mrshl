@@ -3,6 +3,7 @@
 */
 
 import * as serializers from "../serializerAPI"
+import { Node } from "../../metaDataSchema"
 
 class DummySerializer implements serializers.ValueSerializer {
     public unquotedToken() {
@@ -110,7 +111,7 @@ export class CustomFormatSerializer implements serializers.RootSerializer {
         this.out = out
         this.root = new CustomFormatValueSerializer(out)
     }
-    public schemaReference(sr: string) {
-        this.out.add(`! ${JSON.stringify(sr)}`)
+    public serializeSchema(_sr: Node) {
+        this.out.add(`! ${"FIXME"}`)
     }
 }

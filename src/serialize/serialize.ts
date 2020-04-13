@@ -1,6 +1,6 @@
 import * as m from "../metaDataSchema"
 import { RootSerializer, ValueSerializer } from "./serializerAPI"
-import { SerializableNode, SerializableRoot } from "./serializable"
+import { SerializableNode } from "./serializable"
 
 function assertUnreachable<RT>(_x: never): RT {
     throw new Error("unreachable")
@@ -72,7 +72,7 @@ function serializeNode(definition: m.Node, node: SerializableNode, builder: Valu
     })
 }
 
-export function serialize(schemaReference: string, definition: m.Schema, root: SerializableRoot, serializer: RootSerializer): void {
-    serializer.schemaReference(schemaReference)
-    serializeNode(definition["root type"].get().node, root.rootNode, serializer.root)
+export function serialize(definition: m.Node, root: SerializableNode, serializer: RootSerializer): void {
+    serializer.serializeSchema(definition, root)
+    serializeNode(definition, root, serializer.root)
 }

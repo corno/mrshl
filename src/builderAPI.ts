@@ -1,27 +1,27 @@
-import * as bc from "bass-clarinet"
+import * as serializable from "./serialize";
 
 // tslint:disable: interface-name
 
-export interface DictionaryBuilder {
+export interface DictionaryBuilder extends serializable.SerializableDictionary {
     createEntry(onError: (message: string) => void): DictionaryEntryBuilder
 }
-export interface ListBuilder {
+export interface ListBuilder extends serializable.SerializableList {
     createEntry(onError: (message: string) => void): ListEntryBuilder
 }
 
-export interface ComponentBuilder {
+export interface ComponentBuilder extends serializable.SerializableComponent {
     node: NodeBuilder
 }
 
-export interface DictionaryEntryBuilder {
+export interface DictionaryEntryBuilder extends serializable.SerializableEntry {
     node: NodeBuilder
 }
 
-export interface ListEntryBuilder {
+export interface ListEntryBuilder extends serializable.SerializableEntry {
     node: NodeBuilder
 }
 
-export interface NodeBuilder {
+export interface NodeBuilder extends serializable.SerializableNode {
     getDictionary(name: string): DictionaryBuilder
     getList(name: string): ListBuilder
     getComponent(name: string): ComponentBuilder
@@ -29,18 +29,18 @@ export interface NodeBuilder {
     getValue(name: string): ValueBuilder
 }
 
-export interface StateGroupBuilder {
+export interface StateGroupBuilder extends serializable.SerializableStateGroup {
     setState(stateName: string, onError: (message: string) => void): StateBuilder
-    setComments(comments: bc.Comment[]): void
+    setComments(comments: string[]): void
 }
 
 export interface StateBuilder {
     node: NodeBuilder
-    setComments(comments: bc.Comment[]): void
+    setComments(comments: string[]): void
 }
 
-export interface ValueBuilder {
+export interface ValueBuilder extends serializable.SerializableValue {
     setValue(value: string, onError: (message: string) => void): void
-    setComments(comments: bc.Comment[]): void
+    setComments(comments: string[]): void
     getSuggestions(): string[]
 }

@@ -145,9 +145,9 @@ function createPropertyDeserializer(
                     return (tuData, tuPreData, optionPreData) => {
                         registerSnippetGenerators.onState(stateName, tuData, tuPreData, optionPreData)
                         const stateGroup = nodeBuilder.getStateGroup(propKey)
-                        stateGroup.setComments(tuPreData.comments)
+                        stateGroup.setComments(tuPreData.comments.map(c => c.text))
                         const state = stateGroup.setState(stateName, errorMessage => onError(errorMessage, tuData.optionRange))
-                        state.setComments(optionPreData.comments)
+                        state.setComments(optionPreData.comments.map(c => c.text))
                         return createNodeDeserializer(
                             context,
                             stateDef.node,
@@ -185,7 +185,7 @@ function createPropertyDeserializer(
 
                 }
                 //valueBuilder.setValue(value, svData.quote !== null, svData.range, comments)
-                valueBuilder.setComments(preData.comments)
+                valueBuilder.setComments(preData.comments.map(c => c.text))
                 registerSnippetGenerators.onValue(svData, valueBuilder)
             })
         }

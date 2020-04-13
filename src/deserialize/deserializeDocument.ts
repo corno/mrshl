@@ -95,8 +95,8 @@ export function deserializeDocument(
     onError: (message: string, range: bc.Range) => void,
     onWarning: (message: string, range: bc.Range) => void,
     sideEffects: SideEffectsAPI | null,
-): Promise<NodeBuilder> {
-    return new Promise<NodeBuilder>((resolve, reject) => {
+): Promise<SchemaAndNodeBuilderPair> {
+    return new Promise<SchemaAndNodeBuilderPair>((resolve, reject) => {
         const parser = new bc.Parser(
             (message, range) => {
                 onError(message, range)
@@ -142,7 +142,7 @@ export function deserializeDocument(
                 onOpenArray() { },
                 onNewLine() { },
                 onEnd() {
-                    resolve(schema.nodeBuilder)
+                    resolve(schema)
                 },
                 onLineComment() { },
                 onBlockComment() { },

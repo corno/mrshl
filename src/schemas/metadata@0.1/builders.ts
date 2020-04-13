@@ -1,5 +1,6 @@
 import * as builders from "../../builderAPI"
 import * as types from "../../metaDataSchema"
+import { RawObject } from "./generics"
 
 /* eslint
     max-classes-per-file: "off",
@@ -12,7 +13,7 @@ function assertUnreachable<RT>(_x: never): RT {
 export class DictionaryBuilder implements builders.DictionaryBuilder {
     private readonly definition: types.Dictionary
     private readonly entries: DictionaryEntryBuilder[] = []
-    constructor(definition: types.Dictionary) {
+    constructor(_collDef: types.Collection, definition: types.Dictionary) {
         this.definition = definition
     }
     public createEntry() {
@@ -20,15 +21,15 @@ export class DictionaryBuilder implements builders.DictionaryBuilder {
         this.entries.push(de)
         return de
     }
-    public forEachEntry(callback: (entry: DictionaryEntryBuilder) => void) {
-        this.entries.forEach(e => callback(e))
+    public forEachEntry(callback: (entry: DictionaryEntryBuilder, key: string) => void) {
+        this.entries.forEach(e => callback(e, "FIX"))
     }
 }
 
 export class ListBuilder implements builders.ListBuilder {
     private readonly definition: types.List
     private readonly entries: ListEntryBuilder[] = []
-    constructor(definition: types.Dictionary) {
+    constructor(_collDef: types.Collection, definition: types.Dictionary) {
         this.definition = definition
     }
     public createEntry() {
@@ -95,69 +96,82 @@ export class DictionaryEntryBuilder implements builders.DictionaryEntryBuilder {
 
 export class NodeBuilder implements builders.NodeBuilder {
     private readonly definition: types.Node
+    private readonly dictionaries: RawObject<DictionaryBuilder> = {}
+    private readonly lists: RawObject<ListBuilder> = {}
+    private readonly components: RawObject<ComponentBuilder> = {}
+    private readonly stateGroups: RawObject<StateGroupBuilder> = {}
+    private readonly values: RawObject<ValueBuilder> = {}
     constructor(definition: types.Node) {
         this.definition = definition
+        this.definition.properties.forEach((p, pKey) => {
+            switch (p.type[0]) {
+                case "collection": {
+                    const $ = p.type[1]
+                    switch ($.type[0]) {
+                        case "dictionary": {
+                            this.dictionaries[pKey] = new DictionaryBuilder($, $.type[1])
+                            break
+                        }
+                        case "list": {
+                            this.lists[pKey] = new ListBuilder($, $.type[1])
+                            break
+                        }
+                        default:
+                            assertUnreachable($.type[0])
+                    }
+                    break
+                }
+                case "component": {
+                    this.components[pKey] = new ComponentBuilder(p.type[1])                    
+                    break
+                }
+                case "state group": {
+                    this.stateGroups[pKey] = new StateGroupBuilder(p.type[1])
+                    break
+                }
+                case "value": {
+                    this.values[pKey] = new ValueBuilder(p.type[1])
+                    break
+                }
+                default:
+                    assertUnreachable(p.type[0])
+            }
+        })
     }
-    public getDefinition() {
-        return this.definition
+    public getDictionary(name: string) {
+        const p = this.dictionaries[name]
+        if (p === undefined) {
+            throw new Error(`UNEXPECTED: no such dictionary: ${name}`)   
+        }
+        return p
     }
-    public getDictionary(_name: string) {
-        const propDef = this.definition.properties.get(name)
-        if (propDef === null) {
-            throw new Error(`UNEXPECTED: no such property: ${name}`)
+    public getList(name: string) {
+        const p = this.lists[name]
+        if (p === undefined) {
+            throw new Error(`UNEXPECTED: no such list: ${name}`)   
         }
-        if (propDef.type[0] !== "collection") {
-            throw new Error(`UNEXPECTED: property '${name}' is not a collection`)
-        }
-        const $ = propDef.type[1]
-        if ($.type[0] !== "dictionary") {
-            throw new Error(`UNEXPECTED: property '${name}' is not a dictionary`)
-        }
-        return new DictionaryBuilder($.type[1])
+        return p
     }
-    public getList(_name: string) {
-        const propDef = this.definition.properties.get(name)
-        if (propDef === null) {
-            throw new Error(`UNEXPECTED: no such property: ${name}`)
+    public getComponent(name: string) {
+        const p = this.components[name]
+        if (p === undefined) {
+            throw new Error(`UNEXPECTED: no such component: ${name}`)   
         }
-        if (propDef.type[0] !== "collection") {
-            throw new Error(`UNEXPECTED: property '${name}' is not a collection`)
-        }
-        const $ = propDef.type[1]
-        if ($.type[0] !== "list") {
-            throw new Error(`UNEXPECTED: property '${name}' is not a dictionary`)
-        }
-        return new ListBuilder($.type[1])
+        return p
     }
-    public getComponent(_name: string) {
-        const propDef = this.definition.properties.get(name)
-        if (propDef === null) {
-            throw new Error(`UNEXPECTED: no such property: ${name}`)
+    public getStateGroup(name: string) {
+        const p = this.stateGroups[name]
+        if (p === undefined) {
+            throw new Error(`UNEXPECTED: no such state group: ${name}`)   
         }
-        if (propDef.type[0] !== "component") {
-            throw new Error(`UNEXPECTED: property '${name}' is not a component`)
-        }
-        return new ComponentBuilder(propDef.type[1])
-    }
-    public getStateGroup(_name: string) {
-        const propDef = this.definition.properties.get(name)
-        if (propDef === null) {
-            throw new Error(`UNEXPECTED: no such property: ${name}`)
-        }
-        if (propDef.type[0] !== "state group") {
-            throw new Error(`UNEXPECTED: property '${name}' is not a state group`)
-        }
-        return new StateGroupBuilder(propDef.type[1])
+        return p
     }
     public getValue(name: string) {
-        const propDef = this.definition.properties.get(name)
-        if (propDef === null) {
-            throw new Error(`UNEXPECTED: no such property: ${name}`)
+        const p = this.values[name]
+        if (p === undefined) {
+            throw new Error(`UNEXPECTED: no such value: ${name}`)   
         }
-        if (propDef.type[0] !== "value") {
-            throw new Error(`UNEXPECTED: property '${name}' is not a value`)
-        }
-        return new ValueBuilder(propDef.type[1])
+        return p
     }
 }
 
