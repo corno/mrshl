@@ -57,4 +57,5 @@ export type ValueType =
 
 export type Value = {
     readonly type: ValueType
+    readonly "default value": string
 }

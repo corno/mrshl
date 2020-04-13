@@ -11,21 +11,33 @@ function assertUnreachable<RT>(_x: never): RT {
 
 export class DictionaryBuilder implements builders.DictionaryBuilder {
     private readonly definition: types.Dictionary
+    private readonly entries: DictionaryEntryBuilder[] = []
     constructor(definition: types.Dictionary) {
         this.definition = definition
     }
     public createEntry() {
-        return new DictionaryEntryBuilder(this.definition)
+        const de = new DictionaryEntryBuilder(this.definition)
+        this.entries.push(de)
+        return de
+    }
+    public forEachEntry(callback: (entry: DictionaryEntryBuilder) => void) {
+        this.entries.forEach(e => callback(e))
     }
 }
 
 export class ListBuilder implements builders.ListBuilder {
     private readonly definition: types.List
+    private readonly entries: ListEntryBuilder[] = []
     constructor(definition: types.Dictionary) {
         this.definition = definition
     }
     public createEntry() {
-        return new ListEntryBuilder(this.definition)
+        const de = new ListEntryBuilder(this.definition)
+        this.entries.push(de)
+        return de
+    }
+    public forEachEntry(callback: (entry: ListEntryBuilder) => void) {
+        this.entries.forEach(e => callback(e))
     }
 }
 
@@ -137,14 +149,21 @@ export class NodeBuilder implements builders.NodeBuilder {
         }
         return new StateGroupBuilder(propDef.type[1])
     }
-    public getValue(_name: string) {
-        return new ValueBuilder()
-
+    public getValue(name: string) {
+        const propDef = this.definition.properties.get(name)
+        if (propDef === null) {
+            throw new Error(`UNEXPECTED: no such property: ${name}`)
+        }
+        if (propDef.type[0] !== "value") {
+            throw new Error(`UNEXPECTED: property '${name}' is not a value`)
+        }
+        return new ValueBuilder(propDef.type[1])
     }
 }
 
 export class StateGroupBuilder {
     private readonly definition: types.StateGroup
+    private currentState: null | StateBuilder = null
     constructor(definition: types.StateGroup) {
         this.definition = definition
     }
@@ -154,33 +173,53 @@ export class StateGroupBuilder {
             throw new Error(`UNEXPECTED: no such state: ${stateName}`)
         }
         //
-        return new StateBuilder(stateDef)
+        const state = new StateBuilder(stateName, stateDef)
+        this.currentState = state
+        return state
     }
-    setComments() {
+    public setComments() {
         //
+    }
+    public getCurrentState(): StateBuilder {
+        if (this.currentState === null) {
+            throw new Error("no state set")
+        }
+        return this.currentState
     }
 }
 
 export class StateBuilder {
     private readonly definition: types.State
-    constructor(definition: types.State) {
+    private readonly stateName: string
+    constructor(stateName: string, definition: types.State) {
         this.definition = definition
+        this.stateName = stateName
     }
     public readonly node = new NodeBuilder(this.definition.node)
-    setComments() {
+    public setComments() {
         //
+    }
+    public getStateKey(): string {
+        return this.stateName
     }
 }
 
 export class ValueBuilder implements builders.ValueBuilder {
+    private value: string
+    constructor(definition: types.Value) {
+        this.value = definition["default value"]
+    }
     getSuggestions() {
         return []
     }
     setComments() {
         //
     }
-    setValue() {
-        //
+    setValue(value: string) {
+        this.value = value
+    }
+    getValue(): string {
+        return this.value
     }
 }
 

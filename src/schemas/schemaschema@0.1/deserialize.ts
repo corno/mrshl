@@ -267,6 +267,7 @@ function deserializeMetaNode(context: bc.ExpectContext, componentTypes: g.IReado
                                                     () => {
                                                         unguaranteedAssertIsDeserialized(targetValueType, asserted => {
                                                             targetPropertyType = ["value", {
+                                                                "default value": "***", //FIXME
                                                                 "type": asserted,
                                                             }]
                                                         })

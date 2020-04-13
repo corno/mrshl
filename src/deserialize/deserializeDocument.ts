@@ -1,9 +1,9 @@
 import * as bc from "bass-clarinet"
 import { createMetaDataDeserializer, createNodeBuilder } from "../metaDataSchema"
 import * as types from "../metaDataSchema"
-import { SideEffectsAPI, NodeBuilder } from "."
-
-import { createNodeDeserializer } from "."
+import { SideEffectsAPI } from "./SideEffectsAPI"
+import { createNodeDeserializer } from "./createNodeDeserializer"
+import { NodeBuilder } from "../builderAPI"
 
 function createPropertyHandler(
     _key: string,

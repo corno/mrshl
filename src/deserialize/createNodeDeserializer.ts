@@ -50,7 +50,7 @@ function createPropertyDeserializer(
                                 },
                                 (_key, propertyData, _preData) => {
 
-                                    const entry = collBuilder.createEntry(() => {})
+                                    const entry = collBuilder.createEntry(() => { })
 
                                     registerSnippetGenerators.onDictionaryEntry(
                                         propertyData,
@@ -101,7 +101,7 @@ function createPropertyDeserializer(
                                     registerSnippetGenerators.onListOpen(beginData)
                                 },
                                 () => {
-                                    const entry = collBuilder.createEntry(() => {})
+                                    const entry = collBuilder.createEntry(() => { })
                                     registerSnippetGenerators.onListEntry()
 
                                     return createNodeDeserializer(
@@ -170,9 +170,20 @@ function createPropertyDeserializer(
             )
         }
         case "value": {
+            const $ = propDefinition.type[1]
             return context.expectSimpleValue((value, svData, preData) => {
                 const valueBuilder = nodeBuilder.getValue(propKey)
                 valueBuilder.setValue(value, errorMessage => onError(errorMessage, svData.range))
+                if (svData.quote !== null) {
+                    if (!$.quoted) {
+                        onError(`value '${value}' must be unquoted`, svData.range)
+                    }
+                } else {
+                    if ($.quoted) {
+                        onError(`value '${value}' must be quoted`, svData.range)
+                    }
+
+                }
                 //valueBuilder.setValue(value, svData.quote !== null, svData.range, comments)
                 valueBuilder.setComments(preData.comments)
                 registerSnippetGenerators.onValue(svData, valueBuilder)

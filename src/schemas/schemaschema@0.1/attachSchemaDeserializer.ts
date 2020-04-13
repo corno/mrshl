@@ -1,6 +1,6 @@
 import * as bc from "bass-clarinet"
 import * as internal from "../../metaDataSchema"
-import { SchemaAndNodeBuilderPair } from "../../deserialize/deserializeDocument"
+import { SchemaAndNodeBuilderPair } from "../../deserialize"
 import { NodeBuilder } from "./builders"
 import { createDeserializer } from "./deserialize"
 import * as g from "./generics"
@@ -121,7 +121,22 @@ function convertNode(node: Node, componentTypes: g.IReadonlyLookup<internal.Comp
                         }]
                     }
                     case "value": {
+                        const $ = prop.type[1]
                         return ["value", {
+                            "default value": "***", //FIXME
+                            "quoted": ((): boolean => {
+                                switch ($.type[0]) {
+                                    case "boolean":
+                                        return false
+                                    case "number":
+                                        return false
+                                    case "string":
+                                        return true
+
+                                    default:
+                                        return assertUnreachable($.type[0])
+                                }
+                            })()
                         }]
                     }
                     default:

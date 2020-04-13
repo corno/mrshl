@@ -1,5 +1,6 @@
-import { SideEffectsAPI, GenerateSnippets, ValueBuilder, NodeBuilder, DictionaryEntryBuilder } from "./deserialize";
-import * as bc from "bass-clarinet";
+import { SideEffectsAPI, GenerateSnippets } from "./deserialize"
+import { ValueBuilder, NodeBuilder, DictionaryEntryBuilder } from "./builderAPI"
+import * as bc from "bass-clarinet"
 import * as fp from "fountain-pen"
 import * as md from "./metaDataSchema"
 

@@ -1,5 +1,5 @@
 import * as bc from "bass-clarinet"
-import { SchemaAndNodeBuilderPair } from "../../deserialize/deserializeDocument"
+import { SchemaAndNodeBuilderPair } from "../../deserialize"
 import { Schema } from "./types"
 import { createDeserializer } from "./deserialize"
 import { NodeBuilder } from "./builders"

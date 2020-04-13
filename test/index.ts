@@ -43,8 +43,32 @@ describe("main", () => {
 
             const data = await fs.promises.readFile(filePath, { encoding: "utf-8" })
 
-            const serializedSchemaPromise = fs.promises.readFile(schemaPath, { encoding: "utf-8" })
-            return serializedSchemaPromise
+            function deserializeDoc(schemaAndNodeValidator: astn.SchemaAndNodeBuilderPair | null) {
+                return astn.deserializeDocument(
+                    data,
+                    schemaAndNodeValidator,
+                    schemaReferenceResolver,
+                    (errorMessage, range) => {
+                        actualIssues.push([errorMessage, "error", range.start.line, range.start.column, range.end.line, range.end.column])
+                    },
+                    (warningMessage, range) => {
+                        actualIssues.push([warningMessage, "warning", range.start.line, range.start.column, range.end.line, range.end.column])
+                    },
+                    new SnippetGenerator(() => {}),
+                ).then(_x => {
+                    //console.log(x)
+                })
+                .catch(e => {
+                    if (e !== "errors in schema" && e !== "no schema") {
+                        throw new Error(`UNEXPECTED: SCHEMA EXCEPTION, ${e}`)
+                    }
+                    if (actualIssues.length === 0) {
+                        throw new Error("MISSING ISSUES")
+                    }
+                })
+            }
+
+            return fs.promises.readFile(schemaPath, { encoding: "utf-8" })
                 .then(serializedSchema => {
                     astn.deserializeSchemaFromString(
                         serializedSchema,
@@ -52,54 +76,12 @@ describe("main", () => {
                             actualIssues.push([errorMessage, "error", range.start.line, range.start.column, range.end.line, range.end.column])
                         },
                     ).then(schemaAndNodeValidator => {
-                        return astn.deserializeDocument(
-                            data,
-                            schemaAndNodeValidator,
-                            schemaReferenceResolver,
-                            (errorMessage, range) => {
-                                actualIssues.push([errorMessage, "error", range.start.line, range.start.column, range.end.line, range.end.column])
-                            },
-                            (warningMessage, range) => {
-                                actualIssues.push([warningMessage, "warning", range.start.line, range.start.column, range.end.line, range.end.column])
-                            },
-                            new SnippetGenerator(() => {}),
-                        ).then(_x => {
-                            //console.log(x)
-                        })
-                        .catch(e => {
-                            if (e !== "errors in schema" && e !== "no schema") {
-                                throw new Error(`UNEXPECTED: SCHEMA EXCEPTION, ${e}`)
-                            }
-                            if (actualIssues.length === 0) {
-                                throw new Error("MISSING ISSUES")
-                            }
-                        })
+                        return deserializeDoc(schemaAndNodeValidator)
                     })
                 })
                 .catch(err => {
                     if (err.code === "ENOENT") {
-                        return astn.deserializeDocument(
-                            data,
-                            null,
-                            schemaReferenceResolver,
-                            (errorMessage, range) => {
-                                actualIssues.push([errorMessage, "error", range.start.line, range.start.column, range.end.line, range.end.column])
-                            },
-                            (warningMessage, range) => {
-                                actualIssues.push([warningMessage, "warning", range.start.line, range.start.column, range.end.line, range.end.column])
-                            },
-                            new SnippetGenerator(() => {}),
-                        ).then(_x => {
-                            //console.log(x)
-                        })
-                        .catch(e => {
-                            if (e !== "errors in schema" && e !== "no schema") {
-                                throw new Error(`UNEXPECTED: SCHEMA EXCEPTION, ${e}`)
-                            }
-                            if (actualIssues.length === 0) {
-                                throw new Error("MISSING ISSUES")
-                            }
-                        })
+                        return deserializeDoc(null)
                     } else {
                         throw new Error("UNKNOWN FS ERROR")
                     }

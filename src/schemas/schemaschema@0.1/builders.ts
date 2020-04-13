@@ -12,26 +12,38 @@ function assertUnreachable(_x: never) {
 export class DictionaryBuilder implements builders.DictionaryBuilder {
     private readonly collectionDefinition: types.Collection
     private readonly dictionaryDefinition: types.Dictionary
+    private readonly entries: DictionaryEntryBuilder[] = []
 
     constructor(collectionDefinition: types.Collection, dictionaryDefinition: types.Dictionary) {
         this.collectionDefinition = collectionDefinition
         this.dictionaryDefinition = dictionaryDefinition
     }
-    public createEntry(_onError: (message: string) => void) {
-        return new DictionaryEntryBuilder(this.collectionDefinition, this.dictionaryDefinition)
+    public createEntry() {
+        const de = new DictionaryEntryBuilder(this.collectionDefinition, this.dictionaryDefinition)
+        this.entries.push(de)
+        return de
+    }
+    public forEachEntry(callback: (entry: DictionaryEntryBuilder) => void) {
+        this.entries.forEach(e => callback(e))
     }
 }
 
 export class ListBuilder implements builders.ListBuilder {
     private readonly collectionDefinition: types.Collection
     private readonly listDefinition: types.List
+    private readonly entries: ListEntryBuilder[] = []
 
     constructor(collectionDefinition: types.Collection, listDefinition: types.List) {
         this.collectionDefinition = collectionDefinition
         this.listDefinition = listDefinition
     }
-    public createEntry(_onError: (message: string) => void) {
-        return new ListEntryBuilder(this.collectionDefinition, this.listDefinition)
+    public createEntry() {
+        const de = new ListEntryBuilder(this.collectionDefinition, this.listDefinition)
+        this.entries.push(de)
+        return de
+    }
+    public forEachEntry(callback: (entry: ListEntryBuilder) => void) {
+        this.entries.forEach(e => callback(e))
     }
 }
 
@@ -145,8 +157,10 @@ export class NodeBuilder implements builders.NodeBuilder {
 
 export class ValueBuilder implements builders.ValueBuilder {
     private readonly definition: types.Value
+    private value:string
     constructor(definition: types.Value) {
         this.definition = definition
+        this.value = definition["default value"]
     }
     public setComments() {
         //
@@ -154,23 +168,19 @@ export class ValueBuilder implements builders.ValueBuilder {
     public getSuggestions() {
         return []
     }
-    //public setValue(value: string, quoted: boolean, range: bc.Range) {
-    public setValue(value: string, onError: (message: string) => void ) {
+    public getValue(): string {
+        return this.value
+    }
+    public setValue(value: string, onError: (message: string) => void) {
         const $ = this.definition
         switch ($.type[0]) {
             case "boolean": {
-                // if (quoted) {
-                //     this.onError(`value '${value}' is not a boolean but a string`, range)
-                // }
                 if (value !== "true" && value !== "false") {
                     onError(`value '${value}' is not a boolean`)
                 }
                 break
             }
             case "number": {
-                // if (quoted) {
-                //     this.onError(`value '${value}' is not a number but a string`, range)
-                // }
                 /* eslint no-new-wrappers: "off" */
                 const nr = new Number(value).valueOf()
                 if (isNaN(nr)) {
@@ -179,14 +189,12 @@ export class ValueBuilder implements builders.ValueBuilder {
                 break
             }
             case "string": {
-                // if (!quoted) {
-                //     this.onError(`value '${value}' is not quoted`, range)
-                // }
                 break
             }
             default:
                 assertUnreachable($.type[0])
         }
+        this.value = value
     }
 }
 
@@ -194,6 +202,7 @@ export class ValueBuilder implements builders.ValueBuilder {
 
 export class StateGroupBuilder {
     private readonly definition: types.StateGroup
+    private currentState: null | StateBuilder = null
     constructor(definition: types.StateGroup) {
         this.definition = definition
     }
@@ -202,10 +211,18 @@ export class StateGroupBuilder {
         if (stateDef === null) {
             throw new Error(`UNEXPECTED: no such state: ${stateName}`)
         }
-        return new StateBuilder(stateDef)
+        const state = new StateBuilder(stateName, stateDef)
+        this.currentState = state
+        return state
     }
     public setComments() {
         //
+    }
+    public getCurrentState(): StateBuilder {
+        if (this.currentState === null) {
+            throw new Error("no current state")
+        }
+        return this.currentState
     }
 }
 
@@ -213,12 +230,17 @@ export class StateGroupBuilder {
 export class StateBuilder {
     //private readonly definition: types.State
     public readonly node: NodeBuilder
-    constructor(definition: types.State) {
+    private readonly stateName: string
+    constructor(stateName: string, definition: types.State) {
         //this.onError = onError
         //this.definition = definition
         this.node = new NodeBuilder(definition.node)
+        this.stateName = stateName
     }
     public setComments() {
         //
+    }
+    public getStateKey(): string {
+        return this.stateName
     }
 }
