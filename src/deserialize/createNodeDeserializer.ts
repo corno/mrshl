@@ -48,9 +48,10 @@ function createPropertyDeserializer(
                                 beginData => {
                                     registerSnippetGenerators.onDictionaryOpen(beginData)
                                 },
-                                (_key, propertyData, _preData) => {
+                                (_key, propertyData, preData) => {
 
-                                    const entry = collBuilder.createEntry(() => { })
+                                    const entry = collBuilder.createEntry(errorMessage => onError(errorMessage, propertyData.keyRange))
+                                    entry.setComments(preData.comments.map(c => c.text))
 
                                     registerSnippetGenerators.onDictionaryEntry(
                                         propertyData,
@@ -101,7 +102,9 @@ function createPropertyDeserializer(
                                     registerSnippetGenerators.onListOpen(beginData)
                                 },
                                 () => {
-                                    const entry = collBuilder.createEntry(() => { })
+                                    const entry = collBuilder.createEntry(_errorMessage => {
+                                        //onError(errorMessage, svData.range)
+                                    })
                                     registerSnippetGenerators.onListEntry()
 
                                     return createNodeDeserializer(

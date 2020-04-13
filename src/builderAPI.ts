@@ -11,14 +11,17 @@ export interface ListBuilder extends serializable.SerializableList {
 
 export interface ComponentBuilder extends serializable.SerializableComponent {
     node: NodeBuilder
+    setComments(comments: string[]): void
 }
 
 export interface DictionaryEntryBuilder extends serializable.SerializableEntry {
     node: NodeBuilder
+    setComments(comments: string[]): void
 }
 
 export interface ListEntryBuilder extends serializable.SerializableEntry {
     node: NodeBuilder
+    setComments(comments: string[]): void
 }
 
 export interface NodeBuilder extends serializable.SerializableNode {

@@ -284,7 +284,7 @@ function deserializeMetaNode(
                                                     () => {
                                                         targetPropertyType = ["value", {
                                                             "quoted": true, //FIXME
-                                                            "default value": "***" //FIXME
+                                                            "default value": "***", //FIXME
                                                         }]
                                                     },
                                                 )

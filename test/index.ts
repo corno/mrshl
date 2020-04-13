@@ -55,7 +55,9 @@ describe("main", () => {
                     (warningMessage, range) => {
                         actualIssues.push([warningMessage, "warning", range.start.line, range.start.column, range.end.line, range.end.column])
                     },
-                    new SnippetGenerator(() => {}),
+                    new SnippetGenerator(() => {
+                        //don't do anything with the snippets
+                    }),
                 ).then(x => {
                     const out: string[] = []
                     astn.serialize(

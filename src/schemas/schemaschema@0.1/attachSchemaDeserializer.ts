@@ -136,7 +136,7 @@ function convertNode(node: Node, componentTypes: g.IReadonlyLookup<internal.Comp
                                     default:
                                         return assertUnreachable($.type[0])
                                 }
-                            })()
+                            })(),
                         }]
                     }
                     default:

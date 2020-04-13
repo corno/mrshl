@@ -67,22 +67,54 @@ export type ResolveSchemaReference = (
 
 
 export class NOPSideEffects implements SideEffectsAPI {
-    onArrayTypeClose() { }
-    onArrayTypeOpen() { }
-    onDictionaryClose() { }
-    onUnexpectedDictionaryEntry() { }
-    onDictionaryEntry() { }
-    onDictionaryOpen() { }
-    onListClose() { }
-    onListOpen() { }
-    onListEntry() { }
-    onProperty() { }
-    onUnexpectedProperty() { }
-    onState() { }
-    onTypeOpen() { }
-    onTypeClose() { }
-    onUnexpectedState() { }
-    onValue() { }
+    onArrayTypeClose() {
+        //
+    }
+    onArrayTypeOpen() {
+        //
+    }
+    onDictionaryClose() {
+        //
+    }
+    onUnexpectedDictionaryEntry() {
+        //
+    }
+    onDictionaryEntry() {
+        //
+    }
+    onDictionaryOpen() {
+        //
+    }
+    onListClose() {
+        //
+    }
+    onListOpen() {
+        //
+    }
+    onListEntry() {
+        //
+    }
+    onProperty() {
+        //
+    }
+    onUnexpectedProperty() {
+        //
+    }
+    onState() {
+        //
+    }
+    onTypeOpen() {
+        //
+    }
+    onTypeClose() {
+        //
+    }
+    onUnexpectedState() {
+        //
+    }
+    onValue() {
+        //
+    }
 }
 
 /**
@@ -130,24 +162,49 @@ export function deserializeDocument(
                     }
                 },
                 () => {
+                    //
                 }
             ))
             parser.ondata.subscribe({
-                onCloseArray() { },
-                onCloseObject() { },
-                onWhitespace() { },
-                onString() { },
-                onOpenTaggedUnion() { },
-                onOpenObject() { },
-                onOpenArray() { },
-                onNewLine() { },
-                onEnd() {
+                onCloseArray: () => {
+                    //
+                },
+                onCloseObject: () => {
+                    //
+                },
+                onWhitespace: () => {
+                    //
+                },
+                onString: () => {
+                    //
+                },
+                onOpenTaggedUnion: () => {
+                    //
+                },
+                onOpenObject: () => {
+                    //
+                },
+                onOpenArray: () => {
+                    //
+                },
+                onNewLine: () => {
+                    //
+                },
+                onEnd: () => {
                     resolve(schema)
                 },
-                onLineComment() { },
-                onBlockComment() { },
-                onComma() { },
-                onColon() { },
+                onLineComment: () => {
+                    //
+                },
+                onBlockComment: () => {
+                    //
+                },
+                onComma: () => {
+                    //
+                },
+                onColon: () => {
+                    //
+                },
             })
         }
 

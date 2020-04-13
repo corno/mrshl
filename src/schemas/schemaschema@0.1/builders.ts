@@ -55,6 +55,9 @@ export class ComponentBuilder implements builders.ComponentBuilder {
         //this.definition = definition
         this.node = new NodeBuilder(definition.type.get().node)
     }
+    public setComments() {
+        //
+    }
 }
 
 export class ListEntryBuilder implements builders.ListEntryBuilder {
@@ -69,7 +72,7 @@ export class ListEntryBuilder implements builders.ListEntryBuilder {
         //this.onError = onError
         this.node = new NodeBuilder(collectionDefinition.node)
     }
-    public insert() {
+    public setComments() {
         //
     }
 }
@@ -85,7 +88,7 @@ export class DictionaryEntryBuilder implements builders.DictionaryEntryBuilder {
         //this.onError = onError
         this.node = new NodeBuilder(collectionDefinition.node)
     }
-    public insert() {
+    public setComments() {
         //
     }
 }
@@ -118,7 +121,7 @@ export class NodeBuilder implements builders.NodeBuilder {
                     break
                 }
                 case "component": {
-                    this.components[pKey] = new ComponentBuilder(p.type[1])                    
+                    this.components[pKey] = new ComponentBuilder(p.type[1])
                     break
                 }
                 case "state group": {
@@ -137,35 +140,35 @@ export class NodeBuilder implements builders.NodeBuilder {
     public getDictionary(name: string) {
         const p = this.dictionaries[name]
         if (p === undefined) {
-            throw new Error(`UNEXPECTED: no such dictionary: ${name}`)   
+            throw new Error(`UNEXPECTED: no such dictionary: ${name}`)
         }
         return p
     }
     public getList(name: string) {
         const p = this.lists[name]
         if (p === undefined) {
-            throw new Error(`UNEXPECTED: no such list: ${name}`)   
+            throw new Error(`UNEXPECTED: no such list: ${name}`)
         }
         return p
     }
     public getComponent(name: string) {
         const p = this.components[name]
         if (p === undefined) {
-            throw new Error(`UNEXPECTED: no such component: ${name}`)   
+            throw new Error(`UNEXPECTED: no such component: ${name}`)
         }
         return p
     }
     public getStateGroup(name: string) {
         const p = this.stateGroups[name]
         if (p === undefined) {
-            throw new Error(`UNEXPECTED: no such state group: ${name}`)   
+            throw new Error(`UNEXPECTED: no such state group: ${name}`)
         }
         return p
     }
     public getValue(name: string) {
         const p = this.values[name]
         if (p === undefined) {
-            throw new Error(`UNEXPECTED: no such value: ${name}`)   
+            throw new Error(`UNEXPECTED: no such value: ${name}`)
         }
         return p
     }
@@ -173,7 +176,7 @@ export class NodeBuilder implements builders.NodeBuilder {
 
 export class ValueBuilder implements builders.ValueBuilder {
     private readonly definition: types.Value
-    private value:string
+    private value: string
     constructor(definition: types.Value) {
         this.definition = definition
         this.value = definition["default value"]
@@ -213,8 +216,6 @@ export class ValueBuilder implements builders.ValueBuilder {
         this.value = value
     }
 }
-
-
 
 export class StateGroupBuilder {
     private readonly definition: types.StateGroup

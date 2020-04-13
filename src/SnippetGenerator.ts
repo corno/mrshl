@@ -69,12 +69,20 @@ export class SnippetGenerator implements SideEffectsAPI {
     constructor(registerSnippet: RegisterSnippet) {
         this.registerSnippet = registerSnippet
     }
-    onArrayTypeClose() { }
-    onArrayTypeOpen() { }
-    onDictionaryClose() { }
+    onArrayTypeClose() {
+        //
+    }
+    onArrayTypeOpen() {
+        //
+    }
+    onDictionaryClose() {
+        //
+    }
     onUnexpectedDictionaryEntry(
         _entryData: bc.PropertyData,
-    ) {}
+    ) {
+        //
+    }
     onDictionaryEntry(
         entryData: bc.PropertyData,
         nodeDefinition: md.Node,
@@ -100,10 +108,18 @@ export class SnippetGenerator implements SideEffectsAPI {
             }
         )
     }
-    onDictionaryOpen() { }
-    onListClose() { }
-    onListOpen() { }
-    onListEntry() { }
+    onDictionaryOpen() {
+        //
+    }
+    onListClose() {
+        //
+    }
+    onListOpen() {
+        //
+    }
+    onListEntry() {
+        //
+    }
     onProperty(
         propertyData: bc.PropertyData,
         propKey: string,
@@ -139,7 +155,9 @@ export class SnippetGenerator implements SideEffectsAPI {
             null
         )
     }
-    onState() { }
+    onState() {
+        //
+    }
     onTypeOpen(range: bc.Range, nodeDefinition: md.Node, nodeBuilder: NodeBuilder) {
         this.registerSnippet(
             range,
@@ -173,7 +191,9 @@ export class SnippetGenerator implements SideEffectsAPI {
             },
         )
     }
-    onTypeClose() { }
+    onTypeClose() {
+        //
+    }
     onUnexpectedState(
         _stateName: string,
         tuData: bc.TaggedUnionData,
