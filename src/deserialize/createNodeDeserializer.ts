@@ -1,66 +1,13 @@
 import * as bc from "bass-clarinet"
-import * as fp from "fountain-pen"
 import * as md from "../metaDataSchema"
 import { NodeBuilder } from "../builderAPI"
-import { RegisterSnippetsGenerators } from "./registerSnippetGenerators"
+import { SideEffectsAPI } from "./SideEffectsAPI"
 
 function assertUnreachable<RT>(_x: never): RT {
     throw new Error("Unreachable")
 }
 
-function createPropertySnippet(prop: md.Property, propName: string, nodeBuilder: NodeBuilder): fp.InlinePart {
-    switch (prop.type[0]) {
-        case "collection": {
-            const $ = prop.type[1]
-            switch ($.type[0]) {
-                case "dictionary": {
-                    return `{}`
-                }
-                case "list": {
-                    return `[]`
-                }
-                default:
-                    return assertUnreachable($.type[0])
-            }
-        }
-        case "component": {
-            const $ = prop.type[1]
-
-            return createNodeSnippet($.type.get().node, nodeBuilder.setComponent(propName).node)
-        }
-        case "state group": {
-            //const $ = prop.type[1]
-            return `| '' ()`
-        }
-        case "value": {
-            //const $ = prop.type[1]
-            return `"${""}"`
-        }
-        default:
-            return assertUnreachable(prop.type[0])
-    }
-}
-
-function createPropertiesSnippet(node: md.Node, nodeBuilder: NodeBuilder): fp.IParagraph {
-    const x: fp.ParagraphPart[] = []
-    node.properties.map((prop, propKey) => {
-        x.push(fp.line([
-            `'${propKey}': `,
-            createPropertySnippet(prop, propKey, nodeBuilder),
-        ]))
-    })
-    return x
-}
-
-function createNodeSnippet(node: md.Node, nodeBuilder: NodeBuilder): fp.InlinePart {
-    return [
-        '(',
-        () => {
-            return createPropertiesSnippet(node, nodeBuilder)
-        },
-        ')',
-    ]
-}
+type OnError = (message: string, range: bc.Range) => void
 
 function createPropertyDeserializer(
     context: bc.ExpectContext,
@@ -68,7 +15,8 @@ function createPropertyDeserializer(
     propKey: string,
     nodeBuilder: NodeBuilder,
     isCompact: boolean,
-    registerSnippetGenerators: RegisterSnippetsGenerators,
+    registerSnippetGenerators: SideEffectsAPI,
+    onError: OnError,
 ): bc.ValueHandler {
     switch (propDefinition.type[0]) {
         case "collection": {
@@ -80,59 +28,46 @@ function createPropertyDeserializer(
                         case "no": {
                             return context.expectDictionary(
                                 openData => {
-                                    registerSnippetGenerators(openData.start, null, null)
+                                    registerSnippetGenerators.onDictionaryOpen(openData)
                                 },
                                 (_key, propertyData) => {
-                                    registerSnippetGenerators(propertyData.keyRange, null, null)
+                                    registerSnippetGenerators.onUnexpectedDictionaryEntry(
+                                        propertyData,
+                                    )
                                     return context.expectNothing()
                                 },
                                 endData => {
-                                    registerSnippetGenerators(endData.range, null, null)
+                                    registerSnippetGenerators.onDictionaryClose(endData)
                                 },
                             )
                         }
                         case "yes": {
                             const $$$ = $$["has instances"][1]
-                            const collBuilder = nodeBuilder.setCollection(propKey)
+                            const collBuilder = nodeBuilder.getDictionary(propKey)
                             return context.expectDictionary(
                                 beginData => {
-                                    registerSnippetGenerators(beginData.start, null, null)
+                                    registerSnippetGenerators.onDictionaryOpen(beginData)
                                 },
                                 (_key, propertyData, _preData) => {
 
-                                    const entry = collBuilder.createEntry()
-                                    entry.insert() //might be problematic.. insertion before fully initialized
+                                    const entry = collBuilder.createEntry(() => {})
 
-                                    registerSnippetGenerators(
-                                        propertyData.keyRange,
-                                        null,
-                                        () => {
-                                            const out: string[] = []
-                                            fp.serialize(
-                                                [createNodeSnippet($$$.node, entry.node)], "    ", true, snippet => {
-                                                    out.push(snippet)
-                                                })
-                                            return [out.map((line, index) => {
-                                                //don't indent the first line
-                                                if (index === 0) {
-                                                    return line
-                                                }
-                                                return line
-                                                //return preData.indentation + line
-                                            }).join("\n")]
-                                        }
+                                    registerSnippetGenerators.onDictionaryEntry(
+                                        propertyData,
+                                        $$$.node,
+                                        entry
                                     )
-
                                     return createNodeDeserializer(
                                         context,
                                         $$$.node,
                                         entry.node,
                                         isCompact,
                                         registerSnippetGenerators,
+                                        onError,
                                     )
                                 },
                                 endData => {
-                                    registerSnippetGenerators(endData.range, null, null)
+                                    registerSnippetGenerators.onDictionaryClose(endData)
                                 },
                             )
                         }
@@ -147,26 +82,27 @@ function createPropertyDeserializer(
                         case "no": {
                             return context.expectList(
                                 beginData => {
-                                    registerSnippetGenerators(beginData.start, null, null)
+                                    registerSnippetGenerators.onListOpen(beginData)
                                 },
                                 () => {
+                                    registerSnippetGenerators.onListEntry()
                                     return context.expectNothing()
                                 },
                                 endData => {
-                                    registerSnippetGenerators(endData.range, null, null)
+                                    registerSnippetGenerators.onListClose(endData)
                                 },
                             )
                         }
                         case "yes": {
                             const $$$ = $$["has instances"][1]
-                            const collBuilder = nodeBuilder.setCollection(propKey)
+                            const collBuilder = nodeBuilder.getList(propKey)
                             return context.expectList(
                                 beginData => {
-                                    registerSnippetGenerators(beginData.start, null, null)
+                                    registerSnippetGenerators.onListOpen(beginData)
                                 },
                                 () => {
-                                    const entry = collBuilder.createEntry()
-                                    entry.insert()
+                                    const entry = collBuilder.createEntry(() => {})
+                                    registerSnippetGenerators.onListEntry()
 
                                     return createNodeDeserializer(
                                         context,
@@ -174,10 +110,11 @@ function createPropertyDeserializer(
                                         entry.node,
                                         isCompact,
                                         registerSnippetGenerators,
+                                        onError,
                                     )
                                 },
                                 endData => {
-                                    registerSnippetGenerators(endData.range, null, null)
+                                    registerSnippetGenerators.onListClose(endData)
                                 },
                             )
                         }
@@ -191,13 +128,14 @@ function createPropertyDeserializer(
         }
         case "component": {
             const $ = propDefinition.type[1]
-            const componentBuilder = nodeBuilder.setComponent(propKey)
+            const componentBuilder = nodeBuilder.getComponent(propKey)
             return createNodeDeserializer(
                 context,
                 $.type.get().node,
                 componentBuilder.node,
                 isCompact,
                 registerSnippetGenerators,
+                onError,
             )
         }
         case "state group": {
@@ -205,34 +143,39 @@ function createPropertyDeserializer(
             return context.expectTaggedUnion(
                 $.states.map((stateDef, stateName) => {
                     return (tuData, tuPreData, optionPreData) => {
-                        registerSnippetGenerators(tuData.startRange, null, null)
-                        registerSnippetGenerators(tuData.optionRange, null, null)
-                        const state = nodeBuilder.setStateGroup(propKey, stateName, tuData.startRange, tuPreData, tuData.optionRange, optionPreData)
-                        return createNodeDeserializer(context, stateDef.node, state.node, isCompact, registerSnippetGenerators)
+                        registerSnippetGenerators.onState(stateName, tuData, tuPreData, optionPreData)
+                        const stateGroup = nodeBuilder.getStateGroup(propKey)
+                        stateGroup.setComments(tuPreData.comments)
+                        const state = stateGroup.setState(stateName, errorMessage => onError(errorMessage, tuData.optionRange))
+                        state.setComments(optionPreData.comments)
+                        return createNodeDeserializer(
+                            context,
+                            stateDef.node,
+                            state.node,
+                            isCompact,
+                            registerSnippetGenerators,
+                            onError
+                        )
                     }
                 }),
-                (_option, tuData) => {
-                    registerSnippetGenerators(tuData.startRange, null, null)
-                    registerSnippetGenerators(
-                        tuData.optionRange,
-                        () => {
-                            return Object.keys($.states.map(s => s))
-                        },
-                        null
+                (option, tuData, beginPreData, optionPreData) => {
+                    registerSnippetGenerators.onUnexpectedState(
+                        option,
+                        tuData,
+                        beginPreData,
+                        optionPreData,
+                        $,
                     )
                 },
             )
         }
         case "value": {
-            return context.expectSimpleValue((value, svData, comments) => {
-                const valueBuilder = nodeBuilder.setSimpleValue(propKey, value, svData.quote !== null, svData.range, comments)
-                registerSnippetGenerators(
-                    svData.range,
-                    () => {
-                        return valueBuilder.getSuggestions()
-                    },
-                    null,
-                )
+            return context.expectSimpleValue((value, svData, preData) => {
+                const valueBuilder = nodeBuilder.getValue(propKey)
+                valueBuilder.setValue(value, errorMessage => onError(errorMessage, svData.range))
+                //valueBuilder.setValue(value, svData.quote !== null, svData.range, comments)
+                valueBuilder.setComments(preData.comments)
+                registerSnippetGenerators.onValue(svData, valueBuilder)
             })
         }
         default:
@@ -245,22 +188,31 @@ export function createNodeDeserializer(
     nodeDefinition: md.Node,
     nodeBuilder: NodeBuilder,
     isCompact: boolean,
-    registerSnippetGenerators: RegisterSnippetsGenerators,
+    sideEffectsAPI: SideEffectsAPI,
+    onError: OnError,
 ): bc.ValueHandler {
     if (isCompact) {
         const expectedElements: bc.ExpectedElements = []
         nodeDefinition.properties.forEach((propDefinition, propKey) => {
             expectedElements.push(() => {
-                return createPropertyDeserializer(context, propDefinition, propKey, nodeBuilder, isCompact, registerSnippetGenerators)
+                return createPropertyDeserializer(
+                    context,
+                    propDefinition,
+                    propKey,
+                    nodeBuilder,
+                    isCompact,
+                    sideEffectsAPI,
+                    onError,
+                )
             })
         })
         return context.expectArrayType(
             startData => {
-                registerSnippetGenerators(startData.start, null, null)
+                sideEffectsAPI.onArrayTypeOpen(startData)
             },
             expectedElements,
             endData => {
-                registerSnippetGenerators(endData.range, null, null)
+                sideEffectsAPI.onArrayTypeClose(endData)
             }
         )
 
@@ -269,26 +221,21 @@ export function createNodeDeserializer(
         nodeDefinition.properties.forEach((propDefinition, propKey) => {
             expectedProperties[propKey] = {
                 onExists: propertyData => {
-                    registerSnippetGenerators(
-                        propertyData.keyRange,
-                        null,
-                        () => {
-                            const out: string[] = []
-                            fp.serialize(
-                                [createPropertySnippet(propDefinition, propKey, nodeBuilder)], "    ", true, snippet => {
-                                    out.push(snippet)
-                                })
-                            return [out.map((line, index) => {
-                                //don't indent the first line
-                                if (index === 0) {
-                                    return line
-                                }
-                                return line
-                                //return preData.indentation + line
-                            }).join("\n")]
-                        },
+                    sideEffectsAPI.onProperty(
+                        propertyData,
+                        propKey,
+                        propDefinition,
+                        nodeBuilder,
                     )
-                    return createPropertyDeserializer(context, propDefinition, propKey, nodeBuilder, isCompact, registerSnippetGenerators)
+                    return createPropertyDeserializer(
+                        context,
+                        propDefinition,
+                        propKey,
+                        nodeBuilder,
+                        isCompact,
+                        sideEffectsAPI,
+                        onError,
+                    )
                 },
                 onNotExists: () => {
                     //
@@ -297,49 +244,22 @@ export function createNodeDeserializer(
         })
         return context.expectType(
             startRange => {
-                registerSnippetGenerators(
+                sideEffectsAPI.onTypeOpen(
                     startRange,
-                    null,
-                    () => {
-                        const out: string[] = []
-                        fp.serialize(
-                            [
-                                '',
-                                () => {
-                                    return createPropertiesSnippet(nodeDefinition, nodeBuilder)
-                                },
-                                '',
-                            ],
-                            "    ",
-                            true,
-                            snippet => {
-                                out.push(snippet)
-                            }
-                        )
-                        return [
-                            out.map((line, index) => {
-                                //don't indent the first line
-                                if (index === 0) {
-                                    return line
-                                }
-                                return line
-                                //return preData.indentation + line
-                            }).join("\n"),
-                        ]
-                    },
+                    nodeDefinition,
+                    nodeBuilder,
                 )
             },
             expectedProperties,
             (_hasErrors, endRange) => {
-                registerSnippetGenerators(endRange, null, null)
+                sideEffectsAPI.onTypeClose(endRange)
             },
-            (_key, metaData, _preData) => {
-                registerSnippetGenerators(
-                    metaData.keyRange,
-                    () => {
-                        return Object.keys(expectedProperties)
-                    },
-                    null
+            (key, metaData, preData) => {
+                sideEffectsAPI.onUnexpectedProperty(
+                    key,
+                    metaData,
+                    preData,
+                    Object.keys(expectedProperties),
                 )
             },
         )

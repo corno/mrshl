@@ -1,4 +1,3 @@
-import * as bc from "bass-clarinet"
 import * as builders from "../../builderAPI"
 import * as types from "./types"
 
@@ -10,38 +9,68 @@ function assertUnreachable(_x: never) {
     throw new Error("unreachable")
 }
 
-type OnError = (message: string, range: bc.Range) => void
+export class DictionaryBuilder implements builders.DictionaryBuilder {
+    private readonly collectionDefinition: types.Collection
+    private readonly dictionaryDefinition: types.Dictionary
 
-export class CollectionBuilder implements builders.CollectionBuilder {
-    private readonly definition: types.Collection
-    private readonly onError: OnError
-
-    constructor(definition: types.Collection, onError: OnError) {
-        this.definition = definition
-        this.onError = onError
+    constructor(collectionDefinition: types.Collection, dictionaryDefinition: types.Dictionary) {
+        this.collectionDefinition = collectionDefinition
+        this.dictionaryDefinition = dictionaryDefinition
     }
-    public createEntry() {
-        return new EntryBuilder(this.definition, this.onError)
+    public createEntry(_onError: (message: string) => void) {
+        return new DictionaryEntryBuilder(this.collectionDefinition, this.dictionaryDefinition)
+    }
+}
+
+export class ListBuilder implements builders.ListBuilder {
+    private readonly collectionDefinition: types.Collection
+    private readonly listDefinition: types.List
+
+    constructor(collectionDefinition: types.Collection, listDefinition: types.List) {
+        this.collectionDefinition = collectionDefinition
+        this.listDefinition = listDefinition
+    }
+    public createEntry(_onError: (message: string) => void) {
+        return new ListEntryBuilder(this.collectionDefinition, this.listDefinition)
     }
 }
 
 export class ComponentBuilder implements builders.ComponentBuilder {
     //private readonly definition: types.Component
     public readonly node: NodeBuilder
-    constructor(definition: types.Component, onError: OnError) {
+    constructor(definition: types.Component) {
         //this.definition = definition
-        this.node = new NodeBuilder(definition.type.get().node, onError)
+        this.node = new NodeBuilder(definition.type.get().node)
     }
 }
 
-export class EntryBuilder implements builders.EntryBuilder {
-    //private readonly definition: types.Collection
+export class ListEntryBuilder implements builders.ListEntryBuilder {
+    //private readonly collectionDefinition: types.Collection
+    //private readonly listDefinition: types.List
     //private readonly onError: OnError
     public readonly node: NodeBuilder
-    constructor(definition: types.Collection, onError: OnError) {
-        //this.definition = definition
+
+    constructor(collectionDefinition: types.Collection, _listDefinition: types.List) {
+        //this.collectionDefinition = collectionDefinition
+        //this.listDefinition = listDefinition
         //this.onError = onError
-        this.node = new NodeBuilder(definition.node, onError)
+        this.node = new NodeBuilder(collectionDefinition.node)
+    }
+    public insert() {
+        //
+    }
+}
+export class DictionaryEntryBuilder implements builders.DictionaryEntryBuilder {
+    //private readonly collectionDefinition: types.Collection
+    //private readonly dictionaryDefinition: types.Dictionary
+    //private readonly onError: OnError
+    public readonly node: NodeBuilder
+
+    constructor(collectionDefinition: types.Collection, _dictionaryDefinition: types.Dictionary) {
+        //this.collectionDefinition = collectionDefinition
+        //this.dictionaryDefinition = dictionaryDefinition
+        //this.onError = onError
+        this.node = new NodeBuilder(collectionDefinition.node)
     }
     public insert() {
         //
@@ -50,12 +79,10 @@ export class EntryBuilder implements builders.EntryBuilder {
 
 export class NodeBuilder implements builders.NodeBuilder {
     private readonly definition: types.Node
-    private readonly onError: OnError
-    constructor(definition: types.Node, onError: OnError) {
+    constructor(definition: types.Node) {
         this.definition = definition
-        this.onError = onError
     }
-    public setCollection(name: string) {
+    public getDictionary(name: string) {
         const propDef = this.definition.properties.get(name)
         if (propDef === null) {
             throw new Error(`UNEXPECTED: no such property: ${name}`)
@@ -63,9 +90,27 @@ export class NodeBuilder implements builders.NodeBuilder {
         if (propDef.type[0] !== "collection") {
             throw new Error(`UNEXPECTED: property '${name}' is not a collection`)
         }
-        return new CollectionBuilder(propDef.type[1], this.onError)
+        const $ = propDef.type[1]
+        if ($.type[0] !== "dictionary") {
+            throw new Error(`UNEXPECTED: property '${name}' is not a dictionary`)
+        }
+        return new DictionaryBuilder(propDef.type[1], $.type[1])
     }
-    public setComponent(name: string) {
+    public getList(name: string) {
+        const propDef = this.definition.properties.get(name)
+        if (propDef === null) {
+            throw new Error(`UNEXPECTED: no such property: ${name}`)
+        }
+        if (propDef.type[0] !== "collection") {
+            throw new Error(`UNEXPECTED: property '${name}' is not a collection`)
+        }
+        const $ = propDef.type[1]
+        if ($.type[0] !== "list") {
+            throw new Error(`UNEXPECTED: property '${name}' is not a list`)
+        }
+        return new ListBuilder(propDef.type[1], $.type[1])
+    }
+    public getComponent(name: string) {
         const propDef = this.definition.properties.get(name)
         if (propDef === null) {
             throw new Error(`UNEXPECTED: no such property: ${name}`)
@@ -73,9 +118,9 @@ export class NodeBuilder implements builders.NodeBuilder {
         if (propDef.type[0] !== "component") {
             throw new Error(`UNEXPECTED: property '${name}' is not a component`)
         }
-        return new ComponentBuilder(propDef.type[1], this.onError)
+        return new ComponentBuilder(propDef.type[1])
     }
-    public setStateGroup(name: string, stateName: string) {
+    public getStateGroup(name: string) {
         const propDef = this.definition.properties.get(name)
         if (propDef === null) {
             throw new Error(`UNEXPECTED: no such property: ${name}`)
@@ -83,13 +128,9 @@ export class NodeBuilder implements builders.NodeBuilder {
         if (propDef.type[0] !== "state group") {
             throw new Error(`UNEXPECTED: property '${name}' is not a state group`)
         }
-        const stateDef = propDef.type[1].states.get(stateName)
-        if (stateDef === null) {
-            throw new Error(`UNEXPECTED: no such state: ${stateName}`)
-        }
-        return new StateBuilder(stateDef, this.onError)
+        return new StateGroupBuilder(propDef.type[1])
     }
-    public setSimpleValue(name: string, value: string, quoted: boolean, range: bc.Range) {
+    public getValue(name: string) {
 
         const propDef = this.definition.properties.get(name)
         if (propDef === null) {
@@ -98,54 +139,86 @@ export class NodeBuilder implements builders.NodeBuilder {
         if (propDef.type[0] !== "value") {
             throw new Error(`UNEXPECTED: property '${name}' is not a value`)
         }
-        const $ = propDef.type[1]
+        return new ValueBuilder(propDef.type[1])
+    }
+}
+
+export class ValueBuilder implements builders.ValueBuilder {
+    private readonly definition: types.Value
+    constructor(definition: types.Value) {
+        this.definition = definition
+    }
+    public setComments() {
+        //
+    }
+    public getSuggestions() {
+        return []
+    }
+    //public setValue(value: string, quoted: boolean, range: bc.Range) {
+    public setValue(value: string, onError: (message: string) => void ) {
+        const $ = this.definition
         switch ($.type[0]) {
             case "boolean": {
-                if (quoted) {
-                    this.onError(`value '${value}' is not a boolean but a string`, range)
-                }
+                // if (quoted) {
+                //     this.onError(`value '${value}' is not a boolean but a string`, range)
+                // }
                 if (value !== "true" && value !== "false") {
-                    this.onError(`value '${value}' is not a boolean`, range)
+                    onError(`value '${value}' is not a boolean`)
                 }
                 break
             }
             case "number": {
-                if (quoted) {
-                    this.onError(`value '${value}' is not a number but a string`, range)
-                }
+                // if (quoted) {
+                //     this.onError(`value '${value}' is not a number but a string`, range)
+                // }
                 /* eslint no-new-wrappers: "off" */
                 const nr = new Number(value).valueOf()
                 if (isNaN(nr)) {
-                    this.onError(`value '${value}' is not a number`, range)
+                    onError(`value '${value}' is not a number`)
                 }
                 break
             }
             case "string": {
-                if (!quoted) {
-                    this.onError(`value '${value}' is not quoted`, range)
-                }
+                // if (!quoted) {
+                //     this.onError(`value '${value}' is not quoted`, range)
+                // }
                 break
             }
             default:
                 assertUnreachable($.type[0])
         }
-        return new ValueBuilder()
     }
 }
 
-export class ValueBuilder implements builders.ValueBuilder {
-    getSuggestions() {
-        return []
+
+
+export class StateGroupBuilder {
+    private readonly definition: types.StateGroup
+    constructor(definition: types.StateGroup) {
+        this.definition = definition
+    }
+    public setState(stateName: string) {
+        const stateDef = this.definition.states.get(stateName)
+        if (stateDef === null) {
+            throw new Error(`UNEXPECTED: no such state: ${stateName}`)
+        }
+        return new StateBuilder(stateDef)
+    }
+    public setComments() {
+        //
     }
 }
+
 
 export class StateBuilder {
     //private readonly definition: types.State
-    //private readonly onError: OnError
     public readonly node: NodeBuilder
-    constructor(definition: types.State, onError: OnError) {
+    constructor(definition: types.State) {
         //this.onError = onError
         //this.definition = definition
-        this.node = new NodeBuilder(definition.node, onError)
+        this.node = new NodeBuilder(definition.node)
+    }
+    public setComments() {
+        //
     }
 }

@@ -1,6 +1,6 @@
 import * as bc from "bass-clarinet"
 import * as internal from "../../metaDataSchema"
-import { SchemaAndNodeBuilderPair } from "../../processDocument"
+import { SchemaAndNodeBuilderPair } from "../../deserialize/deserializeDocument"
 import { NodeBuilder } from "./builders"
 import { createDeserializer } from "./deserialize"
 import * as g from "./generics"
@@ -51,8 +51,8 @@ export function attachSchemaDeserializer(parser: bc.Parser, onError: (message: s
                 callback(null)
             } else {
                 callback({
-                    schema: convert(metadata),
-                    nodeBuilder: new NodeBuilder(metadata["root type"].get().node, onError),
+                    rootNodeDefinition: convert(metadata)["root type"].get().node,
+                    nodeBuilder: new NodeBuilder(metadata["root type"].get().node),
                 })
             }
         }

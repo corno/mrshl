@@ -1,6 +1,5 @@
 export * from "./serialize"
 export * from "./deserialize"
-export * from "./validateDocument"
 export * from "./metaDataSchema"
-export * from "./processDocument"
+export * from "./deserialize/deserializeDocument"
 export * from "./builderAPI"

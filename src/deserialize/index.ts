@@ -1,5 +1,5 @@
 export * from "../builderAPI"
-export * from "./registerSnippetGenerators"
+export * from "./SideEffectsAPI"
 export * from "./createSchemaDeserializer"
 export * from "./createFromURLSchemaDeserializer"
 export * from "./deserializeSchemaFromString"

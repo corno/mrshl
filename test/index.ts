@@ -8,6 +8,7 @@ import * as fs from "fs"
 import * as path from "path"
 import { describe } from "mocha"
 import * as astn from "../src"
+import { SnippetGenerator } from "../src/SnippetGenerator"
 
 const testsDir = "./test/tests"
 
@@ -51,7 +52,7 @@ describe("main", () => {
                             actualIssues.push([errorMessage, "error", range.start.line, range.start.column, range.end.line, range.end.column])
                         },
                     ).then(schemaAndNodeValidator => {
-                        return astn.validateDocument(
+                        return astn.deserializeDocument(
                             data,
                             schemaAndNodeValidator,
                             schemaReferenceResolver,
@@ -61,10 +62,11 @@ describe("main", () => {
                             (warningMessage, range) => {
                                 actualIssues.push([warningMessage, "warning", range.start.line, range.start.column, range.end.line, range.end.column])
                             },
-                            () => {
-                                //
-                            },
-                        ).catch(e => {
+                            new SnippetGenerator(() => {}),
+                        ).then(_x => {
+                            //console.log(x)
+                        })
+                        .catch(e => {
                             if (e !== "errors in schema" && e !== "no schema") {
                                 throw new Error(`UNEXPECTED: SCHEMA EXCEPTION, ${e}`)
                             }
@@ -76,7 +78,7 @@ describe("main", () => {
                 })
                 .catch(err => {
                     if (err.code === "ENOENT") {
-                        return astn.validateDocument(
+                        return astn.deserializeDocument(
                             data,
                             null,
                             schemaReferenceResolver,
@@ -86,10 +88,11 @@ describe("main", () => {
                             (warningMessage, range) => {
                                 actualIssues.push([warningMessage, "warning", range.start.line, range.start.column, range.end.line, range.end.column])
                             },
-                            () => {
-                                //
-                            },
-                        ).catch(e => {
+                            new SnippetGenerator(() => {}),
+                        ).then(_x => {
+                            //console.log(x)
+                        })
+                        .catch(e => {
                             if (e !== "errors in schema" && e !== "no schema") {
                                 throw new Error(`UNEXPECTED: SCHEMA EXCEPTION, ${e}`)
                             }

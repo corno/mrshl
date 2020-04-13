@@ -1,6 +1,6 @@
 import * as http from "http"
 import * as url from "url"
-import { SchemaAndNodeBuilderPair } from "../processDocument"
+import { SchemaAndNodeBuilderPair } from "./deserializeDocument"
 import { createSchemaDeserializer } from "./createSchemaDeserializer"
 
 export function createFromURLSchemaDeserializer(host: string, pathStart: string, timeout: number) {

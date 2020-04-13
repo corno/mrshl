@@ -8,11 +8,11 @@ export interface SerializableDictionary {
 }
 
 export interface SerializableComponent {
-    getNode(): SerializableNode
+    node: SerializableNode
 }
 
 export interface SerializableEntry {
-    getNode(): SerializableNode
+    node: SerializableNode
 }
 
 export interface SerializableNode {
@@ -20,9 +20,7 @@ export interface SerializableNode {
     getDictionary(name: string): SerializableDictionary
     getComponent(name: string): SerializableComponent
     getStateGroup(name: string): SerializableStateGroup
-    getString(name: string): SerializableString
-    getBoolean(name: string): SerializableBoolean
-    getNumber(name: string): SerializableNumber
+    getValue(name: string): SerializableValue
 }
 
 export interface SerializableRoot {
@@ -38,15 +36,7 @@ export interface SerializableStateGroup {
     getCurrentState(): SerializableState
 }
 
-export interface SerializableBoolean {
-    getValue(): boolean
-}
-
-export interface SerializableNumber {
-    getValue(): number
-}
-
-export interface SerializableString {
+export interface SerializableValue {
     getValue(): string
 }
 

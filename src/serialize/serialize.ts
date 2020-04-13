@@ -13,7 +13,7 @@ function serializeNode(definition: m.Node, node: SerializableNode, builder: Valu
                 switch (property.type[0]) {
                     case "component": {
                         const $ = property.type[1]
-                        return serializeNode($.type.get().node, node.getComponent(propertyKey).getNode(), elementBuilder)
+                        return serializeNode($.type.get().node, node.getComponent(propertyKey).node, elementBuilder)
                     }
                     case "collection": {
                         const $ = property.type[1]
@@ -26,7 +26,7 @@ function serializeNode(definition: m.Node, node: SerializableNode, builder: Valu
                                         const collection = node.getDictionary(propertyKey)
                                         collection.forEachEntry((entry, keyValue) => {
                                             dict.add(keyValue, false, entryBuilder => {
-                                                return serializeNode($$$.node, entry.getNode(), entryBuilder)
+                                                return serializeNode($$$.node, entry.node, entryBuilder)
                                             })
                                         })
                                     }
@@ -40,7 +40,7 @@ function serializeNode(definition: m.Node, node: SerializableNode, builder: Valu
                                         const collection = node.getList(propertyKey)
                                         collection.forEachEntry(entry => {
                                             list.add(entryBuilder => {
-                                                return serializeNode($$$.node, entry.getNode(), entryBuilder)
+                                                return serializeNode($$$.node, entry.node, entryBuilder)
                                             })
                                         })
                                     }
@@ -62,7 +62,7 @@ function serializeNode(definition: m.Node, node: SerializableNode, builder: Valu
                         })
                     }
                     case "value": {
-                        return elementBuilder.simpleValue(node.getString(propertyKey).getValue(), true)
+                        return elementBuilder.simpleValue(node.getValue(propertyKey).getValue(), true)
                     }
                     default:
                         return assertUnreachable(property.type[0])
