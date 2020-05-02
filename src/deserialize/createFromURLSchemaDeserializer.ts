@@ -1,10 +1,10 @@
 import * as http from "http"
 import * as url from "url"
-import { SchemaAndNodeBuilderPair } from "./deserializeDocument"
 import { createSchemaDeserializer } from "./createSchemaDeserializer"
+import * as ds from "../datasetAPI"
 
 export function createFromURLSchemaDeserializer(host: string, pathStart: string, timeout: number) {
-    return (reference: string): Promise<SchemaAndNodeBuilderPair> => {
+    return (reference: string): Promise<ds.Dataset> => {
         return new Promise((resolve, reject) => {
 
             // //const errors: string[] = []

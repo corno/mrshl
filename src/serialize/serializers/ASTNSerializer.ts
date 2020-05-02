@@ -3,8 +3,8 @@
 */
 
 import * as serializers from "../serializerAPI"
-import * as md from "../../metaDataSchema"
 import { serializeMetaData } from "../serializeMetaData"
+import { SerializableDataset } from "../serializable"
 
 class DummySerializer implements serializers.ValueSerializer {
     public simpleValue() {
@@ -108,9 +108,9 @@ export class ASTNSerializer implements serializers.RootSerializer {
         this.out = out
         this.root = new ASTNValueSerializer(out)
     }
-    public serializeSchema(schema: md.Schema) {
+    public serializeSchema(dataset: SerializableDataset) {
         this.out.add(`! `)
-        serializeMetaData(schema, new ASTNValueSerializer(this.out))
+        serializeMetaData(dataset.schema, new ASTNValueSerializer(this.out))
     }
     public serializeSchemaReference(schemaReference: string) {
         this.out.add(`! ${JSON.stringify(schemaReference)}`)

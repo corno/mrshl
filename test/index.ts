@@ -8,8 +8,6 @@ import * as fs from "fs"
 import * as path from "path"
 import { describe } from "mocha"
 import * as astn from "../src"
-import { SnippetGenerator } from "../src/SnippetGenerator"
-import { ASTNSerializer, StringStream } from "../src"
 
 const testsDir = "./test/tests"
 
@@ -21,7 +19,8 @@ describe("main", () => {
     fs.readdirSync(testsDir).forEach(dir => {
         //console.log("test:", dir)
         const testDirPath = path.join(testsDir, dir)
-        const filePath = path.join(testDirPath, "data.astn.test")
+        const serializedDatasetPath = path.join(testDirPath, "data.astn.test")
+        //const expectedOutputPath = path.join(testDirPath, "expected.astn.test")
         const schemaPath = path.join(testDirPath, "schema.astn-schema")
         const expectedIssues = JSON.parse(fs.readFileSync(path.join(testDirPath, "issues.json"), { encoding: "utf-8" }))
 
@@ -42,12 +41,13 @@ describe("main", () => {
 
         async function myFunc(): Promise<void> {
 
-            const data = await fs.promises.readFile(filePath, { encoding: "utf-8" })
+            const serializedDataset = await fs.promises.readFile(serializedDatasetPath, { encoding: "utf-8" })
+            //const expectedOutput = await fs.promises.readFile(expectedOutputPath, { encoding: "utf-8" })
 
-            function deserializeDoc(schemaAndNodeValidator: astn.SchemaAndNodeBuilderPair | null) {
-                return astn.deserializeDocument(
-                    data,
-                    schemaAndNodeValidator,
+            function deserializeDoc(startDataset: astn.Dataset | null) {
+                return astn.deserializeDataset(
+                    serializedDataset,
+                    startDataset,
                     schemaReferenceResolver,
                     (errorMessage, range) => {
                         actualIssues.push([errorMessage, "error", range.start.line, range.start.column, range.end.line, range.end.column])
@@ -55,29 +55,32 @@ describe("main", () => {
                     (warningMessage, range) => {
                         actualIssues.push([warningMessage, "warning", range.start.line, range.start.column, range.end.line, range.end.column])
                     },
-                    new SnippetGenerator(() => {
+                    new astn.SnippetGenerator(() => {
                         //don't do anything with the snippets
                     }),
-                ).then(x => {
+                ).then(dataset => {
                     const out: string[] = []
                     astn.serialize(
-                        x.schemaDefinition,
-                        x.dataset,
-                        new ASTNSerializer(
-                            new StringStream(out, null),
+                        dataset,
+                        new astn.ASTNSerializer(
+                            new astn.StringStream(out, 0),
                         ),
                         false,
                     )
-                    console.log(out.join(""))
+                    // console.log("actual>>>.")
+                    // console.log(out.join("").split("\n"))
+                    // console.log("expected>>>.")
+                    // console.log(expectedOutput.split("\n"))
+                    // chai.assert.deepEqual(out.join("").split("\n"), expectedOutput.split("\n"))
                 })
-                .catch(e => {
-                    if (e !== "errors in schema" && e !== "no schema") {
-                        throw new Error(`UNEXPECTED: SCHEMA EXCEPTION, ${e}`)
-                    }
-                    if (actualIssues.length === 0) {
-                        throw new Error("MISSING ISSUES")
-                    }
-                })
+                    .catch(e => {
+                        if (e !== "errors in schema" && e !== "no schema") {
+                            throw new Error(`UNEXPECTED: SCHEMA EXCEPTION, ${e}`)
+                        }
+                        if (actualIssues.length === 0) {
+                            throw new Error("MISSING ISSUES")
+                        }
+                    })
             }
 
             return fs.promises.readFile(schemaPath, { encoding: "utf-8" })
@@ -87,8 +90,8 @@ describe("main", () => {
                         (errorMessage, range) => {
                             actualIssues.push([errorMessage, "error", range.start.line, range.start.column, range.end.line, range.end.column])
                         },
-                    ).then(schemaAndNodeValidator => {
-                        return deserializeDoc(schemaAndNodeValidator)
+                    ).then(dataset => {
+                        return deserializeDoc(dataset)
                     })
                 })
                 .catch(err => {
@@ -98,13 +101,10 @@ describe("main", () => {
                         throw new Error("UNKNOWN FS ERROR")
                     }
                 })
-
         }
-
-        it(dir, () => {
-            return myFunc().then(() => {
-                chai.assert.deepEqual(actualIssues, expectedIssues)
-            })
+        it(dir, async () => {
+            await myFunc()
+            chai.assert.deepEqual(actualIssues, expectedIssues)
         })
     })
 })

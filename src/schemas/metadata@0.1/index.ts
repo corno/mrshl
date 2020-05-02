@@ -1,10 +1,10 @@
 import * as bc from "bass-clarinet"
-import { SchemaAndNodeBuilderPair } from "../../deserialize"
 import { Schema } from "./types"
 import { createDeserializer } from "./deserialize"
 import * as b from "./builders"
+import * as ds from "../../datasetAPI"
 
-export function attachSchemaDeserializer(parser: bc.Parser, onError: (message: string, range: bc.Range) => void, callback: (schema: SchemaAndNodeBuilderPair | null) => void) {
+export function attachSchemaDeserializer(parser: bc.Parser, onError: (message: string, range: bc.Range) => void, callback: (dataset: ds.Dataset | null) => void) {
     let foundError = false
     function onSchemaError(message: string, range: bc.Range) {
         onError(message, range)
@@ -49,10 +49,7 @@ export function attachSchemaDeserializer(parser: bc.Parser, onError: (message: s
                 }
                 callback(null)
             } else {
-                callback({
-                    schemaDefinition: metadata,
-                    dataset: new b.DatasetBuilder(metadata),
-                })
+                callback(new b.Dataset(metadata))
             }
         }
     ))

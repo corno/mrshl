@@ -1,9 +1,8 @@
 import * as bc from "bass-clarinet"
-import { createMetaDataDeserializer, createDatasetBuilder } from "../metaDataSchema"
-import * as types from "../metaDataSchema"
+import * as md from "../metaDataSchema"
 import { SideEffectsAPI } from "./SideEffectsAPI"
 import { createDatasetDeserializer } from "./createDatasetDeserializer"
-import { DatasetBuilder } from "../builderAPI"
+import * as ds from "../datasetAPI"
 
 function createPropertyHandler(
     _key: string,
@@ -56,14 +55,9 @@ function createObjectHandler(_beginRange: bc.Range): bc.ObjectHandler {
     }
 }
 
-export type SchemaAndNodeBuilderPair = {
-    schemaDefinition: types.Schema
-    dataset: DatasetBuilder
-}
-
 export type ResolveSchemaReference = (
     reference: string,
-) => Promise<SchemaAndNodeBuilderPair>
+) => Promise<ds.Dataset>
 
 
 export class NOPSideEffects implements SideEffectsAPI {
@@ -118,23 +112,23 @@ export class NOPSideEffects implements SideEffectsAPI {
 }
 
 /**
- * this function returns a Promise<void> and the promise is resolved when the validation has been completed
+ * this function returns a promise to a dataset and the promise is resolved when the validation has been completed
  */
-export function deserializeDocument(
-    document: string,
-    externalSchema: SchemaAndNodeBuilderPair | null,
+export function deserializeDataset(
+    serializedDataset: string,
+    startDataset: ds.Dataset | null,
     schemaReferenceResolver: ResolveSchemaReference,
     onError: (message: string, range: bc.Range) => void,
     onWarning: (message: string, range: bc.Range) => void,
     sideEffects: SideEffectsAPI | null,
-): Promise<SchemaAndNodeBuilderPair> {
-    return new Promise<SchemaAndNodeBuilderPair>((resolve, reject) => {
+): Promise<ds.Dataset> {
+    return new Promise<ds.Dataset>((resolve, reject) => {
         const parser = new bc.Parser(
             (message, range) => {
                 onError(message, range)
             },
         )
-        function attach(schema: SchemaAndNodeBuilderPair, isCompact: boolean) {
+        function attach(dataset: ds.Dataset, isCompact: boolean) {
             const context = new bc.ExpectContext(
                 onError,
                 onWarning,
@@ -148,8 +142,7 @@ export function deserializeDocument(
             parser.ondata.subscribe(bc.createStackedDataSubscriber(
                 createDatasetDeserializer(
                     context,
-                    schema.schemaDefinition["root type"].get().node,
-                    schema.dataset,
+                    dataset,
                     isCompact,
                     se,
                     onError,
@@ -191,7 +184,7 @@ export function deserializeDocument(
                     //
                 },
                 onEnd: () => {
-                    resolve(schema)
+                    resolve(dataset)
                 },
                 onLineComment: () => {
                     //
@@ -212,7 +205,7 @@ export function deserializeDocument(
 
         let foundSchema = false
         let foundSchemaErrors = false
-        let metaData: SchemaAndNodeBuilderPair
+        let datasetBuilder: ds.Dataset
         function onSchemaError(message: string, range: bc.Range) {
             onError(message, range)
             foundSchemaErrors = true
@@ -224,25 +217,21 @@ export function deserializeDocument(
                     onSchemaError("unexpected array as schema", openData.start)
                     return bc.createDummyArrayHandler()
                 },
-                object: createMetaDataDeserializer(
+                object: md.createMetaDataDeserializer(
                     (errorMessage, range) => {
                         onSchemaError(errorMessage, range)
                     },
-                    md => {
-                        if (md !== null) {
-                            metaData = {
-                                schemaDefinition: md,
-                                dataset: createDatasetBuilder(md),
-                            }
-
+                    md2 => {
+                        if (md2 !== null) {
+                            datasetBuilder = md.createDatasetBuilder(md2)
                         }
                     }
                 ),
                 simpleValue: (schemaReference, svData) => {
                     svData.pauser.pause()
                     schemaReferenceResolver(schemaReference)
-                        .then(md => {
-                            metaData = md
+                        .then(dataset => {
+                            datasetBuilder = dataset
                             svData.pauser.continue()
                         })
                         .catch(errorMessage => {
@@ -275,26 +264,26 @@ export function deserializeDocument(
             },
             onHeaderEnd: () => {
                 if (!foundSchema) {
-                    if (externalSchema === null) {
+                    if (startDataset === null) {
                         onError(`missing schema`, { start: { position: 0, line: 1, column: 1 }, end: { position: 0, line: 1, column: 1 } })
                         reject("no schema")
                     } else {
                         //no internal schema, no problem
                         attach(
-                            externalSchema,
+                            startDataset,
                             false
                         )
                     }
                 } else {
-                    if (metaData === undefined) {
+                    if (datasetBuilder === undefined) {
                         if (!foundSchemaErrors) {
                             throw new Error("Unexpected: no schema errors and no schema")
                         }
                         reject("errors in schema")
                     } else {
-                        if (externalSchema === null) {
+                        if (startDataset === null) {
                             attach(
-                                metaData,
+                                datasetBuilder,
                                 compact,
                             )
                         } else {
@@ -317,7 +306,7 @@ export function deserializeDocument(
                                 }
                             )
                             attach(
-                                externalSchema,
+                                startDataset,
                                 compact,
                             )
                         }
@@ -330,7 +319,7 @@ export function deserializeDocument(
             (message, range) => {
                 onError(message, range)
             },
-            document,
+            serializedDataset,
         )
     })
 }

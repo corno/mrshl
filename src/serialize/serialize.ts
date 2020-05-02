@@ -120,11 +120,10 @@ function serializeNode(
 }
 
 export function serialize(
-    definition: m.Schema,
     dataset: SerializableDataset,
     serializer: RootSerializer,
     compact: boolean,
 ): void {
-    serializer.serializeSchema(definition, dataset.root)
-    serializeNode(definition["root type"].get().node, dataset.root, serializer.root, compact, null)
+    serializer.serializeSchema(dataset)
+    serializeNode(dataset.schema["root type"].get().node, dataset.root, serializer.root, compact, null)
 }

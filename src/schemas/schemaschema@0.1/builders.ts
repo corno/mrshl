@@ -1,5 +1,6 @@
-import * as builders from "../../builderAPI"
+import * as builders from "../../datasetAPI"
 import * as types from "./types"
+import * as md from "../../metaDataSchema"
 import { RawObject } from "./generics"
 
 /* eslint
@@ -10,7 +11,7 @@ function assertUnreachable(_x: never) {
     throw new Error("unreachable")
 }
 
-export class DictionaryBuilder implements builders.DictionaryBuilder {
+export class DictionaryBuilder implements builders.Dictionary {
     private readonly collectionDefinition: types.Collection
     private readonly dictionaryDefinition: types.Dictionary
     private readonly entries: DictionaryEntryBuilder[] = []
@@ -51,7 +52,7 @@ export class ListBuilder implements builders.ListBuilder {
     }
 }
 
-export class ComponentBuilder implements builders.ComponentBuilder {
+export class ComponentBuilder implements builders.Component {
     //private readonly definition: types.Component
     public readonly node: NodeBuilder
     constructor(definition: types.Component) {
@@ -63,7 +64,7 @@ export class ComponentBuilder implements builders.ComponentBuilder {
     }
 }
 
-export class ListEntryBuilder implements builders.ListEntryBuilder {
+export class ListEntryBuilder implements builders.ListEntry {
     //private readonly collectionDefinition: types.Collection
     //private readonly listDefinition: types.List
     //private readonly onError: OnError
@@ -79,7 +80,7 @@ export class ListEntryBuilder implements builders.ListEntryBuilder {
         //
     }
 }
-export class DictionaryEntryBuilder implements builders.DictionaryEntryBuilder {
+export class DictionaryEntryBuilder implements builders.DictionaryEntry {
     //private readonly collectionDefinition: types.Collection
     //private readonly dictionaryDefinition: types.Dictionary
     //private readonly onError: OnError
@@ -179,7 +180,7 @@ export class NodeBuilder implements builders.NodeBuilder {
     }
 }
 
-export class ValueBuilder implements builders.ValueBuilder {
+export class ValueBuilder implements builders.Value {
     private readonly definition: types.Value
     private value: string
     constructor(definition: types.Value) {
@@ -268,11 +269,11 @@ export class StateBuilder {
 }
 
 export class DatasetBuilder {
-    //private readonly definition: types.State
+    public readonly schema: md.Schema
     public readonly root: NodeBuilder
-    constructor(definition: types.Schema) {
+    constructor(definition: types.Schema, metaDataSchema: md.Schema) {
         //this.onError = onError
-        //this.definition = definition
+        this.schema = metaDataSchema
         this.root = new NodeBuilder(definition["root type"].get().node)
     }
 }

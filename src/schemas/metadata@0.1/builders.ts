@@ -1,4 +1,4 @@
-import * as builders from "../../builderAPI"
+import * as builders from "../../datasetAPI"
 import * as types from "../../metaDataSchema"
 import { RawObject } from "./generics"
 
@@ -10,53 +10,53 @@ function assertUnreachable<RT>(_x: never): RT {
     throw new Error("unreachable")
 }
 
-export class DictionaryBuilder implements builders.DictionaryBuilder {
+export class Dictionary implements builders.Dictionary {
     private readonly definition: types.Dictionary
-    private readonly entries: DictionaryEntryBuilder[] = []
+    private readonly entries: DictionaryEntry[] = []
     constructor(_collDef: types.Collection, definition: types.Dictionary) {
         this.definition = definition
     }
     public createEntry() {
-        const de = new DictionaryEntryBuilder(this.definition)
+        const de = new DictionaryEntry(this.definition)
         this.entries.push(de)
         return de
     }
-    public forEachEntry(callback: (entry: DictionaryEntryBuilder, key: string) => void) {
+    public forEachEntry(callback: (entry: DictionaryEntry, key: string) => void) {
         this.entries.forEach(e => callback(e, "FIX"))
     }
 }
 
-export class ListBuilder implements builders.ListBuilder {
+export class List implements builders.ListBuilder {
     private readonly definition: types.List
-    private readonly entries: ListEntryBuilder[] = []
+    private readonly entries: ListEntry[] = []
     constructor(_collDef: types.Collection, definition: types.List) {
         this.definition = definition
     }
     public createEntry() {
-        const de = new ListEntryBuilder(this.definition)
+        const de = new ListEntry(this.definition)
         this.entries.push(de)
         return de
     }
-    public forEachEntry(callback: (entry: ListEntryBuilder) => void) {
+    public forEachEntry(callback: (entry: ListEntry) => void) {
         this.entries.forEach(e => callback(e))
     }
 }
 
-export class ComponentBuilder implements builders.ComponentBuilder {
+export class Component implements builders.Component {
     private readonly definition: types.Component
-    public readonly node: NodeBuilder
+    public readonly node: Node
     constructor(definition: types.Component) {
         this.definition = definition
-        this.node = new NodeBuilder(this.definition.type.get().node)
+        this.node = new Node(this.definition.type.get().node)
     }
     public setComments() {
         //
     }
 }
 
-export class ListEntryBuilder implements builders.ListEntryBuilder {
+export class ListEntry implements builders.ListEntry {
     //private readonly definition: types.Collection
-    public readonly node: NodeBuilder
+    public readonly node: Node
     constructor(definition: types.List) {
         //this.definition = definition
         const nodeDefinition = ((): types.Node => {
@@ -69,16 +69,16 @@ export class ListEntryBuilder implements builders.ListEntryBuilder {
                     return assertUnreachable(definition["has instances"][0])
             }
         })()
-        this.node = new NodeBuilder(nodeDefinition)
+        this.node = new Node(nodeDefinition)
     }
     public setComments() {
         //
     }
 }
 
-export class DictionaryEntryBuilder implements builders.DictionaryEntryBuilder {
+export class DictionaryEntry implements builders.DictionaryEntry {
     //private readonly definition: types.Collection
-    public readonly node: NodeBuilder
+    public readonly node: Node
     constructor(definition: types.Dictionary) {
         //this.definition = definition
         const nodeDefinition = ((): types.Node => {
@@ -91,20 +91,20 @@ export class DictionaryEntryBuilder implements builders.DictionaryEntryBuilder {
                     return assertUnreachable(definition["has instances"][0])
             }
         })()
-        this.node = new NodeBuilder(nodeDefinition)
+        this.node = new Node(nodeDefinition)
     }
     public setComments() {
         //
     }
 }
 
-export class NodeBuilder implements builders.NodeBuilder {
+export class Node implements builders.NodeBuilder {
     private readonly definition: types.Node
-    private readonly dictionaries: RawObject<DictionaryBuilder> = {}
-    private readonly lists: RawObject<ListBuilder> = {}
-    private readonly components: RawObject<ComponentBuilder> = {}
-    private readonly stateGroups: RawObject<StateGroupBuilder> = {}
-    private readonly values: RawObject<ValueBuilder> = {}
+    private readonly dictionaries: RawObject<Dictionary> = {}
+    private readonly lists: RawObject<List> = {}
+    private readonly components: RawObject<Component> = {}
+    private readonly stateGroups: RawObject<StateGroup> = {}
+    private readonly values: RawObject<Value> = {}
     constructor(definition: types.Node) {
         this.definition = definition
         this.definition.properties.forEach((p, pKey) => {
@@ -113,11 +113,11 @@ export class NodeBuilder implements builders.NodeBuilder {
                     const $ = p.type[1]
                     switch ($.type[0]) {
                         case "dictionary": {
-                            this.dictionaries[pKey] = new DictionaryBuilder($, $.type[1])
+                            this.dictionaries[pKey] = new Dictionary($, $.type[1])
                             break
                         }
                         case "list": {
-                            this.lists[pKey] = new ListBuilder($, $.type[1])
+                            this.lists[pKey] = new List($, $.type[1])
                             break
                         }
                         default:
@@ -126,15 +126,15 @@ export class NodeBuilder implements builders.NodeBuilder {
                     break
                 }
                 case "component": {
-                    this.components[pKey] = new ComponentBuilder(p.type[1])
+                    this.components[pKey] = new Component(p.type[1])
                     break
                 }
                 case "state group": {
-                    this.stateGroups[pKey] = new StateGroupBuilder(p.type[1])
+                    this.stateGroups[pKey] = new StateGroup(p.type[1])
                     break
                 }
                 case "value": {
-                    this.values[pKey] = new ValueBuilder(p.type[1])
+                    this.values[pKey] = new Value(p.type[1])
                     break
                 }
                 default:
@@ -179,9 +179,9 @@ export class NodeBuilder implements builders.NodeBuilder {
     }
 }
 
-export class StateGroupBuilder {
+export class StateGroup {
     private readonly definition: types.StateGroup
-    private currentState: null | StateBuilder = null
+    private currentState: null | State = null
     constructor(definition: types.StateGroup) {
         this.definition = definition
     }
@@ -191,14 +191,14 @@ export class StateGroupBuilder {
             throw new Error(`UNEXPECTED: no such state: ${stateName}`)
         }
         //
-        const state = new StateBuilder(stateName, stateDef)
+        const state = new State(stateName, stateDef)
         this.currentState = state
         return state
     }
     public setComments() {
         //
     }
-    public getCurrentState(): StateBuilder {
+    public getCurrentState(): State {
         if (this.currentState === null) {
             throw new Error("no state set")
         }
@@ -206,14 +206,14 @@ export class StateGroupBuilder {
     }
 }
 
-export class StateBuilder {
+export class State {
     private readonly definition: types.State
     private readonly stateName: string
-    public readonly node: NodeBuilder
+    public readonly node: Node
     constructor(stateName: string, definition: types.State) {
         this.definition = definition
         this.stateName = stateName
-        this. node = new NodeBuilder(this.definition.node)
+        this. node = new Node(this.definition.node)
     }
     public setComments() {
         //
@@ -223,7 +223,7 @@ export class StateBuilder {
     }
 }
 
-export class ValueBuilder implements builders.ValueBuilder {
+export class Value implements builders.Value {
     private value: string
     constructor(definition: types.Value) {
         this.value = definition["default value"]
@@ -242,15 +242,15 @@ export class ValueBuilder implements builders.ValueBuilder {
     }
 }
 
-export class DatasetBuilder {
-    private readonly definition: types.Schema
-    public readonly root: NodeBuilder
+export class Dataset {
+    public readonly schema: types.Schema
+    public readonly root: Node
     constructor(definition: types.Schema) {
-        this.definition = definition
-        this.root = new NodeBuilder(this.definition["root type"].get().node)
+        this.schema = definition
+        this.root = new Node(definition["root type"].get().node)
     }
 }
 
-export function createDatasetBuilder(definition: types.Schema) {
-    return new DatasetBuilder(definition)
+export function createDataset(definition: types.Schema) {
+    return new Dataset(definition)
 }

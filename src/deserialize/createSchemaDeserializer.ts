@@ -1,9 +1,9 @@
 import * as bc from "bass-clarinet"
 import * as fs from "fs"
 import * as path from "path"
-import { SchemaAndNodeBuilderPair } from "./deserializeDocument"
+import * as ds from "../datasetAPI"
 
-type AttachSchemaDeserializer = (parser: bc.Parser, onError: (message: string, range: bc.Range) => void, callback: (schema: SchemaAndNodeBuilderPair | null) => void) => void
+type AttachSchemaDeserializer = (parser: bc.Parser, onError: (message: string, range: bc.Range) => void, callback: (schema: ds.Dataset | null) => void) => void
 
 const schemaSchemas: { [key: string]: AttachSchemaDeserializer } = {}
 
@@ -21,7 +21,7 @@ fs.readdirSync(schemasDir, { encoding: "utf-8" }).forEach(dir => {
     schemaSchemas[dir] = attachFunc
 })
 
-export function createSchemaDeserializer(onError: (message: string, range: bc.Range) => void, callback: (schema: SchemaAndNodeBuilderPair | null) => void): bc.Tokenizer {
+export function createSchemaDeserializer(onError: (message: string, range: bc.Range) => void, callback: (schema: ds.Dataset | null) => void): bc.Tokenizer {
     let foundError = false
     function onSchemaError(message: string, range: bc.Range) {
         onError(message, range)

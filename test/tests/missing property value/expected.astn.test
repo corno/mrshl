@@ -1,0 +1,13 @@
+! (
+        'component types': {
+                'x': (
+                        'node': (
+                                'properties': {
+                                        'y': (
+                                                'type': | 'value' (
+                                                        'default value': ""
+                                                        'quoted': false))
+                                }))
+        }
+        'root type': "x")(
+        'y': )

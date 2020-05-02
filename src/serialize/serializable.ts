@@ -1,4 +1,7 @@
 //tslint:disable: interface-name
+
+import * as md from "../metaDataSchema"
+
 export interface SerializableList {
     forEachEntry(callback: (entry: SerializableEntry) => void): void
 }
@@ -16,6 +19,7 @@ export interface SerializableEntry {
 }
 
 export interface SerializableDataset {
+    schema: md.Schema
     root: SerializableNode
 }
 
