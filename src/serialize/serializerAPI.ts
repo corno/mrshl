@@ -25,8 +25,8 @@ export class StringStream {
             this.str.push(indentString)
         }
     }
-    public indent() {
-        return new StringStream(this.str, this.indentationLevel !== null ? this.indentationLevel + 1 : null)
+    public indent<RT>(callback: (strStr: StringStream) => RT): RT {
+        return callback(new StringStream(this.str, this.indentationLevel !== null ? this.indentationLevel + 1 : null))
     }
 }
 
@@ -41,7 +41,8 @@ export interface ValueSerializer {
 
 export interface RootSerializer {
     root: ValueSerializer
-    serializeSchema(definition: types.Node, node: SerializableNode): void
+    serializeSchema(definition: types.Schema, node: SerializableNode): void
+    serializeSchemaReference(schemaReference: string): void
 }
 
 export class ArraySerializer {

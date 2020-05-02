@@ -44,7 +44,9 @@ export class JSONValueSerializer implements serializers.ValueSerializer {
                     }
                     this.out.newLine()
                     this.out.add(`"${key}": `)
-                    return new JSONValueSerializer(this.out.indent())
+                    return this.out.indent(indented => {
+                        return new JSONValueSerializer(indented)
+                    })
 
                 }
             }
@@ -62,7 +64,9 @@ export class JSONValueSerializer implements serializers.ValueSerializer {
                 }
                 this.out.newLine()
                 this.out.add(`"${key}": `)
-                return new JSONValueSerializer(this.out.indent())
+                return this.out.indent(indented => {
+                    return new JSONValueSerializer(indented)
+                })
             }
         ))
         this.out.newLine()
@@ -77,7 +81,9 @@ export class JSONValueSerializer implements serializers.ValueSerializer {
                     this.out.add(`,`)
                 }
                 this.out.newLine()
-                return new JSONValueSerializer(this.out.indent())
+                return this.out.indent(indented => {
+                    return new JSONValueSerializer(indented)
+                })
             }
         ))
         this.out.newLine()
@@ -92,7 +98,9 @@ export class JSONValueSerializer implements serializers.ValueSerializer {
                     this.out.add(`,`)
                 }
                 this.out.newLine()
-                return new JSONValueSerializer(this.out.indent())
+                return this.out.indent(indented => {
+                    return new JSONValueSerializer(indented)
+                })
             }
         ))
         this.out.newLine()
@@ -115,6 +123,9 @@ export class JSONSerializer implements serializers.RootSerializer {
         this.root = new JSONValueSerializer(out)
     }
     public serializeSchema() {
-        //this.out.add(`! ${JSON.stringify(sr)}`)
+        //JSON does not know about schemas, output nothing
+    }
+    public serializeSchemaReference() {
+        //JSON does not know about schemas, output nothing
     }
 }

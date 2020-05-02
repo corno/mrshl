@@ -1,6 +1,6 @@
 import * as bc from "bass-clarinet"
 import * as md from "../metaDataSchema"
-import { NodeBuilder } from "../builderAPI"
+import { NodeBuilder, DatasetBuilder } from "../builderAPI"
 import { SideEffectsAPI } from "./SideEffectsAPI"
 
 function assertUnreachable<RT>(_x: never): RT {
@@ -48,9 +48,10 @@ function createPropertyDeserializer(
                                 beginData => {
                                     registerSnippetGenerators.onDictionaryOpen(beginData)
                                 },
-                                (_key, propertyData, preData) => {
+                                (key, propertyData, preData) => {
 
                                     const entry = collBuilder.createEntry(errorMessage => onError(errorMessage, propertyData.keyRange))
+                                    entry.node.getValue($$$["key property"].getName()).setValue(key, errorMessage => onError(errorMessage, propertyData.keyRange))
                                     entry.setComments(preData.comments.map(c => c.text))
 
                                     registerSnippetGenerators.onDictionaryEntry(
@@ -201,7 +202,7 @@ function createPropertyDeserializer(
     }
 }
 
-export function createNodeDeserializer(
+function createNodeDeserializer(
     context: bc.ExpectContext,
     nodeDefinition: md.Node,
     nodeBuilder: NodeBuilder,
@@ -288,4 +289,15 @@ export function createNodeDeserializer(
 
     }
 
+}
+
+export function createDatasetDeserializer(
+    context: bc.ExpectContext,
+    nodeDefinition: md.Node,
+    dataset: DatasetBuilder,
+    isCompact: boolean,
+    sideEffectsAPI: SideEffectsAPI,
+    onError: OnError,
+): bc.ValueHandler {
+    return createNodeDeserializer(context, nodeDefinition, dataset.root, isCompact, null, sideEffectsAPI, onError)
 }

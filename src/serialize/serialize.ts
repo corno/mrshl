@@ -1,6 +1,6 @@
 import * as m from "../metaDataSchema"
 import { RootSerializer, ValueSerializer } from "./serializerAPI"
-import { SerializableNode } from "./serializable"
+import { SerializableNode, SerializableDataset } from "./serializable"
 
 function assertUnreachable<RT>(_x: never): RT {
     throw new Error("unreachable")
@@ -92,7 +92,8 @@ function serializeNode(
                 })
             }
             case "value": {
-                return elementSerializer.simpleValue(node.getValue(propertyKey).getValue(), true)
+                const $ = property.type[1]
+                return elementSerializer.simpleValue(node.getValue(propertyKey).getValue(), $.quoted)
             }
             default:
                 return assertUnreachable(property.type[0])
@@ -119,11 +120,11 @@ function serializeNode(
 }
 
 export function serialize(
-    definition: m.Node,
-    root: SerializableNode,
+    definition: m.Schema,
+    dataset: SerializableDataset,
     serializer: RootSerializer,
     compact: boolean,
 ): void {
-    serializer.serializeSchema(definition, root)
-    serializeNode(definition, root, serializer.root, compact, null)
+    serializer.serializeSchema(definition, dataset.root)
+    serializeNode(definition["root type"].get().node, dataset.root, serializer.root, compact, null)
 }

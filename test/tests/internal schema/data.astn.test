@@ -5,20 +5,20 @@
                 'properties': {
                     'a1': (
                         'type': | 'value' (
-                            'quoted': true
                             'default value': ""
+                            'quoted': true
                         )
                     )
                     'b': (
                         'type': | 'value' (
-                            'quoted': true
                             'default value': ""
+                            'quoted': true
                         )
                     )
                     'c': (
                         'type': | 'value' (
-                            'quoted': false
                             'default value': ""
+                            'quoted': false
                         )
                     )
                 }

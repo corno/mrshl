@@ -32,6 +32,10 @@ export interface NodeBuilder extends serializable.SerializableNode {
     getValue(name: string): ValueBuilder
 }
 
+export interface DatasetBuilder extends serializable.SerializableDataset {
+    root: NodeBuilder
+}
+
 export interface StateGroupBuilder extends serializable.SerializableStateGroup {
     setState(stateName: string, onError: (message: string) => void): StateBuilder
     setComments(comments: string[]): void

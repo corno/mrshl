@@ -61,9 +61,11 @@ describe("main", () => {
                 ).then(x => {
                     const out: string[] = []
                     astn.serialize(
-                        x.rootNodeDefinition,
-                        x.nodeBuilder,
-                        new ASTNSerializer(new StringStream(out, null)),
+                        x.schemaDefinition,
+                        x.dataset,
+                        new ASTNSerializer(
+                            new StringStream(out, null),
+                        ),
                         false,
                     )
                     console.log(out.join(""))

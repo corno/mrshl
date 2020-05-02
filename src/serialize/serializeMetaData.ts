@@ -10,29 +10,29 @@ function assertUnreachable<RT>(_x: never): RT {
 
 function serializeNode(node: t.Node, serializer: ValueSerializer) {
     return serializer.type(t$ => {
-        t$.add("properties", false, t$ => t$.dictionary(propertiesBuilder => {
+        t$.add("properties", false, v$ => v$.dictionary(propertiesBuilder => {
             node.properties.forEach((prop, propKey) => {
-                propertiesBuilder.add(propKey, false, t$ => t$.type(t$ => {
-                    t$.add("name", true, t$ => t$.simpleValue(propKey, true))
-                    t$.add("type", false, t$ => {
+                propertiesBuilder.add(propKey, false, v$ => v$.type(t$ => {
+                    t$.add("name", true, v$ => v$.simpleValue(propKey, true))
+                    t$.add("type", false, v$ => {
                         switch (prop.type[0]) {
                             case "collection": {
                                 const $ = prop.type[1]
-                                return t$.taggedUnion("collection", t$ => t$.type(t$ => {
-                                    t$.add("type", false, t$ => {
+                                return v$.taggedUnion("collection", t$ => t$.type(t$ => {
+                                    t$.add("type", false, v$ => {
                                         switch ($.type[0]) {
                                             case "dictionary": {
                                                 const $$ = $.type[1]
-                                                return t$.taggedUnion("dictionary", t$ => t$.type(t$ => {
+                                                return v$.taggedUnion("dictionary", v$ => v$.type(t$ => {
 
-                                                    t$.add("has instances", false, t$ => {
+                                                    t$.add("has instances", false, v$ => {
                                                         if ($$["has instances"][0] === "no") {
-                                                            return t$.taggedUnion("no", t$ => t$.type(() => {
+                                                            return v$.taggedUnion("no", v$ => v$.type(() => {
                                                                 //
                                                             }))
                                                         } else {
                                                             const $$$ = $$["has instances"][1]
-                                                            return t$.taggedUnion("yes", t$ => t$.type(t$ => {
+                                                            return v$.taggedUnion("yes", v$ => v$.type(t$ => {
                                                                 t$.add("key property", false, t$ => t$.simpleValue("name", true))
                                                                 t$.add("node", false, t$ => serializeNode($$$.node, t$))
                                                             }))
@@ -42,17 +42,17 @@ function serializeNode(node: t.Node, serializer: ValueSerializer) {
                                             }
                                             case "list": {
                                                 const $$ = $.type[1]
-                                                return t$.taggedUnion("list", t$ => t$.type(t$ => {
+                                                return v$.taggedUnion("list", v$ => v$.type(t$ => {
 
-                                                    t$.add("has instances", false, t$ => {
+                                                    t$.add("has instances", false, v$ => {
                                                         if ($$["has instances"][0] === "no") {
-                                                            return t$.taggedUnion("no", t$ => t$.type(() => {
+                                                            return v$.taggedUnion("no", v$ => v$.type(() => {
                                                                 //
                                                             }))
                                                         } else {
                                                             const $$$ = $$["has instances"][1]
-                                                            return t$.taggedUnion("yes", t$ => t$.type(t$ => {
-                                                                t$.add("node", false, t$ => serializeNode($$$.node, t$))
+                                                            return v$.taggedUnion("yes", v$ => v$.type(t$ => {
+                                                                t$.add("node", false, v$ => serializeNode($$$.node, v$))
                                                             }))
                                                         }
                                                     })
@@ -66,26 +66,28 @@ function serializeNode(node: t.Node, serializer: ValueSerializer) {
                             }
                             case "component": {
                                 const $ = prop.type[1]
-                                return t$.taggedUnion("component", t$ => t$.type(t$ => {
-                                    t$.add("type", false, t$ => t$.simpleValue($.type.getName(), true))
+                                return v$.taggedUnion("component", v$ => v$.type(t$ => {
+                                    t$.add("type", false, v$ => v$.simpleValue($.type.getName(), true))
 
                                 }))
                             }
                             case "state group": {
                                 const $ = prop.type[1]
 
-                                return t$.taggedUnion("state group", t$ => t$.type(t$ => {
-                                    t$.add("states", false, t$ => t$.dictionary(t$ => {
+                                return v$.taggedUnion("state group", v$ => v$.type(t$ => {
+                                    t$.add("states", false, v$ => v$.dictionary(d$ => {
                                         $.states.forEach((state, stateName) => {
-                                            t$.add("name", true, t$ => t$.simpleValue(stateName, true))
-                                            t$.add("node", false, t$ => serializeNode(state.node, t$))
+                                            d$.add("name", true, v$ => v$.simpleValue(stateName, true))
+                                            d$.add("node", false, v$ => serializeNode(state.node, v$))
                                         })
                                     }))
                                 }))
                             }
                             case "value": {
-                                return t$.taggedUnion("value", t$ => t$.type(_t$ => {
-                                    //
+                                const $ = prop.type[1]
+                                return v$.taggedUnion("value", v$ => v$.type(t$ => {
+                                    t$.add("default value", false, t$ => t$.simpleValue($["default value"], true))
+                                    t$.add("quoted", false, t$ => t$.simpleValue($.quoted ? "true" : "false", false))
                                 }))
                             }
                             default:

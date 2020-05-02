@@ -266,3 +266,13 @@ export class StateBuilder {
         return this.stateName
     }
 }
+
+export class DatasetBuilder {
+    //private readonly definition: types.State
+    public readonly root: NodeBuilder
+    constructor(definition: types.Schema) {
+        //this.onError = onError
+        //this.definition = definition
+        this.root = new NodeBuilder(definition["root type"].get().node)
+    }
+}

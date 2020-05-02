@@ -15,6 +15,10 @@ export interface SerializableEntry {
     node: SerializableNode
 }
 
+export interface SerializableDataset {
+    root: SerializableNode
+}
+
 export interface SerializableNode {
     getList(name: string): SerializableList
     getDictionary(name: string): SerializableDictionary

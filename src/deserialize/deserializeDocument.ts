@@ -1,9 +1,9 @@
 import * as bc from "bass-clarinet"
-import { createMetaDataDeserializer, createNodeBuilder } from "../metaDataSchema"
+import { createMetaDataDeserializer, createDatasetBuilder } from "../metaDataSchema"
 import * as types from "../metaDataSchema"
 import { SideEffectsAPI } from "./SideEffectsAPI"
-import { createNodeDeserializer } from "./createNodeDeserializer"
-import { NodeBuilder } from "../builderAPI"
+import { createDatasetDeserializer } from "./createDatasetDeserializer"
+import { DatasetBuilder } from "../builderAPI"
 
 function createPropertyHandler(
     _key: string,
@@ -57,8 +57,8 @@ function createObjectHandler(_beginRange: bc.Range): bc.ObjectHandler {
 }
 
 export type SchemaAndNodeBuilderPair = {
-    rootNodeDefinition: types.Node
-    nodeBuilder: NodeBuilder
+    schemaDefinition: types.Schema
+    dataset: DatasetBuilder
 }
 
 export type ResolveSchemaReference = (
@@ -146,12 +146,11 @@ export function deserializeDocument(
 
             const se = sideEffects === null ? new NOPSideEffects() : sideEffects
             parser.ondata.subscribe(bc.createStackedDataSubscriber(
-                createNodeDeserializer(
+                createDatasetDeserializer(
                     context,
-                    schema.rootNodeDefinition,
-                    schema.nodeBuilder,
+                    schema.schemaDefinition["root type"].get().node,
+                    schema.dataset,
                     isCompact,
-                    null,
                     se,
                     onError,
                 ),
@@ -232,8 +231,8 @@ export function deserializeDocument(
                     md => {
                         if (md !== null) {
                             metaData = {
-                                rootNodeDefinition: md["root type"].get().node,
-                                nodeBuilder: createNodeBuilder(md["root type"].get().node),
+                                schemaDefinition: md,
+                                dataset: createDatasetBuilder(md),
                             }
 
                         }

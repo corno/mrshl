@@ -242,6 +242,15 @@ export class ValueBuilder implements builders.ValueBuilder {
     }
 }
 
-export function createNodeBuilder(definition: types.Node) {
-    return new NodeBuilder(definition)
+export class DatasetBuilder {
+    private readonly definition: types.Schema
+    public readonly root: NodeBuilder
+    constructor(definition: types.Schema) {
+        this.definition = definition
+        this.root = new NodeBuilder(this.definition["root type"].get().node)
+    }
+}
+
+export function createDatasetBuilder(definition: types.Schema) {
+    return new DatasetBuilder(definition)
 }
