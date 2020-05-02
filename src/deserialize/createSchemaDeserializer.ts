@@ -89,7 +89,7 @@ export function createSchemaDeserializer(onError: (message: string, range: bc.Ra
                 onSchemaError(`missing schema schema definition`, range)
                 callback(null)
             } else {
-                if (schemaProcessor === null) {
+                if ( schemaProcessor === null) {
                     if (!foundError) {
                         throw new Error("UNEXPECTED: SCHEMA PROCESSOR NOT SUBSCRIBED AND NO ERRORS")
                     }

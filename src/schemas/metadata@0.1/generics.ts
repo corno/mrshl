@@ -48,15 +48,16 @@ export function createReference<T>(name: string, lookup: IReadonlyLookup<T>, res
 
 export type RawObject<T> = { [key: string]: T }
 
-export interface IReadonlyDictionary<T> {
+export interface IReadonlyLookup<T> {
+    get(key: string): T | null
+    getKeys(): string[]
+}
+
+export interface IReadonlyDictionary<T> extends IReadonlyLookup<T> {
     forEach(callback: (entry: T, key: string) => void): void
     get(key: string): T | null
     isEmpty(): boolean
     map<RT>(callback: (entry: T, key: string) => RT): RawObject<RT>
-}
-
-export interface IReadonlyLookup<T> {
-    get(key: string): T | null
 }
 
 export class Dictionary<T> implements IReadonlyDictionary<T>, IReadonlyLookup<T> {

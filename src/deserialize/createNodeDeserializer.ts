@@ -63,6 +63,7 @@ function createPropertyDeserializer(
                                         $$$.node,
                                         entry.node,
                                         isCompact,
+                                        $$$["key property"].get(),
                                         registerSnippetGenerators,
                                         onError,
                                     )
@@ -112,6 +113,7 @@ function createPropertyDeserializer(
                                         $$$.node,
                                         entry.node,
                                         isCompact,
+                                        null,
                                         registerSnippetGenerators,
                                         onError,
                                     )
@@ -137,6 +139,7 @@ function createPropertyDeserializer(
                 $.type.get().node,
                 componentBuilder.node,
                 isCompact,
+                null,
                 registerSnippetGenerators,
                 onError,
             )
@@ -156,6 +159,7 @@ function createPropertyDeserializer(
                             stateDef.node,
                             state.node,
                             isCompact,
+                            null,
                             registerSnippetGenerators,
                             onError
                         )
@@ -202,6 +206,7 @@ export function createNodeDeserializer(
     nodeDefinition: md.Node,
     nodeBuilder: NodeBuilder,
     isCompact: boolean,
+    keyProperty: md.Property | null,
     sideEffectsAPI: SideEffectsAPI,
     onError: OnError,
 ): bc.ValueHandler {
@@ -233,6 +238,9 @@ export function createNodeDeserializer(
     } else {
         const expectedProperties: bc.ExpectedProperties = {}
         nodeDefinition.properties.forEach((propDefinition, propKey) => {
+            if (keyProperty === propDefinition) {
+                return
+            }
             expectedProperties[propKey] = {
                 onExists: propertyData => {
                     sideEffectsAPI.onProperty(

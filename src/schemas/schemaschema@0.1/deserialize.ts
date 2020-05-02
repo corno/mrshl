@@ -6,17 +6,14 @@ import * as bc from "bass-clarinet"
 import * as g from "./generics"
 import * as t from "./types"
 
-function unguaranteedAssertIsDeserialized<T>(v: T | null, callback: (t: T) => void) {
-    if (v !== null) {
-        callback(v)
-    }
-}
-
-function guaranteedAssertIsDeserialized<T>(v: T | null, onNull: () => void, onNotNull: (t: T) => void) {
-    if (v !== null) {
-        onNotNull(v)
-    } else {
-        onNull()
+/**
+ * this function is only calls back if the value is not null
+ * @param value value
+ * @param callback
+ */
+function callbackIfNotNull<T>(value: T | null, callback: (t: T) => void) {
+    if (value !== null) {
+        callback(value)
     }
 }
 
@@ -75,10 +72,10 @@ function deserializeMetaNode(context: bc.ExpectContext, componentTypes: g.IReado
                                                                                 },
                                                                             },
                                                                             () => {
-                                                                                unguaranteedAssertIsDeserialized(targetNode, assertedTargetNode => {
+                                                                                callbackIfNotNull(targetNode, assertedTargetNode => {
 
-                                                                                    unguaranteedAssertIsDeserialized(targetKeyProperty, assertedTargetKeyProperty => {
-                                                                                        unguaranteedAssertIsDeserialized(targetKeyPropertyRange, atkpr => {
+                                                                                    callbackIfNotNull(targetKeyProperty, assertedTargetKeyProperty => {
+                                                                                        callbackIfNotNull(targetKeyPropertyRange, atkpr => {
                                                                                             targetCollectionType = ["dictionary", {
                                                                                                 "key property": g.createReference(
                                                                                                     assertedTargetKeyProperty,
@@ -119,8 +116,8 @@ function deserializeMetaNode(context: bc.ExpectContext, componentTypes: g.IReado
                                                         },
                                                     },
                                                     () => {
-                                                        unguaranteedAssertIsDeserialized(targetNode, assertedTargetNode => {
-                                                            unguaranteedAssertIsDeserialized(targetCollectionType, asserted => {
+                                                        callbackIfNotNull(targetNode, assertedTargetNode => {
+                                                            callbackIfNotNull(targetCollectionType, asserted => {
                                                                 targetPropertyType = ["collection", {
                                                                     "type": asserted,
                                                                     "node": assertedTargetNode,
@@ -148,8 +145,8 @@ function deserializeMetaNode(context: bc.ExpectContext, componentTypes: g.IReado
                                                         },
                                                     },
                                                     () => {
-                                                        unguaranteedAssertIsDeserialized(targetComponentTypeName, assertedTargetComponentTypeName => {
-                                                            unguaranteedAssertIsDeserialized(targetComponentTypeNameRange, assertedRange => {
+                                                        callbackIfNotNull(targetComponentTypeName, assertedTargetComponentTypeName => {
+                                                            callbackIfNotNull(targetComponentTypeNameRange, assertedRange => {
                                                                 targetPropertyType = ["component", {
                                                                     "type": g.createReference(
                                                                         assertedTargetComponentTypeName,
@@ -195,7 +192,7 @@ function deserializeMetaNode(context: bc.ExpectContext, componentTypes: g.IReado
                                                                             },
                                                                         },
                                                                         () => {
-                                                                            unguaranteedAssertIsDeserialized(targetNode, asserted => {
+                                                                            callbackIfNotNull(targetNode, asserted => {
                                                                                 states.add(stateKey, {
                                                                                     node: asserted,
                                                                                 })
@@ -225,6 +222,7 @@ function deserializeMetaNode(context: bc.ExpectContext, componentTypes: g.IReado
                                             },
                                             "value": () => {
                                                 let targetValueType: t.ValueType | null = null
+                                                let defaultValue: string | null = null
                                                 return context.expectType(
                                                     _startRange => {
                                                         //
@@ -258,18 +256,20 @@ function deserializeMetaNode(context: bc.ExpectContext, componentTypes: g.IReado
                                                             onNotExists: null,
                                                         },
                                                         "default value": {
-                                                            onExists: () => context.expectSimpleValue((_value, _metaData) => {
-                                                                //
+                                                            onExists: () => context.expectSimpleValue((value, _metaData) => {
+                                                                defaultValue = value
                                                             }),
                                                             onNotExists: null,
                                                         },
                                                     },
                                                     () => {
-                                                        unguaranteedAssertIsDeserialized(targetValueType, asserted => {
-                                                            targetPropertyType = ["value", {
-                                                                "default value": "***", //FIXME
-                                                                "type": asserted,
-                                                            }]
+                                                        callbackIfNotNull(targetValueType, assertedTargetValueType => {
+                                                            callbackIfNotNull(defaultValue, assertedDefaultValue => {
+                                                                targetPropertyType = ["value", {
+                                                                    "default value": assertedDefaultValue,
+                                                                    "type": assertedTargetValueType,
+                                                                }]
+                                                            })
                                                         })
                                                     },
                                                 )
@@ -280,7 +280,7 @@ function deserializeMetaNode(context: bc.ExpectContext, componentTypes: g.IReado
                                 },
                             },
                             () => {
-                                unguaranteedAssertIsDeserialized(targetPropertyType, asserted => {
+                                callbackIfNotNull(targetPropertyType, asserted => {
                                     properties.add(key, {
                                         type: asserted,
                                     })
@@ -345,7 +345,7 @@ export function createDeserializer(onError: (message: string, range: bc.Range) =
                                 },
                             },
                             () => {
-                                unguaranteedAssertIsDeserialized(targetNode, asserted => {
+                                callbackIfNotNull(targetNode, asserted => {
                                     componentTypes.add(key, {
                                         node: asserted,
                                     })
@@ -368,19 +368,14 @@ export function createDeserializer(onError: (message: string, range: bc.Range) =
             },
         },
         () => {
-            guaranteedAssertIsDeserialized(
+            let schema: t.Schema | null = null
+            callbackIfNotNull(
                 rootName,
-                () => {
-                    callback(null)
-                },
                 assertedRootName => {
-                    guaranteedAssertIsDeserialized(
+                    callbackIfNotNull(
                         rootNameRange,
-                        () => {
-                            callback(null)
-                        },
                         assertedRange => {
-                            const schema = {
+                            schema = {
                                 "component types": componentTypes,
                                 "root type": g.createReference(
                                     assertedRootName,
@@ -391,14 +386,15 @@ export function createDeserializer(onError: (message: string, range: bc.Range) =
                                     }
                                 ),
                             }
-                            const success = resolveRegistry.resolve()
-                            if (success) {
-                                callback(schema)
-                            } else {
-                                callback(null)
-                            }
                         })
-                })
+                }
+            )
+            const success = resolveRegistry.resolve()
+            if (success) {
+                callback(schema)
+            } else {
+                callback(null)
+            }
         }
     )
 }

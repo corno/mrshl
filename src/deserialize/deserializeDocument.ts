@@ -151,6 +151,7 @@ export function deserializeDocument(
                     schema.rootNodeDefinition,
                     schema.nodeBuilder,
                     isCompact,
+                    null,
                     se,
                     onError,
                 ),
@@ -238,9 +239,6 @@ export function deserializeDocument(
                         }
                     }
                 ),
-                // unquotedToken: (_value, range) => {
-                //     onSchemaError("unexpected unquoted token as schema", range)
-                // },
                 simpleValue: (schemaReference, svData) => {
                     svData.pauser.pause()
                     schemaReferenceResolver(schemaReference)

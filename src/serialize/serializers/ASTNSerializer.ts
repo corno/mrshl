@@ -6,9 +6,6 @@ import * as serializers from "../serializerAPI"
 import { Node } from "../../metaDataSchema"
 
 class DummySerializer implements serializers.ValueSerializer {
-    public unquotedToken() {
-        //
-    }
     public simpleValue() {
         //
     }
@@ -29,16 +26,13 @@ class DummySerializer implements serializers.ValueSerializer {
     }
 }
 
-export class CustomFormatValueSerializer implements serializers.ValueSerializer {
+export class ASTNValueSerializer implements serializers.ValueSerializer {
     private readonly out: serializers.StringStream
     constructor(out: serializers.StringStream) {
         this.out = out
     }
     public simpleValue(value: string) {
         this.out.add(JSON.stringify(value))
-    }
-    public unquotedToken(value: string) {
-        this.out.add(value)
     }
     public type(callback: (os: serializers.TypeSerializer) => void) {
         this.out.add(`(`)
@@ -49,7 +43,7 @@ export class CustomFormatValueSerializer implements serializers.ValueSerializer 
             } else {
                 indented.newLine()
                 indented.add(`"${key}": `)
-                return new CustomFormatValueSerializer(this.out.indent())
+                return new ASTNValueSerializer(this.out.indent())
             }
         }))
         this.out.newLine()
@@ -63,7 +57,7 @@ export class CustomFormatValueSerializer implements serializers.ValueSerializer 
             key => {
                 indented.newLine()
                 indented.add(`"${key}": `)
-                return new CustomFormatValueSerializer(indented)
+                return new ASTNValueSerializer(indented)
             }
         ))
         this.out.newLine()
@@ -77,7 +71,7 @@ export class CustomFormatValueSerializer implements serializers.ValueSerializer 
             () => {
 
                 indented.newLine()
-                return new CustomFormatValueSerializer(indented)
+                return new ASTNValueSerializer(indented)
             }
         ))
         this.out.newLine()
@@ -90,7 +84,7 @@ export class CustomFormatValueSerializer implements serializers.ValueSerializer 
         callback(new serializers.ArraySerializer(
             () => {
                 indented.newLine()
-                return new CustomFormatValueSerializer(indented)
+                return new ASTNValueSerializer(indented)
             }
         ))
         this.out.newLine()
@@ -99,17 +93,17 @@ export class CustomFormatValueSerializer implements serializers.ValueSerializer 
     }
     public taggedUnion(option: string, callback: (vb: serializers.ValueSerializer) => void): void {
         this.out.add(`| "${option}" `)
-        callback(new CustomFormatValueSerializer(this.out))
+        callback(new ASTNValueSerializer(this.out))
 
     }
 }
 
-export class CustomFormatSerializer implements serializers.RootSerializer {
-    public root: CustomFormatValueSerializer
+export class ASTNSerializer implements serializers.RootSerializer {
+    public root: ASTNValueSerializer
     private readonly out: serializers.StringStream
     constructor(out: serializers.StringStream) {
         this.out = out
-        this.root = new CustomFormatValueSerializer(out)
+        this.root = new ASTNValueSerializer(out)
     }
     public serializeSchema(_sr: Node) {
         this.out.add(`! ${"FIXME"}`)

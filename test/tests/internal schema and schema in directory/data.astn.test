@@ -4,7 +4,10 @@
             'node': (
                 'properties': {
                     'c': (
-                        'type': | 'value' ()
+                        'type': | 'value' (
+                            'quoted': false
+                            'default value': ""
+                        )
                     )
                 }
             )
@@ -15,5 +18,5 @@
 {
     "a": "B"
     "b": "X"
-    "c": "C"
+    "c": C
 }

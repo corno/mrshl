@@ -67,7 +67,7 @@ function convertNode(node: Node, componentTypes: g.IReadonlyLookup<internal.Comp
     const properties = new g.Dictionary<internal.Property>({})
     node.properties.map((prop, key) => {
         if (prop === keyProperty) {
-            return
+            //return
         }
         properties.add(key, {
             type: ((): internal.PropertyType => {
@@ -84,7 +84,10 @@ function convertNode(node: Node, componentTypes: g.IReadonlyLookup<internal.Comp
                                         const targetNode = convertNode($.node, componentTypes, $$["key property"].get(), resolveRegistry)
                                         return ["dictionary", {
                                             "has instances": ["yes", {
-                                                node: targetNode,
+                                                "node": targetNode,
+                                                "key property": g.createReference($$["key property"].getName(), targetNode.properties, resolveRegistry, keys => {
+                                                    throw new Error(`UNEXPECTED: KEY Property not found: ${$$["key property"].getName()}, available keys: ${keys}`);
+                                                }),
                                             }],
                                         }]
                                     }
@@ -123,7 +126,7 @@ function convertNode(node: Node, componentTypes: g.IReadonlyLookup<internal.Comp
                     case "value": {
                         const $ = prop.type[1]
                         return ["value", {
-                            "default value": "***", //FIXME
+                            "default value": $["default value"],
                             "quoted": ((): boolean => {
                                 switch ($.type[0]) {
                                     case "boolean":

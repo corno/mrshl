@@ -6,18 +6,20 @@ import * as bc from "bass-clarinet"
 import * as g from "./generics"
 import * as t from "./types"
 
-function unguaranteedAssertIsDeserialized<T>(v: T | null, callback: (t: T) => void) {
-    if (v !== null) {
-        callback(v)
+/**
+ * this function is only calls back if the value is not null
+ * @param value value
+ * @param callback
+ */
+function callbackIfNotNull<T>(value: T | null, callback: (t: T) => void) {
+    if (value !== null) {
+        callback(value)
     }
 }
 
-function guaranteedAssertIsDeserialized<T>(v: T | null, onNull: () => void, onNotNull: (t: T) => void) {
-    if (v !== null) {
-        onNotNull(v)
-    } else {
-        onNull()
-    }
+type StringAndStringData = {
+    value: string
+    data: bc.StringData
 }
 
 function deserializeMetaNode(
@@ -67,6 +69,8 @@ function deserializeMetaNode(
                                                                                         {
                                                                                             "yes": () => {
                                                                                                 let targetNode: t.Node | null = null
+                                                                                                let keyPropertyName: StringAndStringData | null = null
+
                                                                                                 return context.expectType(
                                                                                                     _startRange => {
                                                                                                         //
@@ -81,12 +85,34 @@ function deserializeMetaNode(
                                                                                                             ),
                                                                                                             onNotExists: null,
                                                                                                         },
+                                                                                                        "key property": {
+                                                                                                            onExists: () => context.expectSimpleValue((value, stringData) => {
+                                                                                                                keyPropertyName = {
+                                                                                                                    value: value,
+                                                                                                                    data: stringData,
+                                                                                                                }
+                                                                                                            }),
+                                                                                                            onNotExists: null,
+                                                                                                        },
                                                                                                     },
                                                                                                     () => {
-                                                                                                        unguaranteedAssertIsDeserialized(targetNode, assertedTargetNode => {
-                                                                                                            targetHasInstances = ["yes", {
-                                                                                                                "node": assertedTargetNode,
-                                                                                                            }]
+                                                                                                        callbackIfNotNull(targetNode, assertedTargetNode => {
+                                                                                                            callbackIfNotNull(keyPropertyName, assertedKeyPropertyName => {
+                                                                                                                targetHasInstances = ["yes", {
+                                                                                                                    "node": assertedTargetNode,
+                                                                                                                    "key property": g.createReference(
+                                                                                                                        assertedKeyPropertyName.value,
+                                                                                                                        assertedTargetNode.properties,
+                                                                                                                        resolveRegistry,
+                                                                                                                        () => {
+                                                                                                                            context.raiseError(
+                                                                                                                                `property '${assertedKeyPropertyName}' not found`,
+                                                                                                                                assertedKeyPropertyName.data.range,
+                                                                                                                            )
+                                                                                                                        },
+                                                                                                                    ),
+                                                                                                                }]
+                                                                                                            })
                                                                                                         })
                                                                                                     }
                                                                                                 )
@@ -108,7 +134,7 @@ function deserializeMetaNode(
                                                                                 },
                                                                             },
                                                                             () => {
-                                                                                unguaranteedAssertIsDeserialized(targetHasInstances, asserted => {
+                                                                                callbackIfNotNull(targetHasInstances, asserted => {
                                                                                     targetCollectionType = ["dictionary", {
                                                                                         "has instances": asserted,
                                                                                     }]
@@ -141,7 +167,7 @@ function deserializeMetaNode(
                                                                                                     },
                                                                                                 },
                                                                                                 () => {
-                                                                                                    unguaranteedAssertIsDeserialized(targetNode, asserted => {
+                                                                                                    callbackIfNotNull(targetNode, asserted => {
                                                                                                         targetHasInstances = ["yes", {
                                                                                                             node: asserted,
                                                                                                         }]
@@ -165,7 +191,7 @@ function deserializeMetaNode(
                                                                                 },
                                                                             },
                                                                             () => {
-                                                                                unguaranteedAssertIsDeserialized(targetHasInstances, asserted => {
+                                                                                callbackIfNotNull(targetHasInstances, asserted => {
                                                                                     targetCollectionType = ["list", {
                                                                                         "has instances": asserted,
                                                                                     }]
@@ -179,7 +205,7 @@ function deserializeMetaNode(
                                                         },
                                                     },
                                                     () => {
-                                                        unguaranteedAssertIsDeserialized(targetCollectionType, asserted => {
+                                                        callbackIfNotNull(targetCollectionType, asserted => {
                                                             targetPropertyType = ["collection", {
                                                                 "type": asserted,
                                                             }]
@@ -189,8 +215,7 @@ function deserializeMetaNode(
 
                                             },
                                             "component": () => {
-                                                let targetComponentTypeName: string | null = null
-                                                let targetComponentTypeNameRange: bc.Range | null = null
+                                                let targetComponentTypeName: StringAndStringData | null = null
                                                 return context.expectType(
                                                     _startRange => {
                                                         //
@@ -198,31 +223,29 @@ function deserializeMetaNode(
                                                     {
                                                         "type": {
                                                             onExists: () => context.expectSimpleValue((sourceComponentTypeName, metaData) => {
-                                                                targetComponentTypeName = sourceComponentTypeName
-                                                                targetComponentTypeNameRange = metaData.range
+                                                                targetComponentTypeName = {
+                                                                    value: sourceComponentTypeName,
+                                                                    data: metaData,
+                                                                }
                                                             }),
                                                             onNotExists: null,
                                                         },
                                                     },
                                                     () => {
-                                                        unguaranteedAssertIsDeserialized(targetComponentTypeName, assertedTargetComponentTypeName => {
-                                                            unguaranteedAssertIsDeserialized(targetComponentTypeNameRange, assertedRange => {
-                                                                targetPropertyType = ["component", {
-                                                                    "type": g.createReference(
-                                                                        assertedTargetComponentTypeName,
-                                                                        componentTypes,
-                                                                        resolveRegistry,
-                                                                        () => {
-                                                                            context.raiseError(
-                                                                                `component type '${assertedTargetComponentTypeName}' not found`,
-                                                                                assertedRange
-                                                                            )
-                                                                        },
-                                                                    ),
-                                                                }]
-
-                                                            })
-
+                                                        callbackIfNotNull(targetComponentTypeName, assertedTargetComponentTypeName => {
+                                                            targetPropertyType = ["component", {
+                                                                "type": g.createReference(
+                                                                    assertedTargetComponentTypeName.value,
+                                                                    componentTypes,
+                                                                    resolveRegistry,
+                                                                    () => {
+                                                                        context.raiseError(
+                                                                            `component type '${assertedTargetComponentTypeName}' not found`,
+                                                                            assertedTargetComponentTypeName.data.range,
+                                                                        )
+                                                                    },
+                                                                ),
+                                                            }]
                                                         })
                                                     },
                                                 )
@@ -252,7 +275,7 @@ function deserializeMetaNode(
                                                                             },
                                                                         },
                                                                         () => {
-                                                                            unguaranteedAssertIsDeserialized(targetNode, asserted => {
+                                                                            callbackIfNotNull(targetNode, asserted => {
                                                                                 states.add(stateKey, {
                                                                                     node: asserted,
                                                                                 })
@@ -275,17 +298,35 @@ function deserializeMetaNode(
                                                 )
                                             },
                                             "value": () => {
+                                                let quoted: null | boolean = null
+                                                let defaultValue: null | string = null
                                                 return context.expectType(
                                                     _startRange => {
                                                         //
                                                     },
                                                     {
+                                                        "quoted": {
+                                                            onExists: () => context.expectBoolean(value => {
+                                                                quoted = value
+                                                            }),
+                                                            onNotExists: null,
+                                                        },
+                                                        "default value": {
+                                                            onExists: () => context.expectSimpleValue(value => {
+                                                                defaultValue = value
+                                                            }),
+                                                            onNotExists: null,
+                                                        },
                                                     },
                                                     () => {
-                                                        targetPropertyType = ["value", {
-                                                            "quoted": true, //FIXME
-                                                            "default value": "***", //FIXME
-                                                        }]
+                                                        callbackIfNotNull(quoted, assertedQuoted => {
+                                                            callbackIfNotNull(defaultValue, assertedDefaultValue => {
+                                                                targetPropertyType = ["value", {
+                                                                    "quoted": assertedQuoted,
+                                                                    "default value": assertedDefaultValue,
+                                                                }]
+                                                            })
+                                                        })
                                                     },
                                                 )
                                             },
@@ -295,7 +336,7 @@ function deserializeMetaNode(
                                 },
                             },
                             () => {
-                                unguaranteedAssertIsDeserialized(targetPropertyType, asserted => {
+                                callbackIfNotNull(targetPropertyType, asserted => {
                                     properties.add(key, {
                                         type: asserted,
                                     })
@@ -360,7 +401,7 @@ export function createDeserializer(onError: (message: string, range: bc.Range) =
                                 },
                             },
                             () => {
-                                unguaranteedAssertIsDeserialized(targetNode, asserted => {
+                                callbackIfNotNull(targetNode, asserted => {
                                     componentTypes.add(key, {
                                         node: asserted,
                                     })
@@ -383,19 +424,14 @@ export function createDeserializer(onError: (message: string, range: bc.Range) =
             },
         },
         () => {
-            guaranteedAssertIsDeserialized(
+            let schema: t.Schema | null = null
+            callbackIfNotNull(
                 rootName,
-                () => {
-                    callback(null)
-                },
                 assertedRootName => {
-                    guaranteedAssertIsDeserialized(
+                    callbackIfNotNull(
                         rootNameRange,
-                        () => {
-                            callback(null)
-                        },
                         assertedRange => {
-                            const schema = {
+                            schema = {
                                 "component types": componentTypes,
                                 "root type": g.createReference(
                                     assertedRootName,
@@ -406,14 +442,15 @@ export function createDeserializer(onError: (message: string, range: bc.Range) =
                                     }
                                 ),
                             }
-                            const success = resolveRegistry.resolve()
-                            if (success) {
-                                callback(schema)
-                            } else {
-                                callback(null)
-                            }
                         })
-                })
+                }
+            )
+            const success = resolveRegistry.resolve()
+            if (success) {
+                callback(schema)
+            } else {
+                callback(null)
+            }
         }
     )
 }

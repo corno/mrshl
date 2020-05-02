@@ -25,7 +25,10 @@ export class DictionaryBuilder implements builders.DictionaryBuilder {
         return de
     }
     public forEachEntry(callback: (entry: DictionaryEntryBuilder, key: string) => void) {
-        this.entries.forEach(e => callback(e, "FIX"))
+        this.entries.forEach(e => {
+            const keyPropName = e.dictionaryDefinition["key property"].getName()
+            callback(e, e.node.getValue(keyPropName).getValue())
+        })
     }
 }
 
@@ -81,12 +84,14 @@ export class DictionaryEntryBuilder implements builders.DictionaryEntryBuilder {
     //private readonly dictionaryDefinition: types.Dictionary
     //private readonly onError: OnError
     public readonly node: NodeBuilder
+    public dictionaryDefinition: types.Dictionary
 
-    constructor(collectionDefinition: types.Collection, _dictionaryDefinition: types.Dictionary) {
+    constructor(collectionDefinition: types.Collection, dictionaryDefinition: types.Dictionary) {
         //this.collectionDefinition = collectionDefinition
         //this.dictionaryDefinition = dictionaryDefinition
         //this.onError = onError
         this.node = new NodeBuilder(collectionDefinition.node)
+        this.dictionaryDefinition = dictionaryDefinition
     }
     public setComments() {
         //

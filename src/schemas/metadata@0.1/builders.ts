@@ -29,7 +29,7 @@ export class DictionaryBuilder implements builders.DictionaryBuilder {
 export class ListBuilder implements builders.ListBuilder {
     private readonly definition: types.List
     private readonly entries: ListEntryBuilder[] = []
-    constructor(_collDef: types.Collection, definition: types.Dictionary) {
+    constructor(_collDef: types.Collection, definition: types.List) {
         this.definition = definition
     }
     public createEntry() {

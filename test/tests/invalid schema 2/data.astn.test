@@ -4,7 +4,7 @@
 			'node': (
 				'properties': {
 					'foo': (
-						'type': | 'value' ()
+                        'type': | 'value' ( 'quoted': false 'default value': "" )
 					)
 					'bar': (
 						'type': | 'value'

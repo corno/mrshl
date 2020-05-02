@@ -9,7 +9,7 @@ import * as path from "path"
 import { describe } from "mocha"
 import * as astn from "../src"
 import { SnippetGenerator } from "../src/SnippetGenerator"
-import { CustomFormatSerializer, StringStream } from "../src"
+import { ASTNSerializer, StringStream } from "../src"
 
 const testsDir = "./test/tests"
 
@@ -63,7 +63,8 @@ describe("main", () => {
                     astn.serialize(
                         x.rootNodeDefinition,
                         x.nodeBuilder,
-                        new CustomFormatSerializer(new StringStream(out, null))
+                        new ASTNSerializer(new StringStream(out, null)),
+                        false,
                     )
                     console.log(out.join(""))
                 })

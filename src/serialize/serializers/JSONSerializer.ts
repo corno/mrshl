@@ -7,9 +7,6 @@ class DummySerializer implements serializers.ValueSerializer {
     public simpleValue() {
         //
     }
-    public unquotedToken() {
-        //
-    }
     public type() {
         //
     }
@@ -31,9 +28,6 @@ export class JSONValueSerializer implements serializers.ValueSerializer {
     private readonly out: serializers.StringStream
     constructor(out: serializers.StringStream) {
         this.out = out
-    }
-    public unquotedToken(value: string) {
-        this.out.add(value)
     }
     public simpleValue(value: string) {
         this.out.add(JSON.stringify(value))

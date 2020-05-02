@@ -4,13 +4,22 @@
             'node': (
                 'properties': {
                     'a1': (
-                        'type': | 'value' ( )
+                        'type': | 'value' (
+                            'quoted': true
+                            'default value': ""
+                        )
                     )
                     'b': (
-                        'type': | 'value' ( )
+                        'type': | 'value' (
+                            'quoted': true
+                            'default value': ""
+                        )
                     )
                     'c': (
-                        'type': | 'value' ( )
+                        'type': | 'value' (
+                            'quoted': false
+                            'default value': ""
+                        )
                     )
                 }
             )

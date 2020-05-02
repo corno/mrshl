@@ -23,12 +23,12 @@ export class ResolveRegistry {
     }
 }
 
-export function createReference<T>(name: string, lookup: IReadonlyLookup<T>, resolver: ResolveRegistry, onError: () => void): IReference<T> {
+export function createReference<T>(name: string, lookup: IReadonlyLookup<T>, resolver: ResolveRegistry, onError: (keys: string[]) => void): IReference<T> {
     let t: T | null = null
     resolver.register(() => {
         t = lookup.get(name)
         if (t === null) {
-            onError()
+            onError(lookup.getKeys())
             return false
         }
         return true
@@ -48,15 +48,17 @@ export function createReference<T>(name: string, lookup: IReadonlyLookup<T>, res
 
 export type RawObject<T> = { [key: string]: T }
 
-export interface IReadonlyDictionary<T> {
-    forEach(callback: (entry: T, key: string) => void): void
-    get(key: string): T | null
-    isEmpty(): boolean
-    map<RT>(callback: (entry: T, key: string) => RT): RawObject<RT>
-}
 
 export interface IReadonlyLookup<T> {
     get(key: string): T | null
+    getKeys(): string[]
+}
+
+
+export interface IReadonlyDictionary<T> extends IReadonlyLookup<T> {
+    forEach(callback: (entry: T, key: string) => void): void
+    isEmpty(): boolean
+    map<RT>(callback: (entry: T, key: string) => RT): RawObject<RT>
 }
 
 export class Dictionary<T> implements IReadonlyDictionary<T>, IReadonlyLookup<T> {
