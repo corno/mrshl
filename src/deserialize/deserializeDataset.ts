@@ -136,6 +136,8 @@ export function deserializeDataset(
                 openData => createObjectHandler(openData.start),
                 (key, _propertyData, preData) => createPropertyHandler(key, preData),
                 () => createValueHandler(),
+                bc.Severity.warning,
+                bc.OnDuplicateEntry.ignore
             )
 
             const se = sideEffects === null ? new NOPSideEffects() : sideEffects

@@ -317,6 +317,8 @@ export function createDeserializer(onError: (message: string, range: bc.Range) =
         () => bc.createDummyObjectHandler(),
         () => bc.createDummyValueHandler(),
         () => bc.createDummyValueHandler(),
+        bc.Severity.warning,
+        bc.OnDuplicateEntry.ignore
     )
     const resolveRegistry = new g.ResolveRegistry()
 
