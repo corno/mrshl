@@ -11,6 +11,10 @@ export function createFromURLSchemaDeserializer(host: string, pathStart: string,
             // function onSchemaError(_message: string, _range: bc.Range) {
             //     //errors.push(message)
             // }
+            if (reference === "") {
+                reject(`schema cannot be an empty string`)
+                return
+            }
             const options = {
                 host: host,
                 path: url.resolve(pathStart, encodeURI(reference)),
