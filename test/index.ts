@@ -21,7 +21,6 @@ describe("main", () => {
         const testDirPath = path.join(testsDir, dir)
         const serializedDatasetPath = path.join(testDirPath, "data.astn.test")
         //const expectedOutputPath = path.join(testDirPath, "expected.astn.test")
-        const schemaPath = path.join(testDirPath, "schema.astn-schema")
         const expectedIssues = JSON.parse(fs.readFileSync(path.join(testDirPath, "issues.json"), { encoding: "utf-8" }))
 
         const actualIssues: Issues = []
@@ -36,25 +35,32 @@ describe("main", () => {
         //     )
         // }
 
-        /***** THIS REQUIRES AN INTERNET CONNECTION */
-        const schemaReferenceResolver = astn.createFromURLSchemaDeserializer('www.astn.io', '/dev/schemas/', 7000)
-
         async function myFunc(): Promise<void> {
 
             const serializedDataset = await fs.promises.readFile(serializedDatasetPath, { encoding: "utf-8" })
             //const expectedOutput = await fs.promises.readFile(expectedOutputPath, { encoding: "utf-8" })
 
-            function deserializeDoc(startDataset: astn.Dataset | null) {
-                return astn.deserializeDataset(
+            function deserializeDoc() {
+                return astn.validateDocument(
                     serializedDataset,
-                    startDataset,
-                    schemaReferenceResolver,
-                    (errorMessage, range) => {
-                        actualIssues.push([errorMessage, "error", range.start.line, range.start.column, range.end.line, range.end.column])
+                    serializedDatasetPath,
+                    diagnostic => {
+                        actualIssues.push([
+                            diagnostic.message,
+                            diagnostic.severity === astn.Severity.error ? "error" : "warning",
+                            diagnostic.range.start.line,
+                            diagnostic.range.start.column,
+                            diagnostic.range.end.line,
+                            diagnostic.range.end.column,
+                        ])
+
                     },
-                    (warningMessage, range) => {
-                        actualIssues.push([warningMessage, "warning", range.start.line, range.start.column, range.end.line, range.end.column])
-                    },
+                    // (errorMessage, range) => {
+                    //     actualIssues.push([errorMessage, "error", range.start.line, range.start.column, range.end.line, range.end.column])
+                    // },
+                    // (warningMessage, range) => {
+                    //     actualIssues.push([warningMessage, "warning", range.start.line, range.start.column, range.end.line, range.end.column])
+                    // },
                     new astn.SnippetGenerator(() => {
                         //don't do anything with the snippets
                     }),
@@ -83,24 +89,8 @@ describe("main", () => {
                     })
             }
 
-            return fs.promises.readFile(schemaPath, { encoding: "utf-8" })
-                .then(serializedSchema => {
-                    astn.deserializeSchemaFromString(
-                        serializedSchema,
-                        (errorMessage, range) => {
-                            actualIssues.push([errorMessage, "error", range.start.line, range.start.column, range.end.line, range.end.column])
-                        },
-                    ).then(dataset => {
-                        return deserializeDoc(dataset)
-                    })
-                })
-                .catch(err => {
-                    if (err.code === "ENOENT") {
-                        return deserializeDoc(null)
-                    } else {
-                        throw new Error("UNKNOWN FS ERROR")
-                    }
-                })
+            return deserializeDoc()
+
         }
         it(dir, async () => {
             await myFunc()
