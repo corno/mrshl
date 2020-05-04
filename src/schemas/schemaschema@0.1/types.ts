@@ -10,25 +10,26 @@ export type Collection = {
 }
 
 export type Component = {
-    readonly type: g.IReference<ComponentType>
+    readonly "type": g.IReference<ComponentType>
 }
 
 export type ComponentType = {
-    readonly node: Node
+    readonly "node": Node
 }
 
 export type Dictionary = {
-    readonly "key property": g.IReference<Property>}
+    readonly "key property": g.IReference<Property>
+}
 
 export type List = {
 }
 
 export type Node = {
-    readonly properties: g.Dictionary<Property>
+    readonly "properties": g.Dictionary<Property>
 }
 
 export type Property = {
-    readonly type: PropertyType
+    readonly "type": PropertyType
 }
 
 export type PropertyType =
@@ -43,11 +44,12 @@ export type Schema = {
 }
 
 export type State = {
-    readonly node: Node
+    readonly "node": Node
 }
 
 export type StateGroup = {
-    readonly states: g.Dictionary<State>
+    readonly "states": g.Dictionary<State>
+    readonly "default state": g.IReference<State>
 }
 
 export type ValueType =
@@ -56,6 +58,6 @@ export type ValueType =
     | ["boolean", {}]
 
 export type Value = {
-    readonly type: ValueType
+    readonly "type": ValueType
     readonly "default value": string
 }

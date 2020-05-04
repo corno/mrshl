@@ -2,7 +2,7 @@ import * as fs from "fs"
 import * as path from "path"
 import { Dataset } from "./datasetAPI"
 import { SideEffectsAPI, createFromURLSchemaDeserializer, deserializeDataset, deserializeSchemaFromString } from "./deserialize"
-import * as bc from "bass-clarinet"
+import * as bc from "bass-clarinet-typed"
 
 export enum Severity {
 	warning,
@@ -91,7 +91,7 @@ function diagnosticsFailed(
 	})
 }
 
-const schemaName = "schema.astn-schema"
+export const schemaFileName = "schema.astn-schema"
 
 export function validateDocument(
 	documentText: string,
@@ -102,7 +102,7 @@ export function validateDocument(
 	const basename = path.basename(filePath)
 	const dir = path.dirname(filePath)
 
-	if (basename === schemaName) {
+	if (basename === schemaFileName) {
 		//don't validate the schema against itself
 		return validateDocumentAfterExternalSchemaResolution(
 			documentText,
@@ -112,7 +112,7 @@ export function validateDocument(
 		)
 	}
 	return fs.promises.readFile(
-		path.join(dir, schemaName), { encoding: "utf-8" }
+		path.join(dir, schemaFileName), { encoding: "utf-8" }
 	).then(serializedSchema => {
 		return deserializeSchemaFromString(
 			serializedSchema,

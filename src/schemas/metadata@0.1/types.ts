@@ -62,7 +62,7 @@ export type State = {
 
 export type StateGroup = {
     readonly states: g.IReadonlyDictionary<State>
-    //readonly "default state": State
+    readonly "default state": g.IReference<State>
 }
 
 export type Value = {

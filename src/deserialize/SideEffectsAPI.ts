@@ -5,7 +5,12 @@ import * as md from "../metaDataSchema"
 export type GenerateSnippets = () => string[]
 
 export interface SideEffectsAPI {
-    onTypeOpen(range: bc.Range, nodeDefinition: md.Node, nodeBuilder: ds.NodeBuilder): void
+    onTypeOpen(
+        range: bc.Range,
+        nodeDefinition: md.Node,
+        keyPropertyDefinition: md.Property | null,
+        nodeBuilder: ds.NodeBuilder
+    ): void
     onTypeClose(range: bc.Range): void
     onArrayTypeOpen(openData: bc.OpenData): void
     onArrayTypeClose(closeData: bc.CloseData): void
@@ -14,6 +19,7 @@ export interface SideEffectsAPI {
     onDictionaryEntry(
         entryData: bc.PropertyData,
         nodeDefinition: md.Node,
+        keyProperty: md.Property,
         entry: ds.DictionaryEntry,
     ): void
     onUnexpectedDictionaryEntry(

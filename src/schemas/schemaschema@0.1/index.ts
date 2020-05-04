@@ -112,12 +112,16 @@ function convertNode(node: Node, componentTypes: g.IReadonlyLookup<internal.Comp
                     }
                     case "state group": {
                         const $ = prop.type[1]
+                        const states = new g.Dictionary($.states.map(state => {
+                            return {
+                                node: convertNode(state.node, componentTypes, null, resolveRegistry),
+                            }
+                        }))
                         return ["state group", {
-                            states: new g.Dictionary($.states.map(state => {
-                                return {
-                                    node: convertNode(state.node, componentTypes, null, resolveRegistry),
-                                }
-                            })),
+                            "states": states,
+                            "default state": g.createReference($["default state"].getName(), states, resolveRegistry, keys => {
+                                throw new Error(`UNEXPECTED: KEY state not found: ${$["default state"].getName()}, available keys: ${keys}`);
+                            }),
                         }]
                     }
                     case "value": {

@@ -2,7 +2,7 @@
     quote-props: "off",
 
 */
-import * as bc from "bass-clarinet"
+import * as bc from "bass-clarinet-typed"
 import * as g from "./generics"
 import * as t from "./types"
 
@@ -15,6 +15,12 @@ function callbackIfNotNull<T>(value: T | null, callback: (t: T) => void) {
     if (value !== null) {
         callback(value)
     }
+}
+
+
+type StringAndStringData = {
+    value: string
+    data: bc.StringData
 }
 
 function deserializeMetaNode(context: bc.ExpectContext, componentTypes: g.IReadonlyDictionary<t.ComponentType>, callback: (node: t.Node) => void, resolveRegistry: g.ResolveRegistry): bc.ValueHandler {
@@ -56,8 +62,7 @@ function deserializeMetaNode(context: bc.ExpectContext, componentTypes: g.IReado
                                                             onExists: () => context.expectTaggedUnion(
                                                                 {
                                                                     "dictionary": () => {
-                                                                        let targetKeyProperty: string | null = null
-                                                                        let targetKeyPropertyRange: bc.Range | null = null
+                                                                        let targetKeyProperty: StringAndStringData | null = null
                                                                         return context.expectType(
                                                                             _startRange => {
                                                                                 //
@@ -65,8 +70,10 @@ function deserializeMetaNode(context: bc.ExpectContext, componentTypes: g.IReado
                                                                             {
                                                                                 "key property": {
                                                                                     onExists: () => context.expectSimpleValue((sourceKeyProperty, metaData) => {
-                                                                                        targetKeyProperty = sourceKeyProperty
-                                                                                        targetKeyPropertyRange = metaData.range
+                                                                                        targetKeyProperty = {
+                                                                                            value: sourceKeyProperty,
+                                                                                            data: metaData,
+                                                                                        }
                                                                                     }),
                                                                                     onNotExists: null,
                                                                                 },
@@ -75,22 +82,20 @@ function deserializeMetaNode(context: bc.ExpectContext, componentTypes: g.IReado
                                                                                 callbackIfNotNull(targetNode, assertedTargetNode => {
 
                                                                                     callbackIfNotNull(targetKeyProperty, assertedTargetKeyProperty => {
-                                                                                        callbackIfNotNull(targetKeyPropertyRange, atkpr => {
-                                                                                            targetCollectionType = ["dictionary", {
-                                                                                                "key property": g.createReference(
-                                                                                                    assertedTargetKeyProperty,
-                                                                                                    assertedTargetNode.properties,
-                                                                                                    resolveRegistry,
-                                                                                                    () => {
-                                                                                                        context.raiseError(
-                                                                                                            `key property '${assertedTargetKeyProperty}' not found `,
-                                                                                                            atkpr,
-                                                                                                        )
-                                                                                                    }
-                                                                                                ),
-                                                                                            }]
+                                                                                        targetCollectionType = ["dictionary", {
+                                                                                            "key property": g.createReference(
+                                                                                                assertedTargetKeyProperty.value,
+                                                                                                assertedTargetNode.properties,
+                                                                                                resolveRegistry,
+                                                                                                () => {
+                                                                                                    context.raiseError(
+                                                                                                        `key property '${assertedTargetKeyProperty}' not found `,
+                                                                                                        assertedTargetKeyProperty.data.range,
+                                                                                                    )
+                                                                                                }
+                                                                                            ),
+                                                                                        }]
 
-                                                                                        })
                                                                                     })
                                                                                 })
                                                                             }
@@ -129,8 +134,7 @@ function deserializeMetaNode(context: bc.ExpectContext, componentTypes: g.IReado
 
                                             },
                                             "component": () => {
-                                                let targetComponentTypeName: string | null = null
-                                                let targetComponentTypeNameRange: bc.Range | null = null
+                                                let targetComponentTypeName: StringAndStringData | null = null
                                                 return context.expectType(
                                                     _startRange => {
                                                         //
@@ -138,37 +142,36 @@ function deserializeMetaNode(context: bc.ExpectContext, componentTypes: g.IReado
                                                     {
                                                         "type": {
                                                             onExists: () => context.expectSimpleValue((sourceComponentTypeName, metaData) => {
-                                                                targetComponentTypeName = sourceComponentTypeName
-                                                                targetComponentTypeNameRange = metaData.range
+                                                                targetComponentTypeName = {
+                                                                    value: sourceComponentTypeName,
+                                                                    data: metaData,
+                                                                }
                                                             }),
                                                             onNotExists: null,
                                                         },
                                                     },
                                                     () => {
                                                         callbackIfNotNull(targetComponentTypeName, assertedTargetComponentTypeName => {
-                                                            callbackIfNotNull(targetComponentTypeNameRange, assertedRange => {
-                                                                targetPropertyType = ["component", {
-                                                                    "type": g.createReference(
-                                                                        assertedTargetComponentTypeName,
-                                                                        componentTypes,
-                                                                        resolveRegistry,
-                                                                        () => {
-                                                                            context.raiseError(
-                                                                                `component type '${assertedTargetComponentTypeName}' not found`,
-                                                                                assertedRange
-                                                                            )
-                                                                        },
-                                                                    ),
-                                                                }]
-
-                                                            })
-
+                                                            targetPropertyType = ["component", {
+                                                                "type": g.createReference(
+                                                                    assertedTargetComponentTypeName.value,
+                                                                    componentTypes,
+                                                                    resolveRegistry,
+                                                                    () => {
+                                                                        context.raiseError(
+                                                                            `component type '${assertedTargetComponentTypeName}' not found`,
+                                                                            assertedTargetComponentTypeName.data.range,
+                                                                        )
+                                                                    },
+                                                                ),
+                                                            }]
                                                         })
                                                     },
                                                 )
                                             },
                                             "state group": () => {
                                                 const states = new g.Dictionary<t.State>({})
+                                                let targetDefaultState: null | StringAndStringData = null
                                                 return context.expectType(
                                                     _startRange => {
                                                         //
@@ -207,16 +210,33 @@ function deserializeMetaNode(context: bc.ExpectContext, componentTypes: g.IReado
                                                             onNotExists: null,
                                                         },
                                                         "default state": {
-                                                            onExists: () => context.expectSimpleValue(_value => {
-                                                                //
+                                                            onExists: () => context.expectSimpleValue((sourceDefaultState, metaData) => {
+                                                                targetDefaultState = {
+                                                                    value: sourceDefaultState,
+                                                                    data: metaData,
+                                                                }
                                                             }),
                                                             onNotExists: null,
                                                         },
                                                     },
                                                     () => {
-                                                        targetPropertyType = ["state group", {
-                                                            "states": states,
-                                                        }]
+                                                        callbackIfNotNull(targetDefaultState, assertedTargetDefaultState => {
+                                                            targetPropertyType = ["state group", {
+                                                                "states": states,
+                                                                "default state": g.createReference(
+                                                                    assertedTargetDefaultState.value,
+                                                                    states,
+                                                                    resolveRegistry,
+                                                                    () => {
+                                                                        context.raiseError(
+                                                                            `key property '${assertedTargetDefaultState.value}' not found `,
+                                                                            assertedTargetDefaultState.data.range,
+                                                                        )
+                                                                    }
+                                                                ),
+                                                            }]
+
+                                                        })
                                                     },
                                                 )
                                             },

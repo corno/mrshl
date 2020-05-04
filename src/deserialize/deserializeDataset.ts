@@ -1,4 +1,4 @@
-import * as bc from "bass-clarinet"
+import * as bc from "bass-clarinet-typed"
 import * as md from "../metaDataSchema"
 import { SideEffectsAPI } from "./SideEffectsAPI"
 import { createDatasetDeserializer } from "./createDatasetDeserializer"

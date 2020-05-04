@@ -2,7 +2,7 @@
     quote-props: "off",
 
 */
-import * as bc from "bass-clarinet"
+import * as bc from "bass-clarinet-typed"
 import * as g from "./generics"
 import * as t from "./types"
 
@@ -252,6 +252,7 @@ function deserializeMetaNode(
                                             },
                                             "state group": () => {
                                                 const states = new g.Dictionary<t.State>({})
+                                                let defaultStateName: null | StringAndStringData = null
                                                 return context.expectType(
                                                     _startRange => {
                                                         //
@@ -289,11 +290,35 @@ function deserializeMetaNode(
                                                             ),
                                                             onNotExists: null,
                                                         },
+                                                        "default state": {
+                                                            onExists: () => context.expectSimpleValue((value, stringData) => {
+                                                                defaultStateName = {
+                                                                    value: value,
+                                                                    data: stringData,
+                                                                }
+                                                            }),
+                                                            onNotExists: null,
+                                                        },
                                                     },
                                                     () => {
-                                                        targetPropertyType = ["state group", {
-                                                            "states": states,
-                                                        }]
+
+                                                        callbackIfNotNull(defaultStateName, assertedDefaultStateName => {
+                                                            targetPropertyType = ["state group", {
+                                                                "states": states,
+
+                                                                "default state": g.createReference(
+                                                                    assertedDefaultStateName.value,
+                                                                    states,
+                                                                    resolveRegistry,
+                                                                    () => {
+                                                                        context.raiseError(
+                                                                            `state '${assertedDefaultStateName}' not found`,
+                                                                            assertedDefaultStateName.data.range,
+                                                                        )
+                                                                    },
+                                                                ),
+                                                            }]
+                                                        })
                                                     },
                                                 )
                                             },

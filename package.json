@@ -26,7 +26,7 @@
     "dist/*"
   ],
   "dependencies": {
-    "bass-clarinet": "^0.45.0",
+    "bass-clarinet-typed": "^0.47.3",
     "fountain-pen": "^3.0.0"
   },
   "devDependencies": {

@@ -1,4 +1,4 @@
-import * as bc from "bass-clarinet"
+import * as bc from "bass-clarinet-typed"
 import * as md from "../metaDataSchema"
 import * as ds from "../datasetAPI"
 import { SideEffectsAPI } from "./SideEffectsAPI"
@@ -57,11 +57,13 @@ function createPropertyDeserializer(
                                     registerSnippetGenerators.onDictionaryEntry(
                                         propertyData,
                                         $$$.node,
+                                        $$$["key property"].get(),
                                         entry
                                     )
                                     return createNodeDeserializer(
                                         context,
                                         $$$.node,
+                                        $$$["key property"].get(),
                                         entry.node,
                                         isCompact,
                                         $$$["key property"].get(),
@@ -112,6 +114,7 @@ function createPropertyDeserializer(
                                     return createNodeDeserializer(
                                         context,
                                         $$$.node,
+                                        null,
                                         entry.node,
                                         isCompact,
                                         null,
@@ -138,6 +141,7 @@ function createPropertyDeserializer(
             return createNodeDeserializer(
                 context,
                 $.type.get().node,
+                null,
                 componentBuilder.node,
                 isCompact,
                 null,
@@ -158,6 +162,7 @@ function createPropertyDeserializer(
                         return createNodeDeserializer(
                             context,
                             stateDef.node,
+                            null,
                             state.node,
                             isCompact,
                             null,
@@ -202,9 +207,67 @@ function createPropertyDeserializer(
     }
 }
 
+
+function defaultInitializeNode(
+    nodeDefinition: md.Node,
+    nodeBuilder: ds.NodeBuilder,
+    range: bc.Range,
+    onError: OnError,
+) {
+    nodeDefinition.properties.forEach((propDef, propKey) => {
+         defaultInitializeProperty(
+            propDef,
+            propKey,
+            nodeBuilder,
+            range,
+            onError,
+         )
+    })
+}
+
+
+function defaultInitializeProperty(
+    propDefinition: md.Property,
+    propKey: string,
+    nodeBuilder: ds.NodeBuilder,
+    range: bc.Range,
+    onError: OnError,
+) {
+
+    switch (propDefinition.type[0]) {
+        case "collection": {
+            //nothing to do
+            break
+        }
+        case "component": {
+            const $ = propDefinition.type[1]
+            defaultInitializeNode(
+                $.type.get().node,
+                nodeBuilder.getComponent(propKey).node,
+                range,
+                onError,
+            )
+            break
+        }
+        case "state group": {
+            const $ = propDefinition.type[1]
+            nodeBuilder.getStateGroup(propKey).setState($["default state"].getName(), errorMessage => onError(errorMessage, range))
+            break
+        }
+        case "value": {
+            const $ = propDefinition.type[1]
+            nodeBuilder.getValue(propKey).setValue($["default value"], errorMessage => onError(errorMessage, range))
+            break
+        }
+        default:
+            assertUnreachable(propDefinition.type[0])
+    }
+}
+
 function createNodeDeserializer(
     context: bc.ExpectContext,
     nodeDefinition: md.Node,
+    keyPropertyDefinition: md.Property | null,
     nodeBuilder: ds.NodeBuilder,
     isCompact: boolean,
     keyProperty: md.Property | null,
@@ -260,8 +323,15 @@ function createNodeDeserializer(
                         onError,
                     )
                 },
-                onNotExists: () => {
-                    //
+                onNotExists: beginData => {
+                    console.log("HANDLING MISSING PROPERTY")
+                    defaultInitializeProperty(
+                        propDefinition,
+                        propKey,
+                        nodeBuilder,
+                        beginData.start,
+                        onError,
+                    )
                 },
             }
         })
@@ -270,6 +340,7 @@ function createNodeDeserializer(
                 sideEffectsAPI.onTypeOpen(
                     startRange,
                     nodeDefinition,
+                    keyPropertyDefinition,
                     nodeBuilder,
                 )
             },
@@ -298,5 +369,13 @@ export function createDatasetDeserializer(
     sideEffectsAPI: SideEffectsAPI,
     onError: OnError,
 ): bc.ValueHandler {
-    return createNodeDeserializer(context, dataset.schema["root type"].get().node, dataset.root, isCompact, null, sideEffectsAPI, onError)
+    return createNodeDeserializer(
+        context,
+        dataset.schema["root type"].get().node,
+        null,
+        dataset.root, isCompact,
+        null,
+        sideEffectsAPI,
+        onError
+    )
 }
