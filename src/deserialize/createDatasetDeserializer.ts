@@ -17,7 +17,7 @@ function createPropertyDeserializer(
     isCompact: boolean,
     registerSnippetGenerators: SideEffectsAPI,
     onError: OnError,
-): bc.ValueHandler {
+): bc.RequiredValueHandler {
     switch (propDefinition.type[0]) {
         case "collection": {
             const $ = propDefinition.type[1]
@@ -26,28 +26,25 @@ function createPropertyDeserializer(
                     const $$ = $.type[1]
                     switch ($$["has instances"][0]) {
                         case "no": {
-                            return context.expectDictionary(
-                                openData => {
-                                    registerSnippetGenerators.onDictionaryOpen(openData)
-                                },
+                            return context.expectValue(context.expectDictionary(
                                 (_key, propertyData) => {
                                     registerSnippetGenerators.onUnexpectedDictionaryEntry(
                                         propertyData,
                                     )
-                                    return context.expectNothing()
+                                    return context.expectValue(context.expectNothing())
+                                },
+                                openData => {
+                                    registerSnippetGenerators.onDictionaryOpen(openData)
                                 },
                                 endData => {
                                     registerSnippetGenerators.onDictionaryClose(endData)
                                 },
-                            )
+                            ))
                         }
                         case "yes": {
                             const $$$ = $$["has instances"][1]
                             const collBuilder = nodeBuilder.getDictionary(propKey)
-                            return context.expectDictionary(
-                                beginData => {
-                                    registerSnippetGenerators.onDictionaryOpen(beginData)
-                                },
+                            return context.expectValue(context.expectDictionary(
                                 (key, propertyData, preData) => {
 
                                     const entry = collBuilder.createEntry(errorMessage => onError(errorMessage, propertyData.keyRange))
@@ -60,7 +57,7 @@ function createPropertyDeserializer(
                                         $$$["key property"].get(),
                                         entry
                                     )
-                                    return createNodeDeserializer(
+                                    return context.expectValue( createNodeDeserializer(
                                         context,
                                         $$$.node,
                                         $$$["key property"].get(),
@@ -69,12 +66,15 @@ function createPropertyDeserializer(
                                         $$$["key property"].get(),
                                         registerSnippetGenerators,
                                         onError,
-                                    )
+                                    ))
+                                },
+                                beginData => {
+                                    registerSnippetGenerators.onDictionaryOpen(beginData)
                                 },
                                 endData => {
                                     registerSnippetGenerators.onDictionaryClose(endData)
                                 },
-                            )
+                            ))
                         }
                         default:
                             return assertUnreachable($$["has instances"][0])
@@ -85,26 +85,23 @@ function createPropertyDeserializer(
 
                     switch ($$["has instances"][0]) {
                         case "no": {
-                            return context.expectList(
-                                beginData => {
-                                    registerSnippetGenerators.onListOpen(beginData)
-                                },
+                            return context.expectValue(context.expectList(
                                 () => {
                                     registerSnippetGenerators.onListEntry()
                                     return context.expectNothing()
                                 },
+                                beginData => {
+                                    registerSnippetGenerators.onListOpen(beginData)
+                                },
                                 endData => {
                                     registerSnippetGenerators.onListClose(endData)
                                 },
-                            )
+                            ))
                         }
                         case "yes": {
                             const $$$ = $$["has instances"][1]
                             const collBuilder = nodeBuilder.getList(propKey)
-                            return context.expectList(
-                                beginData => {
-                                    registerSnippetGenerators.onListOpen(beginData)
-                                },
+                            return context.expectValue( context.expectList(
                                 () => {
                                     const entry = collBuilder.createEntry(_errorMessage => {
                                         //onError(errorMessage, svData.range)
@@ -122,10 +119,13 @@ function createPropertyDeserializer(
                                         onError,
                                     )
                                 },
+                                beginData => {
+                                    registerSnippetGenerators.onListOpen(beginData)
+                                },
                                 endData => {
                                     registerSnippetGenerators.onListClose(endData)
                                 },
-                            )
+                            ))
                         }
                         default:
                             return assertUnreachable($$["has instances"][0])
@@ -138,7 +138,7 @@ function createPropertyDeserializer(
         case "component": {
             const $ = propDefinition.type[1]
             const componentBuilder = nodeBuilder.getComponent(propKey)
-            return createNodeDeserializer(
+            return context.expectValue( createNodeDeserializer(
                 context,
                 $.type.get().node,
                 null,
@@ -147,19 +147,19 @@ function createPropertyDeserializer(
                 null,
                 registerSnippetGenerators,
                 onError,
-            )
+            ))
         }
         case "state group": {
             const $ = propDefinition.type[1]
-            return context.expectTaggedUnion(
+            return context.expectValue( context.expectTaggedUnion(
                 $.states.map((stateDef, stateName) => {
-                    return (tuData, tuPreData, optionPreData) => {
+                    return (tuData, tuPreData, optionData, optionPreData) => {
                         registerSnippetGenerators.onState(stateName, tuData, tuPreData, optionPreData)
                         const stateGroup = nodeBuilder.getStateGroup(propKey)
                         stateGroup.setComments(tuPreData.comments.map(c => c.text))
-                        const state = stateGroup.setState(stateName, errorMessage => onError(errorMessage, tuData.optionRange))
+                        const state = stateGroup.setState(stateName, errorMessage => onError(errorMessage, optionData.range))
                         state.setComments(optionPreData.comments.map(c => c.text))
-                        return createNodeDeserializer(
+                        return context.expectValue( createNodeDeserializer(
                             context,
                             stateDef.node,
                             null,
@@ -168,23 +168,24 @@ function createPropertyDeserializer(
                             null,
                             registerSnippetGenerators,
                             onError
-                        )
+                        ))
                     }
                 }),
-                (option, tuData, beginPreData, optionPreData) => {
+                (option, tuData, beginPreData, optionData, optionPreData) => {
                     registerSnippetGenerators.onUnexpectedState(
                         option,
                         tuData,
                         beginPreData,
+                        optionData,
                         optionPreData,
                         $,
                     )
                 },
-            )
+            ))
         }
         case "value": {
             const $ = propDefinition.type[1]
-            return context.expectSimpleValue((value, svData, preData) => {
+            return context.expectValue( context.expectSimpleValue((value, svData, preData) => {
                 const valueBuilder = nodeBuilder.getValue(propKey)
                 valueBuilder.setValue(value, errorMessage => onError(errorMessage, svData.range))
                 if (svData.quote !== null) {
@@ -200,7 +201,7 @@ function createPropertyDeserializer(
                 //valueBuilder.setValue(value, svData.quote !== null, svData.range, comments)
                 valueBuilder.setComments(preData.comments.map(c => c.text))
                 registerSnippetGenerators.onValue(svData, valueBuilder)
-            })
+            }))
         }
         default:
             return assertUnreachable(propDefinition.type[0])
@@ -215,13 +216,13 @@ function defaultInitializeNode(
     onError: OnError,
 ) {
     nodeDefinition.properties.forEach((propDef, propKey) => {
-         defaultInitializeProperty(
+        defaultInitializeProperty(
             propDef,
             propKey,
             nodeBuilder,
             range,
             onError,
-         )
+        )
     })
 }
 
@@ -290,10 +291,10 @@ function createNodeDeserializer(
             })
         })
         return context.expectArrayType(
+            expectedElements,
             startData => {
                 sideEffectsAPI.onArrayTypeOpen(startData)
             },
-            expectedElements,
             endData => {
                 sideEffectsAPI.onArrayTypeClose(endData)
             }
@@ -324,7 +325,6 @@ function createNodeDeserializer(
                     )
                 },
                 onNotExists: beginData => {
-                    console.log("HANDLING MISSING PROPERTY")
                     defaultInitializeProperty(
                         propDefinition,
                         propKey,
@@ -336,17 +336,17 @@ function createNodeDeserializer(
             }
         })
         return context.expectType(
-            startRange => {
+            expectedProperties,
+            openData => {
                 sideEffectsAPI.onTypeOpen(
-                    startRange,
+                    openData.start,
                     nodeDefinition,
                     keyPropertyDefinition,
                     nodeBuilder,
                 )
             },
-            expectedProperties,
-            (_hasErrors, endRange) => {
-                sideEffectsAPI.onTypeClose(endRange)
+            (_hasErrors, endData) => {
+                sideEffectsAPI.onTypeClose(endData.range)
             },
             (key, metaData, preData) => {
                 sideEffectsAPI.onUnexpectedProperty(
@@ -357,7 +357,6 @@ function createNodeDeserializer(
                 )
             },
         )
-
     }
 
 }
@@ -368,8 +367,8 @@ export function createDatasetDeserializer(
     isCompact: boolean,
     sideEffectsAPI: SideEffectsAPI,
     onError: OnError,
-): bc.ValueHandler {
-    return createNodeDeserializer(
+): bc.RequiredValueHandler {
+    return context.expectValue( createNodeDeserializer(
         context,
         dataset.schema["root type"].get().node,
         null,
@@ -377,5 +376,5 @@ export function createDatasetDeserializer(
         null,
         sideEffectsAPI,
         onError
-    )
+    ))
 }

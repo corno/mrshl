@@ -26,16 +26,16 @@
     "dist/*"
   ],
   "dependencies": {
-    "bass-clarinet-typed": "^0.47.3",
+    "bass-clarinet-typed": "^0.49.3",
     "fountain-pen": "^3.0.0"
   },
   "devDependencies": {
     "@types/chai": "^4.2.11",
     "@types/mocha": "^7.0.2",
-    "@types/node": "^13.13.4",
-    "@typescript-eslint/eslint-plugin": "^2.30.0",
-    "@typescript-eslint/eslint-plugin-tslint": "^2.30.0",
-    "@typescript-eslint/parser": "^2.30.0",
+    "@types/node": "^13.13.5",
+    "@typescript-eslint/eslint-plugin": "^2.31.0",
+    "@typescript-eslint/eslint-plugin-tslint": "^2.31.0",
+    "@typescript-eslint/parser": "^2.31.0",
     "chai": "^4.2.0",
     "eslint": "^6.8.0",
     "mocha": "^7.1.2",

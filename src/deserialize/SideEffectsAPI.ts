@@ -52,6 +52,7 @@ export interface SideEffectsAPI {
         stateName: string,
         tuData: bc.TaggedUnionData,
         beginPreData: bc.PreData,
+        optionData: bc.OptionData,
         optionPreData: bc.PreData,
         stateGroupDefinition: md.StateGroup
     ): void

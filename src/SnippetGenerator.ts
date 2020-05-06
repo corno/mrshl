@@ -200,13 +200,14 @@ export class SnippetGenerator implements SideEffectsAPI {
     }
     onUnexpectedState(
         _stateName: string,
-        tuData: bc.TaggedUnionData,
+        _tuData: bc.TaggedUnionData,
         _beginPreData: bc.PreData,
+        optionData: bc.OptionData,
         _optionPreData: bc.PreData,
         stateGroupDefinition: md.StateGroup
     ) {
         this.registerSnippet(
-            tuData.optionRange,
+            optionData.range,
             () => {
                 return Object.keys(stateGroupDefinition.states.map(s => s))
             },

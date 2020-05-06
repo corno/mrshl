@@ -25,11 +25,25 @@ function createValueHandler(): bc.ValueHandler {
         simpleValue: (_value, _stringData) => {
             //registerSnippetGenerators.register(stringData.range, null, null)
         },
-        taggedUnion: (_option, _tuData, _tuComments) => {
+        taggedUnion: () => {
             //registerSnippetGenerators.register(tuData.startRange, null, null)
             //registerSnippetGenerators.register(tuData.optionRange, null, null)
-            return createValueHandler()
+            return {
+                option: () => createRequiredValueHandler(),
+                missingOption: () => {
+                    //
+                },
+            }
         },
+    }
+}
+
+function createRequiredValueHandler(): bc.RequiredValueHandler {
+    return {
+        onMissing: () => {
+            //
+        },
+        valueHandler: createValueHandler(),
     }
 }
 
@@ -47,7 +61,7 @@ function createObjectHandler(_beginRange: bc.Range): bc.ObjectHandler {
     return {
         property: (_key, _keyData) => {
             //registerSnippetGenerators.register(keyData.keyRange, null, null)
-            return createValueHandler()
+            return createRequiredValueHandler()
         },
         end: _endData => {
             //registerSnippetGenerators.register(endData.range, null, null)
@@ -118,20 +132,20 @@ export function deserializeDataset(
     serializedDataset: string,
     startDataset: ds.Dataset | null,
     schemaReferenceResolver: ResolveSchemaReference,
-    onError: (message: string, range: bc.Range) => void,
-    onWarning: (message: string, range: bc.Range) => void,
+    onError: (source: string, message: string, range: bc.Range) => void,
+    onWarning: (source: string, message: string, range: bc.Range) => void,
     sideEffects: SideEffectsAPI | null,
 ): Promise<ds.Dataset> {
     return new Promise<ds.Dataset>((resolve, reject) => {
         const parser = new bc.Parser(
             (message, range) => {
-                onError(message, range)
+                onError("parser", message, range)
             },
         )
         function attach(dataset: ds.Dataset, isCompact: boolean) {
             const context = new bc.ExpectContext(
-                onError,
-                onWarning,
+                (message, range) => onError("expect", message, range),
+                (message, range) => onWarning("expect", message, range),
                 openData => createArrayHandler(openData.start),
                 openData => createObjectHandler(openData.start),
                 (key, _propertyData, preData) => createPropertyHandler(key, preData),
@@ -147,14 +161,10 @@ export function deserializeDataset(
                     dataset,
                     isCompact,
                     se,
-                    onError,
+                    (message, range) => onError("deserializer", message, range),
                 ),
                 error => {
-                    if (error.context[0] === "range") {
-                        onError(error.message, error.context[1])
-                    } else {
-                        onError(error.message, { start: error.context[1], end: error.context[1] })
-                    }
+                    onError("X", error.rangeLessMessage, error.range)
                 },
                 () => {
                     //
@@ -209,49 +219,56 @@ export function deserializeDataset(
         let foundSchemaErrors = false
         let datasetBuilder: ds.Dataset
         function onSchemaError(message: string, range: bc.Range) {
-            onError(message, range)
+            onError("schema error", message, range)
             foundSchemaErrors = true
         }
 
         parser.onschemadata.subscribe(bc.createStackedDataSubscriber(
             {
-                array: openData => {
-                    onSchemaError("unexpected array as schema", openData.start)
-                    return bc.createDummyArrayHandler()
-                },
-                object: md.createMetaDataDeserializer(
-                    (errorMessage, range) => {
-                        onSchemaError(errorMessage, range)
+
+                valueHandler: {
+                    array: openData => {
+                        onSchemaError("unexpected array as schema", openData.start)
+                        return bc.createDummyArrayHandler()
                     },
-                    md2 => {
-                        if (md2 !== null) {
-                            datasetBuilder = md.createDatasetBuilder(md2)
+                    object: md.createMetaDataDeserializer(
+                        (errorMessage, range) => {
+                            onSchemaError(errorMessage, range)
+                        },
+                        md2 => {
+                            if (md2 !== null) {
+                                datasetBuilder = md.createDatasetBuilder(md2)
+                            }
                         }
-                    }
-                ),
-                simpleValue: (schemaReference, svData) => {
-                    svData.pauser.pause()
-                    schemaReferenceResolver(schemaReference)
-                        .then(dataset => {
-                            datasetBuilder = dataset
-                            svData.pauser.continue()
-                        })
-                        .catch(errorMessage => {
-                            onSchemaError(errorMessage, svData.range)
-                            svData.pauser.continue()
-                        })
+                    ),
+                    simpleValue: (schemaReference, svData) => {
+                        svData.pauser.pause()
+                        schemaReferenceResolver(schemaReference)
+                            .then(dataset => {
+                                datasetBuilder = dataset
+                                svData.pauser.continue()
+                            })
+                            .catch(errorMessage => {
+                                onSchemaError(errorMessage, svData.range)
+                                svData.pauser.continue()
+                            })
+                    },
+                    taggedUnion: tuData => {
+                        onSchemaError("unexpected typed union as schema", tuData.startRange)
+                        return {
+                            option: () => bc.createDummyRequiredValueHandler(),
+                            missingOption: () => {
+                                //
+                            },
+                        }
+                    },
                 },
-                taggedUnion: (_value, tuData) => {
-                    onSchemaError("unexpected typed union as schema", tuData.startRange)
-                    return bc.createDummyValueHandler()
+                onMissing: () => {
+                    //
                 },
             },
             error => {
-                if (error.context[0] === "range") {
-                    onSchemaError(error.message, error.context[1])
-                } else {
-                    onSchemaError(error.message, { start: error.context[1], end: error.context[1] })
-                }
+                onSchemaError(error.rangeLessMessage, error.range)
             },
             () => {
                 //ignore end commends
@@ -267,7 +284,7 @@ export function deserializeDataset(
             onHeaderEnd: () => {
                 if (!foundSchema) {
                     if (startDataset === null) {
-                        onError(`missing schema`, { start: { position: 0, line: 1, column: 1 }, end: { position: 0, line: 1, column: 1 } })
+                        onError("structure", `missing schema`, { start: { position: 0, line: 1, column: 1 }, end: { position: 0, line: 1, column: 1 } })
                         reject("no schema")
                     } else {
                         //no internal schema, no problem
@@ -293,6 +310,7 @@ export function deserializeDataset(
                                 throw new Error("IMPLEMENT ME, EXTERNAL AND INTERAL SCHEMA AND DATA IS COMPACT")
                             }
                             onWarning(
+                                "structure",
                                 "ignoring internal schema",
                                 {
                                     start: {
@@ -319,7 +337,7 @@ export function deserializeDataset(
         bc.tokenizeString(
             parser,
             (message, range) => {
-                onError(message, range)
+                onError("tokenizer", message, range)
             },
             serializedDataset,
         )

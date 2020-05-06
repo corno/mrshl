@@ -11,376 +11,450 @@ import * as t from "./types"
  * @param value value
  * @param callback
  */
-function callbackIfNotNull<T>(value: T | null, callback: (t: T) => void) {
+function assertNotNull<T>(value: T | null) {
     if (value !== null) {
-        callback(value)
+        return value
+    }
+    const err = new Error("unexpected null")
+    console.log(err.stack)
+    throw err
+}
+
+type StringAndRange = {
+    value: string
+    range: bc.Range
+}
+
+function createNodeHandler(
+    context: bc.ExpectContext,
+    componentTypes: g.IReadonlyDictionary<t.ComponentType>,
+    callback: (node: t.Node) => void,
+    resolveRegistry: g.ResolveRegistry
+): bc.ExpectedProperty {
+    return {
+        onExists: () => {
+
+            const properties = new g.Dictionary<t.Property>({})
+            return context.expectValue(context.expectType(
+                {
+                    "properties": {
+                        onExists: () => context.expectValue(context.expectDictionary(
+                            key => {
+                                let targetPropertyType: t.PropertyType | null = null
+                                return context.expectValue(context.expectType(
+                                    {
+                                        "type": {
+                                            onExists: () => context.expectValue(
+                                                context.expectTaggedUnion(
+                                                    {
+                                                        "collection": () => {
+                                                            let targetCollectionType: t.CollectionType | null = null
+                                                            return context.expectValue(context.expectType(
+                                                                {
+                                                                    "type": {
+                                                                        onExists: () => context.expectValue(context.expectTaggedUnion(
+                                                                            {
+                                                                                "dictionary": () => {
+                                                                                    let targetHasInstances: t.DictionaryHasInstances | null = null
+                                                                                    return context.expectValue(context.expectType(
+                                                                                        {
+                                                                                            "has instances": {
+                                                                                                onExists: () => context.expectValue(context.expectTaggedUnion(
+                                                                                                    {
+                                                                                                        "yes": () => {
+                                                                                                            let targetNode: t.Node | null = null
+                                                                                                            let keyPropertyName: StringAndRange | null = null
+
+                                                                                                            return context.expectValue(context.expectType(
+                                                                                                                {
+                                                                                                                    "node": createNodeHandler(
+                                                                                                                        context,
+                                                                                                                        componentTypes,
+                                                                                                                        node => targetNode = node,
+                                                                                                                        resolveRegistry,
+                                                                                                                    ),
+                                                                                                                    "key property": {
+                                                                                                                        onExists: () => context.expectValue(
+                                                                                                                            context.expectSimpleValue((value, stringData) => {
+                                                                                                                                keyPropertyName = {
+                                                                                                                                    value: value,
+                                                                                                                                    range: stringData.range,
+                                                                                                                                }
+                                                                                                                            })
+                                                                                                                        ),
+                                                                                                                        onNotExists: beginData => {
+                                                                                                                            keyPropertyName = {
+                                                                                                                                value: "name",
+                                                                                                                                range: beginData.start,
+                                                                                                                            }
+
+                                                                                                                        },
+                                                                                                                    },
+                                                                                                                },
+                                                                                                                () => {
+                                                                                                                    //
+                                                                                                                },
+                                                                                                                () => {
+                                                                                                                    const assertedTargetNode = assertNotNull(targetNode)
+                                                                                                                    const assertedKeyPropertyName = assertNotNull(keyPropertyName)
+                                                                                                                    targetHasInstances = ["yes", {
+                                                                                                                        "node": assertedTargetNode,
+                                                                                                                        "key property": g.createReference(
+                                                                                                                            assertedKeyPropertyName.value,
+                                                                                                                            assertedTargetNode.properties,
+                                                                                                                            resolveRegistry,
+                                                                                                                            () => {
+                                                                                                                                context.raiseError(
+                                                                                                                                    `property '${assertedKeyPropertyName}' not found`,
+                                                                                                                                    assertedKeyPropertyName.range,
+                                                                                                                                )
+                                                                                                                            },
+                                                                                                                        ),
+                                                                                                                    }]
+                                                                                                                }
+                                                                                                            )
+                                                                                                            )
+                                                                                                        },
+                                                                                                        "no": () => {
+                                                                                                            targetHasInstances = ["no", {}]
+                                                                                                            return context.expectValue(context.expectType())
+                                                                                                        },
+                                                                                                    },
+                                                                                                    () => {
+                                                                                                        //on unexpected option
+                                                                                                    },
+                                                                                                    () => {
+                                                                                                        //on missing option
+                                                                                                    }
+                                                                                                ),
+                                                                                                ),
+                                                                                                onNotExists: () => {
+                                                                                                    targetHasInstances = ["no", {}]
+                                                                                                },
+                                                                                            },
+                                                                                        },
+                                                                                        () => {
+                                                                                            //
+                                                                                        },
+                                                                                        () => {
+                                                                                            const asserted = assertNotNull(targetHasInstances)
+                                                                                            targetCollectionType = ["dictionary", {
+                                                                                                "has instances": asserted,
+                                                                                            }]
+                                                                                        }
+                                                                                    )
+                                                                                    )
+                                                                                },
+                                                                                "list": () => {
+                                                                                    let targetHasInstances: t.ListHasInstances | null = null
+                                                                                    return context.expectValue(context.expectType(
+                                                                                        {
+                                                                                            "has instances": {
+                                                                                                onExists: () => context.expectValue(context.expectTaggedUnion(
+                                                                                                    {
+                                                                                                        "yes": () => {
+                                                                                                            let targetNode: t.Node | null = null
+                                                                                                            return context.expectValue(context.expectType(
+                                                                                                                {
+                                                                                                                    "node": createNodeHandler(
+                                                                                                                        context,
+                                                                                                                        componentTypes,
+                                                                                                                        node => targetNode = node,
+                                                                                                                        resolveRegistry
+                                                                                                                    ),
+                                                                                                                },
+                                                                                                                () => {
+                                                                                                                    //
+                                                                                                                },
+                                                                                                                () => {
+                                                                                                                    const asserted = assertNotNull(targetNode)
+                                                                                                                    targetHasInstances = ["yes", {
+                                                                                                                        node: asserted,
+                                                                                                                    }]
+                                                                                                                },
+                                                                                                            ))
+                                                                                                        },
+                                                                                                        "no": () => {
+                                                                                                            targetHasInstances = ["no", {}]
+                                                                                                            return context.expectValue(context.expectType())
+                                                                                                        },
+                                                                                                    },
+                                                                                                    () => {
+                                                                                                        //on unexpected option
+                                                                                                    },
+                                                                                                    () => {
+                                                                                                        //on missing option
+                                                                                                    }
+                                                                                                ),
+                                                                                                ),
+                                                                                                onNotExists: () => {
+                                                                                                    targetHasInstances = ["no", {}]
+                                                                                                },
+                                                                                            },
+                                                                                        },
+                                                                                        () => {
+                                                                                            //
+                                                                                        },
+                                                                                        () => {
+                                                                                            const asserted = assertNotNull(targetHasInstances)
+                                                                                            targetCollectionType = ["list", {
+                                                                                                "has instances": asserted,
+                                                                                            }]
+                                                                                        },
+                                                                                    ))
+                                                                                },
+                                                                            },
+                                                                            () => {
+                                                                                //on unexpected option
+                                                                            },
+                                                                            () => {
+                                                                                //on missing option
+                                                                            }
+                                                                        ),
+                                                                        ),
+                                                                        onNotExists: () => {
+                                                                            targetCollectionType = ["list", {
+                                                                                "has instances": ["no", {}],
+                                                                            }]
+                                                                        },
+                                                                    },
+                                                                },
+                                                                () => {
+                                                                    //
+                                                                },
+                                                                () => {
+                                                                    const asserted = assertNotNull(targetCollectionType)
+                                                                    targetPropertyType = ["collection", {
+                                                                        "type": asserted,
+                                                                    }]
+                                                                },
+                                                            )
+                                                            )
+
+                                                        },
+                                                        "component": () => {
+                                                            let targetComponentTypeName: StringAndRange | null = null
+                                                            return context.expectValue(context.expectType(
+                                                                {
+                                                                    "type": {
+                                                                        onExists: () => context.expectValue(context.expectSimpleValue((sourceComponentTypeName, metaData) => {
+                                                                            targetComponentTypeName = {
+                                                                                value: sourceComponentTypeName,
+                                                                                range: metaData.range,
+                                                                            }
+                                                                        })),
+                                                                        onNotExists: beginData => {
+                                                                            targetComponentTypeName = {
+                                                                                value: "",
+                                                                                range: beginData.start,
+                                                                            }
+                                                                        },
+                                                                    },
+                                                                },
+                                                                () => {
+                                                                    //
+                                                                },
+                                                                () => {
+                                                                    const assertedTargetComponentTypeName = assertNotNull(targetComponentTypeName)
+                                                                    targetPropertyType = ["component", {
+                                                                        "type": g.createReference(
+                                                                            assertedTargetComponentTypeName.value,
+                                                                            componentTypes,
+                                                                            resolveRegistry,
+                                                                            () => {
+                                                                                context.raiseError(
+                                                                                    `component type '${assertedTargetComponentTypeName}' not found`,
+                                                                                    assertedTargetComponentTypeName.range,
+                                                                                )
+                                                                            },
+                                                                        ),
+                                                                    }]
+                                                                },
+                                                            ))
+                                                        },
+                                                        "state group": () => {
+                                                            const states = new g.Dictionary<t.State>({})
+                                                            let defaultStateName: null | StringAndRange = null
+                                                            return context.expectValue(context.expectType(
+                                                                {
+                                                                    "states": {
+                                                                        onExists: () => context.expectValue(context.expectDictionary(
+                                                                            stateKey => {
+                                                                                let targetNode: t.Node | null = null
+                                                                                return context.expectValue(context.expectType(
+                                                                                    {
+                                                                                        "node": createNodeHandler(
+                                                                                            context,
+                                                                                            componentTypes,
+                                                                                            node => {
+                                                                                                targetNode = node
+                                                                                            },
+                                                                                            resolveRegistry,
+                                                                                        ),
+                                                                                    },
+                                                                                    () => {
+                                                                                        //
+                                                                                    },
+                                                                                    () => {
+                                                                                        const asserted = assertNotNull(targetNode)
+                                                                                        states.add(stateKey, {
+                                                                                            node: asserted,
+                                                                                        })
+                                                                                    },
+                                                                                ))
+                                                                            },
+                                                                            () => {
+                                                                                //
+                                                                            },
+                                                                        )),
+                                                                        onNotExists: () => {
+                                                                            //nothing to do, states already initialized
+                                                                        },
+                                                                    },
+                                                                    "default state": {
+                                                                        onExists: () => context.expectValue(context.expectSimpleValue((value, stringData) => {
+                                                                            defaultStateName = {
+                                                                                value: value,
+                                                                                range: stringData.range,
+                                                                            }
+                                                                        })),
+                                                                        onNotExists: beginData => {
+                                                                            defaultStateName = {
+                                                                                value: "yes",
+                                                                                range: beginData.start,
+                                                                            }
+                                                                        },
+                                                                    },
+                                                                },
+                                                                () => {
+                                                                    //
+                                                                },
+                                                                () => {
+
+                                                                    const assertedDefaultStateName = assertNotNull(defaultStateName)
+                                                                    targetPropertyType = ["state group", {
+                                                                        "states": states,
+
+                                                                        "default state": g.createReference(
+                                                                            assertedDefaultStateName.value,
+                                                                            states,
+                                                                            resolveRegistry,
+                                                                            () => {
+                                                                                context.raiseError(
+                                                                                    `state '${assertedDefaultStateName}' not found`,
+                                                                                    assertedDefaultStateName.range,
+                                                                                )
+                                                                            },
+                                                                        ),
+                                                                    }]
+                                                                },
+                                                            ))
+                                                        },
+                                                        "value": () => {
+                                                            let quoted: null | boolean = null
+                                                            let defaultValue: null | string = null
+                                                            return context.expectValue(
+                                                                context.expectType(
+                                                                    {
+                                                                        "quoted": {
+                                                                            onExists: () => context.expectValue(context.expectBoolean(value => {
+                                                                                quoted = value
+                                                                            })),
+                                                                            onNotExists: () => {
+                                                                                quoted = true
+                                                                            },
+                                                                        },
+                                                                        "default value": {
+                                                                            onExists: () => context.expectValue(context.expectSimpleValue(value => {
+                                                                                defaultValue = value
+                                                                            })),
+                                                                            onNotExists: () => {
+                                                                                defaultValue = ""
+                                                                            },
+                                                                        },
+                                                                    },
+                                                                    () => {
+                                                                        //
+                                                                    },
+                                                                    () => {
+                                                                        const assertedQuoted = assertNotNull(quoted)
+                                                                        const assertedDefaultValue = assertNotNull(defaultValue)
+                                                                        targetPropertyType = ["value", {
+                                                                            "quoted": assertedQuoted,
+                                                                            "default value": assertedDefaultValue,
+                                                                        }]
+                                                                    },
+                                                                ),
+                                                                () => {
+                                                                    targetPropertyType = ["value", {
+                                                                        "default value": "",
+                                                                        "quoted": true,
+                                                                    }]
+                                                                }
+                                                            )
+                                                        },
+                                                    },
+                                                    () => {
+                                                        //on unexpected option
+                                                        console.log("HIERO")
+                                                    },
+                                                    () => {
+                                                        //on missing option
+                                                        console.log("HIERO")
+                                                    }
+                                                ),
+                                                () => {
+                                                    console.log("HIERO")
+                                                }
+                                            ),
+                                            onNotExists: () => {
+                                                targetPropertyType = ["value", {
+                                                    "default value": "",
+                                                    "quoted": true,
+                                                }]
+                                            },
+                                        },
+                                    },
+                                    () => {
+                                        //
+                                    },
+                                    () => {
+                                        //HERE BE DRAGONS
+                                        const asserted = assertNotNull(targetPropertyType)
+                                        properties.add(key, {
+                                            type: asserted,
+                                        })
+                                    }
+                                )
+                                )
+                            },
+                            _endRange => {
+                                //registerSnippetGenerators(endRange, "properties end")
+                            },
+                        ),
+                        ),
+                        onNotExists: () => {
+                            //nothing to do, properties dictionary already initialized
+                        },
+                    },
+                },
+                () => {
+                    //
+                },
+                () => {
+                    callback({ properties: properties })
+                }
+            )
+            )
+        },
+        onNotExists: () => {
+            callback({
+                properties: new g.Dictionary({}),
+            })
+        },
     }
 }
 
-type StringAndStringData = {
-    value: string
-    data: bc.StringData
-}
-
-function deserializeMetaNode(
-    context: bc.ExpectContext,
-    componentTypes: g.IReadonlyDictionary<t.ComponentType>,
-    callback: (node: t.Node) => void, resolveRegistry: g.ResolveRegistry): bc.ValueHandler {
-    const properties = new g.Dictionary<t.Property>({})
-    return context.expectType(
-        _startRange => {
-            //
-        },
-        {
-            "properties": {
-                onExists: () => context.expectDictionary(
-                    _beginRange => {
-                        //registerSnippetGenerators(beginRange, "properties begin")
-                    },
-                    key => {
-                        let targetPropertyType: t.PropertyType | null = null
-                        return context.expectType(
-                            _startRange => {
-                                //
-                            },
-                            {
-                                "type": {
-                                    onExists: () => context.expectTaggedUnion(
-                                        {
-                                            "collection": () => {
-                                                let targetCollectionType: t.CollectionType | null = null
-                                                return context.expectType(
-                                                    _startRange => {
-                                                        //
-                                                    },
-                                                    {
-                                                        "type": {
-                                                            onExists: () => context.expectTaggedUnion(
-                                                                {
-                                                                    "dictionary": () => {
-                                                                        let targetHasInstances: t.DictionaryHasInstances | null = null
-                                                                        return context.expectType(
-                                                                            _startRange => {
-                                                                                //
-                                                                            },
-                                                                            {
-                                                                                "has instances": {
-                                                                                    onExists: () => context.expectTaggedUnion(
-                                                                                        {
-                                                                                            "yes": () => {
-                                                                                                let targetNode: t.Node | null = null
-                                                                                                let keyPropertyName: StringAndStringData | null = null
-
-                                                                                                return context.expectType(
-                                                                                                    _startRange => {
-                                                                                                        //
-                                                                                                    },
-                                                                                                    {
-                                                                                                        "node": {
-                                                                                                            onExists: () => deserializeMetaNode(
-                                                                                                                context,
-                                                                                                                componentTypes,
-                                                                                                                node => targetNode = node,
-                                                                                                                resolveRegistry,
-                                                                                                            ),
-                                                                                                            onNotExists: null,
-                                                                                                        },
-                                                                                                        "key property": {
-                                                                                                            onExists: () => context.expectSimpleValue((value, stringData) => {
-                                                                                                                keyPropertyName = {
-                                                                                                                    value: value,
-                                                                                                                    data: stringData,
-                                                                                                                }
-                                                                                                            }),
-                                                                                                            onNotExists: null,
-                                                                                                        },
-                                                                                                    },
-                                                                                                    () => {
-                                                                                                        callbackIfNotNull(targetNode, assertedTargetNode => {
-                                                                                                            callbackIfNotNull(keyPropertyName, assertedKeyPropertyName => {
-                                                                                                                targetHasInstances = ["yes", {
-                                                                                                                    "node": assertedTargetNode,
-                                                                                                                    "key property": g.createReference(
-                                                                                                                        assertedKeyPropertyName.value,
-                                                                                                                        assertedTargetNode.properties,
-                                                                                                                        resolveRegistry,
-                                                                                                                        () => {
-                                                                                                                            context.raiseError(
-                                                                                                                                `property '${assertedKeyPropertyName}' not found`,
-                                                                                                                                assertedKeyPropertyName.data.range,
-                                                                                                                            )
-                                                                                                                        },
-                                                                                                                    ),
-                                                                                                                }]
-                                                                                                            })
-                                                                                                        })
-                                                                                                    }
-                                                                                                )
-                                                                                            },
-                                                                                            "no": () => {
-                                                                                                targetHasInstances = ["no", {}]
-                                                                                                return context.expectType(
-                                                                                                    _startRange => {
-                                                                                                        //
-                                                                                                    },
-                                                                                                    {},
-                                                                                                    () => {
-                                                                                                        //
-                                                                                                    })
-                                                                                            },
-                                                                                        }
-                                                                                    ),
-                                                                                    onNotExists: null,
-                                                                                },
-                                                                            },
-                                                                            () => {
-                                                                                callbackIfNotNull(targetHasInstances, asserted => {
-                                                                                    targetCollectionType = ["dictionary", {
-                                                                                        "has instances": asserted,
-                                                                                    }]
-                                                                                })
-                                                                            }
-                                                                        )
-                                                                    },
-                                                                    "list": () => {
-                                                                        let targetHasInstances: t.ListHasInstances | null = null
-                                                                        return context.expectType(
-                                                                            _startRange => {
-                                                                                //
-                                                                            },
-                                                                            {
-                                                                                "has instances": {
-                                                                                    onExists: () => context.expectTaggedUnion({
-                                                                                        "yes": () => {
-                                                                                            let targetNode: t.Node | null = null
-                                                                                            return context.expectType(
-                                                                                                _startRange => {
-                                                                                                    //
-                                                                                                },
-                                                                                                {
-                                                                                                    "node": {
-                                                                                                        onExists: () => deserializeMetaNode(
-                                                                                                            context,
-                                                                                                            componentTypes,
-                                                                                                            node => targetNode = node, resolveRegistry),
-                                                                                                        onNotExists: null,
-                                                                                                    },
-                                                                                                },
-                                                                                                () => {
-                                                                                                    callbackIfNotNull(targetNode, asserted => {
-                                                                                                        targetHasInstances = ["yes", {
-                                                                                                            node: asserted,
-                                                                                                        }]
-                                                                                                    })
-                                                                                                },
-                                                                                            )
-                                                                                        },
-                                                                                        "no": () => {
-                                                                                            targetHasInstances = ["no", {}]
-                                                                                            return context.expectType(
-                                                                                                _startRange => {
-                                                                                                    //
-                                                                                                },
-                                                                                                {},
-                                                                                                () => {
-                                                                                                    //
-                                                                                                })
-                                                                                        },
-                                                                                    }),
-                                                                                    onNotExists: null,
-                                                                                },
-                                                                            },
-                                                                            () => {
-                                                                                callbackIfNotNull(targetHasInstances, asserted => {
-                                                                                    targetCollectionType = ["list", {
-                                                                                        "has instances": asserted,
-                                                                                    }]
-                                                                                })
-                                                                            },
-                                                                        )
-                                                                    },
-                                                                }
-                                                            ),
-                                                            onNotExists: null,
-                                                        },
-                                                    },
-                                                    () => {
-                                                        callbackIfNotNull(targetCollectionType, asserted => {
-                                                            targetPropertyType = ["collection", {
-                                                                "type": asserted,
-                                                            }]
-                                                        })
-                                                    },
-                                                )
-
-                                            },
-                                            "component": () => {
-                                                let targetComponentTypeName: StringAndStringData | null = null
-                                                return context.expectType(
-                                                    _startRange => {
-                                                        //
-                                                    },
-                                                    {
-                                                        "type": {
-                                                            onExists: () => context.expectSimpleValue((sourceComponentTypeName, metaData) => {
-                                                                targetComponentTypeName = {
-                                                                    value: sourceComponentTypeName,
-                                                                    data: metaData,
-                                                                }
-                                                            }),
-                                                            onNotExists: null,
-                                                        },
-                                                    },
-                                                    () => {
-                                                        callbackIfNotNull(targetComponentTypeName, assertedTargetComponentTypeName => {
-                                                            targetPropertyType = ["component", {
-                                                                "type": g.createReference(
-                                                                    assertedTargetComponentTypeName.value,
-                                                                    componentTypes,
-                                                                    resolveRegistry,
-                                                                    () => {
-                                                                        context.raiseError(
-                                                                            `component type '${assertedTargetComponentTypeName}' not found`,
-                                                                            assertedTargetComponentTypeName.data.range,
-                                                                        )
-                                                                    },
-                                                                ),
-                                                            }]
-                                                        })
-                                                    },
-                                                )
-                                            },
-                                            "state group": () => {
-                                                const states = new g.Dictionary<t.State>({})
-                                                let defaultStateName: null | StringAndStringData = null
-                                                return context.expectType(
-                                                    _startRange => {
-                                                        //
-                                                    },
-                                                    {
-                                                        "states": {
-                                                            onExists: () => context.expectDictionary(
-                                                                () => {
-                                                                    //
-                                                                },
-                                                                stateKey => {
-                                                                    let targetNode: t.Node | null = null
-                                                                    return context.expectType(
-                                                                        _startRange => {
-                                                                            //
-                                                                        },
-                                                                        {
-                                                                            "node": {
-                                                                                onExists: () => deserializeMetaNode(context, componentTypes, node => targetNode = node, resolveRegistry),
-                                                                                onNotExists: null,
-                                                                            },
-                                                                        },
-                                                                        () => {
-                                                                            callbackIfNotNull(targetNode, asserted => {
-                                                                                states.add(stateKey, {
-                                                                                    node: asserted,
-                                                                                })
-                                                                            })
-                                                                        },
-                                                                    )
-                                                                },
-                                                                () => {
-                                                                    //
-                                                                },
-                                                            ),
-                                                            onNotExists: null,
-                                                        },
-                                                        "default state": {
-                                                            onExists: () => context.expectSimpleValue((value, stringData) => {
-                                                                defaultStateName = {
-                                                                    value: value,
-                                                                    data: stringData,
-                                                                }
-                                                            }),
-                                                            onNotExists: null,
-                                                        },
-                                                    },
-                                                    () => {
-
-                                                        callbackIfNotNull(defaultStateName, assertedDefaultStateName => {
-                                                            targetPropertyType = ["state group", {
-                                                                "states": states,
-
-                                                                "default state": g.createReference(
-                                                                    assertedDefaultStateName.value,
-                                                                    states,
-                                                                    resolveRegistry,
-                                                                    () => {
-                                                                        context.raiseError(
-                                                                            `state '${assertedDefaultStateName}' not found`,
-                                                                            assertedDefaultStateName.data.range,
-                                                                        )
-                                                                    },
-                                                                ),
-                                                            }]
-                                                        })
-                                                    },
-                                                )
-                                            },
-                                            "value": () => {
-                                                let quoted: null | boolean = null
-                                                let defaultValue: null | string = null
-                                                return context.expectType(
-                                                    _startRange => {
-                                                        //
-                                                    },
-                                                    {
-                                                        "quoted": {
-                                                            onExists: () => context.expectBoolean(value => {
-                                                                quoted = value
-                                                            }),
-                                                            onNotExists: null,
-                                                        },
-                                                        "default value": {
-                                                            onExists: () => context.expectSimpleValue(value => {
-                                                                defaultValue = value
-                                                            }),
-                                                            onNotExists: null,
-                                                        },
-                                                    },
-                                                    () => {
-                                                        callbackIfNotNull(quoted, assertedQuoted => {
-                                                            callbackIfNotNull(defaultValue, assertedDefaultValue => {
-                                                                targetPropertyType = ["value", {
-                                                                    "quoted": assertedQuoted,
-                                                                    "default value": assertedDefaultValue,
-                                                                }]
-                                                            })
-                                                        })
-                                                    },
-                                                )
-                                            },
-                                        }
-                                    ),
-                                    onNotExists: null,
-                                },
-                            },
-                            () => {
-                                callbackIfNotNull(targetPropertyType, asserted => {
-                                    properties.add(key, {
-                                        type: asserted,
-                                    })
-                                })
-                            }
-                        )
-                    },
-                    _endRange => {
-                        //registerSnippetGenerators(endRange, "properties end")
-                    },
-                ),
-                onNotExists: null,
-            },
-        },
-        () => {
-            callback({ properties: properties })
-        }
-    )
-}
 
 export function createDeserializer(onError: (message: string, range: bc.Range) => void, callback: (metaData: null | t.Schema) => void): bc.OnObject {
     const componentTypes = new g.Dictionary<t.ComponentType>({})
@@ -404,74 +478,70 @@ export function createDeserializer(onError: (message: string, range: bc.Range) =
     const resolveRegistry = new g.ResolveRegistry()
 
     return context.createTypeHandler(
-        _startRange => {
-            //
-        },
         {
             "component types": {
-                onExists: () => context.expectDictionary(
-                    _beginRange => {
-                        //registerSnippetGenerators(beginRange, "component types begin")
-                    },
+                onExists: () => context.expectValue(context.expectDictionary(
                     key => {
                         let targetNode: t.Node | null = null
-                        const vh = deserializeMetaNode(context, componentTypes, node => targetNode = node, resolveRegistry)
-                        const castValueHandler = vh
-                        return context.expectType(
-                            _startRange => {
-                                //
-                            },
+                        return context.expectValue(context.expectType(
                             {
-                                "node": {
-                                    onExists: () => castValueHandler,
-                                    onNotExists: null,
-                                },
+                                "node": createNodeHandler(
+                                    context,
+                                    componentTypes,
+                                    node => {
+                                        targetNode = node
+                                    },
+                                    resolveRegistry
+                                ),
                             },
                             () => {
-                                callbackIfNotNull(targetNode, asserted => {
-                                    componentTypes.add(key, {
-                                        node: asserted,
-                                    })
+                                //
+                            },
+                            () => {
+                                const asserted = assertNotNull(targetNode)
+                                componentTypes.add(key, {
+                                    node: asserted,
                                 })
                             },
-                        )
+                        ))
                     },
                     _endRange => {
                         //registerSnippetGenerators(endRange, "component types end")
                     },
-                ),
-                onNotExists: null,
+                )),
+                onNotExists: () => {
+                    //noting to do, componentTypes dictionary already initialized
+                },
             },
             "root type": {
-                onExists: () => context.expectSimpleValue((sourceRootName, metaData) => {
+                onExists: () => context.expectValue(context.expectSimpleValue((sourceRootName, metaData) => {
                     rootName = sourceRootName
                     rootNameRange = metaData.range
-                }),
-                onNotExists: null,
+                })),
+                onNotExists: beginData => {
+                    rootName = "root"
+                    rootNameRange = beginData.start
+                },
             },
         },
         () => {
+            //
+        },
+        () => {
             let schema: t.Schema | null = null
-            callbackIfNotNull(
-                rootName,
-                assertedRootName => {
-                    callbackIfNotNull(
-                        rootNameRange,
-                        assertedRange => {
-                            schema = {
-                                "component types": componentTypes,
-                                "root type": g.createReference(
-                                    assertedRootName,
-                                    componentTypes,
-                                    resolveRegistry,
-                                    () => {
-                                        context.raiseError(`component type '${assertedRootName}' not found`, assertedRange)
-                                    }
-                                ),
-                            }
-                        })
-                }
-            )
+            const assertedRootName = assertNotNull(rootName)
+            const assertedRange = assertNotNull(rootNameRange)
+            schema = {
+                "component types": componentTypes,
+                "root type": g.createReference(
+                    assertedRootName,
+                    componentTypes,
+                    resolveRegistry,
+                    () => {
+                        context.raiseError(`component type '${assertedRootName}' not found`, assertedRange)
+                    }
+                ),
+            }
             const success = resolveRegistry.resolve()
             if (success) {
                 callback(schema)

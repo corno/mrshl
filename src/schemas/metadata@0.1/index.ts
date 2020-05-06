@@ -15,32 +15,40 @@ export function attachSchemaDeserializer(parser: bc.Parser, onError: (message: s
 
     parser.ondata.subscribe(bc.createStackedDataSubscriber(
         {
-            array: openData => {
-                onSchemaError("unexpected array as schema", openData.start)
-                return bc.createDummyArrayHandler()
-            },
-            object: createDeserializer(
-                (errorMessage, range) => {
-                    onSchemaError(errorMessage, range)
+
+
+            valueHandler: {
+                array: openData => {
+                    onSchemaError("unexpected array as schema", openData.start)
+                    return bc.createDummyArrayHandler()
                 },
-                md => {
-                    metadata = md
-                }
-            ),
-            simpleValue: (_value, svData) => {
-                onSchemaError("unexpected simple value as schema", svData.range)
+                object: createDeserializer(
+                    (errorMessage, range) => {
+                        onSchemaError(errorMessage, range)
+                    },
+                    md => {
+                        metadata = md
+                    }
+                ),
+                simpleValue: (_value, svData) => {
+                    onSchemaError("unexpected simple value as schema", svData.range)
+                },
+                taggedUnion: tuData => {
+                    onSchemaError("unexpected typed union as schema", tuData.startRange)
+                    return {
+                        option: () => bc.createDummyRequiredValueHandler(),
+                        missingOption: () => {
+                            //
+                        },
+                    }
+                },
             },
-            taggedUnion: (_value, tuData) => {
-                onSchemaError("unexpected typed union as schema", tuData.startRange)
-                return bc.createDummyValueHandler()
+            onMissing: () => {
+                //
             },
         },
         error => {
-            if (error.context[0] === "range") {
-                onSchemaError(error.message, error.context[1])
-            } else {
-                onSchemaError(error.message, { start: error.context[1], end: error.context[1] })
-            }
+            onSchemaError(error.rangeLessMessage, error.range)
         },
         () => {
             if (metadata === null) {

@@ -11,7 +11,7 @@ import * as astn from "../src"
 
 const testsDir = "./test/tests"
 
-type Issue = [string, "warning" | "error", number, number, number, number]
+type Issue = [string, string, string, number, number, number, number]
 
 type Issues = Issue[]
 
@@ -46,8 +46,9 @@ describe("main", () => {
                     serializedDatasetPath,
                     diagnostic => {
                         actualIssues.push([
-                            diagnostic.message,
+                            diagnostic.source,
                             diagnostic.severity === astn.Severity.error ? "error" : "warning",
+                            diagnostic.message,
                             diagnostic.range.start.line,
                             diagnostic.range.start.column,
                             diagnostic.range.end.line,

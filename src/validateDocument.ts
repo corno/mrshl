@@ -10,6 +10,7 @@ export enum Severity {
 }
 
 type Diagnostic = {
+	source: string
 	severity: Severity
 	message: string
 	range: bc.Range
@@ -30,17 +31,19 @@ function validateDocumentAfterExternalSchemaResolution(
 		documentText,
 		dataset,
 		schemaReferenceResolver,
-		(errorMessage, range) => {
+		(source, errorMessage, range) => {
 			addDiagnostic(
 				diagnosticCallback,
+				source,
 				errorMessage,
 				Severity.error,
 				range,
 			)
 		},
-		(warningMessage, range) => {
+		(source, warningMessage, range) => {
 			addDiagnostic(
 				diagnosticCallback,
+				source,
 				warningMessage,
 				Severity.warning,
 				range
@@ -52,11 +55,13 @@ function validateDocumentAfterExternalSchemaResolution(
 
 function addDiagnostic(
 	callback: DiagnosticCallback,
+	source: string,
 	message: string,
 	severity: Severity,
 	range: bc.Range,
 ) {
 	callback({
+		source: source,
 		severity: severity,
 		message: message,
 		range: range,
@@ -64,6 +69,7 @@ function addDiagnostic(
 }
 
 function diagnosticsFailed(
+	source: string,
 	message: string,
 	documentText: string,
 	diagnosticCallback: DiagnosticCallback,
@@ -71,6 +77,7 @@ function diagnosticsFailed(
 	return new Promise<Dataset>((_resolve, reject) => {
 		addDiagnostic(
 			diagnosticCallback,
+			source,
 			message,
 			Severity.error,
 			{
@@ -128,7 +135,8 @@ export function validateDocument(
 			)
 		}).catch(message => {
 			return diagnosticsFailed(
-				`error in schema: ${message}`,
+				'schema error',
+				message,
 				documentText,
 				diagnosticCallback,
 			)
@@ -145,7 +153,8 @@ export function validateDocument(
 		} else {
 			//something else went wrong
 			return diagnosticsFailed(
-				`error while retrieving schema: ${err.message}`,
+				'schema retrieval',
+				err.message,
 				documentText,
 				diagnosticCallback,
 			)

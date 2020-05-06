@@ -1,6 +1,6 @@
 [
-    [ "expected '(' but found '{'", "warning", 30, 1, 30, 2],
-    [ "unexpected property: 'a'", "error", 31, 5, 31, 8],
-    [ "value 'C' must be unquoted", "error", 33, 10, 33, 13],
-    [ "expected ')' but found '}'", "warning", 34, 1, 34, 2]
+    [ "expect", "warning", "expected '(' but found '{'", 30, 1, 30, 2],
+    [ "expect", "error", "unexpected property: 'a'", 31, 5, 31, 8],
+    [ "deserializer", "error", "value 'C' must be unquoted", 33, 10, 33, 13],
+    [ "expect", "warning", "expected ')' but found '}'", 34, 1, 34, 2]
 ]

@@ -1,6 +1,6 @@
 [
-    [ "ignoring internal schema", "warning", 1, 1, 1, 1],
-    [ "expected '(' but found '{'", "warning", 18, 1, 18, 2],
-    [ "unexpected property: 'a'", "error", 19, 5, 19, 8],
-    [ "expected ')' but found '}'", "warning", 22, 1, 22, 2]
+    [ "structure", "warning", "ignoring internal schema", 1, 1, 1, 1],
+    [ "expect", "warning", "expected '(' but found '{'", 18, 1, 18, 2],
+    [ "expect", "error", "unexpected property: 'a'", 19, 5, 19, 8],
+    [ "expect", "warning", "expected ')' but found '}'", 22, 1, 22, 2]
 ]

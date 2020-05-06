@@ -45,33 +45,40 @@ export function createSchemaDeserializer(onError: (message: string, range: bc.Ra
     //attach the schema schema deserializer
     schemaParser.onschemadata.subscribe(bc.createStackedDataSubscriber(
         {
-            array: openData => {
-                onSchemaError("unexpected array as schema schema", openData.start)
-                return bc.createDummyArrayHandler()
+
+            valueHandler: {
+                array: openData => {
+                    onSchemaError("unexpected array as schema schema", openData.start)
+                    return bc.createDummyArrayHandler()
+                },
+                object: openData => {
+                    onSchemaError("unexpected object as schema schema", openData.start)
+                    return bc.createDummyObjectHandler()
+                },
+                simpleValue: (schemaSchemaReference, svData) => {
+                    const schemaSchema = schemaSchemas[schemaSchemaReference]
+                    if (schemaSchema === undefined) {
+                        onSchemaError(`unknown schema schema ${schemaSchemaReference}, (options: ${Object.keys(schemaSchemas)})`, svData.range)
+                    } else {
+                        schemaProcessor = schemaSchema
+                    }
+                },
+                taggedUnion: tuData => {
+                    onSchemaError("unexpected typed union as schema schema", tuData.startRange)
+                    return {
+                        option: () => bc.createDummyRequiredValueHandler(),
+                        missingOption: () => {
+                            //
+                        },
+                    }
+                },
             },
-            object: openData => {
-                onSchemaError("unexpected object as schema schema", openData.start)
-                return bc.createDummyObjectHandler()
-            },
-            simpleValue: (schemaSchemaReference, svData) => {
-                const schemaSchema = schemaSchemas[schemaSchemaReference]
-                if (schemaSchema === undefined) {
-                    onSchemaError(`unknown schema schema ${schemaSchemaReference}, (options: ${Object.keys(schemaSchemas)})`, svData.range)
-                } else {
-                    schemaProcessor = schemaSchema
-                }
-            },
-            taggedUnion: (_value, tuData) => {
-                onSchemaError("unexpected typed union as schema schema", tuData.startRange)
-                return bc.createDummyValueHandler()
+            onMissing: () => {
+                //
             },
         },
         error => {
-            if (error.context[0] === "range") {
-                onSchemaError(error.message, error.context[1])
-            } else {
-                onSchemaError(error.message, { start: error.context[1], end: error.context[1] })
-            }
+            onSchemaError(error.rangeLessMessage, error.range)
         },
         () => {
             //ignore end commends
@@ -89,7 +96,7 @@ export function createSchemaDeserializer(onError: (message: string, range: bc.Ra
                 onSchemaError(`missing schema schema definition`, range)
                 callback(null)
             } else {
-                if ( schemaProcessor === null) {
+                if (schemaProcessor === null) {
                     if (!foundError) {
                         throw new Error("UNEXPECTED: SCHEMA PROCESSOR NOT SUBSCRIBED AND NO ERRORS")
                     }
