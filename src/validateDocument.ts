@@ -4,14 +4,14 @@ import { Dataset } from "./datasetAPI"
 import { SideEffectsAPI, createFromURLSchemaDeserializer, deserializeDataset, deserializeSchemaFromString } from "./deserialize"
 import * as bc from "bass-clarinet-typed"
 
-export enum Severity {
+export enum DiagnosticSeverity {
 	warning,
 	error
 }
 
 type Diagnostic = {
 	source: string
-	severity: Severity
+	severity: DiagnosticSeverity
 	message: string
 	range: bc.Range
 }
@@ -36,7 +36,7 @@ function validateDocumentAfterExternalSchemaResolution(
 				diagnosticCallback,
 				source,
 				errorMessage,
-				Severity.error,
+				DiagnosticSeverity.error,
 				range,
 			)
 		},
@@ -45,7 +45,7 @@ function validateDocumentAfterExternalSchemaResolution(
 				diagnosticCallback,
 				source,
 				warningMessage,
-				Severity.warning,
+				DiagnosticSeverity.warning,
 				range
 			)
 		},
@@ -57,7 +57,7 @@ function addDiagnostic(
 	callback: DiagnosticCallback,
 	source: string,
 	message: string,
-	severity: Severity,
+	severity: DiagnosticSeverity,
 	range: bc.Range,
 ) {
 	callback({
@@ -79,7 +79,7 @@ function diagnosticsFailed(
 			diagnosticCallback,
 			source,
 			message,
-			Severity.error,
+			DiagnosticSeverity.error,
 			{
 				start: {
 					position: 0,

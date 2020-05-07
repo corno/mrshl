@@ -16,7 +16,6 @@ function assertNotNull<T>(value: T | null) {
         return value
     }
     const err = new Error("unexpected null")
-    console.log(err.stack)
     throw err
 }
 
@@ -396,15 +395,13 @@ function createNodeHandler(
                                                     },
                                                     () => {
                                                         //on unexpected option
-                                                        console.log("HIERO")
                                                     },
                                                     () => {
                                                         //on missing option
-                                                        console.log("HIERO")
                                                     }
                                                 ),
                                                 () => {
-                                                    console.log("HIERO")
+                                                    //
                                                 }
                                             ),
                                             onNotExists: () => {

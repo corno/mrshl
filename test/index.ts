@@ -47,7 +47,7 @@ describe("main", () => {
                     diagnostic => {
                         actualIssues.push([
                             diagnostic.source,
-                            diagnostic.severity === astn.Severity.error ? "error" : "warning",
+                            diagnostic.severity === astn.DiagnosticSeverity.error ? "error" : "warning",
                             diagnostic.message,
                             diagnostic.range.start.line,
                             diagnostic.range.start.column,
