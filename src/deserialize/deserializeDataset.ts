@@ -17,10 +17,10 @@ function createNoOperationPropertyHandler(
 function createNoOperationValueHandler(): bc.ValueHandler {
     return {
         array: openData => {
-            return createNoOperationArrayHandler(openData.start)
+            return createNoOperationArrayHandler(openData.range)
         },
         object: openData => {
-            return createNoOperationObjectHandler(openData.start)
+            return createNoOperationObjectHandler(openData.range)
         },
         simpleValue: (_value, _stringData) => {
             //registerSnippetGenerators.register(stringData.range, null, null)
@@ -146,8 +146,8 @@ export function deserializeDataset(
             const context = new bc.ExpectContext(
                 (message, range) => onError("expect", message, range),
                 (message, range) => onWarning("expect", message, range),
-                openData => createNoOperationArrayHandler(openData.start),
-                openData => createNoOperationObjectHandler(openData.start),
+                openData => createNoOperationArrayHandler(openData.range),
+                openData => createNoOperationObjectHandler(openData.range),
                 (key, _propertyData, preData) => createNoOperationPropertyHandler(key, preData),
                 () => createNoOperationValueHandler(),
                 bc.Severity.warning,
@@ -228,7 +228,7 @@ export function deserializeDataset(
 
                 valueHandler: {
                     array: openData => {
-                        onSchemaError("unexpected array as schema", openData.start)
+                        onSchemaError("unexpected array as schema", openData.range)
                         return bc.createDummyArrayHandler()
                     },
                     object: md.createMetaDataDeserializer(
@@ -254,7 +254,7 @@ export function deserializeDataset(
                             })
                     },
                     taggedUnion: tuData => {
-                        onSchemaError("unexpected typed union as schema", tuData.startRange)
+                        onSchemaError("unexpected typed union as schema", tuData.range)
                         return {
                             option: () => bc.createDummyRequiredValueHandler(),
                             missingOption: () => {

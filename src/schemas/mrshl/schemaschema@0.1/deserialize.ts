@@ -16,7 +16,6 @@ function assertNotNull<T>(value: T | null): T {
         return value
     }
     const err = new Error("unexpected null value")
-    console.log(err.stack)
     throw err
 }
 
@@ -76,7 +75,7 @@ function createExpectedNodeHandler(
                                                                                             onNotExists: beginData => {
                                                                                                 targetKeyProperty = {
                                                                                                     value: "name",
-                                                                                                    range: beginData.start,
+                                                                                                    range: beginData.range,
                                                                                                 }
                                                                                             },
                                                                                         },
@@ -150,7 +149,7 @@ function createExpectedNodeHandler(
                                                                     onNotExists: beginData => {
                                                                         targetComponentTypeName = {
                                                                             value: "",
-                                                                            range: beginData.start,
+                                                                            range: beginData.range,
                                                                         }
                                                                     },
                                                                 },
@@ -222,7 +221,7 @@ function createExpectedNodeHandler(
                                                                     onNotExists: beginData => {
                                                                         targetDefaultState = {
                                                                             value: "yes",
-                                                                            range: beginData.start,
+                                                                            range: beginData.range,
                                                                         }
                                                                     },
                                                                 },
@@ -415,7 +414,7 @@ export function createDeserializer(onError: (message: string, range: bc.Range) =
                 onNotExists: beginData => {
                     rootName = {
                         value: "root",
-                        range: beginData.start,
+                        range: beginData.range,
                     }
                 },
             },

@@ -84,7 +84,7 @@ function createNodeHandler(
                                                                                                                         onNotExists: beginData => {
                                                                                                                             keyPropertyName = {
                                                                                                                                 value: "name",
-                                                                                                                                range: beginData.start,
+                                                                                                                                range: beginData.range,
                                                                                                                             }
 
                                                                                                                         },
@@ -245,7 +245,7 @@ function createNodeHandler(
                                                                         onNotExists: beginData => {
                                                                             targetComponentTypeName = {
                                                                                 value: "",
-                                                                                range: beginData.start,
+                                                                                range: beginData.range,
                                                                             }
                                                                         },
                                                                     },
@@ -320,7 +320,7 @@ function createNodeHandler(
                                                                         onNotExists: beginData => {
                                                                             defaultStateName = {
                                                                                 value: "yes",
-                                                                                range: beginData.start,
+                                                                                range: beginData.range,
                                                                             }
                                                                         },
                                                                     },
@@ -517,7 +517,7 @@ export function createDeserializer(onError: (message: string, range: bc.Range) =
                 })),
                 onNotExists: beginData => {
                     rootName = "root"
-                    rootNameRange = beginData.start
+                    rootNameRange = beginData.range
                 },
             },
         },

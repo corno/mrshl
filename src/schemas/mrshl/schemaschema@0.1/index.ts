@@ -18,7 +18,7 @@ export function attachSchemaDeserializer(parser: bc.Parser, onError: (message: s
         {
             valueHandler: {
                 array: openData => {
-                    onSchemaError("unexpected array as schema", openData.start)
+                    onSchemaError("unexpected array as schema", openData.range)
                     return bc.createDummyArrayHandler()
                 },
                 object: createDeserializer(
@@ -33,7 +33,7 @@ export function attachSchemaDeserializer(parser: bc.Parser, onError: (message: s
                     onSchemaError("unexpected string as schema", svData.range)
                 },
                 taggedUnion: tuData => {
-                    onSchemaError("unexpected typed union as schema", tuData.startRange)
+                    onSchemaError("unexpected typed union as schema", tuData.range)
                     return {
                         option: () => bc.createDummyRequiredValueHandler(),
                         missingOption: () => {

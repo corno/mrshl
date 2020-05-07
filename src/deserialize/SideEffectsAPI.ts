@@ -44,15 +44,15 @@ export interface SideEffectsAPI {
     onState(): void
     onState(
         stateName: string,
-        tuData: bc.TaggedUnionData,
+        tuData: bc.SimpleMetaData,
         beginPreData: bc.PreData,
         optionPreData: bc.PreData
     ): void
     onUnexpectedState(
         stateName: string,
-        tuData: bc.TaggedUnionData,
+        tuData: bc.SimpleMetaData,
         beginPreData: bc.PreData,
-        optionData: bc.OptionData,
+        optionData: bc.SimpleMetaData,
         optionPreData: bc.PreData,
         stateGroupDefinition: md.StateGroup
     ): void

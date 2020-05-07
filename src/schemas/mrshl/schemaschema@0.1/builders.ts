@@ -118,7 +118,6 @@ export class NodeBuilder implements builders.NodeBuilder {
                             break
                         }
                         case "list": {
-                            console.log("!SDFSSDFSFSFSSFSDS")
                             this.lists[pKey] = new ListBuilder($, $.type[1])
                             break
                         }

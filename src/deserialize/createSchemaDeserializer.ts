@@ -32,11 +32,11 @@ export function createSchemaDeserializer(onError: (message: string, range: bc.Ra
         {
             valueHandler: {
                 array: openData => {
-                    onSchemaError("unexpected array as schema schema", openData.start)
+                    onSchemaError("unexpected array as schema schema", openData.range)
                     return bc.createDummyArrayHandler()
                 },
                 object: openData => {
-                    onSchemaError("unexpected object as schema schema", openData.start)
+                    onSchemaError("unexpected object as schema schema", openData.range)
                     return bc.createDummyObjectHandler()
                 },
                 simpleValue: (schemaSchemaReference, svData) => {
@@ -60,7 +60,7 @@ export function createSchemaDeserializer(onError: (message: string, range: bc.Ra
                     }
                 },
                 taggedUnion: tuData => {
-                    onSchemaError("unexpected typed union as schema schema", tuData.startRange)
+                    onSchemaError("unexpected typed union as schema schema", tuData.range)
                     return {
                         option: () => bc.createDummyRequiredValueHandler(),
                         missingOption: () => {

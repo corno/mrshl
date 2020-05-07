@@ -372,7 +372,7 @@ function createNodeDeserializer(
                         propDefinition,
                         propKey,
                         nodeBuilder,
-                        beginData.start,
+                        beginData.range,
                         onError,
                     )
                 },
@@ -382,7 +382,7 @@ function createNodeDeserializer(
             expectedProperties,
             openData => {
                 sideEffectsAPI.onTypeOpen(
-                    openData.start,
+                    openData.range,
                     nodeDefinition,
                     keyPropertyDefinition,
                     nodeBuilder,

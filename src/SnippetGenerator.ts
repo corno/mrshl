@@ -202,9 +202,9 @@ export class SnippetGenerator implements SideEffectsAPI {
     }
     onUnexpectedState(
         _stateName: string,
-        _tuData: bc.TaggedUnionData,
+        _tuData: bc.SimpleMetaData,
         _beginPreData: bc.PreData,
-        optionData: bc.OptionData,
+        optionData: bc.SimpleMetaData,
         _optionPreData: bc.PreData,
         stateGroupDefinition: md.StateGroup
     ) {
