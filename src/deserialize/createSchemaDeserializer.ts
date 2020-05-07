@@ -1,25 +1,10 @@
 import * as bc from "bass-clarinet"
-import * as fs from "fs"
 import * as path from "path"
 import * as ds from "../datasetAPI"
 
 type AttachSchemaDeserializer = (parser: bc.Parser, onError: (message: string, range: bc.Range) => void, callback: (schema: ds.Dataset | null) => void) => void
 
-const schemaSchemas: { [key: string]: AttachSchemaDeserializer } = {}
-
 const schemasDir = path.join(__dirname, "/../schemas")
-fs.readdirSync(schemasDir, { encoding: "utf-8" }).forEach(dir => {
-    const attachFunc = require(path.join(schemasDir, dir)).attachSchemaDeserializer
-    if (attachFunc === undefined) {
-        console.error(`skipping schema '${dir}, no attachSchemaDeserializer function`)
-        return
-    }
-    if (typeof attachFunc !== "function") {
-        console.error(`skipping schema '${dir}, no attachSchemaDeserializer function`)
-        return
-    }
-    schemaSchemas[dir] = attachFunc
-})
 
 export function createSchemaDeserializer(onError: (message: string, range: bc.Range) => void, callback: (schema: ds.Dataset | null) => void): bc.Tokenizer {
     let foundError = false
@@ -45,7 +30,6 @@ export function createSchemaDeserializer(onError: (message: string, range: bc.Ra
     //attach the schema schema deserializer
     schemaParser.onschemadata.subscribe(bc.createStackedDataSubscriber(
         {
-
             valueHandler: {
                 array: openData => {
                     onSchemaError("unexpected array as schema schema", openData.start)
@@ -56,9 +40,21 @@ export function createSchemaDeserializer(onError: (message: string, range: bc.Ra
                     return bc.createDummyObjectHandler()
                 },
                 simpleValue: (schemaSchemaReference, svData) => {
-                    const schemaSchema = schemaSchemas[schemaSchemaReference]
-                    if (schemaSchema === undefined) {
-                        onSchemaError(`unknown schema schema ${schemaSchemaReference}, (options: ${Object.keys(schemaSchemas)})`, svData.range)
+                    function x(dir: string) {
+                        const attachFunc = require(path.join(schemasDir, dir)).attachSchemaDeserializer
+                        if (attachFunc === undefined) {
+                            console.error(`skipping schema '${dir}, no attachSchemaDeserializer function`)
+                            return null
+                        }
+                        if (typeof attachFunc !== "function") {
+                            console.error(`skipping schema '${dir}, no attachSchemaDeserializer function`)
+                            return null
+                        }
+                        return attachFunc
+                    }
+                    const schemaSchema = x(schemaSchemaReference)
+                    if (schemaSchema === null) {
+                        onSchemaError(`unknown schema schema ${schemaSchemaReference}`, svData.range)
                     } else {
                         schemaProcessor = schemaSchema
                     }

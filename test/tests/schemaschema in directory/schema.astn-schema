@@ -1,190 +1,128 @@
-! "schemaschema@0.1" (
-	'component types': {
-		'node': (
-			'node': (
-				'properties': {
-					'properties': (
-						'type': | 'collection' (
-							'node': (
-								'properties': {
-									'name': (
-										'type': | 'value' (
-											'default value': ''
-											'type': | 'text' (
-											)
-										)
-									)
-									'type': (
-										'type': | 'state group' (
-											'default state': 'value'
-											'states': {
-												'collection': (
-													'node': (
-														'properties': {
-															'node': (
-																'type': | 'component' (
-																	'type': 'node'
-																)
-															)
-															'type': (
-																'type': | 'state group' (
-																	'default state': 'dictionary'
-																	'states': {
-																		'dictionary': (
-																			'node': (
-																				'properties': {
-																					'key property': (
-																						'type': | 'value' (
-																							'default value': 'name'
-																							'type': | 'text' (
-																							)
-																						)
-																					)
-																				}
-																			)
-																		)
-																		'list': (
-																			'node': (
-																				'properties': {
-																				}
-																			)
-																		)
-																	}
-																)
-															)
-														}
-													)
-												)
-												'component': (
-													'node': (
-														'properties': {
-															'type': (
-																'type': | 'value' (
-																	'default value': ''
-																	'type': | 'text' (
-																	)
-																)
-															)
-														}
-													)
-												)
-												'state group': (
-													'node': (
-														'properties': {
-															'default state': (
-																'type': | 'value' (
-																	'default value': ''
-																	'type': | 'text' (
-																	)
-																)
-															)
-															'states': (
-																'type': | 'collection' (
-																	'node': (
-																		'properties': {
-																			'name': (
-																				'type': | 'value' (
-																					'default value': ''
-																					'type': | 'text' (
-																					)
-																				)
-																			)
-																			'node': (
-																				'type': | 'component' (
-																					'type': 'node'
-																				)
-																			)
-																		}
-																	)
-																	'type': | 'dictionary' (
-																		'key property': 'name'
-																	)
-																)
-															)
-														}
-													)
-												)
-												'value': (
-													'node': (
-														'properties': {
-															'default value': (
-																'type': | 'value' (
-																	'default value': ''
-																	'type': | 'text' (
-																	)
-																)
-															)
-															'type': (
-																'type': | 'state group' (
-																	'default state': 'text'
-																	'states': {
-																		'number': (
-																			'node': (
-																				'properties': {
-																				}
-																			)
-																		)
-																		'text': (
-																			'node': (
-																				'properties': {
-																				}
-																			)
-																		)
-																	}
-																)
-															)
-														}
-													)
-												)
-											}
-										)
-									)
-								}
-							)
-							'type': | 'dictionary' (
-								'key property': 'name'
-							)
-						)
-					)
-				}
-			)
-		)
-		'root': (
-			'node': (
-				'properties': {
-					'component types': (
-						'type': | 'collection' (
-							'node': (
-								'properties': {
-									'name': (
-										'type': | 'value' (
-											'default value': ''
-											'type': | 'text' (
-											)
-										)
-									)
-									'node': (
-										'type': | 'component' (
-											'type': 'node'
-										)
-									)
-								}
-							)
-							'type': | 'dictionary' (
-								'key property': 'name'
-							)
-						)
-					)
-					'root type': (
-						'type': | 'value' (
-							'default value': 'root'
-							'type': | 'text' (
-							)
-						)
-					)
-				}
-			)
-		)
-	}
-	'root type': 'root'
+! "mrshl/schemaschema@0.1" (
+    'component types': {
+        'node': (
+            'node': (
+                'properties': {
+                    'properties': (
+                        'type': | 'collection' (
+                            'node': (
+                                'properties': {
+                                    'name': ( )
+                                    'type': (
+                                        'type': | 'state group' (
+                                            'states': {
+                                                'collection': (
+                                                    'node': (
+                                                        'properties': {
+                                                            'node': (
+                                                                'type': | 'component' (
+                                                                    'type': 'node'
+                                                                )
+                                                            )
+                                                            'type': (
+                                                                'type': | 'state group' (
+                                                                    'states': {
+                                                                        'dictionary': (
+                                                                            'node': (
+                                                                                'properties': {
+                                                                                    'key property': (
+                                                                                        'type': | 'value' (
+                                                                                            'default value': 'name'
+                                                                                        )
+                                                                                    )
+                                                                                }
+                                                                            )
+                                                                        )
+                                                                        'list': ( )
+                                                                    }
+                                                                    'default state': 'list'
+                                                                )
+                                                            )
+                                                        }
+                                                    )
+                                                )
+                                                'component': (
+                                                    'node': (
+                                                        'properties': {
+                                                            'type': ( )
+                                                        }
+                                                    )
+                                                )
+                                                'state group': (
+                                                    'node': (
+                                                        'properties': {
+                                                            'states': (
+                                                                'type': | 'collection' (
+                                                                    'node': (
+                                                                        'properties': {
+                                                                            'name': ( )
+                                                                            'node': (
+                                                                                'type': | 'component' (
+                                                                                    'type': 'node'
+                                                                                )
+                                                                            )
+                                                                        }
+                                                                    )
+                                                                    'type': | 'dictionary' ( )
+                                                                )
+                                                            )
+                                                            'default state': ( )
+                                                        }
+                                                    )
+                                                )
+                                                'value': (
+                                                    'node': (
+                                                        'properties': {
+                                                            'default value': ( )
+                                                            'type': (
+                                                                'type': | 'state group' (
+                                                                    'states': {
+                                                                        'number': ( )
+                                                                        'text': ( )
+                                                                    }
+                                                                    'default state': 'text'
+                                                                )
+                                                            )
+                                                        }
+                                                    )
+                                                )
+                                            }
+                                            'default state': 'value'
+                                        )
+                                    )
+                                }
+                            )
+                            'type': | 'dictionary' ( )
+                        )
+                    )
+                }
+            )
+        )
+        'root': (
+            'node': (
+                'properties': {
+                    'component types': (
+                        'type': | 'collection' (
+                            'node': (
+                                'properties': {
+                                    'name': ( )
+                                    'node': (
+                                        'type': | 'component' (
+                                            'type': 'node'
+                                        )
+                                    )
+                                }
+                            )
+                            'type': | 'dictionary' ( )
+                        )
+                    )
+                    'root type': (
+                        'type': | 'value' (
+                            'default value': 'root'
+                        )
+                    )
+                }
+            )
+        )
+    }
 )

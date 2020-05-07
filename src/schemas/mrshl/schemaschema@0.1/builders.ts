@@ -1,6 +1,6 @@
-import * as builders from "../../datasetAPI"
+import * as builders from "../../../datasetAPI"
 import * as types from "./types"
-import * as md from "../../metaDataSchema"
+import * as md from "../../../metaDataSchema"
 import { RawObject } from "./generics"
 
 /* eslint
@@ -118,6 +118,7 @@ export class NodeBuilder implements builders.NodeBuilder {
                             break
                         }
                         case "list": {
+                            console.log("!SDFSSDFSFSFSSFSDS")
                             this.lists[pKey] = new ListBuilder($, $.type[1])
                             break
                         }

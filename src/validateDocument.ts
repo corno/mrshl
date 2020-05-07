@@ -142,6 +142,14 @@ export function validateDocument(
 			)
 		})
 	}).catch(err => {
+		if (err === undefined) {
+			return diagnosticsFailed(
+				'schema retrieval',
+				"unknown error",
+				documentText,
+				diagnosticCallback,
+			)
+		}
 		if (err.code === "ENOENT") {
 			//there is no schema file
 			return validateDocumentAfterExternalSchemaResolution(

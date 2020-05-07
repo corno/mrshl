@@ -1,6 +1,8 @@
-! "mrshl/dummy-schema"
+! "mrshl/schemaschema@0.1"
 {
+    "component types" : (
+
+    )
     "a": "B"
     "b": "X"
-    "c": "C"
 }

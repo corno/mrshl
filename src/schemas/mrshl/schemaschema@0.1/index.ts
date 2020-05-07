@@ -1,10 +1,10 @@
 import * as bc from "bass-clarinet"
-import * as internal from "../../metaDataSchema"
+import * as internal from "../../../metaDataSchema"
 import * as b from "./builders"
 import { createDeserializer } from "./deserialize"
 import * as g from "./generics"
 import { Schema, Node, Property } from "./types"
-import * as ds from "../../datasetAPI"
+import * as ds from "../../../datasetAPI"
 
 export function attachSchemaDeserializer(parser: bc.Parser, onError: (message: string, range: bc.Range) => void, callback: (schema: ds.Dataset | null) => void) {
     let foundError = false

@@ -10,7 +10,7 @@ function assertUnreachable<RT>(_x: never): RT {
 
 export type RegisterSnippet = (range: bc.Range, intraSnippetGenerator: GenerateSnippets | null, snippetAfterGenerator: GenerateSnippets | null) => void
 
-function createPropertySnippet(prop: md.Property, propName: string, nodeBuilder: ds.NodeBuilder): fp.InlinePart {
+function createPropertySnippet(prop: md.Property): fp.InlinePart {
     switch (prop.type[0]) {
         case "collection": {
             const $ = prop.type[1]
@@ -28,11 +28,14 @@ function createPropertySnippet(prop: md.Property, propName: string, nodeBuilder:
         case "component": {
             const $ = prop.type[1]
 
-            return createNodeSnippet($.type.get().node, null, nodeBuilder.getComponent(propName).node)
+            return createNodeSnippet($.type.get().node, null)
         }
         case "state group": {
-            //const $ = prop.type[1]
-            return `| '' ()`
+            const $ = prop.type[1]
+            return [
+                `| '${$["default state"].getName()}' `,
+                createNodeSnippet($["default state"].get().node, null),
+            ]
         }
         case "value": {
             //const $ = prop.type[1]
@@ -43,7 +46,7 @@ function createPropertySnippet(prop: md.Property, propName: string, nodeBuilder:
     }
 }
 
-function createPropertiesSnippet(node: md.Node, keyProperty: md.Property | null, nodeBuilder: ds.NodeBuilder): fp.IParagraph {
+function createPropertiesSnippet(node: md.Node, keyProperty: md.Property | null): fp.IParagraph {
     const x: fp.ParagraphPart[] = []
     node.properties.map((prop, propKey) => {
         if (prop === keyProperty) {
@@ -51,17 +54,17 @@ function createPropertiesSnippet(node: md.Node, keyProperty: md.Property | null,
         }
         x.push(fp.line([
             `'${propKey}': `,
-            createPropertySnippet(prop, propKey, nodeBuilder),
+            createPropertySnippet(prop),
         ]))
     })
     return x
 }
 
-function createNodeSnippet(node: md.Node, keyProperty: md.Property | null, nodeBuilder: ds.NodeBuilder): fp.InlinePart {
+function createNodeSnippet(node: md.Node, keyProperty: md.Property | null): fp.InlinePart {
     return [
         '(',
         () => {
-            return createPropertiesSnippet(node, keyProperty, nodeBuilder)
+            return createPropertiesSnippet(node, keyProperty)
         },
         ')',
     ]
@@ -90,7 +93,6 @@ export class SnippetGenerator implements SideEffectsAPI {
         entryData: bc.PropertyData,
         nodeDefinition: md.Node,
         keyPropertyDefinition: md.Property,
-        entry: ds.DictionaryEntry,
     ) {
         this.registerSnippet(
             entryData.keyRange,
@@ -98,7 +100,7 @@ export class SnippetGenerator implements SideEffectsAPI {
             () => {
                 const out: string[] = []
                 fp.serialize(
-                    [createNodeSnippet(nodeDefinition, keyPropertyDefinition, entry.node)], "    ", true, snippet => {
+                    [createNodeSnippet(nodeDefinition, keyPropertyDefinition)], "    ", true, snippet => {
                         out.push(snippet)
                     })
                 return [out.map((line, index) => {
@@ -126,9 +128,9 @@ export class SnippetGenerator implements SideEffectsAPI {
     }
     onProperty(
         propertyData: bc.PropertyData,
-        propKey: string,
+        _propKey: string,
         propDefinition: md.Property,
-        nodeBuilder: ds.NodeBuilder,
+        _nodeBuilder: ds.NodeBuilder,
     ) {
         this.registerSnippet(
             propertyData.keyRange,
@@ -136,7 +138,7 @@ export class SnippetGenerator implements SideEffectsAPI {
             () => {
                 const out: string[] = []
                 fp.serialize(
-                    [createPropertySnippet(propDefinition, propKey, nodeBuilder)], "    ", true, snippet => {
+                    [createPropertySnippet(propDefinition)], "    ", true, snippet => {
                         out.push(snippet)
                     })
                 return [out.map((line, index) => {
@@ -162,7 +164,7 @@ export class SnippetGenerator implements SideEffectsAPI {
     onState() {
         //
     }
-    onTypeOpen(range: bc.Range, nodeDefinition: md.Node, keyPropertyDefinition: md.Property | null, nodeBuilder: ds.NodeBuilder) {
+    onTypeOpen(range: bc.Range, nodeDefinition: md.Node, keyPropertyDefinition: md.Property | null) {
         this.registerSnippet(
             range,
             null,
@@ -172,7 +174,7 @@ export class SnippetGenerator implements SideEffectsAPI {
                     [
                         '',
                         () => {
-                            return createPropertiesSnippet(nodeDefinition, keyPropertyDefinition, nodeBuilder)
+                            return createPropertiesSnippet(nodeDefinition, keyPropertyDefinition)
                         },
                         '',
                     ],
