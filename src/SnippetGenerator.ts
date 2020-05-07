@@ -38,8 +38,13 @@ function createPropertySnippet(prop: md.Property): fp.InlinePart {
             ]
         }
         case "value": {
-            //const $ = prop.type[1]
-            return `"${""}"`
+            const $ = prop.type[1]
+            if ($.quoted) {
+                return `"${$["default value"]}"`
+            } else {
+                return `${$["default value"]}`
+
+            }
         }
         default:
             return assertUnreachable(prop.type[0])
