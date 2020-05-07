@@ -116,7 +116,7 @@
 															)
 															'type': (
 																'type': | 'state group' (
-																	'default state': 'number'
+																	'default state': 'text'
 																	'states': {
 																		'number': (
 																			'node': (

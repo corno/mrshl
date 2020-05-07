@@ -4,23 +4,23 @@ import { SideEffectsAPI } from "./SideEffectsAPI"
 import { createDatasetDeserializer } from "./createDatasetDeserializer"
 import * as ds from "../datasetAPI"
 
-function createPropertyHandler(
+function createNoOperationPropertyHandler(
     _key: string,
     //propertyData: bc.PropertyData,
     _preData: bc.PreData,
     //registerSnippetGenerators: RegisterSnippetsGenerators,
 ): bc.ValueHandler {
     //registerSnippetGenerators.register(propertyData.keyRange, null, null)
-    return createValueHandler()
+    return createNoOperationValueHandler()
 }
 
-function createValueHandler(): bc.ValueHandler {
+function createNoOperationValueHandler(): bc.ValueHandler {
     return {
         array: openData => {
-            return createArrayHandler(openData.start)
+            return createNoOperationArrayHandler(openData.start)
         },
         object: openData => {
-            return createObjectHandler(openData.start)
+            return createNoOperationObjectHandler(openData.start)
         },
         simpleValue: (_value, _stringData) => {
             //registerSnippetGenerators.register(stringData.range, null, null)
@@ -29,7 +29,7 @@ function createValueHandler(): bc.ValueHandler {
             //registerSnippetGenerators.register(tuData.startRange, null, null)
             //registerSnippetGenerators.register(tuData.optionRange, null, null)
             return {
-                option: () => createRequiredValueHandler(),
+                option: () => createNoOperationRequiredValueHandler(),
                 missingOption: () => {
                     //
                 },
@@ -38,30 +38,30 @@ function createValueHandler(): bc.ValueHandler {
     }
 }
 
-function createRequiredValueHandler(): bc.RequiredValueHandler {
+function createNoOperationRequiredValueHandler(): bc.RequiredValueHandler {
     return {
         onMissing: () => {
             //
         },
-        valueHandler: createValueHandler(),
+        valueHandler: createNoOperationValueHandler(),
     }
 }
 
-function createArrayHandler(_beginRange: bc.Range): bc.ArrayHandler {
+function createNoOperationArrayHandler(_beginRange: bc.Range): bc.ArrayHandler {
     return {
-        element: () => createValueHandler(),
+        element: () => createNoOperationValueHandler(),
         end: _endData => {
             //registerSnippetGenerators.register(endData.range, null, null)
         },
     }
 }
 
-function createObjectHandler(_beginRange: bc.Range): bc.ObjectHandler {
+function createNoOperationObjectHandler(_beginRange: bc.Range): bc.ObjectHandler {
     //registerSnippetGenerators.register(beginRange, null, null)
     return {
         property: (_key, _keyData) => {
             //registerSnippetGenerators.register(keyData.keyRange, null, null)
-            return createRequiredValueHandler()
+            return createNoOperationRequiredValueHandler()
         },
         end: _endData => {
             //registerSnippetGenerators.register(endData.range, null, null)
@@ -146,10 +146,10 @@ export function deserializeDataset(
             const context = new bc.ExpectContext(
                 (message, range) => onError("expect", message, range),
                 (message, range) => onWarning("expect", message, range),
-                openData => createArrayHandler(openData.start),
-                openData => createObjectHandler(openData.start),
-                (key, _propertyData, preData) => createPropertyHandler(key, preData),
-                () => createValueHandler(),
+                openData => createNoOperationArrayHandler(openData.start),
+                openData => createNoOperationObjectHandler(openData.start),
+                (key, _propertyData, preData) => createNoOperationPropertyHandler(key, preData),
+                () => createNoOperationValueHandler(),
                 bc.Severity.warning,
                 bc.OnDuplicateEntry.ignore
             )

@@ -225,9 +225,10 @@ export class ValueBuilder implements builders.Value {
 
 export class StateGroupBuilder {
     private readonly definition: types.StateGroup
-    private currentState: null | StateBuilder = null
+    private currentState: StateBuilder
     constructor(definition: types.StateGroup) {
         this.definition = definition
+        this.currentState = new StateBuilder(definition["default state"].getName(), definition["default state"].get())
     }
     public setState(stateName: string) {
         const stateDef = this.definition.states.get(stateName)
@@ -242,9 +243,6 @@ export class StateGroupBuilder {
         //
     }
     public getCurrentState(): StateBuilder {
-        if (this.currentState === null) {
-            throw new Error("no current state")
-        }
         return this.currentState
     }
 }

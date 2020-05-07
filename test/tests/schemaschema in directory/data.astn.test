@@ -7,13 +7,7 @@
 						'type': | 'collection' (
 							'node': (
 								'properties': {
-									'name': (
-										'type': | 'value' (
-											'default value': ''
-											'type': | 'text' (
-											)
-										)
-									)
+									'name': ()
 									'type': (
 										'type': | 'state group' (
 											'default state': 'value'
@@ -36,18 +30,12 @@
 																					'key property': (
 																						'type': | 'value' (
 																							'default value': 'name'
-																							'type': | 'text' (
-																							)
 																						)
 																					)
 																				}
 																			)
 																		)
 																		'list': (
-																			'node': (
-																				'properties': {
-																				}
-																			)
 																		)
 																	}
 																)
@@ -58,46 +46,25 @@
 												'component': (
 													'node': (
 														'properties': {
-															'type': (
-																'type': | 'value' (
-																	'default value': ''
-																	'type': | 'text' (
-																	)
-																)
-															)
+															'type': ()
 														}
 													)
 												)
 												'state group': (
 													'node': (
 														'properties': {
-															'default state': (
-																'type': | 'value' (
-																	'default value': ''
-																	'type': | 'text' (
-																	)
-																)
-															)
+															'default state': ()
 															'states': (
 																'type': | 'collection' (
 																	'node': (
 																		'properties': {
-																			'name': (
-																				'type': | 'value' (
-																					'default value': ''
-																					'type': | 'text' (
-																					)
-																				)
-																			)
+																			'name': ()
 																			'node': (
 																				'type': | 'component' (
 																					'type': 'node'
 																				)
 																			)
 																		}
-																	)
-																	'type': | 'dictionary' (
-																		'key property': 'name'
 																	)
 																)
 															)
@@ -108,28 +75,13 @@
 													'node': (
 														'properties': {
 															'default value': (
-																'type': | 'value' (
-																	'default value': ''
-																	'type': | 'text' (
-																	)
-																)
 															)
 															'type': (
 																'type': | 'state group' (
 																	'default state': 'number'
 																	'states': {
-																		'number': (
-																			'node': (
-																				'properties': {
-																				}
-																			)
-																		)
-																		'text': (
-																			'node': (
-																				'properties': {
-																				}
-																			)
-																		)
+																		'number': ()
+																		'text': ()
 																	}
 																)
 															)
@@ -140,9 +92,6 @@
 										)
 									)
 								}
-							)
-							'type': | 'dictionary' (
-								'key property': 'name'
 							)
 						)
 					)
@@ -156,13 +105,7 @@
 						'type': | 'collection' (
 							'node': (
 								'properties': {
-									'name': (
-										'type': | 'value' (
-											'default value': ''
-											'type': | 'text' (
-											)
-										)
-									)
+									'name': ()
 									'node': (
 										'type': | 'component' (
 											'type': 'node'
@@ -170,21 +113,15 @@
 									)
 								}
 							)
-							'type': | 'dictionary' (
-								'key property': 'name'
-							)
 						)
 					)
 					'root type': (
 						'type': | 'value' (
 							'default value': 'root'
-							'type': | 'text' (
-							)
 						)
 					)
 				}
 			)
 		)
 	}
-	'root type': 'root'
 )
