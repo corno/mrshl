@@ -15,13 +15,22 @@ export class DictionaryBuilder implements builders.Dictionary {
     private readonly collectionDefinition: types.Collection
     private readonly dictionaryDefinition: types.Dictionary
     private readonly entries: DictionaryEntryBuilder[] = []
-
-    constructor(collectionDefinition: types.Collection, dictionaryDefinition: types.Dictionary) {
+    public readonly definition: md.Dictionary
+    constructor(
+        collectionDefinition: types.Collection,
+        dictionaryDefinition: types.Dictionary,
+        publicDefinition: md.Dictionary,
+    ) {
         this.collectionDefinition = collectionDefinition
         this.dictionaryDefinition = dictionaryDefinition
+        this.definition = publicDefinition
     }
     public createEntry() {
-        const de = new DictionaryEntryBuilder(this.collectionDefinition, this.dictionaryDefinition)
+        const de = new DictionaryEntryBuilder(
+            this.collectionDefinition,
+            this.dictionaryDefinition,
+            this.definition,
+        )
         this.entries.push(de)
         return de
     }
@@ -36,14 +45,24 @@ export class DictionaryBuilder implements builders.Dictionary {
 export class ListBuilder implements builders.ListBuilder {
     private readonly collectionDefinition: types.Collection
     private readonly listDefinition: types.List
+    public readonly definition: md.List
     private readonly entries: ListEntryBuilder[] = []
 
-    constructor(collectionDefinition: types.Collection, listDefinition: types.List) {
+    constructor(
+        collectionDefinition: types.Collection,
+        listDefinition: types.List,
+        publicDefinition: md.List,
+    ) {
         this.collectionDefinition = collectionDefinition
         this.listDefinition = listDefinition
+        this.definition = publicDefinition
     }
     public createEntry() {
-        const de = new ListEntryBuilder(this.collectionDefinition, this.listDefinition)
+        const de = new ListEntryBuilder(
+            this.collectionDefinition,
+            this.listDefinition,
+            this.definition,
+        )
         this.entries.push(de)
         return de
     }
@@ -55,9 +74,9 @@ export class ListBuilder implements builders.ListBuilder {
 export class ComponentBuilder implements builders.Component {
     //private readonly definition: types.Component
     public readonly node: NodeBuilder
-    constructor(definition: types.Component) {
+    constructor(privateDefinition: types.Component, publicDefinition: md.Component) {
         //this.definition = definition
-        this.node = new NodeBuilder(definition.type.get().node)
+        this.node = new NodeBuilder(privateDefinition.type.get().node, publicDefinition.type.get().node)
     }
     public setComments() {
         //
@@ -70,11 +89,18 @@ export class ListEntryBuilder implements builders.ListEntry {
     //private readonly onError: OnError
     public readonly node: NodeBuilder
 
-    constructor(collectionDefinition: types.Collection, _listDefinition: types.List) {
+    constructor(
+        collectionDefinition: types.Collection,
+        _listDefinition: types.List,
+        publicDefinition: md.List
+    ) {
         //this.collectionDefinition = collectionDefinition
         //this.listDefinition = listDefinition
         //this.onError = onError
-        this.node = new NodeBuilder(collectionDefinition.node)
+        if (publicDefinition["has instances"][0] !== "yes") {
+            throw new Error("Unexpected")
+        }
+        this.node = new NodeBuilder(collectionDefinition.node, publicDefinition["has instances"][1].node)
     }
     public setComments() {
         //
@@ -87,11 +113,18 @@ export class DictionaryEntryBuilder implements builders.DictionaryEntry {
     public readonly node: NodeBuilder
     public dictionaryDefinition: types.Dictionary
 
-    constructor(collectionDefinition: types.Collection, dictionaryDefinition: types.Dictionary) {
+    constructor(
+        collectionDefinition: types.Collection,
+        dictionaryDefinition: types.Dictionary,
+        publicDefinition: md.Dictionary,
+    ) {
         //this.collectionDefinition = collectionDefinition
         //this.dictionaryDefinition = dictionaryDefinition
         //this.onError = onError
-        this.node = new NodeBuilder(collectionDefinition.node)
+        if (publicDefinition["has instances"][0] !== "yes") {
+            throw new Error("unexpected")
+        }
+        this.node = new NodeBuilder(collectionDefinition.node, publicDefinition["has instances"][1].node)
         this.dictionaryDefinition = dictionaryDefinition
     }
     public setComments() {
@@ -106,19 +139,34 @@ export class NodeBuilder implements builders.NodeBuilder {
     private readonly components: RawObject<ComponentBuilder> = {}
     private readonly stateGroups: RawObject<StateGroupBuilder> = {}
     private readonly values: RawObject<ValueBuilder> = {}
-    constructor(definition: types.Node) {
-        this.definition = definition
+    constructor(privateDefinition: types.Node, publicDefinition: md.Node) {
+        this.definition = privateDefinition
         this.definition.properties.forEach((p, pKey) => {
+            const publicPropertyDefinition = publicDefinition.properties.get(pKey)
+            if (publicPropertyDefinition === null) {
+                throw new Error("Unexpected")
+            }
             switch (p.type[0]) {
                 case "collection": {
                     const $ = p.type[1]
+                    if (publicPropertyDefinition.type[0] !== "collection") {
+                        throw new Error("unexpected")
+                    }
+                    const publicCollectionDefinition = publicPropertyDefinition.type[1]
+
                     switch ($.type[0]) {
                         case "dictionary": {
-                            this.dictionaries[pKey] = new DictionaryBuilder($, $.type[1])
+                            if (publicCollectionDefinition.type[0] !== "dictionary") {
+                                throw new Error("unexpected")
+                            }
+                            this.dictionaries[pKey] = new DictionaryBuilder($, $.type[1], publicCollectionDefinition.type[1])
                             break
                         }
                         case "list": {
-                            this.lists[pKey] = new ListBuilder($, $.type[1])
+                            if (publicCollectionDefinition.type[0] !== "list") {
+                                throw new Error("unexpected")
+                            }
+                            this.lists[pKey] = new ListBuilder($, $.type[1], publicCollectionDefinition.type[1])
                             break
                         }
                         default:
@@ -127,15 +175,24 @@ export class NodeBuilder implements builders.NodeBuilder {
                     break
                 }
                 case "component": {
-                    this.components[pKey] = new ComponentBuilder(p.type[1])
+                    if (publicPropertyDefinition.type[0] !== "component") {
+                        throw new Error("unexpected")
+                    }
+                    this.components[pKey] = new ComponentBuilder(p.type[1], publicPropertyDefinition.type[1])
                     break
                 }
                 case "state group": {
-                    this.stateGroups[pKey] = new StateGroupBuilder(p.type[1])
+                    if (publicPropertyDefinition.type[0] !== "state group") {
+                        throw new Error("unexpected")
+                    }
+                    this.stateGroups[pKey] = new StateGroupBuilder(p.type[1], publicPropertyDefinition.type[1])
                     break
                 }
                 case "value": {
-                    this.values[pKey] = new ValueBuilder(p.type[1])
+                    if (publicPropertyDefinition.type[0] !== "value") {
+                        throw new Error("unexpected")
+                    }
+                    this.values[pKey] = new ValueBuilder(p.type[1], publicPropertyDefinition.type[1])
                     break
                 }
                 default:
@@ -181,11 +238,13 @@ export class NodeBuilder implements builders.NodeBuilder {
 }
 
 export class ValueBuilder implements builders.Value {
-    private readonly definition: types.Value
+    private readonly privateDefinition: types.Value
+    public readonly definition: md.Value
     private value: string
-    constructor(definition: types.Value) {
+    constructor(privateDefinition: types.Value, definition: md.Value) {
+        this.privateDefinition = privateDefinition
+        this.value = privateDefinition["default value"]
         this.definition = definition
-        this.value = definition["default value"]
     }
     public setComments() {
         //
@@ -197,7 +256,7 @@ export class ValueBuilder implements builders.Value {
         return this.value
     }
     public setValue(value: string, onError: (message: string) => void) {
-        const $ = this.definition
+        const $ = this.privateDefinition
         switch ($.type[0]) {
             case "boolean": {
                 if (value !== "true" && value !== "false") {
@@ -224,18 +283,28 @@ export class ValueBuilder implements builders.Value {
 }
 
 export class StateGroupBuilder {
-    private readonly definition: types.StateGroup
+    private readonly privateDefinition: types.StateGroup
+    public readonly definition: md.StateGroup
     private currentState: StateBuilder
-    constructor(definition: types.StateGroup) {
-        this.definition = definition
-        this.currentState = new StateBuilder(definition["default state"].getName(), definition["default state"].get())
+    constructor(privateDefinition: types.StateGroup, publicDefinition: md.StateGroup) {
+        this.privateDefinition = privateDefinition
+        this.definition = publicDefinition
+        this.currentState = new StateBuilder(
+            privateDefinition["default state"].getName(),
+            privateDefinition["default state"].get(),
+            publicDefinition["default state"].get(),
+        )
     }
     public setState(stateName: string) {
+        const statePrivateDef = this.privateDefinition.states.get(stateName)
         const stateDef = this.definition.states.get(stateName)
+        if (statePrivateDef === null) {
+            throw new Error(`UNEXPECTED: no such state: ${stateName}`)
+        }
         if (stateDef === null) {
             throw new Error(`UNEXPECTED: no such state: ${stateName}`)
         }
-        const state = new StateBuilder(stateName, stateDef)
+        const state = new StateBuilder(stateName, statePrivateDef, stateDef)
         this.currentState = state
         return state
     }
@@ -252,10 +321,10 @@ export class StateBuilder {
     //private readonly definition: types.State
     public readonly node: NodeBuilder
     private readonly stateName: string
-    constructor(stateName: string, definition: types.State) {
+    constructor(stateName: string, privateDefinition: types.State, publicDefinition: md.State) {
         //this.onError = onError
         //this.definition = definition
-        this.node = new NodeBuilder(definition.node)
+        this.node = new NodeBuilder(privateDefinition.node, publicDefinition.node)
         this.stateName = stateName
     }
     public setComments() {
@@ -272,6 +341,6 @@ export class DatasetBuilder {
     constructor(definition: types.Schema, metaDataSchema: md.Schema) {
         //this.onError = onError
         this.schema = metaDataSchema
-        this.root = new NodeBuilder(definition["root type"].get().node)
+        this.root = new NodeBuilder(definition["root type"].get().node, metaDataSchema["root type"].get().node)
     }
 }

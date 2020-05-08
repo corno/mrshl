@@ -1,7 +1,7 @@
 /* eslint
     max-classes-per-file: "off",
 */
-import { SerializableDataset } from "./serializable"
+import { ReadableDataset } from "../readableAPI"
 
 export class StringStream {
     private readonly str: string[]
@@ -40,7 +40,7 @@ export interface ValueSerializer {
 
 export interface RootSerializer {
     root: ValueSerializer
-    serializeSchema(dataset: SerializableDataset): void
+    serializeSchema(dataset: ReadableDataset): void
     serializeSchemaReference(schemaReference: string): void
 }
 

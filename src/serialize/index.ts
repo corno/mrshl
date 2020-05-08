@@ -1,5 +1,4 @@
 export { serialize } from "./serialize"
-export * from "./serializable"
 export { StringStream } from "./serializerAPI"
 export * from "./serializers/JSONSerializer"
 export * from "./serializers/ASTNSerializer"

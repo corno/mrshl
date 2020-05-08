@@ -1,5 +1,5 @@
 import * as builders from "../../datasetAPI"
-import * as types from "../../metaDataSchema"
+import * as md from "../../metaDataSchema"
 import { RawObject } from "./generics"
 
 /* eslint
@@ -11,9 +11,9 @@ function assertUnreachable<RT>(_x: never): RT {
 }
 
 export class Dictionary implements builders.Dictionary {
-    private readonly definition: types.Dictionary
+    private readonly definition: md.Dictionary
     private readonly entries: DictionaryEntry[] = []
-    constructor(_collDef: types.Collection, definition: types.Dictionary) {
+    constructor(_collDef: md.Collection, definition: md.Dictionary) {
         this.definition = definition
     }
     public createEntry() {
@@ -27,9 +27,9 @@ export class Dictionary implements builders.Dictionary {
 }
 
 export class List implements builders.ListBuilder {
-    private readonly definition: types.List
+    private readonly definition: md.List
     private readonly entries: ListEntry[] = []
-    constructor(_collDef: types.Collection, definition: types.List) {
+    constructor(_collDef: md.Collection, definition: md.List) {
         this.definition = definition
     }
     public createEntry() {
@@ -43,9 +43,9 @@ export class List implements builders.ListBuilder {
 }
 
 export class Component implements builders.Component {
-    private readonly definition: types.Component
+    private readonly definition: md.Component
     public readonly node: Node
-    constructor(definition: types.Component) {
+    constructor(definition: md.Component) {
         this.definition = definition
         this.node = new Node(this.definition.type.get().node)
     }
@@ -57,9 +57,9 @@ export class Component implements builders.Component {
 export class ListEntry implements builders.ListEntry {
     //private readonly definition: types.Collection
     public readonly node: Node
-    constructor(definition: types.List) {
+    constructor(definition: md.List) {
         //this.definition = definition
-        const nodeDefinition = ((): types.Node => {
+        const nodeDefinition = ((): md.Node => {
             switch (definition["has instances"][0]) {
                 case "no":
                     throw new Error("no instances expected")
@@ -79,9 +79,9 @@ export class ListEntry implements builders.ListEntry {
 export class DictionaryEntry implements builders.DictionaryEntry {
     //private readonly definition: types.Collection
     public readonly node: Node
-    constructor(definition: types.Dictionary) {
+    constructor(definition: md.Dictionary) {
         //this.definition = definition
-        const nodeDefinition = ((): types.Node => {
+        const nodeDefinition = ((): md.Node => {
             switch (definition["has instances"][0]) {
                 case "no":
                     throw new Error("no instances expected")
@@ -99,13 +99,13 @@ export class DictionaryEntry implements builders.DictionaryEntry {
 }
 
 export class Node implements builders.NodeBuilder {
-    private readonly definition: types.Node
+    private readonly definition: md.Node
     private readonly dictionaries: RawObject<Dictionary> = {}
     private readonly lists: RawObject<List> = {}
     private readonly components: RawObject<Component> = {}
     private readonly stateGroups: RawObject<StateGroup> = {}
     private readonly values: RawObject<Value> = {}
-    constructor(definition: types.Node) {
+    constructor(definition: md.Node) {
         this.definition = definition
         this.definition.properties.forEach((p, pKey) => {
             switch (p.type[0]) {
@@ -180,9 +180,9 @@ export class Node implements builders.NodeBuilder {
 }
 
 export class StateGroup {
-    private readonly definition: types.StateGroup
+    private readonly definition: md.StateGroup
     private currentState: null | State = null
-    constructor(definition: types.StateGroup) {
+    constructor(definition: md.StateGroup) {
         this.definition = definition
     }
     public setState(stateName: string) {
@@ -207,10 +207,10 @@ export class StateGroup {
 }
 
 export class State {
-    private readonly definition: types.State
+    private readonly definition: md.State
     private readonly stateName: string
     public readonly node: Node
-    constructor(stateName: string, definition: types.State) {
+    constructor(stateName: string, definition: md.State) {
         this.definition = definition
         this.stateName = stateName
         this. node = new Node(this.definition.node)
@@ -225,8 +225,10 @@ export class State {
 
 export class Value implements builders.Value {
     private value: string
-    constructor(definition: types.Value) {
+    public definition: md.Value
+    constructor(definition: md.Value) {
         this.value = definition["default value"]
+        this.definition = definition
     }
     public getSuggestions() {
         return []
@@ -243,14 +245,14 @@ export class Value implements builders.Value {
 }
 
 export class Dataset {
-    public readonly schema: types.Schema
+    public readonly schema: md.Schema
     public readonly root: Node
-    constructor(definition: types.Schema) {
+    constructor(definition: md.Schema) {
         this.schema = definition
         this.root = new Node(definition["root type"].get().node)
     }
 }
 
-export function createDataset(definition: types.Schema) {
+export function createDataset(definition: md.Schema) {
     return new Dataset(definition)
 }

@@ -1,6 +1,6 @@
 import * as m from "../metaDataSchema"
 import { RootSerializer, ValueSerializer } from "./serializerAPI"
-import { SerializableNode, SerializableDataset } from "./serializable"
+import { ReadableNode, ReadableDataset } from "../readableAPI"
 
 function assertUnreachable<RT>(_x: never): RT {
     throw new Error("unreachable")
@@ -8,7 +8,7 @@ function assertUnreachable<RT>(_x: never): RT {
 
 function serializeNode(
     definition: m.Node,
-    node: SerializableNode,
+    node: ReadableNode,
     valueSerializer: ValueSerializer,
     compact: boolean,
     keyProperty: m.IReference<m.Property> | null,
@@ -120,7 +120,7 @@ function serializeNode(
 }
 
 export function serialize(
-    dataset: SerializableDataset,
+    dataset: ReadableDataset,
     serializer: RootSerializer,
     compact: boolean,
 ): void {
