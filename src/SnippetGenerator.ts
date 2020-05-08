@@ -143,9 +143,18 @@ export class SnippetGenerator implements SideEffectsAPI {
             () => {
                 const out: string[] = []
                 fp.serialize(
-                    [createPropertySnippet(propDefinition)], "    ", true, snippet => {
+                    [
+                        fp.line([
+                            " ",
+                            createPropertySnippet(propDefinition),
+                        ]),
+                    ],
+                    "    ",
+                    true,
+                    snippet => {
                         out.push(snippet)
-                    })
+                    }
+                )
                 return [out.map((line, index) => {
                     //don't indent the first line
                     if (index === 0) {
