@@ -3,7 +3,7 @@
 import * as fs from "fs"
 import * as schemaschema01 from "../src/schemas/mrshl/schemaschema@0.1"
 import * as astn from "../src"
-import * as pc from "pareto-compiler"
+//import * as pc from "pareto-compiler"
 
 function assertUnreachable(_x: never) {
     throw new Error("unreachable")
@@ -22,7 +22,6 @@ function readFile(filePath: string) {
     } catch (e) {
         return null
     }
-    pc.
 }
 
 const serializedSchema = readFile(path)
@@ -39,9 +38,7 @@ const parser = new astn.Parser(
 )
 
 function generateCode(node: schemaschema01.Node) {
-    node.properties.forEach((p, key) => {
-        console.log("PROP", key)
-
+    node.properties.forEach((p, _key) => {
         switch (p.type[0]) {
             case "collection": {
                 const $ = p.type[1]
@@ -74,7 +71,7 @@ function generateCode(node: schemaschema01.Node) {
             }
             case "value": {
                 const $ = p.type[1]
-                console.log($["default value"])
+                //console.log($["default value"])
                 switch ($.type[0]) {
                     case "boolean": {
                         break
@@ -107,7 +104,7 @@ schemaschema01.attachSchemaDeserializer2(
         if (schema === null) {
             console.error("schema was not parsed properly")
         }
-        else {np
+        else {
             schema["component types"].forEach(ct => {
                 generateCode(ct.node)
             })
