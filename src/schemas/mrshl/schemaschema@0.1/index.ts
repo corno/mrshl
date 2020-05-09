@@ -4,15 +4,26 @@ import * as b from "./builders"
 import { createDeserializer } from "./deserialize"
 import * as g from "./generics"
 import { Schema, Node, Property } from "./types"
-import * as ds from "../../../datasetAPI"
 
-export function attachSchemaDeserializer(parser: bc.Parser, onError: (message: string, range: bc.Range) => void, callback: (schema: ds.Dataset | null) => void) {
+export * from "./types"
+
+export function attachSchemaDeserializer(parser: bc.Parser, onError: (message: string, range: bc.Range) => void, callback: (dataset: b.DatasetBuilder | null) => void) {
+    attachSchemaDeserializer2(parser, onError, schema => {
+        if (schema === null) {
+            callback(null)
+        } else {
+            callback(new b.DatasetBuilder(schema, convert(schema)))
+        }
+    })
+}
+
+export function attachSchemaDeserializer2(parser: bc.Parser, onError: (message: string, range: bc.Range) => void, callback: (schema: Schema | null) => void) {
     let foundError = false
     function onSchemaError(message: string, range: bc.Range) {
         onError(message, range)
         foundError = true
     }
-    let metadata: null | Schema = null
+    let metaData: null | Schema = null
 
     parser.ondata.subscribe(bc.createStackedDataSubscriber(
         {
@@ -26,7 +37,7 @@ export function attachSchemaDeserializer(parser: bc.Parser, onError: (message: s
                         onSchemaError(errorMessage, range)
                     },
                     md => {
-                        metadata = md
+                        metaData = md
                     }
                 ),
                 simpleValue: (_value, svData) => {
@@ -50,13 +61,13 @@ export function attachSchemaDeserializer(parser: bc.Parser, onError: (message: s
             onSchemaError(error.rangeLessMessage, error.range)
         },
         () => {
-            if (metadata === null) {
+            if (metaData === null) {
                 if (!foundError) {
                     throw new Error("UNEXPECTED: NO SCHEMA AND NO ERRORS")
                 }
                 callback(null)
             } else {
-                callback(new b.DatasetBuilder(metadata, convert(metadata)))
+                callback(metaData)
             }
         }
     ))

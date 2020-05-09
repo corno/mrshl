@@ -11,7 +11,7 @@ function assertUnreachable<RT>(_x: never): RT {
 }
 
 export class Dictionary implements builders.Dictionary {
-    private readonly definition: md.Dictionary
+    public readonly definition: md.Dictionary
     private readonly entries: DictionaryEntry[] = []
     constructor(_collDef: md.Collection, definition: md.Dictionary) {
         this.definition = definition
@@ -27,7 +27,7 @@ export class Dictionary implements builders.Dictionary {
 }
 
 export class List implements builders.ListBuilder {
-    private readonly definition: md.List
+    public readonly definition: md.List
     private readonly entries: ListEntry[] = []
     constructor(_collDef: md.Collection, definition: md.List) {
         this.definition = definition
@@ -43,7 +43,7 @@ export class List implements builders.ListBuilder {
 }
 
 export class Component implements builders.Component {
-    private readonly definition: md.Component
+    public readonly definition: md.Component
     public readonly node: Node
     constructor(definition: md.Component) {
         this.definition = definition
@@ -55,10 +55,10 @@ export class Component implements builders.Component {
 }
 
 export class ListEntry implements builders.ListEntry {
-    //private readonly definition: types.Collection
+    public readonly definition: md.List
     public readonly node: Node
     constructor(definition: md.List) {
-        //this.definition = definition
+        this.definition = definition
         const nodeDefinition = ((): md.Node => {
             switch (definition["has instances"][0]) {
                 case "no":
@@ -77,10 +77,10 @@ export class ListEntry implements builders.ListEntry {
 }
 
 export class DictionaryEntry implements builders.DictionaryEntry {
-    //private readonly definition: types.Collection
+    public readonly definition: md.Dictionary
     public readonly node: Node
     constructor(definition: md.Dictionary) {
-        //this.definition = definition
+        this.definition = definition
         const nodeDefinition = ((): md.Node => {
             switch (definition["has instances"][0]) {
                 case "no":
@@ -99,7 +99,7 @@ export class DictionaryEntry implements builders.DictionaryEntry {
 }
 
 export class Node implements builders.NodeBuilder {
-    private readonly definition: md.Node
+    public readonly definition: md.Node
     private readonly dictionaries: RawObject<Dictionary> = {}
     private readonly lists: RawObject<List> = {}
     private readonly components: RawObject<Component> = {}
@@ -180,7 +180,7 @@ export class Node implements builders.NodeBuilder {
 }
 
 export class StateGroup {
-    private readonly definition: md.StateGroup
+    public readonly definition: md.StateGroup
     private currentState: null | State = null
     constructor(definition: md.StateGroup) {
         this.definition = definition
@@ -207,7 +207,7 @@ export class StateGroup {
 }
 
 export class State {
-    private readonly definition: md.State
+    public readonly definition: md.State
     private readonly stateName: string
     public readonly node: Node
     constructor(stateName: string, definition: md.State) {
@@ -225,7 +225,7 @@ export class State {
 
 export class Value implements builders.Value {
     private value: string
-    public definition: md.Value
+    public readonly definition: md.Value
     constructor(definition: md.Value) {
         this.value = definition["default value"]
         this.definition = definition

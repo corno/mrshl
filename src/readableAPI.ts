@@ -3,18 +3,27 @@
 import * as md from "./metaDataSchema"
 
 export interface ReadableList {
-    forEachEntry(callback: (entry: ReadableEntry) => void): void
+    readonly definition: md.List
+    forEachEntry(callback: (entry: ReadableListEntry) => void): void
 }
 
 export interface ReadableDictionary {
-    forEachEntry(callback: (entry: ReadableEntry, key: string) => void): void
+    readonly definition: md.Dictionary
+    forEachEntry(callback: (entry: ReadableDictionaryEntry, key: string) => void): void
 }
 
 export interface ReadableComponent {
+    readonly definition: md.Component
     node: ReadableNode
 }
 
-export interface ReadableEntry {
+export interface ReadableDictionaryEntry {
+    readonly definition: md.Dictionary
+    node: ReadableNode
+}
+
+export interface ReadableListEntry {
+    readonly definition: md.List
     node: ReadableNode
 }
 
@@ -24,6 +33,8 @@ export interface ReadableDataset {
 }
 
 export interface ReadableNode {
+    readonly definition: md.Node
+
     getList(name: string): ReadableList
     getDictionary(name: string): ReadableDictionary
     getComponent(name: string): ReadableComponent
@@ -36,15 +47,20 @@ export interface ReadableRoot {
 }
 
 export interface ReadableState {
+    readonly definition: md.State
+
     node: ReadableNode
     getStateKey(): string
 }
 
 export interface ReadableStateGroup {
+    readonly definition: md.StateGroup
+
     getCurrentState(): ReadableState
 }
 
 export interface ReadableValue {
+    readonly definition: md.Value
     getValue(): string
 }
 
