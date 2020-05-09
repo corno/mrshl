@@ -41,5 +41,8 @@
     "mocha": "^7.1.2",
     "tslint": "^6.1.2",
     "typescript": "^3.8.3"
+  },
+  "bin": {
+    "generateSchemaCode": "dist/bin/generateSchemaCode.js"
   }
 }
