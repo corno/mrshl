@@ -26,7 +26,7 @@
     "dist/*"
   ],
   "dependencies": {
-    "bass-clarinet-typed": "^0.72.0",
+    "bass-clarinet-typed": "^0.72.1",
     "fountain-pen": "^3.0.0"
   },
   "devDependencies": {
@@ -37,7 +37,7 @@
     "@typescript-eslint/eslint-plugin-tslint": "^2.31.0",
     "@typescript-eslint/parser": "^2.31.0",
     "chai": "^4.2.0",
-    "eslint": "^6.8.0",
+    "eslint": "^7.0.0",
     "mocha": "^7.1.2",
     "tslint": "^6.1.2",
     "typescript": "^3.8.3"
