@@ -129,7 +129,7 @@ export function validateDocument(
 			(message, _range) => {
 				dc({
 					source: "schema retrieval",
-					message: `${message}`,
+					message: `error in external schema: ${message}`,
 					range: null,
 					severity: DiagnosticSeverity.error,
 				})

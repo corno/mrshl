@@ -1,0 +1,3 @@
+[
+    [ "schema retrieval", "error", "error in external schema: component type 'nonexistent' not found", null, null, null, null]
+]

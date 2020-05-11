@@ -94,7 +94,7 @@ function createExpectedNodeHandler(
                                                                                                 resolveRegistry,
                                                                                                 () => {
                                                                                                     context.raiseError(
-                                                                                                        `key property '${assertedTargetKeyProperty}' not found `,
+                                                                                                        `key property '${assertedTargetKeyProperty.value}' not found `,
                                                                                                         assertedTargetKeyProperty.range,
                                                                                                     )
                                                                                                 }
@@ -166,7 +166,7 @@ function createExpectedNodeHandler(
                                                                         resolveRegistry,
                                                                         () => {
                                                                             context.raiseError(
-                                                                                `component type '${assertedTargetComponentTypeName}' not found`,
+                                                                                `component type '${assertedTargetComponentTypeName.value}' not found`,
                                                                                 assertedTargetComponentTypeName.range,
                                                                             )
                                                                         },

@@ -104,7 +104,7 @@ function createNodeHandler(
                                                                                                                             resolveRegistry,
                                                                                                                             () => {
                                                                                                                                 context.raiseError(
-                                                                                                                                    `property '${assertedKeyPropertyName}' not found`,
+                                                                                                                                    `property '${assertedKeyPropertyName.value}' not found`,
                                                                                                                                     assertedKeyPropertyName.range,
                                                                                                                                 )
                                                                                                                             },
@@ -262,7 +262,7 @@ function createNodeHandler(
                                                                             resolveRegistry,
                                                                             () => {
                                                                                 context.raiseError(
-                                                                                    `component type '${assertedTargetComponentTypeName}' not found`,
+                                                                                    `component type '${assertedTargetComponentTypeName.value}' not found`,
                                                                                     assertedTargetComponentTypeName.range,
                                                                                 )
                                                                             },
@@ -340,7 +340,7 @@ function createNodeHandler(
                                                                             resolveRegistry,
                                                                             () => {
                                                                                 context.raiseError(
-                                                                                    `state '${assertedDefaultStateName}' not found`,
+                                                                                    `state '${assertedDefaultStateName.value}' not found`,
                                                                                     assertedDefaultStateName.range,
                                                                                 )
                                                                             },
