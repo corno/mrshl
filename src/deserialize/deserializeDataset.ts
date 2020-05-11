@@ -132,8 +132,8 @@ export function deserializeDataset(
     serializedDataset: string,
     startDataset: ds.Dataset | null,
     schemaReferenceResolver: ResolveSchemaReference,
-    onError: (source: string, message: string, range: bc.Range) => void,
-    onWarning: (source: string, message: string, range: bc.Range) => void,
+    onError: (source: string, message: string, range: bc.Range | null) => void,
+    onWarning: (source: string, message: string, range: bc.Range | null) => void,
     sideEffects: SideEffectsAPI | null,
 ): Promise<ds.Dataset> {
     return new Promise<ds.Dataset>((resolve, reject) => {
@@ -284,7 +284,7 @@ export function deserializeDataset(
             onHeaderEnd: () => {
                 if (!foundSchema) {
                     if (startDataset === null) {
-                        onError("structure", `missing schema`, { start: { position: 0, line: 1, column: 1 }, end: { position: 0, line: 1, column: 1 } })
+                        onError("structure", `missing schema`, null)
                         reject("no schema")
                     } else {
                         //no internal schema, no problem
@@ -312,18 +312,7 @@ export function deserializeDataset(
                             onWarning(
                                 "structure",
                                 "ignoring internal schema",
-                                {
-                                    start: {
-                                        position: 0,
-                                        line: 1,
-                                        column: 1,
-                                    },
-                                    end: {
-                                        position: 0,
-                                        line: 1,
-                                        column: 1,
-                                    },
-                                }
+                                null
                             )
                             attach(
                                 startDataset,

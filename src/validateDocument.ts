@@ -13,7 +13,7 @@ type Diagnostic = {
 	source: string
 	severity: DiagnosticSeverity
 	message: string
-	range: bc.Range
+	range: bc.Range | null
 }
 
 type DiagnosticCallback = (diagnostic: Diagnostic) => void
@@ -58,7 +58,7 @@ function addDiagnostic(
 	source: string,
 	message: string,
 	severity: DiagnosticSeverity,
-	range: bc.Range,
+	range: bc.Range | null,
 ) {
 	callback({
 		source: source,
@@ -71,7 +71,6 @@ function addDiagnostic(
 function diagnosticsFailed(
 	source: string,
 	message: string,
-	documentText: string,
 	diagnosticCallback: DiagnosticCallback,
 ): Promise<Dataset> {
 	return new Promise<Dataset>((_resolve, reject) => {
@@ -80,18 +79,7 @@ function diagnosticsFailed(
 			source,
 			message,
 			DiagnosticSeverity.error,
-			{
-				start: {
-					position: 0,
-					line: 0,
-					column: 0,
-				},
-				end: {
-					position: documentText.length,
-					line: 0,
-					column: 0,
-				},
-			}
+			null
 		)
 		reject()
 
@@ -109,12 +97,27 @@ export function validateDocument(
 	const basename = path.basename(filePath)
 	const dir = path.dirname(filePath)
 
+	let diagnosticFound = false
+	const dc: DiagnosticCallback = (
+		diagnostic: Diagnostic
+	) => {
+		diagnosticFound = true
+		return diagnosticCallback(diagnostic)
+	}
+
 	if (basename === schemaFileName) {
 		//don't validate the schema against itself
+		dc({
+			source: "schema retrieval",
+			severity: DiagnosticSeverity.warning,
+			message: "valdating schema file against internal schema",
+			range: null,
+		})
+
 		return validateDocumentAfterExternalSchemaResolution(
 			documentText,
 			null,
-			diagnosticCallback,
+			dc,
 			sideEffects,
 		)
 	}
@@ -124,54 +127,48 @@ export function validateDocument(
 		return deserializeSchemaFromString(
 			serializedSchema,
 			(message, _range) => {
-				diagnosticCallback({
-					source: "Schema",
-					message: `error in schema: ${message}`,
-					range: {
-						start: {
-							position: 0,
-							line: 1,
-							column: 1,
-						},
-						end: {
-							position: 0,
-							line: 1,
-							column: 1,
-						},
-					},
+				dc({
+					source: "schema retrieval",
+					message: `${message}`,
+					range: null,
 					severity: DiagnosticSeverity.error,
 				})
 			}
 		).then(schema => {
+
 			return validateDocumentAfterExternalSchemaResolution(
 				documentText,
 				schema,
-				diagnosticCallback,
+				dc,
 				sideEffects,
 			)
 		}).catch(message => {
-			return diagnosticsFailed(
-				'schema error',
-				message,
-				documentText,
-				diagnosticCallback,
-			)
+			if (!diagnosticFound) {
+				return diagnosticsFailed(
+					'schema retrieval',
+					message,
+					dc,
+				)
+			} else return new Promise<Dataset>((_resolve, reject) => {
+				reject()
+			})
 		})
 	}).catch(err => {
 		if (err === undefined) {
-			return diagnosticsFailed(
-				'schema retrieval',
-				"unknown error",
-				documentText,
-				diagnosticCallback,
-			)
+			if (!diagnosticFound) {
+				return diagnosticsFailed(
+					'schema retrieval',
+					"unknown error",
+					dc,
+				)
+			}
 		}
 		if (err.code === "ENOENT") {
 			//there is no schema file
 			return validateDocumentAfterExternalSchemaResolution(
 				documentText,
 				null,
-				diagnosticCallback,
+				dc,
 				sideEffects,
 			)
 		} else {
@@ -179,8 +176,7 @@ export function validateDocument(
 			return diagnosticsFailed(
 				'schema retrieval',
 				err.message,
-				documentText,
-				diagnosticCallback,
+				dc,
 			)
 		}
 	})

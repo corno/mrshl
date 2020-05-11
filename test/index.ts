@@ -11,7 +11,15 @@ import * as astn from "../src"
 
 const testsDir = "./test/tests"
 
-type Issue = [string, string, string, number, number, number, number]
+type Issue = [
+    string,
+    string,
+    string,
+    number | null,
+    number | null,
+    number | null,
+    number | null,
+]
 
 type Issues = Issue[]
 
@@ -45,15 +53,29 @@ describe("main", () => {
                     serializedDataset,
                     serializedDatasetPath,
                     diagnostic => {
-                        actualIssues.push([
-                            diagnostic.source,
-                            diagnostic.severity === astn.DiagnosticSeverity.error ? "error" : "warning",
-                            diagnostic.message,
-                            diagnostic.range.start.line,
-                            diagnostic.range.start.column,
-                            diagnostic.range.end.line,
-                            diagnostic.range.end.column,
-                        ])
+                        if (diagnostic.range !== null) {
+
+                            actualIssues.push([
+                                diagnostic.source,
+                                diagnostic.severity === astn.DiagnosticSeverity.error ? "error" : "warning",
+                                diagnostic.message,
+                                diagnostic.range.start.line,
+                                diagnostic.range.start.column,
+                                diagnostic.range.end.line,
+                                diagnostic.range.end.column,
+                            ])
+                        } else {
+
+                            actualIssues.push([
+                                diagnostic.source,
+                                diagnostic.severity === astn.DiagnosticSeverity.error ? "error" : "warning",
+                                diagnostic.message,
+                                null,
+                                null,
+                                null,
+                                null,
+                            ])
+                        }
 
                     },
                     // (errorMessage, range) => {
