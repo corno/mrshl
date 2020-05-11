@@ -432,7 +432,7 @@ export function createDeserializer(onError: (message: string, range: bc.Range) =
                     componentTypes,
                     resolveRegistry,
                     () => {
-                        context.raiseError(`component type '${assertedRootName}' not found`, assertedRootName.range)
+                        context.raiseError(`component type '${assertedRootName.value}' not found`, assertedRootName.range)
                     }
                 ),
             }
