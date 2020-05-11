@@ -169,7 +169,7 @@ function createPropertyDeserializer(
         case "state group": {
             const $ = propDefinition.type[1]
             return context.expectValue(context.expectTaggedUnion(
-                $.states.map((stateDef, stateName) => {
+                $.states.mapUnsorted((stateDef, stateName) => {
                     return (tuData, tuPreData, optionData, optionPreData) => {
                         registerSnippetGenerators.onState(stateName, tuData, tuPreData, optionPreData)
                         const stateGroup = nodeBuilder.getStateGroup(propKey)

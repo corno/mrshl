@@ -123,8 +123,24 @@ export function validateDocument(
 	).then(serializedSchema => {
 		return deserializeSchemaFromString(
 			serializedSchema,
-			(_message, _range) => {
-				throw new Error("HEEEEELP")
+			(message, _range) => {
+				diagnosticCallback({
+					source: "Schema",
+					message: `error in schema: ${message}`,
+					range: {
+						start: {
+							position: 0,
+							line: 1,
+							column: 1,
+						},
+						end: {
+							position: 0,
+							line: 1,
+							column: 1,
+						},
+					},
+					severity: DiagnosticSeverity.error,
+				})
 			}
 		).then(schema => {
 			return validateDocumentAfterExternalSchemaResolution(

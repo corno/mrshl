@@ -58,7 +58,8 @@ export interface IReadonlyLookup<T> {
 export interface IReadonlyDictionary<T> extends IReadonlyLookup<T> {
     forEach(callback: (entry: T, key: string) => void): void
     isEmpty(): boolean
-    map<RT>(callback: (entry: T, key: string) => RT): RawObject<RT>
+    mapSorted<RT>(callback: (entry: T, key: string) => RT): RawObject<RT>
+    mapUnsorted<RT>(callback: (entry: T, key: string) => RT): RawObject<RT>
 }
 
 export class Dictionary<T> implements IReadonlyDictionary<T>, IReadonlyLookup<T> {
@@ -69,9 +70,16 @@ export class Dictionary<T> implements IReadonlyDictionary<T>, IReadonlyLookup<T>
     public forEach(callback: (entry: T, key: string) => void) {
         Object.keys(this.imp).sort().forEach(key => callback(this.imp[key], key))
     }
-    public map<RT>(callback: (entry: T, key: string) => RT): RawObject<RT> {
+    public mapSorted<RT>(callback: (entry: T, key: string) => RT): RawObject<RT> {
         const rt: RawObject<RT> = {}
         Object.keys(this.imp).sort().forEach(key => {
+            rt[key] = callback(this.imp[key], key)
+        })
+        return rt
+    }
+    public mapUnsorted<RT>(callback: (entry: T, key: string) => RT): RawObject<RT> {
+        const rt: RawObject<RT> = {}
+        Object.keys(this.imp).forEach(key => {
             rt[key] = callback(this.imp[key], key)
         })
         return rt

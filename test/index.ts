@@ -80,12 +80,9 @@ describe("main", () => {
                     // console.log(expectedOutput.split("\n"))
                     // chai.assert.deepEqual(out.join("").split("\n"), expectedOutput.split("\n"))
                 })
-                    .catch(e => {
-                        if (e !== "errors in schema" && e !== "no schema") {
-                            throw new Error(`UNEXPECTED: SCHEMA EXCEPTION, ${e}`)
-                        }
+                    .catch(_e => {
                         if (actualIssues.length === 0) {
-                            throw new Error("MISSING ISSUES")
+                            throw new Error("ERROR FOUND, BUT NOTHING WAS REPORTED")
                         }
                     })
             }

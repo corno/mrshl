@@ -1,0 +1,5 @@
+[
+    [ "Schema", "error", "error in schema: missing schema schema definition", 1, 1, 1, 1],
+    [ "schema error", "error", "missing schema", 0,0,0,0],
+    [ "schema retrieval", "error", "unknown error", 0,0,0,0]
+]

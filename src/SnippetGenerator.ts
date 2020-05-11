@@ -53,7 +53,7 @@ function createPropertySnippet(prop: md.Property): fp.InlinePart {
 
 function createPropertiesSnippet(node: md.Node, keyProperty: md.Property | null): fp.IParagraph {
     const x: fp.ParagraphPart[] = []
-    node.properties.map((prop, propKey) => {
+    node.properties.mapUnsorted((prop, propKey) => {
         if (prop === keyProperty) {
             return
         }
@@ -225,7 +225,7 @@ export class SnippetGenerator implements SideEffectsAPI {
         this.registerSnippet(
             optionData.range,
             () => {
-                return Object.keys(stateGroupDefinition.states.map(s => s))
+                return Object.keys(stateGroupDefinition.states.mapUnsorted(s => s))
             },
             null
         )
