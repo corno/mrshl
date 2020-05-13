@@ -3,6 +3,7 @@ import * as md from "../metaDataSchema"
 import { SideEffectsAPI } from "./SideEffectsAPI"
 import { createDatasetDeserializer } from "./createDatasetDeserializer"
 import * as ds from "../datasetAPI"
+import * as p from "pareto-20"
 
 function createNoOperationPropertyHandler(
     _key: string,
@@ -71,7 +72,7 @@ function createNoOperationObjectHandler(_beginRange: bc.Range): bc.ObjectHandler
 
 export type ResolveSchemaReference = (
     reference: string,
-) => Promise<ds.Dataset>
+) => p.IUnsafePromise<ds.Dataset, string>
 
 
 export class NOPSideEffects implements SideEffectsAPI {
@@ -135,8 +136,8 @@ export function deserializeDataset(
     onError: (source: string, message: string, range: bc.Range | null) => void,
     onWarning: (source: string, message: string, range: bc.Range | null) => void,
     sideEffects: SideEffectsAPI | null,
-): Promise<ds.Dataset> {
-    return new Promise<ds.Dataset>((resolve, reject) => {
+): p.IUnsafePromise<ds.Dataset, string> {
+    return p.wrapUnsafeFunction((onPromiseFail, onResult) => {
         const parser = new bc.Parser(
             (message, range) => {
                 onError("parser", message, range)
@@ -196,7 +197,7 @@ export function deserializeDataset(
                     //
                 },
                 onEnd: () => {
-                    resolve(dataset)
+                    onResult(dataset)
                 },
                 onLineComment: () => {
                     //
@@ -243,15 +244,16 @@ export function deserializeDataset(
                     ),
                     simpleValue: (schemaReference, svData) => {
                         svData.pauser.pause()
-                        schemaReferenceResolver(schemaReference)
-                            .then(dataset => {
-                                datasetBuilder = dataset
-                                svData.pauser.continue()
-                            })
-                            .catch(errorMessage => {
+                        schemaReferenceResolver(schemaReference).handleUnsafePromise(
+                            errorMessage => {
                                 onSchemaError(errorMessage, svData.range)
                                 svData.pauser.continue()
-                            })
+                            },
+                            dataset => {
+                                datasetBuilder = dataset
+                                svData.pauser.continue()
+                            },
+                        )
                     },
                     taggedUnion: tuData => {
                         onSchemaError("unexpected typed union as schema", tuData.range)
@@ -285,7 +287,7 @@ export function deserializeDataset(
                 if (!foundSchema) {
                     if (startDataset === null) {
                         onError("structure", `missing schema`, null)
-                        reject("no schema")
+                        onPromiseFail("no schema")
                     } else {
                         //no internal schema, no problem
                         attach(
@@ -298,7 +300,7 @@ export function deserializeDataset(
                         if (!foundSchemaErrors) {
                             throw new Error("Unexpected: no schema errors and no schema")
                         }
-                        reject("errors in schema")
+                        onPromiseFail("errors in schema")
                     } else {
                         if (startDataset === null) {
                             attach(

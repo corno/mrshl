@@ -3,6 +3,7 @@ import * as path from "path"
 import { Dataset } from "./datasetAPI"
 import { SideEffectsAPI, createFromURLSchemaDeserializer, deserializeDataset, deserializeSchemaFromString } from "./deserialize"
 import * as bc from "bass-clarinet-typed"
+import * as p from "pareto-20"
 
 export enum DiagnosticSeverity {
 	warning,
@@ -23,7 +24,7 @@ function validateDocumentAfterExternalSchemaResolution(
 	dataset: null | Dataset,
 	diagnosticCallback: DiagnosticCallback,
 	sideEffects: SideEffectsAPI | null,
-): Promise<Dataset> {
+): p.IUnsafePromise<Dataset, string> {
 
 	const schemaReferenceResolver = createFromURLSchemaDeserializer('www.astn.io', '/dev/schemas/', 7000)
 
@@ -68,32 +69,29 @@ function addDiagnostic(
 	})
 }
 
-function diagnosticsFailed(
-	source: string,
-	message: string,
-	diagnosticCallback: DiagnosticCallback,
-): Promise<Dataset> {
-	return new Promise<Dataset>((_resolve, reject) => {
-		addDiagnostic(
-			diagnosticCallback,
-			source,
-			message,
-			DiagnosticSeverity.error,
-			null
-		)
-		reject()
+export const schemaFileName = "schema.astn-schema"
 
+
+function readFile(
+	dir: string,
+) {
+	return p.wrapUnsafeFunction<string, NodeJS.ErrnoException>((onError, onSuccess) => {
+		fs.promises.readFile(
+			path.join(dir, schemaFileName), { encoding: "utf-8" }
+		).then(content => {
+			onSuccess(content)
+		}).catch(e => {
+			onError(e)
+		})
 	})
 }
-
-export const schemaFileName = "schema.astn-schema"
 
 export function validateDocument(
 	documentText: string,
 	filePath: string,
 	diagnosticCallback: DiagnosticCallback,
 	sideEffects: SideEffectsAPI | null,
-): Promise<Dataset> {
+): p.IUnsafePromise<Dataset, null> {
 	const basename = path.basename(filePath)
 	const dir = path.dirname(filePath)
 
@@ -103,6 +101,19 @@ export function validateDocument(
 	) => {
 		diagnosticFound = true
 		return diagnosticCallback(diagnostic)
+	}
+
+	function validateThatErrorsAreFound(errorMessage: string) {
+		if (!diagnosticFound) {
+			addDiagnostic(
+				dc,
+				'schema retrieval',
+				errorMessage,
+				DiagnosticSeverity.error,
+				null
+			)
+		}
+		return p.result(null)
 	}
 
 	if (basename === schemaFileName) {
@@ -119,65 +130,53 @@ export function validateDocument(
 			null,
 			dc,
 			sideEffects,
-		)
+		).mapError(validateThatErrorsAreFound)
 	}
-	return fs.promises.readFile(
-		path.join(dir, schemaFileName), { encoding: "utf-8" }
-	).then(serializedSchema => {
-		return deserializeSchemaFromString(
-			serializedSchema,
-			(message, _range) => {
-				dc({
-					source: "schema retrieval",
-					message: `error in external schema: ${message}`,
-					range: null,
-					severity: DiagnosticSeverity.error,
-				})
-			}
-		).then(schema => {
-
-			return validateDocumentAfterExternalSchemaResolution(
-				documentText,
-				schema,
-				dc,
-				sideEffects,
-			)
-		}).catch(message => {
-			if (!diagnosticFound) {
-				return diagnosticsFailed(
-					'schema retrieval',
-					message,
+	return readFile(
+		dir
+	).rework<Dataset, null>(
+		err => {
+			if (err.code === "ENOENT") {
+				//there is no schema file
+				return validateDocumentAfterExternalSchemaResolution(
+					documentText,
+					null,
 					dc,
-				)
-			} else return new Promise<Dataset>((_resolve, reject) => {
-				reject()
-			})
-		})
-	}).catch(err => {
-		if (err === undefined) {
-			if (!diagnosticFound) {
-				return diagnosticsFailed(
-					'schema retrieval',
-					"unknown error",
+					sideEffects,
+				).mapError(validateThatErrorsAreFound)
+			} else {
+				//something else went wrong
+				addDiagnostic(
 					dc,
+					'schema retrieval',
+					err.message,
+					DiagnosticSeverity.error,
+					null
 				)
+				return p.error<Dataset, null>(null)
 			}
-		}
-		if (err.code === "ENOENT") {
-			//there is no schema file
-			return validateDocumentAfterExternalSchemaResolution(
-				documentText,
-				null,
-				dc,
-				sideEffects,
-			)
-		} else {
-			//something else went wrong
-			return diagnosticsFailed(
-				'schema retrieval',
-				err.message,
-				dc,
+		},
+		serializedSchema => {
+			return deserializeSchemaFromString(
+				serializedSchema,
+				(message, _range) => {
+					dc({
+						source: "schema retrieval",
+						message: `error in external schema: ${message}`,
+						range: null,
+						severity: DiagnosticSeverity.error,
+					})
+				}
+			).mapError(validateThatErrorsAreFound).try(
+				dataset => {
+					return validateDocumentAfterExternalSchemaResolution(
+						documentText,
+						dataset,
+						dc,
+						sideEffects,
+					).mapError(validateThatErrorsAreFound)
+				}
 			)
 		}
-	})
+	)
 }
