@@ -1,4 +1,3 @@
-import * as fs from "fs"
 import * as path from "path"
 import { Dataset } from "./datasetAPI"
 import { SideEffectsAPI, createFromURLSchemaDeserializer, deserializeDataset, deserializeSchemaFromString } from "./deserialize"
@@ -71,24 +70,10 @@ function addDiagnostic(
 
 export const schemaFileName = "schema.astn-schema"
 
-
-function readFile(
-	dir: string,
-) {
-	return p.wrapUnsafeFunction<string, NodeJS.ErrnoException>((onError, onSuccess) => {
-		fs.promises.readFile(
-			path.join(dir, schemaFileName), { encoding: "utf-8" }
-		).then(content => {
-			onSuccess(content)
-		}).catch(e => {
-			onError(e)
-		})
-	})
-}
-
 export function validateDocument(
 	documentText: string,
 	filePath: string,
+	readSchemaFile: (dir: string, schemaFileName: string) => p.IUnsafePromise<string | null, string>,
 	diagnosticCallback: DiagnosticCallback,
 	sideEffects: SideEffectsAPI | null,
 ): p.IUnsafePromise<Dataset, null> {
@@ -132,31 +117,31 @@ export function validateDocument(
 			sideEffects,
 		).mapError(validateThatErrorsAreFound)
 	}
-	return readFile(
-		dir
-	).rework<Dataset, null>(
-		err => {
-			if (err.code === "ENOENT") {
-				//there is no schema file
-				return validateDocumentAfterExternalSchemaResolution(
-					documentText,
-					null,
-					dc,
-					sideEffects,
-				).mapError(validateThatErrorsAreFound)
-			} else {
-				//something else went wrong
-				addDiagnostic(
-					dc,
-					'schema retrieval',
-					err.message,
-					DiagnosticSeverity.error,
-					null
-				)
-				return p.error<Dataset, null>(null)
-			}
-		},
-		serializedSchema => {
+	return readSchemaFile(
+		dir,
+		schemaFileName,
+	).mapError(errorMessage => {
+		//something else went wrong
+		addDiagnostic(
+			dc,
+			'schema retrieval',
+			errorMessage,
+			DiagnosticSeverity.error,
+			null
+		)
+		return p.result(null)
+
+	}).try(serializedSchema => {
+		if (serializedSchema === null) {
+			//there is no schema file
+			return validateDocumentAfterExternalSchemaResolution(
+				documentText,
+				null,
+				dc,
+				sideEffects,
+			).mapError(validateThatErrorsAreFound)
+		} else {
+
 			return deserializeSchemaFromString(
 				serializedSchema,
 				(message, _range) => {
@@ -178,5 +163,5 @@ export function validateDocument(
 				}
 			)
 		}
-	)
+	})
 }

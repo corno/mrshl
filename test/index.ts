@@ -51,6 +51,7 @@ describe("main", () => {
             return astn.validateDocument(
                 serializedDataset,
                 serializedDatasetPath,
+                astn.readSchemaFileFromFileSystem,
                 diagnostic => {
                     if (diagnostic.range !== null) {
 
