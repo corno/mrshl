@@ -8,6 +8,7 @@ import * as fs from "fs"
 import * as path from "path"
 import { describe } from "mocha"
 import * as astn from "../src"
+import * as p from "pareto-20"
 
 const testsDir = "./test/tests"
 
@@ -43,9 +44,9 @@ describe("main", () => {
         //     )
         // }
 
-        async function myFunc(): Promise<void> {
+        function myFunc(): p.ISafePromise<void> {
 
-            const serializedDataset = await fs.promises.readFile(serializedDatasetPath, { encoding: "utf-8" })
+            const serializedDataset = fs.readFileSync(serializedDatasetPath, { encoding: "utf-8" })
             //const expectedOutput = await fs.promises.readFile(expectedOutputPath, { encoding: "utf-8" })
 
             return astn.validateDocument(
@@ -107,12 +108,13 @@ describe("main", () => {
                         throw new Error("ERROR FOUND, BUT NOTHING WAS REPORTED")
                     }
                 }
-            ).convertToNativePromise()
+            )
 
         }
         it(dir, async () => {
-            await myFunc()
-            chai.assert.deepEqual(actualIssues, expectedIssues)
+            return myFunc().convertToNativePromise().then(() => {
+                chai.assert.deepEqual(actualIssues, expectedIssues)
+            })
         })
     })
 })
