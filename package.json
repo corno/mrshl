@@ -27,7 +27,7 @@
   ],
   "dependencies": {
     "bass-clarinet-typed": "^0.72.3",
-    "fountain-pen": "^3.0.0",
+    "fountain-pen": "^3.0.1",
     "pareto-fs": "^0.4.5"
   },
   "devDependencies": {
