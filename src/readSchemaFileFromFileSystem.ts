@@ -7,17 +7,21 @@ export function readSchemaFileFromFileSystem(
 	schemaFileName: string,
 ) {
 	return p.wrapUnsafeFunction<string | null, string>((onError, onSuccess) => {
-		fs.promises.readFile(
-			path.join(dir, schemaFileName), { encoding: "utf-8" }
-		).then(content => {
-			onSuccess(content)
-		}).catch((err: NodeJS.ErrnoException) => {
-			if (err.code === "ENOENT") {
-				//there is no schema file
-				onSuccess(null)
-			} else {
-				onError(err.message)
+		fs.readFile(
+			path.join(dir, schemaFileName),
+			{ encoding: "utf-8" },
+			(err, data) => {
+				if (err === null) {
+					onSuccess(data)
+				} else {
+					if (err.code === "ENOENT") {
+						//there is no schema file
+						onSuccess(null)
+					} else {
+						onError(err.message)
+					}
+				}
 			}
-		})
+		)
 	})
 }
