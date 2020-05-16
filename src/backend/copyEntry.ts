@@ -27,7 +27,7 @@ function copyNode(
 
         copyNode(
             property.type[1].type.get().node,
-            sourceNode.getComponent(pKey).getNode(),
+            sourceNode.getComponent(pKey).node,
             comp.node
         )
     })
@@ -58,5 +58,5 @@ export function copyEntry(
     sourceEntry: s.SerializableEntry,
     targetEntry: s.EntryBuilder
 ) {
-    copyNode(definition.node, sourceEntry.getNode(), targetEntry.node)
+    copyNode(definition.node, sourceEntry.node, targetEntry.node)
 }

@@ -1,6 +1,3 @@
-/* eslint
-    "@typescript-eslint/no-empty-interface": off
-*/
 
 export interface ReadableList {
     forEachEntry(callback: (entry: ReadableListEntry) => void): void

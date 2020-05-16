@@ -16,6 +16,7 @@ export class Value implements s.SerializableValue, bi.Value {
     public readonly changeStatus: g.ReactiveValue<bi.ValueChangeStatus>
     public readonly createdInNewContext: g.ReactiveValue<boolean>
     public readonly changeSubscribers: ChangeSubscriber[] = []
+    public readonly isQuoted: boolean
     private readonly global: Global
     private readonly initialValue: string
 
@@ -51,6 +52,7 @@ export class Value implements s.SerializableValue, bi.Value {
         this.changeStatus = new g.ReactiveValue<bi.ValueChangeStatus>(["not changed"])
         this.createdInNewContext = new g.ReactiveValue(createdInNewContext)
         this.initialValue = initialValue
+        this.isQuoted = true //FIXME
     }
     public setMainFocussableRepresentation(f: bi.IFocussable) {
         this.focussable.update(new g.Maybe(f))

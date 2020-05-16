@@ -15,9 +15,9 @@ import { defaultInitializeNode, Node, NodeBuilder } from "./Node"
 export class Entry implements s.SerializableEntry {
     public readonly errorsAggregator = new FlexibleErrorsAggregator()
     public readonly subentriesErrorsAggregator = new FlexibleErrorsAggregator()
-    public readonly node = new Node()
-    public getNode() {
-        return this.node
+    public readonly node: Node
+    constructor(nodeDefinition: d.Node, keyProperty: d.Property | null) {
+        this.node = new Node(nodeDefinition, keyProperty)
     }
     public purgeChanges() {
         this.node.purgeChanges()
@@ -127,7 +127,7 @@ class EntryRemoval implements cc.IEntryRemoval {
 }
 
 class Dictionary {
-    private readonly definition: d.Dictionary
+    public readonly definition: d.Dictionary
     private readonly entries: g.ReactiveArray<EntryPlaceholder>
     private readonly keySubscriber: (oldValue: string, newValue: string) => void
     constructor(definition: d.Dictionary, entries: g.ReactiveArray<EntryPlaceholder>) {
@@ -139,17 +139,17 @@ class Dictionary {
         this.entries = entries
     }
     public attachKey(entry: EntryPlaceholder) {
-        const keyValue = entry.node.values.get(this.definition["key property"])
+        const keyValue = entry.node.values.get(this.definition["key property"].getName())
         this.checkDuplicates(keyValue.getValue())
         keyValue.changeSubscribers.push(this.keySubscriber)
     }
     public detachKey(entry: EntryPlaceholder) {
-        g.removeFromArray(entry.node.values.get(this.definition["key property"]).changeSubscribers, e => e === this.keySubscriber)
-        const keyValue = entry.node.values.get(this.definition["key property"])
+        g.removeFromArray(entry.node.values.get(this.definition["key property"].getName()).changeSubscribers, e => e === this.keySubscriber)
+        const keyValue = entry.node.values.get(this.definition["key property"].getName())
         this.checkDuplicates(keyValue.getValue())
     }
     private checkDuplicates(key: string) {
-        const propertyName = this.definition["key property"]
+        const propertyName = this.definition["key property"].getName()
         const matches = this.entries.map(e => e).filter(e => {
             //if it is removed, it is never a duplicate
             if (e.status.get()[0] === "inactive") {
@@ -201,7 +201,10 @@ export class Collection implements s.SerializableCollection, bi.Collection {
         })
     }
     public addEntry(): void {
-        const entry = new Entry()
+        const entry = new Entry(
+            this.definition.node,
+            this.getKeyProperty()
+        )
 
         defaultInitializeNode(
             this.definition.node,
@@ -241,8 +244,8 @@ export class Collection implements s.SerializableCollection, bi.Collection {
                     console.error(e)
                     throw new Error("Unexpected, entry is not an instance of Entry")
                 }
-                const entry = new Entry()
-                const entryBuilder = new EntryBuilder(this, entry, true)
+                const entry = new Entry(this.definition.node, this.getKeyProperty())
+                const entryBuilder = new EntryBuilder(this, entry, true, this.getKeyProperty())
                 copyEntry(this.definition, e.entry, entryBuilder)
 
                 callback(new EntryAddition(
@@ -264,6 +267,9 @@ export class Collection implements s.SerializableCollection, bi.Collection {
             }
         })
     }
+    private getKeyProperty() {
+        return this.dictionary === null ? null : this.dictionary.definition["key property"].get()
+    }
 }
 
 export class EntryBuilder implements s.EntryBuilder {
@@ -271,11 +277,24 @@ export class EntryBuilder implements s.EntryBuilder {
     private readonly entry: Entry
     private readonly collection: Collection
     private readonly createdInNewContext: boolean
-    constructor(collection: Collection, entry: Entry, createdInNewContext: boolean) {
+    constructor(
+        collection: Collection,
+        entry: Entry,
+        createdInNewContext: boolean,
+        keyProperty: d.Property | null,
+    ) {
         this.entry = entry
         this.collection = collection
         this.createdInNewContext = createdInNewContext
-        this.node = new NodeBuilder(collection.definition.node, entry.node, collection.global, entry.errorsAggregator, entry.subentriesErrorsAggregator, createdInNewContext)
+        this.node = new NodeBuilder(
+            collection.definition.node,
+            entry.node,
+            collection.global,
+            entry.errorsAggregator,
+            entry.subentriesErrorsAggregator,
+            createdInNewContext,
+            keyProperty,
+        )
     }
     public insert() {
         const entryPlaceHolder = new EntryPlaceholder(this.entry, this.collection, this.collection.global, this.createdInNewContext)
@@ -286,12 +305,18 @@ export class EntryBuilder implements s.EntryBuilder {
 export class CollectionBuilder implements s.CollectionBuilder {
     private readonly collection: Collection
     private readonly createdInNewContext: boolean
-    constructor(collection: Collection, createdInNewContext: boolean) {
+    private readonly keyProperty: null | d.Property
+    constructor(
+        collection: Collection,
+        createdInNewContext: boolean,
+        keyProperty: null | d.Property,
+    ) {
         this.collection = collection
         this.createdInNewContext = createdInNewContext
+        this.keyProperty = keyProperty
     }
     public createEntry() {
-        const entry = new Entry()
-        return new EntryBuilder(this.collection, entry, this.createdInNewContext)
+        const entry = new Entry(this.collection.definition.node, this.keyProperty)
+        return new EntryBuilder(this.collection, entry, this.createdInNewContext, this.keyProperty)
     }
 }

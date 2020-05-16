@@ -6,9 +6,9 @@ import { Global } from "./Global"
 import { Node, NodeBuilder } from "./Node"
 
 export class Component implements s.SerializableComponent, bi.Component {
-    public readonly node = new Node()
-    public getNode() {
-        return this.node
+    public readonly node: Node
+    constructor(definition: d.Component) {
+        this.node = new Node(definition.type.get().node, null)
     }
     public purgeChanges() {
         this.node.purgeChanges()
@@ -23,8 +23,16 @@ export class ComponentBuilder implements s.ComponentBuilder {
         global: Global,
         errorsAggregator: IParentErrorsAggregator,
         subEntriesErrorsAggregator: IParentErrorsAggregator,
-        createdInNewContext: boolean
+        createdInNewContext: boolean,
+        keyProperty: d.Property | null,
     ) {
-        this.node = new NodeBuilder(definition.type.get().node, component.node, global, errorsAggregator, subEntriesErrorsAggregator, createdInNewContext)
+        this.node = new NodeBuilder(
+            definition.type.get().node,
+            component.node, global,
+            errorsAggregator,
+            subEntriesErrorsAggregator,
+            createdInNewContext,
+            keyProperty,
+        )
     }
 }

@@ -13,7 +13,7 @@ export class RootImp {
     public readonly schemaPath: string
     constructor(schemaPath: string, schema: d.Schema) {
         this.schemaPath = schemaPath
-        this.rootNode = new Node()
+        this.rootNode = new Node(schema.root, null)
         this.schema = schema
         this.global = new Global()
     }

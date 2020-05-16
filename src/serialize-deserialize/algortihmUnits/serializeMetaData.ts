@@ -64,7 +64,7 @@ function markNodeUsage(definition: d.Node, node: i.SerializableNode, usedNode: t
         switch (propertyDefinition.type[0]) {
             case "component": {
                 const $ = propertyDefinition.type[1]
-                markNodeUsage($.type.get().node, node.getComponent(propertyKey).getNode(), componentTypes[$.type.getName()].node, componentTypes)
+                markNodeUsage($.type.get().node, node.getComponent(propertyKey).node, componentTypes[$.type.getName()].node, componentTypes)
 
                 break
             }
@@ -80,7 +80,7 @@ function markNodeUsage(definition: d.Node, node: i.SerializableNode, usedNode: t
                             node: buildMetaNode($.node, componentTypes),
                         }]
                     }
-                    markNodeUsage($.node, entry.getNode(), usedCollection["has instances"][1].node, componentTypes)
+                    markNodeUsage($.node, entry.node, usedCollection["has instances"][1].node, componentTypes)
                 })
                 break
             }

@@ -6,14 +6,29 @@ export interface SerializableNode {
     getComponent(name: string): SerializableComponent
     getStateGroup(name: string): SerializableStateGroup
     getValue(name: string): SerializableValue
+    forEachProperty(callback: (entry: SerializableProperty, key: string) => void): void
 }
+
+export type SerializablePropertyType =
+    | ["list", SerializableCollection]
+    | ["dictionary", SerializableCollection]
+    | ["component", SerializableComponent]
+    | ["state group", SerializableStateGroup]
+    | ["value", SerializableValue]
+
+export interface SerializableProperty {
+    readonly isKeyProperty: boolean
+    readonly type: SerializablePropertyType
+}
+
 
 export interface SerializableValue {
     getValue(): string
+    readonly isQuoted: boolean
 }
 
 export interface SerializableEntry {
-    getNode(): SerializableNode
+    readonly node: SerializableNode
 }
 
 export interface SerializableCollection {
@@ -21,7 +36,7 @@ export interface SerializableCollection {
 }
 
 export interface SerializableComponent {
-    getNode(): SerializableNode
+    readonly node: SerializableNode
 }
 
 export interface SerializableStateGroup {
@@ -29,7 +44,7 @@ export interface SerializableStateGroup {
 }
 
 export interface SerializableState {
-    node: SerializableNode
+    readonly node: SerializableNode
     getStateKey(): string
 }
 
@@ -54,7 +69,7 @@ export interface Deserializer {
     getEntry(source: ObjectAPI, key: string): ValueAPI
 
     castToArray(v: ValueAPI): ArrayAPI
-    mapArray<T>(source: ArrayAPI, callback: (entry: ValueAPI, index: number) => T): Array<T>
+    mapArray<T>(source: ArrayAPI, callback: (entry: ValueAPI, index: number) => T): T[]
     getElement(source: ArrayAPI, index: number): ValueAPI
     assertArrayLength(source: ArrayAPI, length: number): void
 }

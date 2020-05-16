@@ -18,7 +18,7 @@ export type ComponentType = {
 }
 
 export type Dictionary = {
-    readonly "key property": string
+    readonly "key property": g.IReference<Property>
 }
 
 export type List = {

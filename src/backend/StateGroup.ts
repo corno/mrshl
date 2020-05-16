@@ -11,12 +11,14 @@ export class State implements bi.State {
     public readonly key: string
     public readonly errorsAggregator = new FlexibleErrorsAggregator()
     public readonly subentriesErrorsAggregator = new FlexibleErrorsAggregator()
-    public readonly node = new Node()
+    public readonly node: Node
     public readonly isCurrentState = new g.ReactiveValue<boolean>(true)
     constructor(
-        key: string
+        key: string,
+        definition: d.State,
     ) {
         this.key = key
+        this.node = new Node(definition.node, null)
     }
     public purgeChanges() {
         this.node.purgeChanges()
@@ -82,7 +84,7 @@ export function defaultInitializeState(
     global: Global,
     createdInNewContext: boolean
 ) {
-    const state = new State(definition.key)
+    const state = new State(definition.key, definition)
     defaultInitializeNode(
         definition.node,
         state.node,
