@@ -6,7 +6,7 @@ import { Collection, CollectionBuilder } from "./Collection"
 import { Component, ComponentBuilder } from "./Component"
 import { IParentErrorsAggregator } from "./ErrorManager"
 import { Global } from "./Global"
-import { defaultInitializeState, State, StateBuilder, StateGroup } from "./StateGroup"
+import { StateGroup, StateGroupBuilder } from "./StateGroup"
 import { createValue, Value } from "./Value"
 
 function assertUnreachable(_x: never) {
@@ -24,12 +24,12 @@ export class Property implements s.SerializableProperty {
     public readonly isKeyProperty: boolean
     public readonly type: PropertyType
     constructor(
-        definition: d.Property,
+        _definition: d.Property,
         type: PropertyType,
-        keyProperty: null | d.Property,
+        isKeyProperty: boolean,
     ) {
         this.type = type
-        this.isKeyProperty = keyProperty === null ? false : definition === keyProperty
+        this.isKeyProperty = isKeyProperty
     }
 }
 
@@ -46,6 +46,7 @@ export class Node implements s.SerializableNode, bi.Node {
     }
     public forEachProperty(callback: (property: Property, key: string) => void) {
         this.definition.properties.forEach((p, pKey) => {
+            const isKeyProperty = this.keyProperty === null ? false : p === this.keyProperty
             switch (p.type[0]) {
                 case "collection": {
                     const $ = p.type[1]
@@ -55,7 +56,7 @@ export class Node implements s.SerializableNode, bi.Node {
                                 new Property(
                                     p,
                                     ["dictionary", this.getCollection(pKey)],
-                                    this.keyProperty,
+                                    isKeyProperty,
                                 ),
                                 pKey
                             )
@@ -66,7 +67,7 @@ export class Node implements s.SerializableNode, bi.Node {
                                 new Property(
                                     p,
                                     ["list", this.getCollection(pKey)],
-                                    this.keyProperty,
+                                    isKeyProperty,
                                 ),
                                 pKey
                             )
@@ -82,7 +83,7 @@ export class Node implements s.SerializableNode, bi.Node {
                         new Property(
                             p,
                             ["component", this.getComponent(pKey)],
-                            this.keyProperty,
+                            isKeyProperty,
                         ),
                         pKey
                     )
@@ -93,7 +94,7 @@ export class Node implements s.SerializableNode, bi.Node {
                         new Property(
                             p,
                             ["state group", this.getStateGroup(pKey)],
-                            this.keyProperty,
+                            isKeyProperty,
                         ),
                         pKey
                     )
@@ -104,7 +105,7 @@ export class Node implements s.SerializableNode, bi.Node {
                         new Property(
                             p,
                             ["value", this.getValue(pKey)],
-                            this.keyProperty,
+                            isKeyProperty,
                         ),
                         pKey
                     )
@@ -166,15 +167,8 @@ export function defaultInitializeNode(
             }
             case "state group": {
                 const $ = property.type[1]
-                const state = defaultInitializeState(
-                    $["default state"].get(),
-                    global,
-                    createdInNewContext
-                )
                 const sg = new StateGroup(
-                    state,
                     $,
-                    $["default state"].get().key,
                     errorsAggregator,
                     subentriesErrorsAggregator,
                     global,
@@ -185,7 +179,7 @@ export function defaultInitializeNode(
             }
             case "value": {
                 const $ = property.type[1]
-                node.values.add(key, createValue($, $["default value"], errorsAggregator, global, createdInNewContext))
+                node.values.add(key, createValue($, errorsAggregator, global, createdInNewContext))
                 break
             }
             default:
@@ -218,23 +212,53 @@ export class NodeBuilder implements s.NodeBuilder {
         this.global = global
         this.createdInNewContext = createdInNewContext
         this.keyProperty = keyProperty
+        this.definition.properties.forEach((p, key) => {
+            switch (p.type[0]) {
+                case "collection": {
+                    const $ = p.type[1]
+                    const collection = new Collection($, this.errorsAggregator, this.global)
+                    this.node.collections.add(key, collection)
+                    break
+                }
+                case "component": {
+                    const $ = p.type[1]
+                    const component = new Component($)
+                    this.node.components.add(key, component)
+
+                    break
+                }
+                case "state group": {
+                    const $ = p.type[1]
+                    const stateGroup = new StateGroup($, this.errorsAggregator, this.subEntriesErrorsAggregator, this.global, this.createdInNewContext)
+                    this.node.stateGroups.add(key, stateGroup)
+                    break
+                }
+                case "value": {
+                    const $ = p.type[1]
+
+                    const val = new Value($, this.errorsAggregator, this.global, this.createdInNewContext)
+                    this.node.values.add(key, val)
+                    break
+                }
+                default:
+                    assertUnreachable(p.type[0])
+            }
+        })
     }
-    public addCollection(key: string) {
+    public getCollection(key: string) {
         const propDef = this.definition.properties.get(key)
         if (propDef.type[0] !== "collection") {
             throw new Error("not a collection")
         }
-        const collection = new Collection(propDef.type[1], this.errorsAggregator, this.global)
-        this.node.collections.add(key, collection)
-        return new CollectionBuilder(collection, this.createdInNewContext, this.keyProperty)
+        const collection = this.node.collections.get(key)
+        return new CollectionBuilder(collection, this.createdInNewContext)
     }
-    public addComponent(key: string) {
+    public getComponent(key: string) {
         const propDef = this.definition.properties.get(key)
         if (propDef.type[0] !== "component") {
             throw new Error("not a component")
         }
-        const component = new Component(propDef.type[1])
-        this.node.components.add(key, component)
+        const component = this.node.components.get(key)
         return new ComponentBuilder(
             propDef.type[1],
             component,
@@ -245,31 +269,20 @@ export class NodeBuilder implements s.NodeBuilder {
             this.keyProperty,
         )
     }
-    public addStateGroup(key: string, stateName: string) {
+    public getStateGroup(key: string) {
         const propDef = this.definition.properties.get(key)
         if (propDef.type[0] !== "state group") {
             throw new Error("not a state group")
         }
-        const stateDefinition = propDef.type[1].states.get(stateName)
-        const state = new State(stateName, stateDefinition)
-        const stateGroup = new StateGroup(state, propDef.type[1], stateName, this.errorsAggregator, this.subEntriesErrorsAggregator, this.global, this.createdInNewContext)
-        this.node.stateGroups.add(key, stateGroup)
-        const nodeBuilder = new NodeBuilder(
-            stateDefinition.node,
-            state.node,
-            this.global,
-            state.errorsAggregator,
-            state.subentriesErrorsAggregator,
-            this.createdInNewContext,
-            this.keyProperty,
-        )
-        return new StateBuilder(nodeBuilder)
+        const sg = this.node.getStateGroup(key)
+
+        return new StateGroupBuilder(sg, this.global, this.createdInNewContext)
     }
-    public addValue(key: string, value: string) {
+    public getValue(key: string) {
         const propDef = this.definition.properties.get(key)
         if (propDef.type[0] !== "value") {
             throw new Error("not a value")
         }
-        this.node.values.add(key, new Value(propDef.type[1], value, this.errorsAggregator, this.global, this.createdInNewContext))
+        return this.node.values.get(key)
     }
 }

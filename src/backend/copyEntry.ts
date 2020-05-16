@@ -12,7 +12,7 @@ function copyNode(
         }
         const $ = property.type[1]
         const sourceCollection = sourceNode.getCollection(pKey)
-        const targetCollection = targetNode.addCollection(pKey)
+        const targetCollection = targetNode.getCollection(pKey)
         sourceCollection.forEachEntry(e => {
             const entry = targetCollection.createEntry()
             copyEntry($, e, entry)
@@ -23,7 +23,7 @@ function copyNode(
         if (property.type[0] !== "component") {
             return
         }
-        const comp = targetNode.addComponent(pKey)
+        const comp = targetNode.getComponent(pKey)
 
         copyNode(
             property.type[1].type.get().node,
@@ -38,18 +38,18 @@ function copyNode(
         const $ = property.type[1]
         const sourceStateGroup = sourceNode.getStateGroup(pKey)
         const sourceState = sourceStateGroup.getCurrentState()
-        const targetStateGroup = targetNode.addStateGroup(pKey, sourceState.getStateKey())
+        const targetState = targetNode.getStateGroup(pKey).setState(sourceState.getStateKey())
         copyNode(
             $.states.get(sourceState.getStateKey()).node,
             sourceState.node,
-            targetStateGroup.node,
+            targetState.node,
         )
     })
     definition.properties.forEach((property, pKey) => {
         if (property.type[0] !== "value") {
             return
         }
-        targetNode.addValue(pKey, sourceNode.getValue(pKey).getValue())
+        targetNode.getValue(pKey).setValue(sourceNode.getValue(pKey).getValue())
     })
 }
 

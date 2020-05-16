@@ -75,10 +75,14 @@ export interface Deserializer {
 }
 
 export interface NodeBuilder {
-    addCollection(name: string): CollectionBuilder
-    addComponent(name: string): ComponentBuilder
-    addStateGroup(name: string, stateName: string): StateBuilder
-    addValue(name: string, value: string): void
+    getCollection(name: string): CollectionBuilder
+    getComponent(name: string): ComponentBuilder
+    getStateGroup(name: string): StateGroupBuilder
+    getValue(name: string): ValueBuilder
+}
+
+export interface ValueBuilder {
+    setValue(value: string): void
 }
 
 export interface ComponentBuilder {
@@ -89,6 +93,11 @@ export interface EntryBuilder {
     node: NodeBuilder
     insert(): void
 }
+
+export interface StateGroupBuilder {
+    setState(stateName: string): StateBuilder
+}
+
 export interface StateBuilder {
     node: NodeBuilder
 }

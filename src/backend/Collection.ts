@@ -174,6 +174,7 @@ export class Collection implements s.SerializableCollection, bi.Collection {
     public readonly entries = new g.ReactiveArray<EntryPlaceholder>()
     public readonly definition: d.Collection
     private readonly dictionary: Dictionary | null
+    public readonly keyProperty: d.Property | null
     constructor(
         definition: d.Collection,
         errorsAggregator: IParentErrorsAggregator,
@@ -187,8 +188,10 @@ export class Collection implements s.SerializableCollection, bi.Collection {
                 this.definition.type[1],
                 this.entries,
             )
+            this.keyProperty = this.definition.type[1]["key property"].get()
         } else {
             this.dictionary = null
+            this.keyProperty = null
         }
     }
     public purgeChanges() {
@@ -305,18 +308,15 @@ export class EntryBuilder implements s.EntryBuilder {
 export class CollectionBuilder implements s.CollectionBuilder {
     private readonly collection: Collection
     private readonly createdInNewContext: boolean
-    private readonly keyProperty: null | d.Property
     constructor(
         collection: Collection,
         createdInNewContext: boolean,
-        keyProperty: null | d.Property,
     ) {
         this.collection = collection
         this.createdInNewContext = createdInNewContext
-        this.keyProperty = keyProperty
     }
     public createEntry() {
-        const entry = new Entry(this.collection.definition.node, this.keyProperty)
-        return new EntryBuilder(this.collection, entry, this.createdInNewContext, this.keyProperty)
+        const entry = new Entry(this.collection.definition.node, this.collection.keyProperty)
+        return new EntryBuilder(this.collection, entry, this.createdInNewContext, this.collection.keyProperty)
     }
 }

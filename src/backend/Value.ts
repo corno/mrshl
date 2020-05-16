@@ -4,10 +4,11 @@ import * as d from "../definition/index"
 import * as s from "../serialize-deserialize/index"
 import { IParentErrorsAggregator, PotentialError } from "./ErrorManager"
 import { Global } from "./Global"
+import { ValueBuilder } from "../serialize-deserialize/index"
 
 export type ChangeSubscriber = (oldValue: string, newValue: string) => void
 
-export class Value implements s.SerializableValue, bi.Value {
+export class Value implements s.SerializableValue, bi.Value, ValueBuilder {
     public readonly isDuplicateImp = new g.ReactiveValue<boolean>(false)
     public readonly isDuplicate: PotentialError
     public readonly isInvalidNumber: PotentialError
@@ -22,13 +23,13 @@ export class Value implements s.SerializableValue, bi.Value {
 
     constructor(
         definition: d.Value,
-        initialValue: string,
         errorsAggregator: IParentErrorsAggregator,
         global: Global,
         createdInNewContext: boolean
     ) {
+        this.initialValue = definition["default value"]
         this.focussable = new g.ReactiveValue<g.Maybe<bi.IFocussable>>(new g.Maybe<bi.IFocussable>(null))
-        this.value = new g.ReactiveValue<string>(initialValue)
+        this.value = new g.ReactiveValue<string>(this.initialValue)
         this.isDuplicate = new PotentialError(this.isDuplicateImp, errorsAggregator, global.errorManager, this.focussable)
         this.isInvalidNumber = new PotentialError(
             ((): g.ISubscribableValue<boolean> => {
@@ -51,7 +52,6 @@ export class Value implements s.SerializableValue, bi.Value {
         this.global = global
         this.changeStatus = new g.ReactiveValue<bi.ValueChangeStatus>(["not changed"])
         this.createdInNewContext = new g.ReactiveValue(createdInNewContext)
-        this.initialValue = initialValue
         this.isQuoted = true //FIXME
     }
     public setMainFocussableRepresentation(f: bi.IFocussable) {
@@ -88,7 +88,7 @@ export class Value implements s.SerializableValue, bi.Value {
     }
 }
 
-export function createValue($: d.Value, initialValue: string, errorsAggregator: IParentErrorsAggregator, global: Global, createdInNewContext: boolean) {
-    const value = new Value($, initialValue, errorsAggregator, global, createdInNewContext)
+export function createValue($: d.Value, errorsAggregator: IParentErrorsAggregator, global: Global, createdInNewContext: boolean) {
+    const value = new Value($, errorsAggregator, global, createdInNewContext)
     return value
 }

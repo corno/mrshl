@@ -1,3 +1,7 @@
+/* eslint
+    "max-classes-per-file": off
+*/
+
 import * as g from "../generics/index"
 import * as bi from "../backendAPI/index"
 import * as d from "../definition/index"
@@ -107,12 +111,10 @@ export class StateGroup implements bi.StateGroup {
     public readonly subentriesErrorsAggregator: IParentErrorsAggregator
     public readonly global: Global
     public readonly initialState: State
-    private readonly definition: d.StateGroup
+    public readonly definition: d.StateGroup
     private readonly focussable: g.ReactiveValue<g.Maybe<bi.IFocussable>>
     constructor(
-        initialState: State,
         definition: d.StateGroup,
-        initialStateDefinitionKey: string,
         thisEntryErrorsAggregator: IParentErrorsAggregator,
         subentriesErrorsAggregator: IParentErrorsAggregator,
         global: Global,
@@ -121,16 +123,20 @@ export class StateGroup implements bi.StateGroup {
         this.definition = definition
         this.global = global
 
-        this.initialState = initialState
-        this.currentState = new g.Mutable<State>(initialState)
-        this.currentStateKey = new g.ReactiveValue(initialStateDefinitionKey)
+        this.initialState = defaultInitializeState(
+            definition["default state"].get(),
+            global,
+            createdInNewContext
+        )
+        this.currentState = new g.Mutable<State>(this.initialState)
+        this.currentStateKey = new g.ReactiveValue(definition["default state"].getName())
         this.focussable = new g.ReactiveValue(new g.Maybe<bi.IFocussable>(null))
         this.thisEntryErrorsAggregator = thisEntryErrorsAggregator
         this.subentriesErrorsAggregator = subentriesErrorsAggregator
         this.createdInNewContext = new g.ReactiveValue(createdInNewContext)
         this.changeStatus = new g.ReactiveValue<bi.StateGroupChangeStatus>(["not changed"])
-        initialState.attachErrors(this)
-        this.statesOverTime.addEntry(initialState)
+        this.initialState.attachErrors(this)
+        this.statesOverTime.addEntry(this.initialState)
     }
     //THE FRONTEND API METHODS
     public updateState(stateName: string) {
@@ -166,6 +172,32 @@ export class StateGroup implements bi.StateGroup {
         }
         this.createdInNewContext.update(false)
         this.currentState.get().purgeChanges()
+    }
+}
+
+export class StateGroupBuilder implements s.StateGroupBuilder {
+    private readonly stateGroup: StateGroup
+    private readonly global: Global
+    private readonly createdInNewContext: boolean
+    constructor(stateGroup: StateGroup, global: Global, createdInNewContext: boolean) {
+        this.stateGroup = stateGroup
+        this.global = global
+        this.createdInNewContext = createdInNewContext
+    }
+    public setState(stateName: string) {
+
+        const stateDefinition = this.stateGroup.definition.states.get(stateName)
+        const state = new State(stateName, stateDefinition)
+        const nodeBuilder = new NodeBuilder(
+            stateDefinition.node,
+            state.node,
+            this.global,
+            state.errorsAggregator,
+            state.subentriesErrorsAggregator,
+            this.createdInNewContext,
+            null,
+        )
+        return new StateBuilder(nodeBuilder)
     }
 }
 
