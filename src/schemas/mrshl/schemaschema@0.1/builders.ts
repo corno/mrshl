@@ -36,7 +36,7 @@ export class Dictionary implements builders.Dictionary {
     }
     public forEachEntry(callback: (entry: DictionaryEntry, key: string) => void) {
         this.entries.forEach(e => {
-            const keyPropName = e.dictionaryDefinition["key property"].getName()
+            const keyPropName = e.dictionaryDefinition["key property"].name
             callback(e, e.node.getValue(keyPropName).getValue())
         })
     }
@@ -365,7 +365,7 @@ export class StateGroup implements builders.StateGroup {
         this.privateDefinition = privateDefinition
         this.definition = publicDefinition
         this.currentState = new StateBuilder(
-            privateDefinition["default state"].getName(),
+            privateDefinition["default state"].name,
             privateDefinition["default state"].get(),
             publicDefinition["default state"].get(),
         )

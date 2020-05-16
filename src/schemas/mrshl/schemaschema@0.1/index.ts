@@ -99,8 +99,8 @@ function convertNode(node: Node, componentTypes: g.IReadonlyLookup<internal.Comp
                                         return ["dictionary", {
                                             "has instances": ["yes", {
                                                 "node": targetNode,
-                                                "key property": g.createReference($$["key property"].getName(), targetNode.properties, resolveRegistry, keys => {
-                                                    throw new Error(`UNEXPECTED: KEY Property not found: ${$$["key property"].getName()}, available keys: ${keys}`);
+                                                "key property": g.createReference($$["key property"].name, targetNode.properties, resolveRegistry, keys => {
+                                                    throw new Error(`UNEXPECTED: KEY Property not found: ${$$["key property"].name}, available keys: ${keys}`);
                                                 }),
                                             }],
                                         }]
@@ -122,7 +122,7 @@ function convertNode(node: Node, componentTypes: g.IReadonlyLookup<internal.Comp
                     case "component": {
                         const $ = prop.type[1]
                         return ["component", {
-                            type: g.createReference($.type.getName(), componentTypes, resolveRegistry, () => {
+                            type: g.createReference($.type.name, componentTypes, resolveRegistry, () => {
                                 throw new Error("UNEXPECTED")
                             }),
                         }]
@@ -136,8 +136,8 @@ function convertNode(node: Node, componentTypes: g.IReadonlyLookup<internal.Comp
                         }))
                         return ["state group", {
                             "states": states,
-                            "default state": g.createReference($["default state"].getName(), states, resolveRegistry, keys => {
-                                throw new Error(`UNEXPECTED: KEY state not found: ${$["default state"].getName()}, available keys: ${keys}`);
+                            "default state": g.createReference($["default state"].name, states, resolveRegistry, keys => {
+                                throw new Error(`UNEXPECTED: KEY state not found: ${$["default state"].name}, available keys: ${keys}`);
                             }),
                         }]
                     }
@@ -179,7 +179,7 @@ function convert(schema: Schema): internal.Schema {
             node: convertNode(ct.node, componentTypes, null, resolveRegistry),
         })
     })
-    const rootType = g.createReference(schema["root type"].getName(), componentTypes, resolveRegistry, () => {
+    const rootType = g.createReference(schema["root type"].name, componentTypes, resolveRegistry, () => {
         throw new Error("UNEXPECTED")
     })
     const success = resolveRegistry.resolve()

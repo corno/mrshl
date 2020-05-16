@@ -126,7 +126,7 @@ class EntryRemoval implements cc.IEntryRemoval {
     }
 }
 
-class Dictionary {
+class DictionaryMixin {
     public readonly definition: d.Dictionary
     private readonly entries: g.ReactiveArray<EntryPlaceholder>
     private readonly keySubscriber: (oldValue: string, newValue: string) => void
@@ -139,17 +139,17 @@ class Dictionary {
         this.entries = entries
     }
     public attachKey(entry: EntryPlaceholder) {
-        const keyValue = entry.node.values.get(this.definition["key property"].getName())
+        const keyValue = entry.node.values.get(this.definition["key property"].name)
         this.checkDuplicates(keyValue.getValue())
         keyValue.changeSubscribers.push(this.keySubscriber)
     }
     public detachKey(entry: EntryPlaceholder) {
-        g.removeFromArray(entry.node.values.get(this.definition["key property"].getName()).changeSubscribers, e => e === this.keySubscriber)
-        const keyValue = entry.node.values.get(this.definition["key property"].getName())
+        g.removeFromArray(entry.node.values.get(this.definition["key property"].name).changeSubscribers, e => e === this.keySubscriber)
+        const keyValue = entry.node.values.get(this.definition["key property"].name)
         this.checkDuplicates(keyValue.getValue())
     }
     private checkDuplicates(key: string) {
-        const propertyName = this.definition["key property"].getName()
+        const propertyName = this.definition["key property"].name
         const matches = this.entries.map(e => e).filter(e => {
             //if it is removed, it is never a duplicate
             if (e.status.get()[0] === "inactive") {
@@ -168,12 +168,43 @@ class Dictionary {
     }
 }
 
-export class Collection implements s.SerializableCollection, bi.Collection {
+export class Dictionary implements s.SerializableDictionary {
+    private readonly collection: Collection
+    private readonly definition: d.Dictionary
+    constructor(definition: d.Dictionary, collection: Collection) {
+        this.collection = collection
+        this.definition = definition
+    }
+    public forEachEntry(callback: (entry: Entry, key: string) => void) {
+        this.collection.entries.forEach(e => {
+            if (e.status.get()[0] !== "inactive") {
+
+                callback(e.entry, e.entry.node.getValue(this.definition["key property"].name).getValue())
+            }
+        })
+    }
+}
+
+export class List implements s.SerializableList {
+    private readonly collection: Collection
+    constructor(collection: Collection) {
+        this.collection = collection
+    }
+    public forEachEntryL(callback: (entry: Entry) => void) {
+        this.collection.entries.forEach(e => {
+            if (e.status.get()[0] !== "inactive") {
+                callback(e.entry)
+            }
+        })
+    }
+}
+
+export class Collection implements bi.Collection {
     public readonly errorsAggregator: IParentErrorsAggregator
     public readonly global: Global
     public readonly entries = new g.ReactiveArray<EntryPlaceholder>()
     public readonly definition: d.Collection
-    private readonly dictionary: Dictionary | null
+    private readonly dictionary: DictionaryMixin | null
     public readonly keyProperty: d.Property | null
     constructor(
         definition: d.Collection,
@@ -184,7 +215,7 @@ export class Collection implements s.SerializableCollection, bi.Collection {
         this.errorsAggregator = errorsAggregator
         this.global = global
         if (this.definition.type[0] === "dictionary") {
-            this.dictionary = new Dictionary(
+            this.dictionary = new DictionaryMixin(
                 this.definition.type[1],
                 this.entries,
             )
@@ -249,7 +280,7 @@ export class Collection implements s.SerializableCollection, bi.Collection {
                 }
                 const entry = new Entry(this.definition.node, this.getKeyProperty())
                 const entryBuilder = new EntryBuilder(this, entry, true, this.getKeyProperty())
-                copyEntry(this.definition, e.entry, entryBuilder)
+                copyEntry(e.entry, entryBuilder)
 
                 callback(new EntryAddition(
                     this,
@@ -261,13 +292,6 @@ export class Collection implements s.SerializableCollection, bi.Collection {
                     )
                 ))
             })
-        })
-    }
-    public forEachEntry(callback: (entry: Entry) => void) {
-        this.entries.forEach(e => {
-            if (e.status.get()[0] !== "inactive") {
-                callback(e.entry)
-            }
         })
     }
     private getKeyProperty() {

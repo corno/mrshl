@@ -67,7 +67,7 @@ function serializeNode(node: t.Node, serializer: ValueSerializer) {
                             case "component": {
                                 const $ = prop.type[1]
                                 return v$.taggedUnion("component", v$ => v$.type(t$ => {
-                                    t$.add("type", false, v$ => v$.simpleValue($.type.getName(), true))
+                                    t$.add("type", false, v$ => v$.simpleValue($.type.name, true))
 
                                 }))
                             }
@@ -109,6 +109,6 @@ export function serializeMetaData(metaData: t.Schema, serializer: ValueSerialize
                 }))
             })
         }))
-        t$.add("root type", false, $ => $.simpleValue(metaData["root type"].getName(), true))
+        t$.add("root type", false, $ => $.simpleValue(metaData["root type"].name, true))
     })
 }

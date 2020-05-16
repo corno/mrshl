@@ -1,51 +1,57 @@
-import * as d from "../definition/index"
 import * as s from "../serialize-deserialize/index"
 
 function copyNode(
-    definition: d.Node,
     sourceNode: s.SerializableNode,
     targetNode: s.NodeBuilder
 ) {
-    definition.properties.forEach((property, pKey) => {
-        if (property.type[0] !== "collection") {
+    sourceNode.forEachProperty((property, pKey) => {
+        if (property.type[0] !== "dictionary") {
             return
         }
         const $ = property.type[1]
-        const sourceCollection = sourceNode.getCollection(pKey)
         const targetCollection = targetNode.getCollection(pKey)
-        sourceCollection.forEachEntry(e => {
+        $.forEachEntry(e => {
             const entry = targetCollection.createEntry()
-            copyEntry($, e, entry)
+            copyEntry(e, entry)
             entry.insert()
         })
     })
-    definition.properties.forEach((property, pKey) => {
+    sourceNode.forEachProperty((property, pKey) => {
+        if (property.type[0] !== "list") {
+            return
+        }
+        const $ = property.type[1]
+        const targetCollection = targetNode.getCollection(pKey)
+        $.forEachEntryL(e => {
+            const entry = targetCollection.createEntry()
+            copyEntry(e, entry)
+            entry.insert()
+        })
+    })
+    sourceNode.forEachProperty((property, pKey) => {
         if (property.type[0] !== "component") {
             return
         }
         const comp = targetNode.getComponent(pKey)
 
         copyNode(
-            property.type[1].type.get().node,
             sourceNode.getComponent(pKey).node,
             comp.node
         )
     })
-    definition.properties.forEach((property, pKey) => {
+    sourceNode.forEachProperty((property, pKey) => {
         if (property.type[0] !== "state group") {
             return
         }
         const $ = property.type[1]
-        const sourceStateGroup = sourceNode.getStateGroup(pKey)
-        const sourceState = sourceStateGroup.getCurrentState()
+        const sourceState = $.getCurrentState()
         const targetState = targetNode.getStateGroup(pKey).setState(sourceState.getStateKey())
         copyNode(
-            $.states.get(sourceState.getStateKey()).node,
             sourceState.node,
             targetState.node,
         )
     })
-    definition.properties.forEach((property, pKey) => {
+    sourceNode.forEachProperty((property, pKey) => {
         if (property.type[0] !== "value") {
             return
         }
@@ -54,9 +60,8 @@ function copyNode(
 }
 
 export function copyEntry(
-    definition: d.Collection,
     sourceEntry: s.SerializableEntry,
     targetEntry: s.EntryBuilder
 ) {
-    copyNode(definition.node, sourceEntry.node, targetEntry.node)
+    copyNode(sourceEntry.node, targetEntry.node)
 }

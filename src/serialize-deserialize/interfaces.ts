@@ -2,7 +2,8 @@
 import * as g from "../generics/index"
 
 export interface SerializableNode {
-    getCollection(name: string): SerializableCollection
+    getDictionary(name: string): SerializableDictionary
+    getList(name: string): SerializableList
     getComponent(name: string): SerializableComponent
     getStateGroup(name: string): SerializableStateGroup
     getValue(name: string): SerializableValue
@@ -10,8 +11,8 @@ export interface SerializableNode {
 }
 
 export type SerializablePropertyType =
-    | ["list", SerializableCollection]
-    | ["dictionary", SerializableCollection]
+    | ["list", SerializableList]
+    | ["dictionary", SerializableDictionary]
     | ["component", SerializableComponent]
     | ["state group", SerializableStateGroup]
     | ["value", SerializableValue]
@@ -31,8 +32,12 @@ export interface SerializableEntry {
     readonly node: SerializableNode
 }
 
-export interface SerializableCollection {
-    forEachEntry(callback: (entry: SerializableEntry) => void): void
+export interface SerializableDictionary {
+    forEachEntry(callback: (entry: SerializableEntry, key: string) => void): void
+}
+
+export interface SerializableList {
+    forEachEntryL(callback: (entry: SerializableEntry) => void): void
 }
 
 export interface SerializableComponent {

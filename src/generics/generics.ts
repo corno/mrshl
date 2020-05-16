@@ -1,7 +1,7 @@
 
 export interface IReference<T> {
     get(): T
-    getName(): string
+    readonly name: string
 }
 
 export function createReference<T>(name: string, getter: () => T): IReference<T> {
@@ -9,9 +9,7 @@ export function createReference<T>(name: string, getter: () => T): IReference<T>
         get: () => {
             return getter()
         },
-        getName: () => {
-            return name
-        },
+        name: name,
     }
 }
 

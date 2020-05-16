@@ -17,7 +17,7 @@
 //                 case "component": {
 //                     const $ = prop.type[1]
 //                     return {
-//                         type: $.type.getName(),
+//                         type: $.typename,
 //                     }
 //                 }
 //                 case "value": {

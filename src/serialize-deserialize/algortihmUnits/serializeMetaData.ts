@@ -24,14 +24,14 @@ function buildMetaNode(definition: d.Node, componentTypes: t.ComponentTypes): t.
             }
             case "component": {
                 const $ = prop.type[1]
-                if (componentTypes[$.type.getName()] === undefined) {
-                    componentTypes[$.type.getName()] = {
+                if (componentTypes[$.type.name] === undefined) {
+                    componentTypes[$.type.name] = {
                         node: buildMetaNode($.type.get().node, componentTypes),
                     }
                 }
                 un.properties[propKey] = {
                     type: ["component", {
-                        type: $.type.getName(),
+                        type: $.type.name,
                     }],
                 }
 
@@ -64,7 +64,7 @@ function markNodeUsage(definition: d.Node, node: i.SerializableNode, usedNode: t
         switch (propertyDefinition.type[0]) {
             case "component": {
                 const $ = propertyDefinition.type[1]
-                markNodeUsage($.type.get().node, node.getComponent(propertyKey).node, componentTypes[$.type.getName()].node, componentTypes)
+                markNodeUsage($.type.get().node, node.getComponent(propertyKey).node, componentTypes[$.type.name].node, componentTypes)
 
                 break
             }
@@ -74,14 +74,33 @@ function markNodeUsage(definition: d.Node, node: i.SerializableNode, usedNode: t
                     throw new Error("FIXME")
                 }
                 const usedCollection = usedProperty.type[1]
-                node.getCollection(propertyKey).forEachEntry(entry => {
-                    if (usedCollection["has instances"][0] === "no") {
-                        usedCollection["has instances"] = ["yes", {
-                            node: buildMetaNode($.node, componentTypes),
-                        }]
+                switch ($.type[0]) {
+                    case "dictionary": {
+                        node.getDictionary(propertyKey).forEachEntry(entry => {
+                            if (usedCollection["has instances"][0] === "no") {
+                                usedCollection["has instances"] = ["yes", {
+                                    node: buildMetaNode($.node, componentTypes),
+                                }]
+                            }
+                            markNodeUsage($.node, entry.node, usedCollection["has instances"][1].node, componentTypes)
+                        })
+
+                        break
                     }
-                    markNodeUsage($.node, entry.node, usedCollection["has instances"][1].node, componentTypes)
-                })
+                    case "list": {
+                        node.getList(propertyKey).forEachEntryL(entry => {
+                            if (usedCollection["has instances"][0] === "no") {
+                                usedCollection["has instances"] = ["yes", {
+                                    node: buildMetaNode($.node, componentTypes),
+                                }]
+                            }
+                            markNodeUsage($.node, entry.node, usedCollection["has instances"][1].node, componentTypes)
+                        })
+                        break
+                    }
+                    default:
+                        assertUnreachable($.type[0])
+                }
                 break
             }
             case "state group": {

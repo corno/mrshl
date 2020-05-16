@@ -33,7 +33,7 @@ function createPropertySnippet(prop: md.Property): fp.InlinePart {
         case "state group": {
             const $ = prop.type[1]
             return [
-                `| '${$["default state"].getName()}' `,
+                `| '${$["default state"].name}' `,
                 createNodeSnippet($["default state"].get().node, null),
             ]
         }

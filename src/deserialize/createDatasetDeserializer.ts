@@ -50,7 +50,7 @@ function createPropertyDeserializer(
                                 (key, propertyData, preData) => {
                                     hasEntries = true
                                     const entry = collBuilder.createEntry(errorMessage => onError(errorMessage, propertyData.keyRange))
-                                    entry.node.getValue($$$["key property"].getName()).setValue(key, errorMessage => onError(errorMessage, propertyData.keyRange))
+                                    entry.node.getValue($$$["key property"].name).setValue(key, errorMessage => onError(errorMessage, propertyData.keyRange))
                                     entry.setComments(preData.comments.map(c => c.text))
 
                                     registerSnippetGenerators.onDictionaryEntry(
@@ -276,7 +276,7 @@ function defaultInitializeProperty(
         }
         case "state group": {
             const $ = propDefinition.type[1]
-            nodeBuilder.getStateGroup(propKey).setState($["default state"].getName(), errorMessage => onError(errorMessage, range))
+            nodeBuilder.getStateGroup(propKey).setState($["default state"].name, errorMessage => onError(errorMessage, range))
             break
         }
         case "value": {

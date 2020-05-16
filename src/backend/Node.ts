@@ -2,7 +2,7 @@ import * as g from "../generics/index"
 import * as bi from "../backendAPI/index"
 import * as d from "../definition/index"
 import * as s from "../serialize-deserialize/index"
-import { Collection, CollectionBuilder } from "./Collection"
+import { Collection, CollectionBuilder, Dictionary, List } from "./Collection"
 import { Component, ComponentBuilder } from "./Component"
 import { IParentErrorsAggregator } from "./ErrorManager"
 import { Global } from "./Global"
@@ -14,8 +14,8 @@ function assertUnreachable(_x: never) {
 }
 
 export type PropertyType =
-    | ["list", Collection]
-    | ["dictionary", Collection]
+    | ["list", List]
+    | ["dictionary", Dictionary]
     | ["component", Component]
     | ["state group", StateGroup]
     | ["value", Value]
@@ -35,6 +35,8 @@ export class Property implements s.SerializableProperty {
 
 export class Node implements s.SerializableNode, bi.Node {
     public readonly collections = new g.Dictionary<Collection>({})
+    public readonly dictionaries = new g.Dictionary<Dictionary>({})
+    public readonly lists = new g.Dictionary<List>({})
     public readonly components = new g.Dictionary<Component>({})
     public readonly stateGroups = new g.Dictionary<StateGroup>({})
     public readonly values = new g.Dictionary<Value>({})
@@ -55,7 +57,7 @@ export class Node implements s.SerializableNode, bi.Node {
                             callback(
                                 new Property(
                                     p,
-                                    ["dictionary", this.getCollection(pKey)],
+                                    ["dictionary", this.getDictionary(pKey)],
                                     isKeyProperty,
                                 ),
                                 pKey
@@ -66,7 +68,7 @@ export class Node implements s.SerializableNode, bi.Node {
                             callback(
                                 new Property(
                                     p,
-                                    ["list", this.getCollection(pKey)],
+                                    ["list", this.getList(pKey)],
                                     isKeyProperty,
                                 ),
                                 pKey
@@ -119,6 +121,12 @@ export class Node implements s.SerializableNode, bi.Node {
     public getCollection(key: string) {
         return this.collections.get(key)
     }
+    public getDictionary(key: string) {
+        return this.dictionaries.get(key)
+    }
+    public getList(key: string) {
+        return this.lists.get(key)
+    }
     public getComponent(key: string) {
         return this.components.get(key)
     }
@@ -148,7 +156,23 @@ export function defaultInitializeNode(
         switch (property.type[0]) {
             case "collection": {
                 const $ = property.type[1]
-                node.collections.add(key, new Collection($, subentriesErrorsAggregator, global))
+                const collection = new Collection($, subentriesErrorsAggregator, global)
+                node.collections.add(key, collection)
+                switch ($.type[0]) {
+                    case "dictionary": {
+                        const $$ = $.type[1]
+                        node.dictionaries.add(key, new Dictionary($$, collection))
+
+                        break
+                    }
+                    case "list": {
+                        node.lists.add(key, new List(collection))
+
+                        break
+                    }
+                    default:
+                        assertUnreachable($.type[0])
+                }
                 break
             }
             case "component": {

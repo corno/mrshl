@@ -1,7 +1,7 @@
 
 export interface IReference<T> {
     get(): T
-    getName(): string
+    readonly name: string
 }
 
 type Resolve = () => boolean
@@ -40,9 +40,7 @@ export function createReference<T>(name: string, lookup: IReadonlyLookup<T>, res
             }
             return t
         },
-        getName: () => {
-            return name
-        },
+        name: name,
     }
 }
 

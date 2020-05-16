@@ -129,7 +129,7 @@ export class StateGroup implements bi.StateGroup {
             createdInNewContext
         )
         this.currentState = new g.Mutable<State>(this.initialState)
-        this.currentStateKey = new g.ReactiveValue(definition["default state"].getName())
+        this.currentStateKey = new g.ReactiveValue(definition["default state"].name)
         this.focussable = new g.ReactiveValue(new g.Maybe<bi.IFocussable>(null))
         this.thisEntryErrorsAggregator = thisEntryErrorsAggregator
         this.subentriesErrorsAggregator = subentriesErrorsAggregator
