@@ -1,7 +1,9 @@
 import * as s from "../serialize-deserialize/index"
+import * as rapi from "../readableAPI"
+
 
 function copyNode(
-    sourceNode: s.SerializableNode,
+    sourceNode: rapi.ReadableNode,
     targetNode: s.NodeBuilder
 ) {
     sourceNode.forEachProperty((property, pKey) => {
@@ -22,7 +24,7 @@ function copyNode(
         }
         const $ = property.type[1]
         const targetCollection = targetNode.getCollection(pKey)
-        $.forEachEntryL(e => {
+        $.forEachEntry(e => {
             const entry = targetCollection.createEntry()
             copyEntry(e, entry)
             entry.insert()
@@ -60,7 +62,7 @@ function copyNode(
 }
 
 export function copyEntry(
-    sourceEntry: s.SerializableEntry,
+    sourceEntry: rapi.ReadableEntry,
     targetEntry: s.EntryBuilder
 ) {
     copyNode(sourceEntry.node, targetEntry.node)

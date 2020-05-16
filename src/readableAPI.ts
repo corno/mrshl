@@ -1,21 +1,17 @@
 
 export interface ReadableList {
-    forEachEntry(callback: (entry: ReadableListEntry) => void): void
+    forEachEntry(callback: (entry: ReadableEntry) => void): void
 }
 
 export interface ReadableDictionary {
-    forEachEntry(callback: (entry: ReadableDictionaryEntry, key: string) => void): void
+    forEachEntry(callback: (entry: ReadableEntry, key: string) => void): void
 }
 
 export interface ReadableComponent {
     node: ReadableNode
 }
 
-export interface ReadableDictionaryEntry {
-    node: ReadableNode
-}
-
-export interface ReadableListEntry {
+export interface ReadableEntry {
     node: ReadableNode
 }
 
@@ -24,6 +20,11 @@ export interface ReadableDataset {
 }
 
 export interface ReadableNode {
+    getDictionary(name: string): ReadableDictionary
+    getList(name: string): ReadableList
+    getComponent(name: string): ReadableComponent
+    getStateGroup(name: string): ReadableStateGroup
+    getValue(name: string): ReadableValue
     forEachProperty(callback: (entry: ReadableProperty, key: string) => void): void
 }
 

@@ -6,13 +6,14 @@ import * as g from "../generics/index"
 import * as bi from "../backendAPI/index"
 import * as d from "../definition/index"
 import * as s from "../serialize-deserialize/index"
+import * as rapi from "../readableAPI"
 import * as cc from "./ChangeController"
 import { copyEntry } from "./copyEntry"
 import { FlexibleErrorsAggregator, IParentErrorsAggregator } from "./ErrorManager"
 import { Global } from "./Global"
 import { defaultInitializeNode, Node, NodeBuilder } from "./Node"
 
-export class Entry implements s.SerializableEntry {
+export class Entry implements rapi.ReadableEntry {
     public readonly errorsAggregator = new FlexibleErrorsAggregator()
     public readonly subentriesErrorsAggregator = new FlexibleErrorsAggregator()
     public readonly node: Node
@@ -168,7 +169,7 @@ class DictionaryMixin {
     }
 }
 
-export class Dictionary implements s.SerializableDictionary {
+export class Dictionary implements rapi.ReadableDictionary {
     private readonly collection: Collection
     private readonly definition: d.Dictionary
     constructor(definition: d.Dictionary, collection: Collection) {
@@ -185,12 +186,12 @@ export class Dictionary implements s.SerializableDictionary {
     }
 }
 
-export class List implements s.SerializableList {
+export class List implements rapi.ReadableList {
     private readonly collection: Collection
     constructor(collection: Collection) {
         this.collection = collection
     }
-    public forEachEntryL(callback: (entry: Entry) => void) {
+    public forEachEntry(callback: (entry: Entry) => void) {
         this.collection.entries.forEach(e => {
             if (e.status.get()[0] !== "inactive") {
                 callback(e.entry)

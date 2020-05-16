@@ -2,6 +2,7 @@ import * as g from "../generics/index"
 import * as bi from "../backendAPI/index"
 import * as d from "../definition/index"
 import * as s from "../serialize-deserialize/index"
+import * as rapi from "../readableAPI"
 import { Collection, CollectionBuilder, Dictionary, List } from "./Collection"
 import { Component, ComponentBuilder } from "./Component"
 import { IParentErrorsAggregator } from "./ErrorManager"
@@ -20,7 +21,7 @@ export type PropertyType =
     | ["state group", StateGroup]
     | ["value", Value]
 
-export class Property implements s.SerializableProperty {
+export class Property implements rapi.ReadableProperty {
     public readonly isKeyProperty: boolean
     public readonly type: PropertyType
     constructor(
@@ -33,7 +34,7 @@ export class Property implements s.SerializableProperty {
     }
 }
 
-export class Node implements s.SerializableNode, bi.Node {
+export class Node implements rapi.ReadableNode, bi.Node {
     public readonly collections = new g.Dictionary<Collection>({})
     public readonly dictionaries = new g.Dictionary<Dictionary>({})
     public readonly lists = new g.Dictionary<List>({})

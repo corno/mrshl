@@ -1,59 +1,6 @@
 // tslint:disable: interface-name
 import * as g from "../generics/index"
 
-export interface SerializableNode {
-    getDictionary(name: string): SerializableDictionary
-    getList(name: string): SerializableList
-    getComponent(name: string): SerializableComponent
-    getStateGroup(name: string): SerializableStateGroup
-    getValue(name: string): SerializableValue
-    forEachProperty(callback: (entry: SerializableProperty, key: string) => void): void
-}
-
-export type SerializablePropertyType =
-    | ["list", SerializableList]
-    | ["dictionary", SerializableDictionary]
-    | ["component", SerializableComponent]
-    | ["state group", SerializableStateGroup]
-    | ["value", SerializableValue]
-
-export interface SerializableProperty {
-    readonly isKeyProperty: boolean
-    readonly type: SerializablePropertyType
-}
-
-
-export interface SerializableValue {
-    getValue(): string
-    readonly isQuoted: boolean
-}
-
-export interface SerializableEntry {
-    readonly node: SerializableNode
-}
-
-export interface SerializableDictionary {
-    forEachEntry(callback: (entry: SerializableEntry, key: string) => void): void
-}
-
-export interface SerializableList {
-    forEachEntryL(callback: (entry: SerializableEntry) => void): void
-}
-
-export interface SerializableComponent {
-    readonly node: SerializableNode
-}
-
-export interface SerializableStateGroup {
-    getCurrentState(): SerializableState
-}
-
-export interface SerializableState {
-    readonly node: SerializableNode
-    getStateKey(): string
-}
-
-
 export interface ArrayAPI {
     readonly array: null
 }

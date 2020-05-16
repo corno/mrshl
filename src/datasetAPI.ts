@@ -23,13 +23,13 @@ export interface Component extends readable.ReadableComponent {
     setComments(comments: string[]): void
 }
 
-export interface DictionaryEntry extends readable.ReadableDictionaryEntry {
+export interface DictionaryEntry extends readable.ReadableEntry {
     readonly definition: md.Dictionary
     node: Node
     setComments(comments: string[]): void
 }
 
-export interface ListEntry extends readable.ReadableListEntry {
+export interface ListEntry extends readable.ReadableEntry {
     readonly definition: md.List
     node: Node
     setComments(comments: string[]): void

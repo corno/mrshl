@@ -1,14 +1,14 @@
 import * as g from "../generics/index"
 import * as bi from "../backendAPI/index"
 import * as d from "../definition/index"
-import * as s from "../serialize-deserialize/index"
+import * as rapi from "../readableAPI"
 import { IParentErrorsAggregator, PotentialError } from "./ErrorManager"
 import { Global } from "./Global"
 import { ValueBuilder } from "../serialize-deserialize/index"
 
 export type ChangeSubscriber = (oldValue: string, newValue: string) => void
 
-export class Value implements s.SerializableValue, bi.Value, ValueBuilder {
+export class Value implements rapi.ReadableValue, bi.Value, ValueBuilder {
     public readonly isDuplicateImp = new g.ReactiveValue<boolean>(false)
     public readonly isDuplicate: PotentialError
     public readonly isInvalidNumber: PotentialError

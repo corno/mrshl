@@ -1,5 +1,5 @@
 import * as d from "../../definition/index"
-import * as i from "../interfaces"
+import * as rapi from "../../readableAPI"
 import * as t from "../types"
 
 function assertUnreachable<RT>(_x: never): RT {
@@ -58,7 +58,7 @@ function buildMetaNode(definition: d.Node, componentTypes: t.ComponentTypes): t.
     return un
 }
 
-function markNodeUsage(definition: d.Node, node: i.SerializableNode, usedNode: t.Node, componentTypes: t.ComponentTypes) {
+function markNodeUsage(definition: d.Node, node: rapi.ReadableNode, usedNode: t.Node, componentTypes: t.ComponentTypes) {
     definition.properties.forEach((propertyDefinition, propertyKey) => {
         const usedProperty = usedNode.properties[propertyKey]
         switch (propertyDefinition.type[0]) {
@@ -88,7 +88,7 @@ function markNodeUsage(definition: d.Node, node: i.SerializableNode, usedNode: t
                         break
                     }
                     case "list": {
-                        node.getList(propertyKey).forEachEntryL(entry => {
+                        node.getList(propertyKey).forEachEntry(entry => {
                             if (usedCollection["has instances"][0] === "no") {
                                 usedCollection["has instances"] = ["yes", {
                                     node: buildMetaNode($.node, componentTypes),
@@ -128,7 +128,7 @@ function markNodeUsage(definition: d.Node, node: i.SerializableNode, usedNode: t
     })
 }
 
-function buildMetaData(definition: d.Node, rootNode: i.SerializableNode) {
+function buildMetaData(definition: d.Node, rootNode: rapi.ReadableNode) {
     // rootNode.definition.properties((p, propertyKey) => {
     //     rootmd.Node.properties[propertyKey] = {
     //         type: [ "collection", {
@@ -148,7 +148,7 @@ function buildMetaData(definition: d.Node, rootNode: i.SerializableNode) {
     return usedSchema
 }
 
-export function serializeMetaData(definition: d.Node, rootNode: i.SerializableNode) {
+export function serializeMetaData(definition: d.Node, rootNode: rapi.ReadableNode) {
     const schema = buildMetaData(definition, rootNode)
     return JSON.stringify(schema)
 }

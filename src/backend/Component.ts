@@ -1,11 +1,12 @@
 import * as bi from "../backendAPI/index"
 import * as d from "../definition/index"
+import * as rapi from "../readableAPI"
 import * as s from "../serialize-deserialize/index"
 import { IParentErrorsAggregator } from "./ErrorManager"
 import { Global } from "./Global"
 import { Node, NodeBuilder } from "./Node"
 
-export class Component implements s.SerializableComponent, bi.Component {
+export class Component implements rapi.ReadableComponent, bi.Component {
     public readonly node: Node
     constructor(definition: d.Component) {
         this.node = new Node(definition.type.get().node, null)
