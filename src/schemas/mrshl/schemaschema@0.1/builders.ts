@@ -71,15 +71,19 @@ export class List implements builders.List {
     }
 }
 
+export class Comments implements builders.Comments {
+    public setComments() {
+        //
+    }
+}
+
 export class Component implements builders.Component {
     public readonly definition: md.Component
     public readonly node: Node
+    public readonly comments = new Comments()
     constructor(privateDefinition: types.Component, publicDefinition: md.Component) {
         this.definition = publicDefinition
         this.node = new Node(privateDefinition.type.get().node, publicDefinition.type.get().node)
-    }
-    public setComments() {
-        //
     }
 }
 
@@ -89,6 +93,7 @@ export class ListEntry implements builders.ListEntry {
     //private readonly onError: OnError
     public readonly definition: md.List
     public readonly node: Node
+    public readonly comments = new Comments()
 
     constructor(
         collectionDefinition: types.Collection,
@@ -104,9 +109,6 @@ export class ListEntry implements builders.ListEntry {
         }
         this.node = new Node(collectionDefinition.node, publicDefinition["has instances"][1].node)
     }
-    public setComments() {
-        //
-    }
 }
 export class DictionaryEntry implements builders.DictionaryEntry {
     //private readonly collectionDefinition: types.Collection
@@ -115,6 +117,7 @@ export class DictionaryEntry implements builders.DictionaryEntry {
     public readonly node: Node
     public readonly dictionaryDefinition: types.Dictionary
     public readonly definition: md.Dictionary
+    public readonly comments = new Comments()
 
     constructor(
         collectionDefinition: types.Collection,
@@ -130,9 +133,6 @@ export class DictionaryEntry implements builders.DictionaryEntry {
         }
         this.node = new Node(collectionDefinition.node, publicDefinition["has instances"][1].node)
         this.dictionaryDefinition = dictionaryDefinition
-    }
-    public setComments() {
-        //
     }
 }
 
@@ -315,14 +315,13 @@ export class Value implements builders.Value {
     public readonly definition: md.Value
     public readonly isQuoted: boolean
     private value: string
+    public readonly comments = new Comments()
+
     constructor(privateDefinition: types.Value, definition: md.Value) {
         this.privateDefinition = privateDefinition
         this.value = privateDefinition["default value"]
         this.definition = definition
         this.isQuoted = definition.quoted
-    }
-    public setComments() {
-        //
     }
     public getSuggestions() {
         return []
@@ -361,6 +360,8 @@ export class StateGroup implements builders.StateGroup {
     private readonly privateDefinition: types.StateGroup
     public readonly definition: md.StateGroup
     private currentState: StateBuilder
+    public readonly comments = new Comments()
+
     constructor(privateDefinition: types.StateGroup, publicDefinition: md.StateGroup) {
         this.privateDefinition = privateDefinition
         this.definition = publicDefinition
@@ -383,9 +384,6 @@ export class StateGroup implements builders.StateGroup {
         this.currentState = state
         return state
     }
-    public setComments() {
-        //
-    }
     public getCurrentState(): StateBuilder {
         return this.currentState
     }
@@ -396,14 +394,13 @@ export class StateBuilder {
     public readonly definition: md.State
     public readonly node: Node
     private readonly stateName: string
+    public readonly comments = new Comments()
+
     constructor(stateName: string, privateDefinition: types.State, publicDefinition: md.State) {
         //this.onError = onError
         this.definition = publicDefinition
         this.node = new Node(privateDefinition.node, publicDefinition.node)
         this.stateName = stateName
-    }
-    public setComments() {
-        //
     }
     public getStateKey(): string {
         return this.stateName

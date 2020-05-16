@@ -6,7 +6,6 @@ function assertUnreachable<RT>(_x: never): RT {
     throw new Error("Unreachable")
 }
 
-
 function buildMetaNode(definition: d.Node, componentTypes: t.ComponentTypes): t.Node {
     const un: t.Node = {
         properties: {},

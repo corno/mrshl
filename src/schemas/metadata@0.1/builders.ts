@@ -42,21 +42,26 @@ export class List implements builders.List {
     }
 }
 
+export class Comments implements builders.Comments {
+    public setComments() {
+        //
+    }
+}
+
 export class Component implements builders.Component {
     public readonly definition: md.Component
     public readonly node: Node
+    public readonly comments = new Comments()
     constructor(definition: md.Component) {
         this.definition = definition
         this.node = new Node(this.definition.type.get().node)
-    }
-    public setComments() {
-        //
     }
 }
 
 export class ListEntry implements builders.ListEntry {
     public readonly definition: md.List
     public readonly node: Node
+    public readonly comments = new Comments()
     constructor(definition: md.List) {
         this.definition = definition
         const nodeDefinition = ((): md.Node => {
@@ -71,14 +76,12 @@ export class ListEntry implements builders.ListEntry {
         })()
         this.node = new Node(nodeDefinition)
     }
-    public setComments() {
-        //
-    }
 }
 
 export class DictionaryEntry implements builders.DictionaryEntry {
     public readonly definition: md.Dictionary
     public readonly node: Node
+    public readonly comments = new Comments()
     constructor(definition: md.Dictionary) {
         this.definition = definition
         const nodeDefinition = ((): md.Node => {
@@ -92,9 +95,6 @@ export class DictionaryEntry implements builders.DictionaryEntry {
             }
         })()
         this.node = new Node(nodeDefinition)
-    }
-    public setComments() {
-        //
     }
 }
 
@@ -249,6 +249,7 @@ export class Node implements builders.Node {
 export class StateGroup {
     public readonly definition: md.StateGroup
     private currentState: null | State = null
+    public readonly comments = new Comments()
     constructor(definition: md.StateGroup) {
         this.definition = definition
     }
@@ -262,9 +263,6 @@ export class StateGroup {
         this.currentState = state
         return state
     }
-    public setComments() {
-        //
-    }
     public getCurrentState(): State {
         if (this.currentState === null) {
             throw new Error("no state set")
@@ -277,13 +275,11 @@ export class State {
     public readonly definition: md.State
     private readonly stateName: string
     public readonly node: Node
+    public readonly comments = new Comments()
     constructor(stateName: string, definition: md.State) {
         this.definition = definition
         this.stateName = stateName
         this. node = new Node(this.definition.node)
-    }
-    public setComments() {
-        //
     }
     public getStateKey(): string {
         return this.stateName
@@ -294,6 +290,7 @@ export class Value implements builders.Value {
     private value: string
     public readonly definition: md.Value
     public readonly isQuoted: boolean
+    public readonly comments = new Comments()
     constructor(definition: md.Value) {
         this.value = definition["default value"]
         this.definition = definition
@@ -301,9 +298,6 @@ export class Value implements builders.Value {
     }
     public getSuggestions() {
         return []
-    }
-    public setComments() {
-        //
     }
     public setValue(value: string) {
         this.value = value

@@ -51,7 +51,7 @@ function createPropertyDeserializer(
                                     hasEntries = true
                                     const entry = collBuilder.createEntry(errorMessage => onError(errorMessage, propertyData.keyRange))
                                     entry.node.getValue($$$["key property"].name).setValue(key, errorMessage => onError(errorMessage, propertyData.keyRange))
-                                    entry.setComments(preData.comments.map(c => c.text))
+                                    entry.comments.setComments(preData.comments.map(c => c.text))
 
                                     registerSnippetGenerators.onDictionaryEntry(
                                         propertyData,
@@ -173,9 +173,9 @@ function createPropertyDeserializer(
                     return (tuData, tuPreData, optionData, optionPreData) => {
                         registerSnippetGenerators.onState(stateName, tuData, tuPreData, optionPreData)
                         const stateGroup = nodeBuilder.getStateGroup(propKey)
-                        stateGroup.setComments(tuPreData.comments.map(c => c.text))
+                        stateGroup.comments.setComments(tuPreData.comments.map(c => c.text))
                         const state = stateGroup.setState(stateName, errorMessage => onError(errorMessage, optionData.range))
-                        state.setComments(optionPreData.comments.map(c => c.text))
+                        state.comments.setComments(optionPreData.comments.map(c => c.text))
                         if ($["default state"].get() !== stateDef) {
                             flagIsDirty()
                         }
@@ -223,7 +223,7 @@ function createPropertyDeserializer(
 
                 }
                 //valueBuilder.setValue(value, svData.quote !== null, svData.range, comments)
-                valueBuilder.setComments(preData.comments.map(c => c.text))
+                valueBuilder.comments.setComments(preData.comments.map(c => c.text))
                 registerSnippetGenerators.onValue(svData, valueBuilder)
             }))
         }
