@@ -49,7 +49,7 @@ describe("main", () => {
             const serializedDataset = fs.readFileSync(serializedDatasetPath, { encoding: "utf-8" })
             //const expectedOutput = await fs.promises.readFile(expectedOutputPath, { encoding: "utf-8" })
 
-            return astn.validateDocument(
+            return astn.loadDocument(
                 serializedDataset,
                 serializedDatasetPath,
                 astn.readSchemaFileFromFileSystem,

@@ -70,7 +70,7 @@ function addDiagnostic(
 
 export const schemaFileName = "schema.astn-schema"
 
-export function validateDocument(
+export function loadDocument(
 	documentText: string,
 	filePath: string,
 	readSchemaFile: (dir: string, schemaFileName: string) => p.IUnsafePromise<string | null, string>,
