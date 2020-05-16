@@ -26,7 +26,7 @@ export class Dictionary implements builders.Dictionary {
     }
 }
 
-export class List implements builders.ListBuilder {
+export class List implements builders.List {
     public readonly definition: md.List
     private readonly entries: ListEntry[] = []
     constructor(_collDef: md.Collection, definition: md.List) {
@@ -98,7 +98,25 @@ export class DictionaryEntry implements builders.DictionaryEntry {
     }
 }
 
-export class Node implements builders.NodeBuilder {
+export type PropertyType =
+    | ["list", List]
+    | ["dictionary", Dictionary]
+    | ["component", Component]
+    | ["state group", StateGroup]
+    | ["value", Value]
+
+export class Property implements builders.Property {
+    public readonly definition: md.Property
+    public readonly type: PropertyType
+    public readonly isKeyProperty: boolean
+    constructor(definition: md.Property, type: PropertyType, keyProperty: null | md.Property) {
+        this.definition = definition
+        this.type = type
+        this.isKeyProperty = keyProperty === null ? false : keyProperty === definition
+    }
+}
+
+export class Node implements builders.Node {
     public readonly definition: md.Node
     private readonly dictionaries: RawObject<Dictionary> = {}
     private readonly lists: RawObject<List> = {}
@@ -135,6 +153,55 @@ export class Node implements builders.NodeBuilder {
                 }
                 case "value": {
                     this.values[pKey] = new Value(p.type[1])
+                    break
+                }
+                default:
+                    assertUnreachable(p.type[0])
+            }
+        })
+    }
+    public forEachProperty(callback: (property: Property, key: string) => void) {
+        this.definition.properties.forEach((p, pKey) => {
+            switch (p.type[0]) {
+                case "collection": {
+                    const $ = p.type[1]
+                    switch ($.type[0]) {
+                        case "dictionary": {
+                            const $$ = $.type[1]
+                            switch ($$["has instances"][0]) {
+                                case "no": {
+                                    callback(new Property(p, ["dictionary", this.getDictionary(pKey)], null), pKey)
+                                    break
+                                }
+                                case "yes": {
+                                    const $$$ = $$["has instances"][1]
+                                    callback(new Property(p, ["dictionary", this.getDictionary(pKey)], $$$["key property"].get()), pKey)
+                                    break
+                                }
+                                default:
+                                    assertUnreachable($$["has instances"][0])
+                            }
+                            break
+                        }
+                        case "list": {
+                            callback(new Property(p, ["list", this.getList(pKey)], null), pKey)
+                            break
+                        }
+                        default:
+                            assertUnreachable($.type[0])
+                    }
+                    break
+                }
+                case "component": {
+                    callback(new Property(p, ["component", this.getComponent(pKey)], null), pKey)
+                    break
+                }
+                case "state group": {
+                    callback(new Property(p, ["state group", this.getStateGroup(pKey)], null), pKey)
+                    break
+                }
+                case "value": {
+                    callback(new Property(p, ["value", this.getValue(pKey)], null), pKey)
                     break
                 }
                 default:
@@ -226,9 +293,11 @@ export class State {
 export class Value implements builders.Value {
     private value: string
     public readonly definition: md.Value
+    public readonly isQuoted: boolean
     constructor(definition: md.Value) {
         this.value = definition["default value"]
         this.definition = definition
+        this.isQuoted = definition.quoted
     }
     public getSuggestions() {
         return []

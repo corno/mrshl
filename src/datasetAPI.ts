@@ -1,39 +1,44 @@
+/* eslint
+ "@typescript-eslint/no-empty-interface": off
+*/
+
 import * as readable from "./readableAPI";
 import * as md from "./metaDataSchema";
 
-// tslint:disable: interface-name
+export interface Property extends readable.ReadableProperty {
+}
 
 export interface Dictionary extends readable.ReadableDictionary {
     readonly definition: md.Dictionary
     createEntry(onError: (message: string) => void): DictionaryEntry
 }
-export interface ListBuilder extends readable.ReadableList {
+export interface List extends readable.ReadableList {
     readonly definition: md.List
     createEntry(onError: (message: string) => void): ListEntry
 }
 
 export interface Component extends readable.ReadableComponent {
     readonly definition: md.Component
-    node: NodeBuilder
+    node: Node
     setComments(comments: string[]): void
 }
 
 export interface DictionaryEntry extends readable.ReadableDictionaryEntry {
     readonly definition: md.Dictionary
-    node: NodeBuilder
+    node: Node
     setComments(comments: string[]): void
 }
 
 export interface ListEntry extends readable.ReadableListEntry {
     readonly definition: md.List
-    node: NodeBuilder
+    node: Node
     setComments(comments: string[]): void
 }
 
-export interface NodeBuilder extends readable.ReadableNode {
+export interface Node extends readable.ReadableNode {
     readonly definition: md.Node
     getDictionary(name: string): Dictionary
-    getList(name: string): ListBuilder
+    getList(name: string): List
     getComponent(name: string): Component
     getStateGroup(name: string): StateGroup
     getValue(name: string): Value
@@ -41,18 +46,18 @@ export interface NodeBuilder extends readable.ReadableNode {
 
 export interface Dataset extends readable.ReadableDataset {
     schema: md.Schema
-    root: NodeBuilder
+    root: Node
 }
 
 export interface StateGroup extends readable.ReadableStateGroup {
     readonly definition: md.StateGroup
-    setState(stateName: string, onError: (message: string) => void): StateBuilder
+    setState(stateName: string, onError: (message: string) => void): State
     setComments(comments: string[]): void
 }
 
-export interface StateBuilder {
+export interface State {
     readonly definition: md.State
-    node: NodeBuilder
+    node: Node
     setComments(comments: string[]): void
 }
 

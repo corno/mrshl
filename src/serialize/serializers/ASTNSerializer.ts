@@ -3,7 +3,6 @@
 */
 
 import * as serializers from "../serializerAPI"
-import { serializeMetaData } from "../serializeMetaData"
 import { ReadableDataset } from "../../readableAPI"
 
 class DummySerializer implements serializers.ValueSerializer {
@@ -108,9 +107,9 @@ export class ASTNSerializer implements serializers.RootSerializer {
         this.out = out
         this.root = new ASTNValueSerializer(out)
     }
-    public serializeSchema(dataset: ReadableDataset) {
-        this.out.add(`! `)
-        serializeMetaData(dataset.schema, new ASTNValueSerializer(this.out))
+    public serializeSchema(_dataset: ReadableDataset) {
+        this.out.add(`! "FIXME"`)
+        //serializeMetaData(dataset.schema, new ASTNValueSerializer(this.out))
     }
     public serializeSchemaReference(schemaReference: string) {
         this.out.add(`! ${JSON.stringify(schemaReference)}`)

@@ -13,7 +13,7 @@ function createPropertyDeserializer(
     context: bc.ExpectContext,
     propDefinition: md.Property,
     propKey: string,
-    nodeBuilder: ds.NodeBuilder,
+    nodeBuilder: ds.Node,
     isCompact: boolean,
     registerSnippetGenerators: SideEffectsAPI,
     onError: OnError,
@@ -235,7 +235,7 @@ function createPropertyDeserializer(
 
 function defaultInitializeNode(
     nodeDefinition: md.Node,
-    nodeBuilder: ds.NodeBuilder,
+    nodeBuilder: ds.Node,
     range: bc.Range,
     onError: OnError,
 ) {
@@ -254,7 +254,7 @@ function defaultInitializeNode(
 function defaultInitializeProperty(
     propDefinition: md.Property,
     propKey: string,
-    nodeBuilder: ds.NodeBuilder,
+    nodeBuilder: ds.Node,
     range: bc.Range,
     onError: OnError,
 ) {
@@ -293,7 +293,7 @@ function createNodeDeserializer(
     context: bc.ExpectContext,
     nodeDefinition: md.Node,
     keyPropertyDefinition: md.Property | null,
-    nodeBuilder: ds.NodeBuilder,
+    nodeBuilder: ds.Node,
     isCompact: boolean,
     keyProperty: md.Property | null,
     sideEffectsAPI: SideEffectsAPI,

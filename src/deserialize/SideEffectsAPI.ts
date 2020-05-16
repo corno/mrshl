@@ -9,7 +9,7 @@ export interface SideEffectsAPI {
         range: bc.Range,
         nodeDefinition: md.Node,
         keyPropertyDefinition: md.Property | null,
-        nodeBuilder: ds.NodeBuilder
+        nodeBuilder: ds.Node
     ): void
     onTypeClose(range: bc.Range): void
     onArrayTypeOpen(openData: bc.OpenData): void
@@ -33,7 +33,7 @@ export interface SideEffectsAPI {
         data: bc.PropertyData,
         propKey: string,
         propDefinition: md.Property,
-        nodeBuilder: ds.NodeBuilder,
+        nodeBuilder: ds.Node,
     ): void
     onUnexpectedProperty(
         key: string,

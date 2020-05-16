@@ -135,7 +135,7 @@ export class SnippetGenerator implements SideEffectsAPI {
         propertyData: bc.PropertyData,
         _propKey: string,
         propDefinition: md.Property,
-        _nodeBuilder: ds.NodeBuilder,
+        _nodeBuilder: ds.Node,
     ) {
         this.registerSnippet(
             propertyData.keyRange,
