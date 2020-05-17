@@ -1,7 +1,6 @@
-import * as g from "../generics/index"
-import * as bi from "../asynAPI"
-import * as d from "../definition/index"
-import * as dapi from "../syncAPI"
+import * as g from "../../generics/index"
+import * as bi from "../../asynAPI"
+import * as d from "../../definition/index"
 import { IParentErrorsAggregator, PotentialError } from "./ErrorManager"
 import { Global } from "./Global"
 import { Comments } from "./Comments"
@@ -93,25 +92,5 @@ export class Value implements bi.Value {
         if (this.changeStatus.get()[0] !== "not changed") {
             this.changeStatus.forceUpdate(["not changed"])
         }
-    }
-}
-
-export class ValueBuilder implements dapi.Value {
-    public comments: Comments
-    private readonly imp: Value
-    readonly isQuoted: boolean
-    constructor(imp: Value) {
-        this.imp = imp
-        this.comments = imp.comments
-        this.isQuoted = false//FIXME
-    }
-    public setValue(value: string, onError: (message: string) => void) {
-        this.imp.setValue(value, onError)
-    }
-    public getValue() {
-        return this.imp.getValue()
-    }
-    public getSuggestions() {
-        return this.imp.getSuggestions()
     }
 }

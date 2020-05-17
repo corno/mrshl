@@ -2,14 +2,13 @@
     "max-classes-per-file": off
 */
 
-import * as g from "../generics/index"
-import * as bi from "../asynAPI"
-import * as d from "../definition/index"
-import * as dapi from "../syncAPI"
+import * as g from "../../generics/index"
+import * as bi from "../../asynAPI"
+import * as d from "../../definition/index"
 import { IStateChange } from "./ChangeController"
 import { FlexibleErrorsAggregator, IParentErrorsAggregator } from "./ErrorManager"
 import { Global } from "./Global"
-import { defaultInitializeNode, Node, NodeBuilder } from "./Node"
+import { defaultInitializeNode, Node } from "./Node"
 import { Comments } from "./Comments"
 
 export class State implements bi.State {
@@ -181,51 +180,5 @@ export class StateGroup implements bi.StateGroup {
         }
         this.createdInNewContext.update(false)
         this.currentState.get().purgeChanges()
-    }
-}
-
-export class StateGroupBuilder implements dapi.StateGroup {
-    private readonly imp: StateGroup
-    public readonly comments: Comments
-    private readonly global: Global
-    private readonly createdInNewContext: boolean
-    constructor(stateGroup: StateGroup, global: Global, createdInNewContext: boolean) {
-        this.imp = stateGroup
-        this.global = global
-        this.createdInNewContext = createdInNewContext
-        this.comments = stateGroup.comments
-    }
-    public setState(stateName: string, _onError: (errorMessage: string) => void) {
-
-        const stateDefinition = this.imp.definition.states.getUnsafe(stateName)
-        const state = new State(stateName, stateDefinition)
-        const nodeBuilder = new NodeBuilder(
-            stateDefinition.node,
-            state.node,
-            this.global,
-            state.errorsAggregator,
-            state.subentriesErrorsAggregator,
-            this.createdInNewContext,
-            null,
-        )
-        //FIXME call onError
-        return new StateBuilder(state, nodeBuilder)
-    }
-    public getCurrentState() {
-        return this.imp.getCurrentState()
-    }
-}
-
-export class StateBuilder implements dapi.State {
-    public node: NodeBuilder
-    public comments: Comments
-    private readonly imp: State
-    constructor(imp: State, nodeBuilder: NodeBuilder) {
-        this.node = nodeBuilder
-        this.imp = imp
-        this.comments = this.imp.comments
-    }
-    public getStateKey() {
-        return this.imp.getStateKey()
     }
 }

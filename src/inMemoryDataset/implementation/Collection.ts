@@ -2,15 +2,14 @@
     "max-classes-per-file": off,
 */
 
-import * as g from "../generics/index"
-import * as bi from "../asynAPI"
-import * as d from "../definition/index"
-import * as dapi from "../syncAPI"
+import * as g from "../../generics/index"
+import * as bi from "../../asynAPI"
+import * as d from "../../definition/index"
 import * as cc from "./ChangeController"
-import { copyEntry } from "./copyEntry"
+import { copyEntry, EntryBuilder } from "../copyEntry"
 import { FlexibleErrorsAggregator, IParentErrorsAggregator } from "./ErrorManager"
 import { Global } from "./Global"
-import { defaultInitializeNode, Node, NodeBuilder } from "./Node"
+import { defaultInitializeNode, Node } from "./Node"
 import { Comments } from "./Comments"
 
 export class Entry {
@@ -304,95 +303,6 @@ export class Collection implements bi.Collection {
                     )
                 ))
             })
-        })
-    }
-}
-
-export class EntryBuilder implements dapi.Entry {
-    public node: NodeBuilder
-    public comments: Comments
-    private readonly entry: Entry
-    private readonly collection: Collection
-    private readonly createdInNewContext: boolean
-    constructor(
-        collection: Collection,
-        entry: Entry,
-        createdInNewContext: boolean,
-        keyProperty: d.Property | null,
-    ) {
-        this.comments = entry.comments
-        this.entry = entry
-        this.collection = collection
-        this.createdInNewContext = createdInNewContext
-        this.node = new NodeBuilder(
-            collection.definition.node,
-            entry.node,
-            collection.global,
-            entry.errorsAggregator,
-            entry.subentriesErrorsAggregator,
-            createdInNewContext,
-            keyProperty,
-        )
-    }
-    public insert() {
-        const entryPlaceHolder = new EntryPlaceholder(this.entry, this.collection, this.collection.global, this.createdInNewContext)
-        this.collection.insert(entryPlaceHolder)
-    }
-}
-
-export class DictionaryBuilder implements dapi.Dictionary {
-    public readonly imp: Dictionary
-    private readonly createdInNewContext: boolean
-    constructor(
-        dictionary: Dictionary,
-        createdInNewContext: boolean,
-    ) {
-        this.imp = dictionary
-        this.createdInNewContext = createdInNewContext
-    }
-    public createEntry() {
-        const entry = new Entry(this.imp.collection.definition.node, this.imp.collection.keyProperty)
-        return new EntryBuilder(this.imp.collection, entry, this.createdInNewContext, this.imp.collection.keyProperty)
-    }
-    public forEachEntry(callback: (entry: dapi.Entry, key: string) => void) {
-        const keyProperty = this.imp.definition["key property"].get()
-        this.imp.forEachEntry((e, eKey) => {
-            callback(
-                new EntryBuilder(
-                    this.imp.collection,
-                    e,
-                    this.createdInNewContext,
-                    keyProperty,
-                ),
-                eKey
-            )
-        })
-    }
-}
-
-
-export class ListBuilder implements dapi.List {
-    private readonly list: List
-    private readonly createdInNewContext: boolean
-    constructor(
-        list: List,
-        createdInNewContext: boolean,
-    ) {
-        this.list = list
-        this.createdInNewContext = createdInNewContext
-    }
-    public createEntry() {
-        const entry = new Entry(this.list.collection.definition.node, this.list.collection.keyProperty)
-        return new EntryBuilder(this.list.collection, entry, this.createdInNewContext, this.list.collection.keyProperty)
-    }
-    public forEachEntry(callback: (entry: dapi.Entry) => void) {
-        this.list.forEachEntry(e => {
-            callback(new EntryBuilder(
-                this.list.collection,
-                e,
-                this.createdInNewContext,
-                null,
-            ))
         })
     }
 }

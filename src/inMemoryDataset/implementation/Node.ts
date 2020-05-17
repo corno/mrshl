@@ -1,12 +1,11 @@
-import * as g from "../generics/index"
-import * as bi from "../asynAPI"
-import * as d from "../definition/index"
-import * as dapi from "../syncAPI"
-import { Collection, DictionaryBuilder, ListBuilder, Dictionary, List } from "./Collection"
-import { Component, ComponentBuilder } from "./Component"
+import * as g from "../../generics/index"
+import * as bi from "../../asynAPI"
+import * as d from "../../definition/index"
+import { Collection, Dictionary, List } from "./Collection"
+import { Component } from "./Component"
 import { IParentErrorsAggregator } from "./ErrorManager"
 import { Global } from "./Global"
-import { StateGroup, StateGroupBuilder } from "./StateGroup"
+import { StateGroup } from "./StateGroup"
 import { Value } from "./Value"
 
 function assertUnreachable<RT>(_x: never): RT {
@@ -30,17 +29,6 @@ export class Property {
     ) {
         this.type = type
         this.isKeyProperty = isKeyProperty
-    }
-}
-
-class PropertyBuilder implements dapi.Property {
-    private readonly imp: Property
-    public readonly type: dapi.PropertyType
-    public readonly isKeyProperty: boolean
-    constructor(imp: Property) {
-        this.imp = imp
-        this.type = imp.type
-        this.isKeyProperty = this.imp.isKeyProperty
     }
 }
 
@@ -221,124 +209,4 @@ export function defaultInitializeNode(
                 return assertUnreachable(property.type[0])
         }
     })
-}
-
-export class NodeBuilder implements dapi.Node {
-    private readonly node: Node
-    private readonly definition: d.Node
-    private readonly errorsAggregator: IParentErrorsAggregator
-    private readonly subEntriesErrorsAggregator: IParentErrorsAggregator
-    private readonly global: Global
-    private readonly createdInNewContext: boolean
-    private readonly keyProperty: d.Property | null
-    constructor(
-        definition: d.Node,
-        node: Node,
-        global: Global,
-        errorsAggregator: IParentErrorsAggregator,
-        subEntriesErrorsAggregator: IParentErrorsAggregator,
-        createdInNewContext: boolean,
-        keyProperty: d.Property | null,
-    ) {
-        this.definition = definition
-        this.node = node
-        this.errorsAggregator = errorsAggregator
-        this.subEntriesErrorsAggregator = subEntriesErrorsAggregator
-        this.global = global
-        this.createdInNewContext = createdInNewContext
-        this.keyProperty = keyProperty
-        this.definition.properties.forEach((p, key) => {
-            switch (p.type[0]) {
-                case "collection": {
-                    const $ = p.type[1]
-                    const collection = new Collection($, this.errorsAggregator, this.global)
-                    this.node.collections.add(key, collection)
-                    break
-                }
-                case "component": {
-                    const $ = p.type[1]
-                    const component = new Component($)
-                    this.node.components.add(key, component)
-
-                    break
-                }
-                case "state group": {
-                    const $ = p.type[1]
-                    const stateGroup = new StateGroup($, this.errorsAggregator, this.subEntriesErrorsAggregator, this.global, this.createdInNewContext)
-                    this.node.stateGroups.add(key, stateGroup)
-                    break
-                }
-                case "value": {
-                    const $ = p.type[1]
-
-                    const val = new Value($, this.errorsAggregator, this.global, this.createdInNewContext)
-                    this.node.values.add(key, val)
-                    break
-                }
-                default:
-                    assertUnreachable(p.type[0])
-            }
-        })
-    }
-    public getDictionary(key: string) {
-        const propDef = this.definition.properties.getUnsafe(key)
-        if (propDef.type[0] !== "collection") {
-            throw new Error("not a collection")
-        }
-        const $ = propDef.type[1]
-        if ($.type[0] !== "dictionary") {
-            throw new Error("not a dicionary")
-        }
-        const dictionary = this.node.dictionaries.getUnsafe(key)
-        return new DictionaryBuilder(dictionary, this.createdInNewContext)
-    }
-    public getList(key: string) {
-        const propDef = this.definition.properties.getUnsafe(key)
-        if (propDef.type[0] !== "collection") {
-            throw new Error("not a collection")
-        }
-        const $ = propDef.type[1]
-        if ($.type[0] !== "list") {
-            throw new Error("not a list")
-        }
-        const list = this.node.lists.getUnsafe(key)
-        return new ListBuilder(list, this.createdInNewContext)
-    }
-    public getComponent(key: string) {
-        const propDef = this.definition.properties.getUnsafe(key)
-        if (propDef.type[0] !== "component") {
-            throw new Error("not a component")
-        }
-        const component = this.node.components.getUnsafe(key)
-        return new ComponentBuilder(
-            propDef.type[1],
-            component,
-            this.global,
-            this.errorsAggregator,
-            this.subEntriesErrorsAggregator,
-            this.createdInNewContext,
-            this.keyProperty,
-        )
-    }
-    public getStateGroup(key: string) {
-        const propDef = this.definition.properties.getUnsafe(key)
-        if (propDef.type[0] !== "state group") {
-            throw new Error("not a state group")
-        }
-        const sg = this.node.getStateGroup(key)
-
-        return new StateGroupBuilder(sg, this.global, this.createdInNewContext)
-    }
-    public getValue(key: string) {
-        const propDef = this.definition.properties.getUnsafe(key)
-        if (propDef.type[0] !== "value") {
-            throw new Error("not a value")
-        }
-        return this.node.values.getUnsafe(key)
-    }
-    public forEachProperty(callback: (property: dapi.Property, key: string) => void) {
-        this.node.forEachProperty((p, pKey) => {
-            callback(new PropertyBuilder(p), pKey)
-        })
-    }
 }

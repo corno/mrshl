@@ -1,9 +1,9 @@
-import * as g from "../generics/index"
-import * as bi from "../asynAPI"
-import * as d from "../definition/index"
-import { ErrorManager, RootErrorsAggregator } from "./implementation/ErrorManager"
-import { Global } from "./implementation/Global"
-import { Node } from "./implementation/Node"
+import * as g from "../../generics/index"
+import * as bi from "../../asynAPI"
+import * as d from "../../definition/index"
+import { ErrorManager, RootErrorsAggregator } from "./ErrorManager"
+import { Global } from "./Global"
+import { Node } from "./Node"
 
 export class RootImp {
     public readonly errorsAggregator = new RootErrorsAggregator()

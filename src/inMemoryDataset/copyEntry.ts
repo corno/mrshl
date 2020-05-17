@@ -1,5 +1,6 @@
 import * as dapi from "../syncAPI"
 
+export { EntryBuilder } from "./syncAPIImplementation"
 
 function copyNode(
     sourceNode: dapi.Node,
