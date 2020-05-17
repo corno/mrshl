@@ -1,4 +1,4 @@
-import * as builders from "../../datasetAPI"
+import * as dapi from "../../datasetAPI"
 import * as md from "../../metaDataSchema"
 import { RawObject } from "./generics"
 
@@ -10,7 +10,7 @@ function assertUnreachable<RT>(_x: never): RT {
     throw new Error("unreachable")
 }
 
-export class Dictionary implements builders.Dictionary {
+export class Dictionary implements dapi.Dictionary {
     public readonly definition: md.Dictionary
     private readonly entries: DictionaryEntry[] = []
     constructor(_collDef: md.Collection, definition: md.Dictionary) {
@@ -26,7 +26,7 @@ export class Dictionary implements builders.Dictionary {
     }
 }
 
-export class List implements builders.List {
+export class List implements dapi.List {
     public readonly definition: md.List
     private readonly entries: ListEntry[] = []
     constructor(_collDef: md.Collection, definition: md.List) {
@@ -42,13 +42,13 @@ export class List implements builders.List {
     }
 }
 
-export class Comments implements builders.Comments {
+export class Comments implements dapi.Comments {
     public setComments() {
         //
     }
 }
 
-export class Component implements builders.Component {
+export class Component implements dapi.Component {
     public readonly definition: md.Component
     public readonly node: Node
     public readonly comments = new Comments()
@@ -58,7 +58,7 @@ export class Component implements builders.Component {
     }
 }
 
-export class ListEntry implements builders.ListEntry {
+export class ListEntry implements dapi.ListEntry {
     public readonly definition: md.List
     public readonly node: Node
     public readonly comments = new Comments()
@@ -78,7 +78,7 @@ export class ListEntry implements builders.ListEntry {
     }
 }
 
-export class DictionaryEntry implements builders.DictionaryEntry {
+export class DictionaryEntry implements dapi.DictionaryEntry {
     public readonly definition: md.Dictionary
     public readonly node: Node
     public readonly comments = new Comments()
@@ -105,7 +105,7 @@ export type PropertyType =
     | ["state group", StateGroup]
     | ["value", Value]
 
-export class Property implements builders.Property {
+export class Property implements dapi.Property {
     public readonly definition: md.Property
     public readonly type: PropertyType
     public readonly isKeyProperty: boolean
@@ -116,7 +116,7 @@ export class Property implements builders.Property {
     }
 }
 
-export class Node implements builders.Node {
+export class Node implements dapi.Node {
     public readonly definition: md.Node
     private readonly dictionaries: RawObject<Dictionary> = {}
     private readonly lists: RawObject<List> = {}
@@ -286,7 +286,7 @@ export class State {
     }
 }
 
-export class Value implements builders.Value {
+export class Value implements dapi.Value {
     private value: string
     public readonly definition: md.Value
     public readonly isQuoted: boolean

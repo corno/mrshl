@@ -1,11 +1,7 @@
 import * as bc from "bass-clarinet"
-import * as path from "path"
 import * as ds from "../datasetAPI"
 import * as p from "pareto-20"
-
-type AttachSchemaDeserializer = (parser: bc.Parser, onError: (message: string, range: bc.Range) => void, callback: (schema: ds.Dataset | null) => void) => void
-
-const schemasDir = path.join(__dirname, "/../schemas")
+import { schemas, AttachSchemaDeserializer } from "../schemas"
 
 export function createSchemaDeserializer(
     onError: (message: string, range: bc.Range) => void,
@@ -46,13 +42,9 @@ export function createSchemaDeserializer(
                     },
                     simpleValue: (schemaSchemaReference, svData) => {
                         function x(dir: string) {
-                            const attachFunc = require(path.join(schemasDir, dir)).attachSchemaDeserializer
+                            const attachFunc = schemas[dir]
                             if (attachFunc === undefined) {
-                                console.error(`skipping schema '${dir}, no attachSchemaDeserializer function`)
-                                return null
-                            }
-                            if (typeof attachFunc !== "function") {
-                                console.error(`skipping schema '${dir}, no attachSchemaDeserializer function`)
+                                console.error(`unknown schema schema '${dir}, no attachSchemaDeserializer function`)
                                 return null
                             }
                             return attachFunc
