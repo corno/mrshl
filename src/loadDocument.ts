@@ -2,7 +2,7 @@ import * as path from "path"
 import { Dataset } from "./syncAPI"
 import * as md from "./metaDataSchema"
 import { NodeSideEffectsAPI, createFromURLSchemaDeserializer, deserializeDataset, deserializeSchemaFromString } from "./deserialize"
-import * as b from "./builders"
+import * as b from "./inMemoryDataset"
 import * as bc from "bass-clarinet-typed"
 import * as p from "pareto-20"
 
@@ -58,11 +58,11 @@ function validateDocumentAfterExternalSchemaResolution(
 							null,
 						)
 					}
-					return p.result(new b.Dataset(schema))
+					return p.result(b.createDataset(schema))
 				}).tryToCatch(() => {
 					if (internalSchemaAndSideEffects !== null) {
 						allSideEffects.push(internalSchemaAndSideEffects.sideEffects)
-						return p.success(new b.Dataset(internalSchemaAndSideEffects.schema))
+						return p.success(b.createDataset(internalSchemaAndSideEffects.schema))
 
 					}
 					addDiagnostic(

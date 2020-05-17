@@ -13,7 +13,14 @@ export class RootImp {
     public readonly schemaPath: string
     constructor(schemaPath: string, schema: d.Schema) {
         this.schemaPath = schemaPath
-        this.rootNode = new Node(schema["root type"].get().node, null)
+        this.rootNode = new Node(
+            schema["root type"].get().node,
+            this.global,
+            this.errorsAggregator,
+            this.errorsAggregator,
+            false,
+            null
+        )
         this.schema = schema
         this.global = new Global()
     }
@@ -44,7 +51,7 @@ export class Root implements bi.Root {
 
         this.hasUnserializedChanges = new g.DerivedReactiveValue(rootImp.global.changeController.amountOfChangesSinceLastSerialization, position => {
             if (position === null) {
-               return true
+                return true
             } else {
                 return position !== 0
             }

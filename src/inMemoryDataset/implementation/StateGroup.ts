@@ -8,7 +8,7 @@ import * as d from "../../definition/index"
 import { IStateChange } from "./ChangeController"
 import { FlexibleErrorsAggregator, IParentErrorsAggregator } from "./ErrorManager"
 import { Global } from "./Global"
-import { defaultInitializeNode, Node } from "./Node"
+import { Node } from "./Node"
 import { Comments } from "./Comments"
 
 export class State implements bi.State {
@@ -21,9 +21,18 @@ export class State implements bi.State {
     constructor(
         key: string,
         definition: d.State,
+        global: Global,
+        createdInNewContext: boolean,
     ) {
         this.key = key
-        this.node = new Node(definition.node, null)
+        this.node = new Node(
+            definition.node,
+            global,
+            this.errorsAggregator,
+            this.subentriesErrorsAggregator,
+            createdInNewContext,
+            null
+        )
     }
     public purgeChanges() {
         this.node.purgeChanges()
@@ -84,20 +93,17 @@ export class StateChange implements IStateChange {
     }
 }
 
-export function defaultInitializeState(
+function createState(
     definition: d.State,
     key: string,
     global: Global,
     createdInNewContext: boolean
 ) {
-    const state = new State(key, definition)
-    defaultInitializeNode(
-        definition.node,
-        state.node,
+    const state = new State(
+        key,
+        definition,
         global,
-        state.errorsAggregator,
-        state.subentriesErrorsAggregator,
-        createdInNewContext
+        createdInNewContext,
     )
     return state
 }
@@ -127,7 +133,7 @@ export class StateGroup implements bi.StateGroup {
         this.definition = definition
         this.global = global
 
-        this.initialState = defaultInitializeState(
+        this.initialState = createState(
             definition["default state"].get(),
             definition["default state"].name,
             global,
@@ -145,7 +151,12 @@ export class StateGroup implements bi.StateGroup {
     }
     public setState(stateName: string) {
         throw new Error("PROPERLY IMPLEMENT ME")
-        return new State(stateName, this.definition.states.getUnsafe(stateName))
+        return new State(
+            stateName,
+            this.definition.states.getUnsafe(stateName),
+            this.global,
+            true,
+        )
     }
     //THE FRONTEND API METHODS
     public updateState(stateName: string) {
@@ -153,7 +164,7 @@ export class StateGroup implements bi.StateGroup {
             new StateChange(
                 this,
                 this.currentState.get(),
-                defaultInitializeState(
+                createState(
                     this.definition.states.getUnsafe(stateName),
                     stateName,
                     this.global,

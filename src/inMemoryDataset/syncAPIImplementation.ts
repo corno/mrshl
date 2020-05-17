@@ -13,9 +13,9 @@ import * as d from "../definition/index"
 import { Global } from "./implementation/Global"
 import { IParentErrorsAggregator } from "./implementation/ErrorManager"
 
-function assertUnreachable(_x: never) {
-    throw new Error("unreachable")
-}
+// function assertUnreachable(_x: never) {
+//     throw new Error("unreachable")
+// }
 
 export class ComponentBuilder implements syncAPI.Component {
     public node: NodeBuilder
@@ -76,38 +76,40 @@ export class NodeBuilder implements syncAPI.Node {
         this.global = global
         this.createdInNewContext = createdInNewContext
         this.keyProperty = keyProperty
-        this.definition.properties.forEach((p, key) => {
-            switch (p.type[0]) {
-                case "collection": {
-                    const $ = p.type[1]
-                    const collection = new Collection($, this.errorsAggregator, this.global)
-                    this.node.collections.add(key, collection)
-                    break
-                }
-                case "component": {
-                    const $ = p.type[1]
-                    const component = new Component($)
-                    this.node.components.add(key, component)
+        // this.definition.properties.forEach((p, key) => {
+        //     switch (p.type[0]) {
+        //         case "collection": {
+        //             const $ = p.type[1]
+        //             const collection = new Collection($, this.errorsAggregator, this.global)
+        //             this.node.collections.add(key, collection)
+        //             break
+        //         }
+        //         case "component": {
+        //             const $ = p.type[1]
+        //             const component = new Component(
+        //                 $
+        //                 )
+        //             this.node.components.add(key, component)
 
-                    break
-                }
-                case "state group": {
-                    const $ = p.type[1]
-                    const stateGroup = new StateGroup($, this.errorsAggregator, this.subEntriesErrorsAggregator, this.global, this.createdInNewContext)
-                    this.node.stateGroups.add(key, stateGroup)
-                    break
-                }
-                case "value": {
-                    const $ = p.type[1]
+        //             break
+        //         }
+        //         case "state group": {
+        //             const $ = p.type[1]
+        //             const stateGroup = new StateGroup($, this.errorsAggregator, this.subEntriesErrorsAggregator, this.global, this.createdInNewContext)
+        //             this.node.stateGroups.add(key, stateGroup)
+        //             break
+        //         }
+        //         case "value": {
+        //             const $ = p.type[1]
 
-                    const val = new Value($, this.errorsAggregator, this.global, this.createdInNewContext)
-                    this.node.values.add(key, val)
-                    break
-                }
-                default:
-                    assertUnreachable(p.type[0])
-            }
-        })
+        //             const val = new Value($, this.errorsAggregator, this.global, this.createdInNewContext)
+        //             this.node.values.add(key, val)
+        //             break
+        //         }
+        //         default:
+        //             assertUnreachable(p.type[0])
+        //     }
+        // })
     }
     public getDictionary(key: string) {
         const propDef = this.definition.properties.getUnsafe(key)
@@ -119,7 +121,7 @@ export class NodeBuilder implements syncAPI.Node {
             throw new Error("not a dicionary")
         }
         const dictionary = this.node.dictionaries.getUnsafe(key)
-        return new DictionaryBuilder(dictionary, this.createdInNewContext)
+        return new DictionaryBuilder(dictionary, this.global, this.createdInNewContext)
     }
     public getList(key: string) {
         const propDef = this.definition.properties.getUnsafe(key)
@@ -131,7 +133,7 @@ export class NodeBuilder implements syncAPI.Node {
             throw new Error("not a list")
         }
         const list = this.node.lists.getUnsafe(key)
-        return new ListBuilder(list, this.createdInNewContext)
+        return new ListBuilder(list, this.global, this.createdInNewContext)
     }
     public getComponent(key: string) {
         const propDef = this.definition.properties.getUnsafe(key)
@@ -187,7 +189,12 @@ export class StateGroupBuilder implements syncAPI.StateGroup {
     public setState(stateName: string, _onError: (errorMessage: string) => void) {
 
         const stateDefinition = this.imp.definition.states.getUnsafe(stateName)
-        const state = new State(stateName, stateDefinition)
+        const state = new State(
+            stateName,
+            stateDefinition,
+            this.global,
+            false,
+        )
         const nodeBuilder = new NodeBuilder(
             stateDefinition.node,
             state.node,
@@ -254,15 +261,22 @@ export class EntryBuilder implements syncAPI.Entry {
 export class DictionaryBuilder implements syncAPI.Dictionary {
     public readonly imp: Dictionary
     private readonly createdInNewContext: boolean
+    private readonly global: Global
     constructor(
         dictionary: Dictionary,
+        global: Global,
         createdInNewContext: boolean,
     ) {
         this.imp = dictionary
+        this.global = global
         this.createdInNewContext = createdInNewContext
     }
     public createEntry() {
-        const entry = new Entry(this.imp.collection.nodeDefinition, this.imp.collection.keyProperty)
+        const entry = new Entry(
+            this.imp.collection.nodeDefinition,
+            this.global,
+            this.imp.collection.keyProperty
+        )
         return new EntryBuilder(this.imp.collection, entry, this.createdInNewContext, this.imp.collection.keyProperty)
     }
     public forEachEntry(callback: (entry: syncAPI.Entry, key: string) => void) {
@@ -284,16 +298,19 @@ export class DictionaryBuilder implements syncAPI.Dictionary {
 
 export class ListBuilder implements syncAPI.List {
     private readonly list: List
+    private readonly global: Global
     private readonly createdInNewContext: boolean
     constructor(
         list: List,
+        global: Global,
         createdInNewContext: boolean,
     ) {
         this.list = list
+        this.global = global
         this.createdInNewContext = createdInNewContext
     }
     public createEntry() {
-        const entry = new Entry(this.list.collection.nodeDefinition, this.list.collection.keyProperty)
+        const entry = new Entry(this.list.collection.nodeDefinition, this.global, this.list.collection.keyProperty)
         return new EntryBuilder(this.list.collection, entry, this.createdInNewContext, this.list.collection.keyProperty)
     }
     public forEachEntry(callback: (entry: syncAPI.Entry) => void) {

@@ -9,7 +9,7 @@ import * as cc from "./ChangeController"
 import { copyEntry, EntryBuilder } from "../copyEntry"
 import { FlexibleErrorsAggregator, IParentErrorsAggregator } from "./ErrorManager"
 import { Global } from "./Global"
-import { defaultInitializeNode, Node } from "./Node"
+import { Node } from "./Node"
 import { Comments } from "./Comments"
 
 function assertUnreachable<RT>(_x: never): RT {
@@ -21,8 +21,19 @@ export class Entry {
     public readonly subentriesErrorsAggregator = new FlexibleErrorsAggregator()
     public readonly node: Node
     public readonly comments = new Comments()
-    constructor(nodeDefinition: d.Node, keyProperty: d.Property | null) {
-        this.node = new Node(nodeDefinition, keyProperty)
+    constructor(
+        nodeDefinition: d.Node,
+        global: Global,
+        keyProperty: d.Property | null
+    ) {
+        this.node = new Node(
+            nodeDefinition,
+            global,
+            this.errorsAggregator,
+            this.subentriesErrorsAggregator,
+            true,
+            keyProperty
+        )
     }
     public purgeChanges() {
         this.node.purgeChanges()
@@ -253,7 +264,11 @@ export class Collection implements bi.Collection {
     }
     public createEntry() {
         throw new Error("IMPLEMENT PROPERLY")
-        return new Entry(this.nodeDefinition, this.keyProperty)
+        return new Entry(
+            this.nodeDefinition,
+            this.global,
+            this.keyProperty
+        )
     }
     public purgeChanges() {
         this.entries.removeEntries(candidate => {
@@ -267,17 +282,10 @@ export class Collection implements bi.Collection {
     public addEntry(): void {
         const entry = new Entry(
             this.nodeDefinition,
-            this.keyProperty
+            this.global,
+            this.keyProperty,
         )
 
-        defaultInitializeNode(
-            this.nodeDefinition,
-            entry.node,
-            this.global,
-            entry.errorsAggregator,
-            entry.subentriesErrorsAggregator,
-            true
-        )
         this.global.changeController.addEntry(new EntryAddition(
             this,
             new EntryPlaceholder(entry, this, this.global, true)
@@ -308,7 +316,11 @@ export class Collection implements bi.Collection {
                     console.error(e)
                     throw new Error("Unexpected, entry is not an instance of Entry")
                 }
-                const entry = new Entry(this.nodeDefinition, this.keyProperty)
+                const entry = new Entry(
+                    this.nodeDefinition,
+                    this.global,
+                    this.keyProperty
+                )
                 const entryBuilder = new EntryBuilder(this, entry, true, this.keyProperty)
                 copyEntry(e.entry, entryBuilder)
 

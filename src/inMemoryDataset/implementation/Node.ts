@@ -41,9 +41,26 @@ export class Node implements bi.Node {
     public readonly values = new g.Dictionary<Value>({})
     private readonly definition: d.Node
     private readonly keyProperty: d.Property | null
-    constructor(definition: d.Node, keyProperty: null | d.Property) {
+    constructor(
+        definition: d.Node,
+        global: Global,
+        errorsAggregator: IParentErrorsAggregator,
+        subEntriesErrorsAggregator: IParentErrorsAggregator,
+        createdInNewContext: boolean,
+        keyProperty: null | d.Property
+    ) {
         this.definition = definition
         this.keyProperty = keyProperty
+
+
+        defaultInitializeNode(
+            definition,
+            this,
+            global,
+            errorsAggregator,
+            subEntriesErrorsAggregator,
+            createdInNewContext,
+        )
     }
     public forEachProperty(callback: (property: Property, key: string) => void) {
         this.definition.properties.forEach((p, pKey) => {
@@ -143,19 +160,19 @@ export class Node implements bi.Node {
     }
 }
 
-export function defaultInitializeNode(
+function defaultInitializeNode(
     definition: d.Node,
     node: Node,
     global: Global,
     errorsAggregator: IParentErrorsAggregator,
-    subentriesErrorsAggregator: IParentErrorsAggregator,
+    subEntriesErrorsAggregator: IParentErrorsAggregator,
     createdInNewContext: boolean
 ) {
     definition.properties.forEach((property, key) => {
         switch (property.type[0]) {
             case "collection": {
                 const $ = property.type[1]
-                const collection = new Collection($, subentriesErrorsAggregator, global)
+                const collection = new Collection($, subEntriesErrorsAggregator, global)
                 node.collections.add(key, collection)
                 switch ($.type[0]) {
                     case "dictionary": {
@@ -176,13 +193,19 @@ export function defaultInitializeNode(
             }
             case "component": {
                 const $ = property.type[1]
-                const comp = new Component($)
+                const comp = new Component(
+                    $,
+                    global,
+                    errorsAggregator,
+                    subEntriesErrorsAggregator,
+                    createdInNewContext,
+                )
                 defaultInitializeNode(
                     $.type.get().node,
                     comp.node,
                     global,
                     errorsAggregator,
-                    subentriesErrorsAggregator,
+                    subEntriesErrorsAggregator,
                     createdInNewContext,
                 )
                 node.components.add(key, comp)
@@ -193,7 +216,7 @@ export function defaultInitializeNode(
                 const sg = new StateGroup(
                     $,
                     errorsAggregator,
-                    subentriesErrorsAggregator,
+                    subEntriesErrorsAggregator,
                     global,
                     createdInNewContext,
                 )
