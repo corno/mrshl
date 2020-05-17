@@ -2,7 +2,7 @@ import * as md from "../metaDataSchema"
 import { NodeBuilder } from "./syncAPIImplementation"
 import { RootImp } from "./implementation"
 
-export class Dataset {
+class Dataset {
     public readonly schema: md.Schema
     public readonly root: NodeBuilder
     constructor(definition: md.Schema) {
@@ -22,6 +22,6 @@ export class Dataset {
     }
 }
 
-export function createDataset(schema: md.Schema) {
+export function createInMemoryDataset(schema: md.Schema) {
     return new Dataset(schema)
 }

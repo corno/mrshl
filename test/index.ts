@@ -88,6 +88,9 @@ describe("main", () => {
                 [new astn.SnippetGenerator(() => {
                     //don't do anything with the snippets
                 })],
+                schema => {
+                    return astn.createInMemoryDataset(schema)
+                }
             ).mapResultRaw(dataset => {
                 const out: string[] = []
                 astn.serialize(
