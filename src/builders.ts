@@ -1,4 +1,4 @@
-import * as dapi from "./syncAPI"
+import * as syncAPI from "./syncAPI"
 import * as md from "./metaDataSchema"
 import { RawObject } from "./generics"
 
@@ -10,7 +10,7 @@ function assertUnreachable<RT>(_x: never): RT {
     throw new Error("unreachable")
 }
 
-export class Dictionary implements dapi.Dictionary {
+export class Dictionary implements syncAPI.Dictionary {
     public readonly definition: md.Dictionary
     private readonly entries: DictionaryEntry[] = []
     constructor(_collDef: md.Collection, definition: md.Dictionary) {
@@ -26,7 +26,7 @@ export class Dictionary implements dapi.Dictionary {
     }
 }
 
-export class List implements dapi.List {
+export class List implements syncAPI.List {
     public readonly definition: md.List
     private readonly entries: ListEntry[] = []
     constructor(_collDef: md.Collection, definition: md.List) {
@@ -42,13 +42,13 @@ export class List implements dapi.List {
     }
 }
 
-export class Comments implements dapi.Comments {
+export class Comments implements syncAPI.Comments {
     public setComments() {
         //
     }
 }
 
-export class Component implements dapi.Component {
+export class Component implements syncAPI.Component {
     public readonly definition: md.Component
     public readonly node: Node
     public readonly comments = new Comments()
@@ -105,7 +105,7 @@ export type PropertyType =
     | ["state group", StateGroup]
     | ["value", Value]
 
-export class Property implements dapi.Property {
+export class Property implements syncAPI.Property {
     public readonly definition: md.Property
     public readonly type: PropertyType
     public readonly isKeyProperty: boolean
@@ -116,7 +116,7 @@ export class Property implements dapi.Property {
     }
 }
 
-export class Node implements dapi.Node {
+export class Node implements syncAPI.Node {
     public readonly definition: md.Node
     private readonly dictionaries: RawObject<Dictionary> = {}
     private readonly lists: RawObject<List> = {}
@@ -284,7 +284,7 @@ export class State {
     }
 }
 
-export class Value implements dapi.Value {
+export class Value implements syncAPI.Value {
     private value: string
     public readonly definition: md.Value
     public readonly isQuoted: boolean

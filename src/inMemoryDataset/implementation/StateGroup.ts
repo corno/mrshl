@@ -3,7 +3,7 @@
 */
 
 import * as g from "../../generics/index"
-import * as bi from "../../asynAPI"
+import * as bi from "../../asyncAPI"
 import * as d from "../../definition/index"
 import { IStateChange } from "./ChangeController"
 import { FlexibleErrorsAggregator, IParentErrorsAggregator } from "./ErrorManager"
@@ -86,10 +86,11 @@ export class StateChange implements IStateChange {
 
 export function defaultInitializeState(
     definition: d.State,
+    key: string,
     global: Global,
     createdInNewContext: boolean
 ) {
-    const state = new State(definition.key, definition)
+    const state = new State(key, definition)
     defaultInitializeNode(
         definition.node,
         state.node,
@@ -128,6 +129,7 @@ export class StateGroup implements bi.StateGroup {
 
         this.initialState = defaultInitializeState(
             definition["default state"].get(),
+            definition["default state"].name,
             global,
             createdInNewContext
         )
@@ -153,6 +155,7 @@ export class StateGroup implements bi.StateGroup {
                 this.currentState.get(),
                 defaultInitializeState(
                     this.definition.states.getUnsafe(stateName),
+                    stateName,
                     this.global,
                     true,
                 )

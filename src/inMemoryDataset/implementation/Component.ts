@@ -1,4 +1,4 @@
-import * as bi from "../../asynAPI"
+import * as bi from "../../asyncAPI"
 import * as d from "../../definition/index"
 import { Node } from "./Node"
 import { Comments } from "./Comments"

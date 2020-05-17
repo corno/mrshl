@@ -1,5 +1,5 @@
 import * as d from "../../definition/index"
-import * as dapi from "../../syncAPI"
+import * as syncAPI from "../../syncAPI"
 import * as t from "../types"
 
 function assertUnreachable<RT>(_x: never): RT {
@@ -57,7 +57,7 @@ function buildMetaNode(definition: d.Node, componentTypes: t.ComponentTypes): t.
     return un
 }
 
-function markNodeUsage(definition: d.Node, node: dapi.Node, usedNode: t.Node, componentTypes: t.ComponentTypes) {
+function markNodeUsage(definition: d.Node, node: syncAPI.Node, usedNode: t.Node, componentTypes: t.ComponentTypes) {
     definition.properties.forEach((propertyDefinition, propertyKey) => {
         const usedProperty = usedNode.properties[propertyKey]
         switch (propertyDefinition.type[0]) {
@@ -127,7 +127,7 @@ function markNodeUsage(definition: d.Node, node: dapi.Node, usedNode: t.Node, co
     })
 }
 
-function buildMetaData(definition: d.Node, rootNode: dapi.Node) {
+function buildMetaData(definition: d.Node, rootNode: syncAPI.Node) {
     // rootNode.definition.properties((p, propertyKey) => {
     //     rootmd.Node.properties[propertyKey] = {
     //         type: [ "collection", {
@@ -147,7 +147,7 @@ function buildMetaData(definition: d.Node, rootNode: dapi.Node) {
     return usedSchema
 }
 
-export function serializeMetaData(definition: d.Node, rootNode: dapi.Node) {
+export function serializeMetaData(definition: d.Node, rootNode: syncAPI.Node) {
     const schema = buildMetaData(definition, rootNode)
     return JSON.stringify(schema)
 }

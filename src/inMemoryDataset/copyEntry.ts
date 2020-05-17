@@ -1,10 +1,10 @@
-import * as dapi from "../syncAPI"
+import * as syncAPI from "../syncAPI"
 
 export { EntryBuilder } from "./syncAPIImplementation"
 
 function copyNode(
-    sourceNode: dapi.Node,
-    targetNode: dapi.Node
+    sourceNode: syncAPI.Node,
+    targetNode: syncAPI.Node
 ) {
     sourceNode.forEachProperty((property, pKey) => {
         if (property.type[0] !== "dictionary") {
@@ -64,8 +64,8 @@ function copyNode(
 }
 
 export function copyEntry(
-    sourceEntry: dapi.Entry,
-    targetEntry: dapi.Entry
+    sourceEntry: syncAPI.Entry,
+    targetEntry: syncAPI.Entry
 ) {
     copyNode(sourceEntry.node, targetEntry.node)
 }

@@ -3,7 +3,7 @@
 */
 
 import * as serializers from "../serializerAPI"
-import * as dapi from "../../syncAPI"
+import * as syncAPI from "../../syncAPI"
 
 class DummySerializer implements serializers.ValueSerializer {
     public simpleValue() {
@@ -107,7 +107,7 @@ export class ASTNSerializer implements serializers.RootSerializer {
         this.out = out
         this.root = new ASTNValueSerializer(out)
     }
-    public serializeSchema(_dataset: dapi.Dataset) {
+    public serializeSchema(_dataset: syncAPI.Dataset) {
         this.out.add(`! "FIXME"`)
         //serializeMetaData(dataset.schema, new ASTNValueSerializer(this.out))
     }

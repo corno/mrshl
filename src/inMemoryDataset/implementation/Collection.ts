@@ -3,7 +3,7 @@
 */
 
 import * as g from "../../generics/index"
-import * as bi from "../../asynAPI"
+import * as bi from "../../asyncAPI"
 import * as d from "../../definition/index"
 import * as cc from "./ChangeController"
 import { copyEntry, EntryBuilder } from "../copyEntry"

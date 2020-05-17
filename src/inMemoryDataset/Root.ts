@@ -1,5 +1,5 @@
 import * as g from "../generics/index"
-import * as bi from "../asynAPI"
+import * as bi from "../asyncAPI"
 import * as d from "../definition/index"
 import { ErrorManager, RootErrorsAggregator } from "./implementation/ErrorManager"
 import { Global } from "./implementation/Global"
@@ -13,7 +13,7 @@ export class RootImp {
     public readonly schemaPath: string
     constructor(schemaPath: string, schema: d.Schema) {
         this.schemaPath = schemaPath
-        this.rootNode = new Node(schema.root, null)
+        this.rootNode = new Node(schema["root type"].get().node, null)
         this.schema = schema
         this.global = new Global()
     }

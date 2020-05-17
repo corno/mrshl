@@ -1,7 +1,7 @@
 /* eslint
     max-classes-per-file: "off",
 */
-import * as dapi from "../syncAPI"
+import * as syncAPI from "../syncAPI"
 
 export class StringStream {
     private readonly str: string[]
@@ -40,7 +40,7 @@ export interface ValueSerializer {
 
 export interface RootSerializer {
     root: ValueSerializer
-    serializeSchema(dataset: dapi.Dataset): void
+    serializeSchema(dataset: syncAPI.Dataset): void
     serializeSchemaReference(schemaReference: string): void
 }
 

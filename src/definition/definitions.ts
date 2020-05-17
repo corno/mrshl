@@ -30,23 +30,21 @@ export type Node = {
 }
 
 export type Property = {
-    readonly label: string
     readonly type: PropertyType
 }
 
 export type PropertyType =
-    | ["component", Component]
     | ["collection", Collection]
+    | ["component", Component]
     | ["state group", StateGroup]
     | ["value", Value]
 
 export type Schema = {
-    readonly root: Node
     readonly "component types": g.IReadonlyDictionary<ComponentType>
+    readonly "root type": g.IReference<ComponentType>
 }
 
 export type State = {
-    readonly key: string
     readonly label: string
     readonly node: Node
 }
@@ -56,10 +54,6 @@ export type StateGroup = {
     readonly "default state": g.IReference<State>
 }
 
-export type TextProperty = {
-}
-
 export type Value = {
     readonly "default value": string
-    readonly type: string //a description of the type of value. e.g. number, boolean, date
 }

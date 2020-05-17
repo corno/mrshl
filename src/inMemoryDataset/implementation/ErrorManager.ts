@@ -3,7 +3,7 @@
 */
 
 import * as g from "../../generics/index"
-import * as bi from "../../asynAPI"
+import * as bi from "../../asyncAPI"
 
 export class ValidationError implements bi.ValidationError {
     public readonly focussable: g.ReactiveValue<g.Maybe<bi.IFocussable>>

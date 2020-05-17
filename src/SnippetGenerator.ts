@@ -1,5 +1,5 @@
 import { NodeSideEffectsAPI, GenerateSnippets, DictionarySideEffectsAPI } from "./deserialize"
-import * as dapi from "./syncAPI"
+import * as syncAPI from "./syncAPI"
 import * as bc from "bass-clarinet"
 import * as fp from "fountain-pen"
 import * as md from "./metaDataSchema"
@@ -139,7 +139,7 @@ export class SnippetGenerator implements NodeSideEffectsAPI, DictionarySideEffec
         propertyData: bc.PropertyData,
         _propKey: string,
         propDefinition: md.Property,
-        _nodeBuilder: dapi.Node,
+        _nodeBuilder: syncAPI.Node,
     ) {
         this.registerSnippet(
             propertyData.keyRange,
@@ -234,7 +234,7 @@ export class SnippetGenerator implements NodeSideEffectsAPI, DictionarySideEffec
             null
         )
     }
-    onValue(_propertyName: string, data: bc.StringData, value: dapi.Value) {
+    onValue(_propertyName: string, data: bc.StringData, value: syncAPI.Value) {
         this.registerSnippet(
             data.range,
             () => {

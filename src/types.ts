@@ -1,12 +1,12 @@
 import * as g from "./generics"
 
-export type CollectionType =
-    | ["dictionary", Dictionary]
-    | ["list", List]
-
 export type Collection = {
     readonly "type": CollectionType
 }
+
+export type CollectionType =
+    | ["dictionary", Dictionary]
+    | ["list", List]
 
 export type Component = {
     readonly type: g.IReference<ComponentType>
@@ -46,10 +46,10 @@ export type Property = {
 }
 
 export type PropertyType =
-    | ["value", Value]
-    | ["component", Component]
     | ["collection", Collection]
+    | ["component", Component]
     | ["state group", StateGroup]
+    | ["value", Value]
 
 export type Schema = {
     readonly "component types": g.IReadonlyDictionary<ComponentType>
