@@ -26,7 +26,7 @@
     "dist/*"
   ],
   "dependencies": {
-    "bass-clarinet-typed": "^0.72.3",
+    "bass-clarinet-typed": "^0.72.4",
     "fountain-pen": "^3.0.1",
     "pareto-fs": "^0.4.5"
   },
