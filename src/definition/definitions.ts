@@ -1,7 +1,6 @@
 import * as g from "../generics/index"
 
 export type Collection = {
-    readonly node: Node
     readonly type: CollectionType
 }
 
@@ -18,11 +17,12 @@ export type ComponentType = {
 }
 
 export type Dictionary = {
+    readonly node: Node
     readonly "key property": g.IReference<Property>
 }
 
 export type List = {
-
+    readonly node: Node
 }
 
 export type Node = {

@@ -236,7 +236,7 @@ export class EntryBuilder implements syncAPI.Entry {
         this.collection = collection
         this.createdInNewContext = createdInNewContext
         this.node = new NodeBuilder(
-            collection.definition.node,
+            collection.nodeDefinition,
             entry.node,
             collection.global,
             entry.errorsAggregator,
@@ -262,7 +262,7 @@ export class DictionaryBuilder implements syncAPI.Dictionary {
         this.createdInNewContext = createdInNewContext
     }
     public createEntry() {
-        const entry = new Entry(this.imp.collection.definition.node, this.imp.collection.keyProperty)
+        const entry = new Entry(this.imp.collection.nodeDefinition, this.imp.collection.keyProperty)
         return new EntryBuilder(this.imp.collection, entry, this.createdInNewContext, this.imp.collection.keyProperty)
     }
     public forEachEntry(callback: (entry: syncAPI.Entry, key: string) => void) {
@@ -293,7 +293,7 @@ export class ListBuilder implements syncAPI.List {
         this.createdInNewContext = createdInNewContext
     }
     public createEntry() {
-        const entry = new Entry(this.list.collection.definition.node, this.list.collection.keyProperty)
+        const entry = new Entry(this.list.collection.nodeDefinition, this.list.collection.keyProperty)
         return new EntryBuilder(this.list.collection, entry, this.createdInNewContext, this.list.collection.keyProperty)
     }
     public forEachEntry(callback: (entry: syncAPI.Entry) => void) {

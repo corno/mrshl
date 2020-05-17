@@ -77,15 +77,17 @@ function markNodeUsage(definition: d.Node, node: syncAPI.Node, usedNode: t.Node,
                 const usedCollection = usedProperty.type[1]
                 switch ($.type[0]) {
                     case "dictionary": {
+                        const $$ = $.type[1]
                         node.getDictionary(propertyKey).forEachEntry(entry => {
-                            markNodeUsage($.node, entry.node, usedCollection.node, componentTypes)
+                            markNodeUsage($$.node, entry.node, usedCollection.node, componentTypes)
                         })
 
                         break
                     }
                     case "list": {
+                        const $$ = $.type[1]
                         node.getList(propertyKey).forEachEntry(entry => {
-                            markNodeUsage($.node, entry.node, usedCollection.node, componentTypes)
+                            markNodeUsage($$.node, entry.node, usedCollection.node, componentTypes)
                         })
                         break
                     }

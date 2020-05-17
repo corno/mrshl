@@ -12,6 +12,10 @@ import { Global } from "./Global"
 import { defaultInitializeNode, Node } from "./Node"
 import { Comments } from "./Comments"
 
+function assertUnreachable<RT>(_x: never): RT {
+    throw new Error("unreachable")
+}
+
 export class Entry {
     public readonly errorsAggregator = new FlexibleErrorsAggregator()
     public readonly subentriesErrorsAggregator = new FlexibleErrorsAggregator()
@@ -211,6 +215,7 @@ export class Collection implements bi.Collection {
     public readonly global: Global
     public readonly entries = new g.ReactiveArray<EntryPlaceholder>()
     public readonly definition: d.Collection
+    public readonly nodeDefinition: d.Node
     private readonly dictionary: DictionaryMixin | null
     public readonly keyProperty: d.Property | null
     constructor(
@@ -231,10 +236,24 @@ export class Collection implements bi.Collection {
             this.dictionary = null
             this.keyProperty = null
         }
+        this.nodeDefinition = ((): d.Node => {
+            switch (definition.type[0]) {
+                case "dictionary": {
+                    const $ = definition.type[1]
+                    return $.node
+                }
+                case "list": {
+                    const $ = definition.type[1]
+                    return $.node
+                }
+                default:
+                    return assertUnreachable(definition.type[0])
+            }
+        })()
     }
     public createEntry() {
         throw new Error("IMPLEMENT PROPERLY")
-        return new Entry(this.definition.node, this.keyProperty)
+        return new Entry(this.nodeDefinition, this.keyProperty)
     }
     public purgeChanges() {
         this.entries.removeEntries(candidate => {
@@ -247,12 +266,12 @@ export class Collection implements bi.Collection {
     }
     public addEntry(): void {
         const entry = new Entry(
-            this.definition.node,
+            this.nodeDefinition,
             this.keyProperty
         )
 
         defaultInitializeNode(
-            this.definition.node,
+            this.nodeDefinition,
             entry.node,
             this.global,
             entry.errorsAggregator,
@@ -289,7 +308,7 @@ export class Collection implements bi.Collection {
                     console.error(e)
                     throw new Error("Unexpected, entry is not an instance of Entry")
                 }
-                const entry = new Entry(this.definition.node, this.keyProperty)
+                const entry = new Entry(this.nodeDefinition, this.keyProperty)
                 const entryBuilder = new EntryBuilder(this, entry, true, this.keyProperty)
                 copyEntry(e.entry, entryBuilder)
 
