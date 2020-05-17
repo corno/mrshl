@@ -12,12 +12,14 @@ function assertUnreachable<RT>(_x: never): RT {
 
 export class Dictionary implements syncAPI.Dictionary {
     public readonly definition: md.Dictionary
+    public readonly collDef: md.Collection
     private readonly entries: DictionaryEntry[] = []
-    constructor(_collDef: md.Collection, definition: md.Dictionary) {
+    constructor(collDef: md.Collection, definition: md.Dictionary) {
         this.definition = definition
+        this.collDef = collDef
     }
     public createEntry() {
-        const de = new DictionaryEntry(this.definition)
+        const de = new DictionaryEntry(this.definition, this.collDef)
         this.entries.push(de)
         return de
     }
@@ -28,12 +30,14 @@ export class Dictionary implements syncAPI.Dictionary {
 
 export class List implements syncAPI.List {
     public readonly definition: md.List
+    public readonly collDef: md.Collection
     private readonly entries: ListEntry[] = []
-    constructor(_collDef: md.Collection, definition: md.List) {
+    constructor(collDef: md.Collection, definition: md.List) {
         this.definition = definition
+        this.collDef = collDef
     }
     public createEntry() {
-        const de = new ListEntry(this.definition)
+        const de = new ListEntry(this.definition, this.collDef)
         this.entries.push(de)
         return de
     }
@@ -62,19 +66,9 @@ export class ListEntry {
     public readonly definition: md.List
     public readonly node: Node
     public readonly comments = new Comments()
-    constructor(definition: md.List) {
+    constructor(definition: md.List, _collectionDefinition: md.Collection) {
         this.definition = definition
-        const nodeDefinition = ((): md.Node => {
-            switch (definition["has instances"][0]) {
-                case "no":
-                    throw new Error("no instances expected")
-                case "yes":
-                    return definition["has instances"][1].node
-                default:
-                    return assertUnreachable(definition["has instances"][0])
-            }
-        })()
-        this.node = new Node(nodeDefinition)
+        this.node = new Node(definition.node)
     }
 }
 
@@ -82,19 +76,9 @@ export class DictionaryEntry {
     public readonly definition: md.Dictionary
     public readonly node: Node
     public readonly comments = new Comments()
-    constructor(definition: md.Dictionary) {
+    constructor(definition: md.Dictionary, _collDef: md.Collection) {
         this.definition = definition
-        const nodeDefinition = ((): md.Node => {
-            switch (definition["has instances"][0]) {
-                case "no":
-                    throw new Error("no instances expected")
-                case "yes":
-                    return definition["has instances"][1].node
-                default:
-                    return assertUnreachable(definition["has instances"][0])
-            }
-        })()
-        this.node = new Node(nodeDefinition)
+        this.node = new Node(definition.node)
     }
 }
 
@@ -168,19 +152,7 @@ export class Node implements syncAPI.Node {
                     switch ($.type[0]) {
                         case "dictionary": {
                             const $$ = $.type[1]
-                            switch ($$["has instances"][0]) {
-                                case "no": {
-                                    callback(new Property(p, ["dictionary", this.getDictionary(pKey)], null), pKey)
-                                    break
-                                }
-                                case "yes": {
-                                    const $$$ = $$["has instances"][1]
-                                    callback(new Property(p, ["dictionary", this.getDictionary(pKey)], $$$["key property"].get()), pKey)
-                                    break
-                                }
-                                default:
-                                    assertUnreachable($$["has instances"][0])
-                            }
+                            callback(new Property(p, ["dictionary", this.getDictionary(pKey)], $$["key property"].get()), pKey)
                             break
                         }
                         case "list": {

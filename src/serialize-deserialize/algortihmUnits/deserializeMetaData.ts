@@ -18,25 +18,7 @@ function deserializeMetaNode(value: i.ValueAPI, source: i.Deserializer, componen
                     case "collection": {
                         return {
                             type: ["collection", {
-                                "has instances": ((): t.HasInstances => {
-                                    return getState(source.getEntry(property, "has instances"), source, (hasIns, hasInsData) => {
-                                        switch (hasIns) {
-                                            case "yes": {
-                                                return ["yes", {
-                                                    node: deserializeMetaNode(source.getEntry(hasInsData, "node"), source, componentTypes),
-                                                }]
-                                            }
-                                            case "no": {
-                                                return ["no", {}]
-                                            }
-                                            default:
-                                                console.error("unknown 'has instances' state", hasIns)
-                                                throw new Error("unknown 'has instances' state")
-                                        }
-
-                                    })
-
-                                })(),
+                                node: deserializeMetaNode(source.getEntry(property, "node"), source, componentTypes),
                             }],
                         }
                     }
@@ -84,11 +66,9 @@ function deserializeMetaNode(value: i.ValueAPI, source: i.Deserializer, componen
 
 export function deserializeMetaData(data: string, source: i.Deserializer) {
     const value = JSON.parse(data)
-    console.log(value)
     const schemaSrc = source.castToObject(value)
     const componentTypes: t.ComponentTypes = {}
     source.mapObject(source.castToObject(source.getEntry(schemaSrc, "component types")), (entry, key) => {
-        console.log("deserialized component type:", key)
         componentTypes[key] = {
             node: deserializeMetaNode(source.getEntry(source.castToObject(entry), "node"), source, componentTypes),
         }

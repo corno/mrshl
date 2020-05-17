@@ -16,7 +16,9 @@ function buildMetaNode(definition: d.Node, componentTypes: t.ComponentTypes): t.
                 //const $ = prop.type[1]
                 un.properties[propKey] = {
                     type: ["collection", {
-                        "has instances": ["no", {}],
+                        node: {
+                            properties: {},
+                        },
                     }],
                 }
                 break
@@ -76,24 +78,14 @@ function markNodeUsage(definition: d.Node, node: syncAPI.Node, usedNode: t.Node,
                 switch ($.type[0]) {
                     case "dictionary": {
                         node.getDictionary(propertyKey).forEachEntry(entry => {
-                            if (usedCollection["has instances"][0] === "no") {
-                                usedCollection["has instances"] = ["yes", {
-                                    node: buildMetaNode($.node, componentTypes),
-                                }]
-                            }
-                            markNodeUsage($.node, entry.node, usedCollection["has instances"][1].node, componentTypes)
+                            markNodeUsage($.node, entry.node, usedCollection.node, componentTypes)
                         })
 
                         break
                     }
                     case "list": {
                         node.getList(propertyKey).forEachEntry(entry => {
-                            if (usedCollection["has instances"][0] === "no") {
-                                usedCollection["has instances"] = ["yes", {
-                                    node: buildMetaNode($.node, componentTypes),
-                                }]
-                            }
-                            markNodeUsage($.node, entry.node, usedCollection["has instances"][1].node, componentTypes)
+                            markNodeUsage($.node, entry.node, usedCollection.node, componentTypes)
                         })
                         break
                     }

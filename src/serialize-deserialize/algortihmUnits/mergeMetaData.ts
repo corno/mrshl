@@ -37,54 +37,7 @@ export function mergeMetaDataNode(left: t.Node, right: t.Node) {
                             }
                             const r$ = rightProperty.type[1]
                             return ["collection", {
-                                "has instances": ((): t.HasInstances => {
-                                    switch ($["has instances"][0]) {
-                                        case "no": {
-                                            //const $$ = $["has instances"][1]
-                                            switch (r$["has instances"][0]) {
-                                                case "no": {
-                                                    //const r$$ = r$["has instances"][1]
-                                                    //does not have instances on both sides
-                                                    return ["no", {}]
-                                                }
-                                                case "yes": {
-                                                    const r$$ = r$["has instances"][1]
-                                                    //has instances on right side only
-
-                                                    return ["yes", {
-                                                        node: r$$.node,
-                                                    }]
-                                                }
-                                                default:
-                                                    return assertUnreachable(r$["has instances"][0])
-                                            }
-                                        }
-                                        case "yes": {
-                                            const $$ = $["has instances"][1]
-                                            switch (r$["has instances"][0]) {
-                                                case "no": {
-                                                    //const r$$ = r$["has instances"][1]
-                                                    //has instances on right left only
-
-                                                    return ["yes", {
-                                                        node: $$.node,
-                                                    }]
-                                                }
-                                                case "yes": {
-                                                    const r$$ = r$["has instances"][1]
-                                                    //has instances on both sides
-                                                    return ["yes", {
-                                                        node: mergeMetaDataNode($$.node, r$$.node),
-                                                    }]
-                                                }
-                                                default:
-                                                    return assertUnreachable(r$["has instances"][0])
-                                            }
-                                        }
-                                        default:
-                                            return assertUnreachable($["has instances"][0])
-                                    }
-                                })(),
+                                node: mergeMetaDataNode($.node, r$.node),
                             }]
                         }
                         case "component": {

@@ -26,20 +26,16 @@ function convertNode(node: Node, componentTypes: g.IReadonlyLookup<md.ComponentT
                                         const $$ = $.type[1]
                                         const targetNode = convertNode($.node, componentTypes, $$["key property"].get(), resolveRegistry)
                                         return ["dictionary", {
-                                            "has instances": ["yes", {
-                                                "node": targetNode,
-                                                "key property": g.createReference($$["key property"].name, targetNode.properties, resolveRegistry, keys => {
-                                                    throw new Error(`UNEXPECTED: KEY Property not found: ${$$["key property"].name}, available keys: ${keys}`);
-                                                }),
-                                            }],
+                                            "node": targetNode,
+                                            "key property": g.createReference($$["key property"].name, targetNode.properties, resolveRegistry, keys => {
+                                                throw new Error(`UNEXPECTED: KEY Property not found: ${$$["key property"].name}, available keys: ${keys}`);
+                                            }),
                                         }]
                                     }
                                     case "list": {
                                         const targetNode = convertNode($.node, componentTypes, null, resolveRegistry)
                                         return ["list", {
-                                            "has instances": ["yes", {
-                                                node: targetNode,
-                                            }],
+                                            node: targetNode,
                                         }]
                                     }
                                     default:

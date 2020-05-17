@@ -26,14 +26,8 @@ export type State = {
     readonly node: Node
 }
 
-export type HasInstances =
-    | ["no", {}]
-    | ["yes", {
-        node: Node
-    }]
-
 export type Collection = {
-    "has instances": HasInstances //FIX this is not 'readonly'
+    node: Node
 }
 
 export type ComponentType = {

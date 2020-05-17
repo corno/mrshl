@@ -25,37 +25,15 @@ function serializeNode(node: t.Node, serializer: ValueSerializer) {
                                                 const $$ = $.type[1]
                                                 return v$.taggedUnion("dictionary", v$ => v$.type(t$ => {
 
-                                                    t$.add("has instances", false, v$ => {
-                                                        if ($$["has instances"][0] === "no") {
-                                                            return v$.taggedUnion("no", v$ => v$.type(() => {
-                                                                //
-                                                            }))
-                                                        } else {
-                                                            const $$$ = $$["has instances"][1]
-                                                            return v$.taggedUnion("yes", v$ => v$.type(t$ => {
-                                                                t$.add("key property", false, t$ => t$.simpleValue("name", true))
-                                                                t$.add("node", false, t$ => serializeNode($$$.node, t$))
-                                                            }))
-                                                        }
-                                                    })
+                                                    t$.add("key property", false, t$ => t$.simpleValue("name", true))
+                                                    t$.add("node", false, t$ => serializeNode($$.node, t$))
                                                 }))
                                             }
                                             case "list": {
                                                 const $$ = $.type[1]
                                                 return v$.taggedUnion("list", v$ => v$.type(t$ => {
+                                                    t$.add("node", false, v$ => serializeNode($$.node, v$))
 
-                                                    t$.add("has instances", false, v$ => {
-                                                        if ($$["has instances"][0] === "no") {
-                                                            return v$.taggedUnion("no", v$ => v$.type(() => {
-                                                                //
-                                                            }))
-                                                        } else {
-                                                            const $$$ = $$["has instances"][1]
-                                                            return v$.taggedUnion("yes", v$ => v$.type(t$ => {
-                                                                t$.add("node", false, v$ => serializeNode($$$.node, v$))
-                                                            }))
-                                                        }
-                                                    })
                                                 }))
                                             }
                                             default:

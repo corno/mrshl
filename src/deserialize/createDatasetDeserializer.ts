@@ -25,182 +25,110 @@ function createPropertyDeserializer(
             switch ($.type[0]) {
                 case "dictionary": {
                     const $$ = $.type[1]
-                    switch ($$["has instances"][0]) {
-                        case "no": {
-                            let dictionarySideEffects: null | DictionarySideEffectsAPI[] = null
-                            return context.expectValue(context.expectDictionary(
-                                (_key, propertyData) => {
-                                    if (dictionarySideEffects === null) {
-                                        throw new Error("UNEXPECTED")
-                                    }
-                                    dictionarySideEffects.forEach(s => {
-                                        s.onUnexpectedDictionaryEntry(
-                                            propertyData,
-                                        )
-                                    })
-                                    return context.expectValue(context.expectNothing())
-                                },
-                                openData => {
-                                    dictionarySideEffects = sideEffectsAPIs.map(s => {
-                                        return s.onDictionaryOpen(propKey, openData)
-                                    })
-                                },
-                                endData => {
-                                    if (dictionarySideEffects === null) {
-                                        throw new Error("UNEXPECTED")
-                                    }
-                                    dictionarySideEffects.forEach(s => {
-                                        s.onDictionaryClose(endData)
-                                    })
-                                },
-                            ))
-                        }
-                        case "yes": {
-                            const $$$ = $$["has instances"][1]
-                            const collBuilder = nodeBuilder.getDictionary(propKey)
-                            let hasEntries = false
-                            let dictionarySideEffects: null | DictionarySideEffectsAPI[] = null
-                            return context.expectValue(context.expectDictionary(
-                                (key, propertyData, preData) => {
-                                    hasEntries = true
-                                    const entry = collBuilder.createEntry()
-                                    //const entry = collBuilder.createEntry(errorMessage => onError(errorMessage, propertyData.keyRange))
-                                    entry.node.getValue($$$["key property"].name).setValue(key, errorMessage => onError(errorMessage, propertyData.keyRange))
-                                    entry.comments.setComments(preData.comments.map(c => c.text))
+                    const collBuilder = nodeBuilder.getDictionary(propKey)
+                    let hasEntries = false
+                    let dictionarySideEffects: null | DictionarySideEffectsAPI[] = null
+                    return context.expectValue(context.expectDictionary(
+                        (key, propertyData, preData) => {
+                            hasEntries = true
+                            const entry = collBuilder.createEntry()
+                            //const entry = collBuilder.createEntry(errorMessage => onError(errorMessage, propertyData.keyRange))
+                            entry.node.getValue($$["key property"].name).setValue(key, errorMessage => onError(errorMessage, propertyData.keyRange))
+                            entry.comments.setComments(preData.comments.map(c => c.text))
 
-                                    if (dictionarySideEffects === null) {
-                                        throw new Error("UNEXPECTED")
-                                    }
-                                    const propertySideEffects = dictionarySideEffects.map(s => {
-                                        return s.onDictionaryEntry(
-                                            propertyData,
-                                            $$$.node,
-                                            $$$["key property"].get(),
-                                            entry
-                                        )
-                                    })
-                                    return context.expectValue(createNodeDeserializer(
-                                        context,
-                                        $$$.node,
-                                        $$$["key property"].get(),
-                                        entry.node,
-                                        isCompact,
-                                        $$$["key property"].get(),
-                                        propertySideEffects,
-                                        onError,
-                                        () => {
-                                            //
-                                        },
-                                    ))
-                                },
-                                beginData => {
-                                    dictionarySideEffects = sideEffectsAPIs.map(s => {
-                                        return s.onDictionaryOpen(propKey, beginData)
-                                    })
-                                },
-                                endData => {
-                                    if (dictionarySideEffects === null) {
-                                        throw new Error("UNEXPECTED")
-                                    }
-                                    dictionarySideEffects.forEach(s => {
-                                        s.onDictionaryClose(endData)
-                                    })
-                                    if (hasEntries) {
-                                        flagIsDirty()
-                                    }
+                            if (dictionarySideEffects === null) {
+                                throw new Error("UNEXPECTED")
+                            }
+                            const propertySideEffects = dictionarySideEffects.map(s => {
+                                return s.onDictionaryEntry(
+                                    propertyData,
+                                    $$.node,
+                                    $$["key property"].get(),
+                                    entry
+                                )
+                            })
+                            return context.expectValue(createNodeDeserializer(
+                                context,
+                                $$.node,
+                                $$["key property"].get(),
+                                entry.node,
+                                isCompact,
+                                $$["key property"].get(),
+                                propertySideEffects,
+                                onError,
+                                () => {
+                                    //
                                 },
                             ))
-                        }
-                        default:
-                            return assertUnreachable($$["has instances"][0])
-                    }
+                        },
+                        beginData => {
+                            dictionarySideEffects = sideEffectsAPIs.map(s => {
+                                return s.onDictionaryOpen(propKey, beginData)
+                            })
+                        },
+                        endData => {
+                            if (dictionarySideEffects === null) {
+                                throw new Error("UNEXPECTED")
+                            }
+                            dictionarySideEffects.forEach(s => {
+                                s.onDictionaryClose(endData)
+                            })
+                            if (hasEntries) {
+                                flagIsDirty()
+                            }
+                        },
+                    ))
                 }
                 case "list": {
                     const $$ = $.type[1]
+                    const collBuilder = nodeBuilder.getList(propKey)
+                    let listSideEffects: null | ListSideEffectsAPI[] = null
 
-                    switch ($$["has instances"][0]) {
-                        case "no": {
-                            let listSideEffects: null | ListSideEffectsAPI[] = null
-
-                            return context.expectValue(context.expectList(
+                    let hasEntries = false
+                    return context.expectValue(context.expectList(
+                        () => {
+                            hasEntries = true
+                            const entry = collBuilder.createEntry()
+                            // const entry = collBuilder.createEntry(_errorMessage => {
+                            //     //onError(errorMessage, svData.range)
+                            // })
+                            if (listSideEffects === null) {
+                                throw new Error("UNEXPECTED")
+                            }
+                            const elementSideEffects = listSideEffects.map(s => {
+                                return s.onListEntry()
+                            })
+                            return createNodeDeserializer(
+                                context,
+                                $$.node,
+                                null,
+                                entry.node,
+                                isCompact,
+                                null,
+                                elementSideEffects,
+                                onError,
                                 () => {
-                                    if (listSideEffects === null) {
-                                        throw new Error("UNEXPECTED")
-                                    }
-                                    listSideEffects.forEach(s => {
-                                        s.onUnexpectedListEntry()
-                                    })
-                                    return context.expectNothing()
+                                    //
                                 },
-                                beginData => {
-                                    listSideEffects = sideEffectsAPIs.map(s => {
-                                        return s.onListOpen(propKey, beginData)
-                                    })
-                                },
-                                endData => {
-                                    if (listSideEffects === null) {
-                                        throw new Error("UNEXPECTED")
-                                    }
-                                    listSideEffects.forEach(s => {
-                                        s.onListClose(endData)
-                                    })
-                                },
-                            ))
-                        }
-                        case "yes": {
-                            const $$$ = $$["has instances"][1]
-                            const collBuilder = nodeBuilder.getList(propKey)
-                            let listSideEffects: null | ListSideEffectsAPI[] = null
-
-                            let hasEntries = false
-                            return context.expectValue(context.expectList(
-                                () => {
-                                    hasEntries = true
-                                    const entry = collBuilder.createEntry()
-                                    // const entry = collBuilder.createEntry(_errorMessage => {
-                                    //     //onError(errorMessage, svData.range)
-                                    // })
-                                    if (listSideEffects === null) {
-                                        throw new Error("UNEXPECTED")
-                                    }
-                                    const elementSideEffects = listSideEffects.map(s => {
-                                        return s.onListEntry()
-                                    })
-                                    return createNodeDeserializer(
-                                        context,
-                                        $$$.node,
-                                        null,
-                                        entry.node,
-                                        isCompact,
-                                        null,
-                                        elementSideEffects,
-                                        onError,
-                                        () => {
-                                            //
-                                        },
-                                    )
-                                },
-                                beginData => {
-                                    listSideEffects = sideEffectsAPIs.map(s => {
-                                        return s.onListOpen(propKey, beginData)
-                                    })
-                                },
-                                endData => {
-                                    if (hasEntries) {
-                                        flagIsDirty()
-                                    }
-                                    if (listSideEffects === null) {
-                                        throw new Error("UNEXPECTED")
-                                    }
-                                    listSideEffects.forEach(s => {
-                                        s.onListClose(endData)
-                                    })
-                                },
-                            ))
-                        }
-                        default:
-                            return assertUnreachable($$["has instances"][0])
-                    }
+                            )
+                        },
+                        beginData => {
+                            listSideEffects = sideEffectsAPIs.map(s => {
+                                return s.onListOpen(propKey, beginData)
+                            })
+                        },
+                        endData => {
+                            if (hasEntries) {
+                                flagIsDirty()
+                            }
+                            if (listSideEffects === null) {
+                                throw new Error("UNEXPECTED")
+                            }
+                            listSideEffects.forEach(s => {
+                                s.onListClose(endData)
+                            })
+                        },
+                    ))
                 }
                 default:
                     return assertUnreachable($.type[0])

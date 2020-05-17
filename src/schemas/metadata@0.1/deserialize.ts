@@ -55,81 +55,31 @@ function createNodeHandler(
                                                                         onExists: () => context.expectValue(context.expectTaggedUnion(
                                                                             {
                                                                                 "dictionary": () => {
-                                                                                    let targetHasInstances: t.DictionaryHasInstances | null = null
+                                                                                    let targetNode: t.Node | null = null
+                                                                                    let keyPropertyName: StringAndRange | null = null
                                                                                     return context.expectValue(context.expectType(
                                                                                         {
-                                                                                            "has instances": {
-                                                                                                onExists: () => context.expectValue(context.expectTaggedUnion(
-                                                                                                    {
-                                                                                                        "yes": () => {
-                                                                                                            let targetNode: t.Node | null = null
-                                                                                                            let keyPropertyName: StringAndRange | null = null
-
-                                                                                                            return context.expectValue(context.expectType(
-                                                                                                                {
-                                                                                                                    "node": createNodeHandler(
-                                                                                                                        context,
-                                                                                                                        componentTypes,
-                                                                                                                        node => targetNode = node,
-                                                                                                                        resolveRegistry,
-                                                                                                                    ),
-                                                                                                                    "key property": {
-                                                                                                                        onExists: () => context.expectValue(
-                                                                                                                            context.expectSimpleValue((value, stringData) => {
-                                                                                                                                keyPropertyName = {
-                                                                                                                                    value: value,
-                                                                                                                                    range: stringData.range,
-                                                                                                                                }
-                                                                                                                            })
-                                                                                                                        ),
-                                                                                                                        onNotExists: beginData => {
-                                                                                                                            keyPropertyName = {
-                                                                                                                                value: "name",
-                                                                                                                                range: beginData.range,
-                                                                                                                            }
-
-                                                                                                                        },
-                                                                                                                    },
-                                                                                                                },
-                                                                                                                () => {
-                                                                                                                    //
-                                                                                                                },
-                                                                                                                () => {
-                                                                                                                    const assertedTargetNode = assertNotNull(targetNode)
-                                                                                                                    const assertedKeyPropertyName = assertNotNull(keyPropertyName)
-                                                                                                                    targetHasInstances = ["yes", {
-                                                                                                                        "node": assertedTargetNode,
-                                                                                                                        "key property": g.createReference(
-                                                                                                                            assertedKeyPropertyName.value,
-                                                                                                                            assertedTargetNode.properties,
-                                                                                                                            resolveRegistry,
-                                                                                                                            () => {
-                                                                                                                                context.raiseError(
-                                                                                                                                    `property '${assertedKeyPropertyName.value}' not found`,
-                                                                                                                                    assertedKeyPropertyName.range,
-                                                                                                                                )
-                                                                                                                            },
-                                                                                                                        ),
-                                                                                                                    }]
-                                                                                                                }
-                                                                                                            )
-                                                                                                            )
-                                                                                                        },
-                                                                                                        "no": () => {
-                                                                                                            targetHasInstances = ["no", {}]
-                                                                                                            return context.expectValue(context.expectType())
-                                                                                                        },
-                                                                                                    },
-                                                                                                    () => {
-                                                                                                        //on unexpected option
-                                                                                                    },
-                                                                                                    () => {
-                                                                                                        //on missing option
+                                                                                            "node": createNodeHandler(
+                                                                                                context,
+                                                                                                componentTypes,
+                                                                                                node => targetNode = node,
+                                                                                                resolveRegistry,
+                                                                                            ),
+                                                                                            "key property": {
+                                                                                                onExists: () => context.expectValue(
+                                                                                                    context.expectSimpleValue((value, stringData) => {
+                                                                                                        keyPropertyName = {
+                                                                                                            value: value,
+                                                                                                            range: stringData.range,
+                                                                                                        }
+                                                                                                    })
+                                                                                                ),
+                                                                                                onNotExists: beginData => {
+                                                                                                    keyPropertyName = {
+                                                                                                        value: "name",
+                                                                                                        range: beginData.range,
                                                                                                     }
-                                                                                                ),
-                                                                                                ),
-                                                                                                onNotExists: () => {
-                                                                                                    targetHasInstances = ["no", {}]
+
                                                                                                 },
                                                                                             },
                                                                                         },
@@ -137,68 +87,47 @@ function createNodeHandler(
                                                                                             //
                                                                                         },
                                                                                         () => {
-                                                                                            const asserted = assertNotNull(targetHasInstances)
+
+                                                                                            const assertedTargetNode = assertNotNull(targetNode)
+                                                                                            const assertedKeyPropertyName = assertNotNull(keyPropertyName)
+
                                                                                             targetCollectionType = ["dictionary", {
-                                                                                                "has instances": asserted,
+                                                                                                "node": assertedTargetNode,
+                                                                                                "key property": g.createReference(
+                                                                                                    assertedKeyPropertyName.value,
+                                                                                                    assertedTargetNode.properties,
+                                                                                                    resolveRegistry,
+                                                                                                    () => {
+                                                                                                        context.raiseError(
+                                                                                                            `property '${assertedKeyPropertyName.value}' not found`,
+                                                                                                            assertedKeyPropertyName.range,
+                                                                                                        )
+                                                                                                    },
+                                                                                                ),
                                                                                             }]
                                                                                         }
                                                                                     )
                                                                                     )
                                                                                 },
                                                                                 "list": () => {
-                                                                                    let targetHasInstances: t.ListHasInstances | null = null
+                                                                                    let targetNode: t.Node | null = null
                                                                                     return context.expectValue(context.expectType(
                                                                                         {
-                                                                                            "has instances": {
-                                                                                                onExists: () => context.expectValue(context.expectTaggedUnion(
-                                                                                                    {
-                                                                                                        "yes": () => {
-                                                                                                            let targetNode: t.Node | null = null
-                                                                                                            return context.expectValue(context.expectType(
-                                                                                                                {
-                                                                                                                    "node": createNodeHandler(
-                                                                                                                        context,
-                                                                                                                        componentTypes,
-                                                                                                                        node => targetNode = node,
-                                                                                                                        resolveRegistry
-                                                                                                                    ),
-                                                                                                                },
-                                                                                                                () => {
-                                                                                                                    //
-                                                                                                                },
-                                                                                                                () => {
-                                                                                                                    const asserted = assertNotNull(targetNode)
-                                                                                                                    targetHasInstances = ["yes", {
-                                                                                                                        node: asserted,
-                                                                                                                    }]
-                                                                                                                },
-                                                                                                            ))
-                                                                                                        },
-                                                                                                        "no": () => {
-                                                                                                            targetHasInstances = ["no", {}]
-                                                                                                            return context.expectValue(context.expectType())
-                                                                                                        },
-                                                                                                    },
-                                                                                                    () => {
-                                                                                                        //on unexpected option
-                                                                                                    },
-                                                                                                    () => {
-                                                                                                        //on missing option
-                                                                                                    }
-                                                                                                ),
-                                                                                                ),
-                                                                                                onNotExists: () => {
-                                                                                                    targetHasInstances = ["no", {}]
-                                                                                                },
-                                                                                            },
+                                                                                            "node": createNodeHandler(
+                                                                                                context,
+                                                                                                componentTypes,
+                                                                                                node => targetNode = node,
+                                                                                                resolveRegistry
+                                                                                            ),
                                                                                         },
                                                                                         () => {
                                                                                             //
                                                                                         },
                                                                                         () => {
-                                                                                            const asserted = assertNotNull(targetHasInstances)
+                                                                                            const asserted = assertNotNull(targetNode)
+
                                                                                             targetCollectionType = ["list", {
-                                                                                                "has instances": asserted,
+                                                                                                "node": asserted,
                                                                                             }]
                                                                                         },
                                                                                     ))
@@ -214,7 +143,9 @@ function createNodeHandler(
                                                                         ),
                                                                         onNotExists: () => {
                                                                             targetCollectionType = ["list", {
-                                                                                "has instances": ["no", {}],
+                                                                                "node": {
+                                                                                    properties: new g.Dictionary({}),
+                                                                                },
                                                                             }]
                                                                         },
                                                                     },
