@@ -1,9 +1,10 @@
 import * as bc from "bass-clarinet-typed"
 import * as md from "../metaDataSchema"
-import { SideEffectsAPI } from "./SideEffectsAPI"
+import { NodeSideEffectsAPI, DictionarySideEffectsAPI, ListSideEffectsAPI } from "./SideEffectsAPI"
 import { createDatasetDeserializer } from "./createDatasetDeserializer"
 import * as ds from "../syncAPI"
 import * as p from "pareto-20"
+import { SchemaAndSideEffects } from "../schemas"
 
 function createNoOperationPropertyHandler(
     _key: string,
@@ -70,12 +71,10 @@ function createNoOperationObjectHandler(_beginRange: bc.Range): bc.ObjectHandler
     }
 }
 
-export type ResolveSchemaReference = (
-    reference: string,
-) => p.IUnsafePromise<md.Schema, string>
-
-
-export class NOPSideEffects implements SideEffectsAPI {
+export class NOPSideEffects implements
+    NodeSideEffectsAPI,
+    ListSideEffectsAPI,
+    DictionarySideEffectsAPI {
     onArrayTypeClose() {
         //
     }
@@ -89,18 +88,21 @@ export class NOPSideEffects implements SideEffectsAPI {
         //
     }
     onDictionaryEntry() {
-        //
+        return this
     }
     onDictionaryOpen() {
-        //
+        return this
     }
     onListClose() {
         //
     }
     onListOpen() {
-        //
+        return this
     }
     onListEntry() {
+        return this
+    }
+    onUnexpectedListEntry() {
         //
     }
     onProperty() {
@@ -110,7 +112,7 @@ export class NOPSideEffects implements SideEffectsAPI {
         //
     }
     onState() {
-        //
+        return this
     }
     onTypeOpen() {
         //
@@ -124,6 +126,9 @@ export class NOPSideEffects implements SideEffectsAPI {
     onValue() {
         //
     }
+    onComponent() {
+        return this
+    }
 }
 
 /**
@@ -131,11 +136,13 @@ export class NOPSideEffects implements SideEffectsAPI {
  */
 export function deserializeDataset(
     serializedDataset: string,
-    onInternalSchemaResolved: (schema: md.Schema | null) => p.IUnsafePromise<ds.Dataset, null>,
-    schemaReferenceResolver: ResolveSchemaReference,
+    onInternalSchemaResolved: (schemaAndSideEffects: SchemaAndSideEffects | null) => p.IUnsafePromise<ds.Dataset, null>,
+    schemaReferenceResolver: (
+        reference: string,
+    ) => p.IUnsafePromise<SchemaAndSideEffects, string>,
     onError: (source: string, message: string, range: bc.Range | null) => void,
     onWarning: (source: string, message: string, range: bc.Range | null) => void,
-    sideEffects: SideEffectsAPI | null,
+    sideEffects: NodeSideEffectsAPI[],
 ): p.IUnsafePromise<ds.Dataset, string> {
     return p.wrapUnsafeFunction((onPromiseFail, onResult) => {
         const parser = new bc.Parser(
@@ -155,13 +162,12 @@ export function deserializeDataset(
                 bc.OnDuplicateEntry.ignore
             )
 
-            const se = sideEffects === null ? new NOPSideEffects() : sideEffects
             parser.ondata.subscribe(bc.createStackedDataSubscriber(
                 createDatasetDeserializer(
                     context,
                     dataset,
                     isCompact,
-                    se,
+                    sideEffects,
                     (message, range) => onError("deserializer", message, range),
                 ),
                 error => {
@@ -218,7 +224,7 @@ export function deserializeDataset(
 
         let foundSchemaSpecification = false
         let foundSchemaErrors = false
-        let internalSchema: md.Schema | null = null
+        let internalSchemaAndSideEffects: SchemaAndSideEffects | null = null
         function onSchemaError(message: string, range: bc.Range) {
             onError("schema error", message, range)
             foundSchemaErrors = true
@@ -237,7 +243,10 @@ export function deserializeDataset(
                         },
                         md2 => {
                             if (md2 !== null) {
-                                internalSchema = md2
+                                internalSchemaAndSideEffects = {
+                                    schema: md2,
+                                    sideEffects: new NOPSideEffects(),
+                                }
                             }
                         }
                     ),
@@ -249,7 +258,7 @@ export function deserializeDataset(
                                 svData.pauser.continue()
                             },
                             dataset => {
-                                internalSchema = dataset
+                                internalSchemaAndSideEffects = dataset
                                 svData.pauser.continue()
                             },
                         )
@@ -283,17 +292,17 @@ export function deserializeDataset(
                 compact = true
             },
             onHeaderEnd: () => {
-                if (foundSchemaSpecification && internalSchema === null && !foundSchemaErrors) {
+                if (foundSchemaSpecification && internalSchemaAndSideEffects === null && !foundSchemaErrors) {
                     throw new Error("Unexpected: no schema errors and no schema")
                 }
-                const dataset = onInternalSchemaResolved(internalSchema)
+                const dataset = onInternalSchemaResolved(internalSchemaAndSideEffects)
                 dataset.handleUnsafePromise(
                     () => {
                         onPromiseFail("no valid schema")
                     },
                     dset => {
                         if (foundSchemaSpecification) {
-                            if (internalSchema === null) {
+                            if (internalSchemaAndSideEffects === null) {
                                 onWarning(
                                     "structure",
                                     "ignoring invalid internal schema",

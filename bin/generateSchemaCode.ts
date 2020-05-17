@@ -100,16 +100,16 @@ schemaschema01.attachSchemaDeserializer2(
     (message, range) => {
         console.error(message, astn.printRange(range))
     },
+).handleUnsafePromise(
+    () => {
+        console.error("schema was not parsed properly")
+    },
+
     schema => {
-        if (schema === null) {
-            console.error("schema was not parsed properly")
-        }
-        else {
-            schema["component types"].forEach(ct => {
-                generateCode(ct.node)
-            })
-            console.error("GREAT SUCCESS")
-        }
+        schema["component types"].forEach(ct => {
+            generateCode(ct.node)
+        })
+        console.error("GREAT SUCCESS")
     }
 )
 

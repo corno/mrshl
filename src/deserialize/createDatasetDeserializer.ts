@@ -1,7 +1,7 @@
 import * as bc from "bass-clarinet-typed"
 import * as md from "../metaDataSchema"
 import * as ds from "../syncAPI"
-import { SideEffectsAPI } from "./SideEffectsAPI"
+import { NodeSideEffectsAPI, DictionarySideEffectsAPI, ListSideEffectsAPI } from "./SideEffectsAPI"
 
 function assertUnreachable<RT>(_x: never): RT {
     throw new Error("Unreachable")
@@ -15,7 +15,7 @@ function createPropertyDeserializer(
     propKey: string,
     nodeBuilder: ds.Node,
     isCompact: boolean,
-    registerSnippetGenerators: SideEffectsAPI,
+    sideEffectsAPIs: NodeSideEffectsAPI[],
     onError: OnError,
     flagIsDirty: () => void,
 ): bc.RequiredValueHandler {
@@ -27,18 +27,31 @@ function createPropertyDeserializer(
                     const $$ = $.type[1]
                     switch ($$["has instances"][0]) {
                         case "no": {
+                            let dictionarySideEffects: null | DictionarySideEffectsAPI[] = null
                             return context.expectValue(context.expectDictionary(
                                 (_key, propertyData) => {
-                                    registerSnippetGenerators.onUnexpectedDictionaryEntry(
-                                        propertyData,
-                                    )
+                                    if (dictionarySideEffects === null) {
+                                        throw new Error("UNEXPECTED")
+                                    }
+                                    dictionarySideEffects.forEach(s => {
+                                        s.onUnexpectedDictionaryEntry(
+                                            propertyData,
+                                        )
+                                    })
                                     return context.expectValue(context.expectNothing())
                                 },
                                 openData => {
-                                    registerSnippetGenerators.onDictionaryOpen(openData)
+                                    dictionarySideEffects = sideEffectsAPIs.map(s => {
+                                        return s.onDictionaryOpen(propKey, openData)
+                                    })
                                 },
                                 endData => {
-                                    registerSnippetGenerators.onDictionaryClose(endData)
+                                    if (dictionarySideEffects === null) {
+                                        throw new Error("UNEXPECTED")
+                                    }
+                                    dictionarySideEffects.forEach(s => {
+                                        s.onDictionaryClose(endData)
+                                    })
                                 },
                             ))
                         }
@@ -46,6 +59,7 @@ function createPropertyDeserializer(
                             const $$$ = $$["has instances"][1]
                             const collBuilder = nodeBuilder.getDictionary(propKey)
                             let hasEntries = false
+                            let dictionarySideEffects: null | DictionarySideEffectsAPI[] = null
                             return context.expectValue(context.expectDictionary(
                                 (key, propertyData, preData) => {
                                     hasEntries = true
@@ -54,12 +68,17 @@ function createPropertyDeserializer(
                                     entry.node.getValue($$$["key property"].name).setValue(key, errorMessage => onError(errorMessage, propertyData.keyRange))
                                     entry.comments.setComments(preData.comments.map(c => c.text))
 
-                                    registerSnippetGenerators.onDictionaryEntry(
-                                        propertyData,
-                                        $$$.node,
-                                        $$$["key property"].get(),
-                                        entry
-                                    )
+                                    if (dictionarySideEffects === null) {
+                                        throw new Error("UNEXPECTED")
+                                    }
+                                    const propertySideEffects = dictionarySideEffects.map(s => {
+                                        return s.onDictionaryEntry(
+                                            propertyData,
+                                            $$$.node,
+                                            $$$["key property"].get(),
+                                            entry
+                                        )
+                                    })
                                     return context.expectValue(createNodeDeserializer(
                                         context,
                                         $$$.node,
@@ -67,7 +86,7 @@ function createPropertyDeserializer(
                                         entry.node,
                                         isCompact,
                                         $$$["key property"].get(),
-                                        registerSnippetGenerators,
+                                        propertySideEffects,
                                         onError,
                                         () => {
                                             //
@@ -75,10 +94,17 @@ function createPropertyDeserializer(
                                     ))
                                 },
                                 beginData => {
-                                    registerSnippetGenerators.onDictionaryOpen(beginData)
+                                    dictionarySideEffects = sideEffectsAPIs.map(s => {
+                                        return s.onDictionaryOpen(propKey, beginData)
+                                    })
                                 },
                                 endData => {
-                                    registerSnippetGenerators.onDictionaryClose(endData)
+                                    if (dictionarySideEffects === null) {
+                                        throw new Error("UNEXPECTED")
+                                    }
+                                    dictionarySideEffects.forEach(s => {
+                                        s.onDictionaryClose(endData)
+                                    })
                                     if (hasEntries) {
                                         flagIsDirty()
                                     }
@@ -94,22 +120,38 @@ function createPropertyDeserializer(
 
                     switch ($$["has instances"][0]) {
                         case "no": {
+                            let listSideEffects: null | ListSideEffectsAPI[] = null
+
                             return context.expectValue(context.expectList(
                                 () => {
-                                    registerSnippetGenerators.onListEntry()
+                                    if (listSideEffects === null) {
+                                        throw new Error("UNEXPECTED")
+                                    }
+                                    listSideEffects.forEach(s => {
+                                        s.onUnexpectedListEntry()
+                                    })
                                     return context.expectNothing()
                                 },
                                 beginData => {
-                                    registerSnippetGenerators.onListOpen(beginData)
+                                    listSideEffects = sideEffectsAPIs.map(s => {
+                                        return s.onListOpen(propKey, beginData)
+                                    })
                                 },
                                 endData => {
-                                    registerSnippetGenerators.onListClose(endData)
+                                    if (listSideEffects === null) {
+                                        throw new Error("UNEXPECTED")
+                                    }
+                                    listSideEffects.forEach(s => {
+                                        s.onListClose(endData)
+                                    })
                                 },
                             ))
                         }
                         case "yes": {
                             const $$$ = $$["has instances"][1]
                             const collBuilder = nodeBuilder.getList(propKey)
+                            let listSideEffects: null | ListSideEffectsAPI[] = null
+
                             let hasEntries = false
                             return context.expectValue(context.expectList(
                                 () => {
@@ -118,8 +160,12 @@ function createPropertyDeserializer(
                                     // const entry = collBuilder.createEntry(_errorMessage => {
                                     //     //onError(errorMessage, svData.range)
                                     // })
-                                    registerSnippetGenerators.onListEntry()
-
+                                    if (listSideEffects === null) {
+                                        throw new Error("UNEXPECTED")
+                                    }
+                                    const elementSideEffects = listSideEffects.map(s => {
+                                        return s.onListEntry()
+                                    })
                                     return createNodeDeserializer(
                                         context,
                                         $$$.node,
@@ -127,7 +173,7 @@ function createPropertyDeserializer(
                                         entry.node,
                                         isCompact,
                                         null,
-                                        registerSnippetGenerators,
+                                        elementSideEffects,
                                         onError,
                                         () => {
                                             //
@@ -135,13 +181,20 @@ function createPropertyDeserializer(
                                     )
                                 },
                                 beginData => {
-                                    registerSnippetGenerators.onListOpen(beginData)
+                                    listSideEffects = sideEffectsAPIs.map(s => {
+                                        return s.onListOpen(propKey, beginData)
+                                    })
                                 },
                                 endData => {
                                     if (hasEntries) {
                                         flagIsDirty()
                                     }
-                                    registerSnippetGenerators.onListClose(endData)
+                                    if (listSideEffects === null) {
+                                        throw new Error("UNEXPECTED")
+                                    }
+                                    listSideEffects.forEach(s => {
+                                        s.onListClose(endData)
+                                    })
                                 },
                             ))
                         }
@@ -163,7 +216,9 @@ function createPropertyDeserializer(
                 componentBuilder.node,
                 isCompact,
                 null,
-                registerSnippetGenerators,
+                sideEffectsAPIs.map(s => {
+                    return s.onComponent(propKey)
+                }),
                 onError,
                 flagIsDirty,
             ))
@@ -173,7 +228,15 @@ function createPropertyDeserializer(
             return context.expectValue(context.expectTaggedUnion(
                 $.states.mapUnsorted((stateDef, stateName) => {
                     return (tuData, tuPreData, optionData, optionPreData) => {
-                        registerSnippetGenerators.onState(stateName, tuData, tuPreData, optionPreData)
+                        const stateSideEffects = sideEffectsAPIs.map(s => {
+                            return s.onState(
+                                propKey,
+                                stateName,
+                                tuData,
+                                tuPreData,
+                                optionPreData
+                            )
+                        })
                         const stateGroup = nodeBuilder.getStateGroup(propKey)
                         stateGroup.comments.setComments(tuPreData.comments.map(c => c.text))
                         const state = stateGroup.setState(stateName, errorMessage => onError(errorMessage, optionData.range))
@@ -188,21 +251,23 @@ function createPropertyDeserializer(
                             state.node,
                             isCompact,
                             null,
-                            registerSnippetGenerators,
+                            stateSideEffects,
                             onError,
                             flagIsDirty
                         ))
                     }
                 }),
                 (option, tuData, beginPreData, optionData, optionPreData) => {
-                    registerSnippetGenerators.onUnexpectedState(
-                        option,
-                        tuData,
-                        beginPreData,
-                        optionData,
-                        optionPreData,
-                        $,
-                    )
+                    sideEffectsAPIs.forEach(s => {
+                        s.onUnexpectedState(
+                            option,
+                            tuData,
+                            beginPreData,
+                            optionData,
+                            optionPreData,
+                            $,
+                        )
+                    })
                 },
             ))
         }
@@ -226,7 +291,9 @@ function createPropertyDeserializer(
                 }
                 //valueBuilder.setValue(value, svData.quote !== null, svData.range, comments)
                 valueBuilder.comments.setComments(preData.comments.map(c => c.text))
-                registerSnippetGenerators.onValue(svData, valueBuilder)
+                sideEffectsAPIs.forEach(s => {
+                    s.onValue(propKey, svData, valueBuilder)
+                })
             }))
         }
         default:
@@ -298,7 +365,7 @@ function createNodeDeserializer(
     nodeBuilder: ds.Node,
     isCompact: boolean,
     keyProperty: md.Property | null,
-    sideEffectsAPI: SideEffectsAPI,
+    sideEffectsAPI: NodeSideEffectsAPI[],
     onError: OnError,
     flagIsDirty: () => void,
 ): bc.ValueHandler {
@@ -324,10 +391,14 @@ function createNodeDeserializer(
         return context.expectArrayType(
             expectedElements,
             startData => {
-                sideEffectsAPI.onArrayTypeOpen(startData)
+                sideEffectsAPI.forEach(s => {
+                    s.onArrayTypeOpen(startData)
+                })
             },
             endData => {
-                sideEffectsAPI.onArrayTypeClose(endData)
+                sideEffectsAPI.forEach(s => {
+                    s.onArrayTypeClose(endData)
+                })
             }
         )
 
@@ -350,12 +421,14 @@ function createNodeDeserializer(
                         isDirty: false,
                     }
                     processedProperties[propKey] = processedProperty
-                    sideEffectsAPI.onProperty(
-                        propertyData,
-                        propKey,
-                        propDefinition,
-                        nodeBuilder,
-                    )
+                    sideEffectsAPI.forEach(s => {
+                        s.onProperty(
+                            propertyData,
+                            propKey,
+                            propDefinition,
+                            nodeBuilder,
+                        )
+                    })
                     return createPropertyDeserializer(
                         context,
                         propDefinition,
@@ -383,12 +456,14 @@ function createNodeDeserializer(
         return context.expectType(
             expectedProperties,
             openData => {
-                sideEffectsAPI.onTypeOpen(
-                    openData.range,
-                    nodeDefinition,
-                    keyPropertyDefinition,
-                    nodeBuilder,
-                )
+                sideEffectsAPI.forEach(s => {
+                    s.onTypeOpen(
+                        openData.range,
+                        nodeDefinition,
+                        keyPropertyDefinition,
+                        nodeBuilder,
+                    )
+                })
             },
             (_hasErrors, endData) => {
                 let hasDirtyProperties = false
@@ -405,15 +480,19 @@ function createNodeDeserializer(
                 if (hasDirtyProperties) {
                     flagIsDirty()
                 }
-                sideEffectsAPI.onTypeClose(endData.range)
+                sideEffectsAPI.forEach(s => {
+                    s.onTypeClose(endData.range)
+                })
             },
             (key, metaData, preData) => {
-                sideEffectsAPI.onUnexpectedProperty(
-                    key,
-                    metaData,
-                    preData,
-                    Object.keys(expectedProperties),
-                )
+                sideEffectsAPI.forEach(s => {
+                    s.onUnexpectedProperty(
+                        key,
+                        metaData,
+                        preData,
+                        Object.keys(expectedProperties),
+                    )
+                })
             },
         )
     }
@@ -424,7 +503,7 @@ export function createDatasetDeserializer(
     context: bc.ExpectContext,
     dataset: ds.Dataset,
     isCompact: boolean,
-    sideEffectsAPI: SideEffectsAPI,
+    sideEffectsAPI: NodeSideEffectsAPI[],
     onError: OnError,
 ): bc.RequiredValueHandler {
     return context.expectValue(createNodeDeserializer(

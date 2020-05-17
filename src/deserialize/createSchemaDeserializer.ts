@@ -1,12 +1,13 @@
 import * as bc from "bass-clarinet"
-import * as md from "../metaDataSchema"
 import * as p from "pareto-20"
-import { schemas, AttachSchemaDeserializer } from "../schemas"
+import { schemas, AttachSchemaDeserializer, SchemaAndSideEffects } from "../schemas"
+import { DiagnosticSeverity } from "../loadDocument"
 
 export function createSchemaDeserializer(
     onError: (message: string, range: bc.Range) => void,
+    onInstanceValidationError: (message: string, range: bc.Range, severity: DiagnosticSeverity) => void,
     tokenizeCallback: (tokenizer: bc.Tokenizer) => void,
-): p.IUnsafePromise<md.Schema, null> {
+): p.IUnsafePromise<SchemaAndSideEffects, null> {
     return p.wrapUnsafeFunction((onPromiseFail, onSuccess) => {
         let foundError = false
         function onSchemaError(message: string, range: bc.Range) {
@@ -98,14 +99,15 @@ export function createSchemaDeserializer(
                         schemaProcessor(
                             schemaParser,
                             onError,
+                            onInstanceValidationError,
+                        ).handleUnsafePromise(
+                            () => {
+                                onPromiseFail(null)
+                            },
                             result => {
-                                if (result === null) {
-                                    onPromiseFail(null)
-                                } else {
-                                    onSuccess(result)
-                                }
+                                onSuccess(result)
                             }
-                            )
+                        )
                     }
                 }
             },

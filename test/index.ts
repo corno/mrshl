@@ -85,9 +85,9 @@ describe("main", () => {
                 // (warningMessage, range) => {
                 //     actualIssues.push([warningMessage, "warning", range.start.line, range.start.column, range.end.line, range.end.column])
                 // },
-                new astn.SnippetGenerator(() => {
+                [new astn.SnippetGenerator(() => {
                     //don't do anything with the snippets
-                }),
+                })],
             ).mapResultRaw(dataset => {
                 const out: string[] = []
                 astn.serialize(

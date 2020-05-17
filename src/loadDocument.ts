@@ -1,7 +1,7 @@
 import * as path from "path"
 import { Dataset } from "./syncAPI"
 import * as md from "./metaDataSchema"
-import { SideEffectsAPI, createFromURLSchemaDeserializer, deserializeDataset, deserializeSchemaFromString } from "./deserialize"
+import { NodeSideEffectsAPI, createFromURLSchemaDeserializer, deserializeDataset, deserializeSchemaFromString } from "./deserialize"
 import * as b from "./builders"
 import * as bc from "bass-clarinet-typed"
 import * as p from "pareto-20"
@@ -24,17 +24,32 @@ function validateDocumentAfterExternalSchemaResolution(
 	documentText: string,
 	externalSchema: p.IUnsafePromise<md.Schema, null>,
 	diagnosticCallback: DiagnosticCallback,
-	sideEffects: SideEffectsAPI | null,
+	sideEffects: NodeSideEffectsAPI[],
 ): p.IUnsafePromise<Dataset, string> {
 
-	const schemaReferenceResolver = createFromURLSchemaDeserializer('www.astn.io', '/dev/schemas/', 7000)
+	const schemaReferenceResolver = createFromURLSchemaDeserializer(
+		'www.astn.io',
+		'/dev/schemas/',
+		7000,
+		(instanceValidationErrorMessage, range) => {
+			addDiagnostic(
+				diagnosticCallback,
+				"constraint validation",
+				instanceValidationErrorMessage,
+				DiagnosticSeverity.error,
+				range
+			)
+		}
+	)
+
+	const allSideEffects = sideEffects.slice(0)
 
 	return deserializeDataset(
 		documentText,
-		internalSchema => {
+		internalSchemaAndSideEffects => {
 			return externalSchema
 				.mapResult(schema => {
-					if (internalSchema !== null) {
+					if (internalSchemaAndSideEffects !== null) {
 						addDiagnostic(
 							diagnosticCallback,
 							"schema retrieval",
@@ -45,8 +60,9 @@ function validateDocumentAfterExternalSchemaResolution(
 					}
 					return p.result(new b.Dataset(schema))
 				}).tryToCatch(() => {
-					if (internalSchema !== null) {
-						return p.success(new b.Dataset(internalSchema))
+					if (internalSchemaAndSideEffects !== null) {
+						allSideEffects.push(internalSchemaAndSideEffects.sideEffects)
+						return p.success(new b.Dataset(internalSchemaAndSideEffects.schema))
 
 					}
 					addDiagnostic(
@@ -78,7 +94,7 @@ function validateDocumentAfterExternalSchemaResolution(
 				range
 			)
 		},
-		sideEffects,
+		allSideEffects,
 	)
 }
 
@@ -104,7 +120,7 @@ export function loadDocument(
 	filePath: string,
 	readSchemaFile: (dir: string, schemaFileName: string) => p.IUnsafePromise<string | null, string>,
 	diagnosticCallback: DiagnosticCallback,
-	sideEffects: SideEffectsAPI | null,
+	sideEffects: NodeSideEffectsAPI[],
 ): p.IUnsafePromise<Dataset, null> {
 
 	let diagnosticFound = false
@@ -180,14 +196,23 @@ export function loadDocument(
 						range: null,
 						severity: DiagnosticSeverity.error,
 					})
+				},
+				(instanceValidationErrorMessage, range, severity) => {
+					dc({
+						source: "constraint validation",
+						message: instanceValidationErrorMessage,
+						range: range,
+						severity: severity,
+					})
+
 				}
 			).mapError(validateThatErrorsAreFound).try(
-				dataset => {
+				schemaAndSideEffects => {
 					return validateDocumentAfterExternalSchemaResolution(
 						documentText,
-						p.success(dataset),
+						p.success(schemaAndSideEffects.schema),
 						dc,
-						sideEffects,
+						sideEffects.concat([schemaAndSideEffects.sideEffects]),
 					).mapError(validateThatErrorsAreFound)
 				}
 			)

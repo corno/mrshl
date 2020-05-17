@@ -5,6 +5,7 @@
 import * as bc from "bass-clarinet-typed"
 import * as g from "../../generics"
 import * as t from "../../types"
+import * as md from "../../metaDataSchema"
 
 /**
  * this function is only calls back if the value is not null
@@ -453,7 +454,7 @@ function createNodeHandler(
 }
 
 
-export function createDeserializer(onError: (message: string, range: bc.Range) => void, callback: (metaData: null | t.Schema) => void): bc.OnObject {
+export function createDeserializer(onError: (message: string, range: bc.Range) => void, callback: (metaData: md.Schema | null) => void): bc.OnObject {
     const componentTypes = new g.Dictionary<t.ComponentType>({})
     let rootName: string | null = null
     let rootNameRange: bc.Range | null = null

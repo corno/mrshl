@@ -1,4 +1,4 @@
-import { SideEffectsAPI, GenerateSnippets } from "./deserialize"
+import { NodeSideEffectsAPI, GenerateSnippets, DictionarySideEffectsAPI } from "./deserialize"
 import * as dapi from "./syncAPI"
 import * as bc from "bass-clarinet"
 import * as fp from "fountain-pen"
@@ -75,7 +75,7 @@ function createNodeSnippet(node: md.Node, keyProperty: md.Property | null): fp.I
     ]
 }
 
-export class SnippetGenerator implements SideEffectsAPI {
+export class SnippetGenerator implements NodeSideEffectsAPI, DictionarySideEffectsAPI {
     private readonly registerSnippet: RegisterSnippet
     constructor(registerSnippet: RegisterSnippet) {
         this.registerSnippet = registerSnippet
@@ -118,17 +118,21 @@ export class SnippetGenerator implements SideEffectsAPI {
                 }).join("\n")]
             }
         )
+        return this
     }
     onDictionaryOpen() {
-        //
+        return this
     }
     onListClose() {
         //
     }
     onListOpen() {
-        //
+        return this
     }
     onListEntry() {
+        return this
+    }
+    onUnexpectedListEntry() {
         //
     }
     onProperty(
@@ -176,7 +180,7 @@ export class SnippetGenerator implements SideEffectsAPI {
         )
     }
     onState() {
-        //
+        return this
     }
     onTypeOpen(range: bc.Range, nodeDefinition: md.Node, keyPropertyDefinition: md.Property | null) {
         this.registerSnippet(
@@ -230,7 +234,7 @@ export class SnippetGenerator implements SideEffectsAPI {
             null
         )
     }
-    onValue(data: bc.StringData, value: dapi.Value) {
+    onValue(_propertyName: string, data: bc.StringData, value: dapi.Value) {
         this.registerSnippet(
             data.range,
             () => {
@@ -238,5 +242,8 @@ export class SnippetGenerator implements SideEffectsAPI {
             },
             null,
         )
+    }
+    onComponent() {
+        return this
     }
 }

@@ -1,11 +1,17 @@
 import * as url from "url"
 import { createSchemaDeserializer } from "./createSchemaDeserializer"
-import * as md from "../metaDataSchema"
 import { makeHTTPrequest } from "../makeHTTPrequest"
 import * as p from "pareto-20"
+import { SchemaAndSideEffects } from "../schemas"
+import * as bc from "bass-clarinet-typed"
 
-export function createFromURLSchemaDeserializer(host: string, pathStart: string, timeout: number) {
-    return (reference: string): p.IUnsafePromise<md.Schema, string> => {
+export function createFromURLSchemaDeserializer(
+    host: string,
+    pathStart: string,
+    timeout: number,
+    onInstanceValidationError: (message: string, range: bc.Range) => void
+) {
+    return (reference: string): p.IUnsafePromise<SchemaAndSideEffects, string> => {
 
         // //const errors: string[] = []
         // function onSchemaError(_message: string, _range: bc.Range) {
@@ -26,11 +32,12 @@ export function createFromURLSchemaDeserializer(host: string, pathStart: string,
                         //do nothing with errors
                         console.error("SCHEMA ERROR", message)
                     },
-                    schemaTok => {
+                    onInstanceValidationError,
+                    schemaTokenizer => {
                         stream.processStream(
                             null,
                             chunk => {
-                                schemaTok.write(chunk.toString(), {
+                                schemaTokenizer.write(chunk.toString(), {
                                     pause: () => {
                                         //
                                     },
@@ -40,7 +47,7 @@ export function createFromURLSchemaDeserializer(host: string, pathStart: string,
                                 })
                             },
                             () => {
-                                schemaTok.end()
+                                schemaTokenizer.end()
                             },
                         )
                     },
