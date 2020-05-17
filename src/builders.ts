@@ -1,4 +1,4 @@
-import * as dapi from "./datasetAPI"
+import * as dapi from "./syncAPI"
 import * as md from "./metaDataSchema"
 import { RawObject } from "./generics"
 
@@ -58,7 +58,7 @@ export class Component implements dapi.Component {
     }
 }
 
-export class ListEntry implements dapi.ListEntry {
+export class ListEntry {
     public readonly definition: md.List
     public readonly node: Node
     public readonly comments = new Comments()
@@ -78,7 +78,7 @@ export class ListEntry implements dapi.ListEntry {
     }
 }
 
-export class DictionaryEntry implements dapi.DictionaryEntry {
+export class DictionaryEntry {
     public readonly definition: md.Dictionary
     public readonly node: Node
     public readonly comments = new Comments()

@@ -1,18 +1,18 @@
 import { RootSerializer, ValueSerializer } from "./serializerAPI"
-import { ReadableNode, ReadableDataset, ReadableProperty } from "../readableAPI"
+import * as dapi from "../syncAPI"
 
 function assertUnreachable<RT>(_x: never): RT {
     throw new Error("unreachable")
 }
 
 function serializeNode(
-    node: ReadableNode,
+    node: dapi.Node,
     valueSerializer: ValueSerializer,
     compact: boolean
 ) {
     function serializeProperty(
         elementSerializer: ValueSerializer,
-        property: ReadableProperty,
+        property: dapi.Property,
     ) {
         switch (property.type[0]) {
             case "component": {
@@ -91,7 +91,7 @@ function serializeNode(
 }
 
 export function serialize(
-    dataset: ReadableDataset,
+    dataset: dapi.Dataset,
     serializer: RootSerializer,
     compact: boolean,
 ): void {

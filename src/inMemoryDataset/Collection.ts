@@ -3,19 +3,17 @@
 */
 
 import * as g from "../generics/index"
-import * as bi from "../backendAPI/index"
+import * as bi from "../asynAPI"
 import * as d from "../definition/index"
-import * as s from "../serialize-deserialize/index"
-import * as rapi from "../readableAPI"
+import * as dapi from "../syncAPI"
 import * as cc from "./ChangeController"
 import { copyEntry } from "./copyEntry"
 import { FlexibleErrorsAggregator, IParentErrorsAggregator } from "./ErrorManager"
 import { Global } from "./Global"
 import { defaultInitializeNode, Node, NodeBuilder } from "./Node"
 import { Comments } from "./Comments"
-import * as wapi from "../writableAPI"
 
-export class Entry implements rapi.ReadableEntry {
+export class Entry {
     public readonly errorsAggregator = new FlexibleErrorsAggregator()
     public readonly subentriesErrorsAggregator = new FlexibleErrorsAggregator()
     public readonly node: Node
@@ -172,9 +170,9 @@ class DictionaryMixin {
     }
 }
 
-export class Dictionary implements rapi.ReadableDictionary, wapi.WritableDictionary   {
-    private readonly collection: Collection
-    private readonly definition: d.Dictionary
+export class Dictionary {
+    public readonly collection: Collection
+    public readonly definition: d.Dictionary
     constructor(definition: d.Dictionary, collection: Collection) {
         this.collection = collection
         this.definition = definition
@@ -192,8 +190,8 @@ export class Dictionary implements rapi.ReadableDictionary, wapi.WritableDiction
     }
 }
 
-export class List implements rapi.ReadableList, wapi.WritableList {
-    private readonly collection: Collection
+export class List {
+    public readonly collection: Collection
     constructor(collection: Collection) {
         this.collection = collection
     }
@@ -310,8 +308,9 @@ export class Collection implements bi.Collection {
     }
 }
 
-export class EntryBuilder implements s.EntryBuilder {
+export class EntryBuilder implements dapi.Entry {
     public node: NodeBuilder
+    public comments: Comments
     private readonly entry: Entry
     private readonly collection: Collection
     private readonly createdInNewContext: boolean
@@ -321,6 +320,7 @@ export class EntryBuilder implements s.EntryBuilder {
         createdInNewContext: boolean,
         keyProperty: d.Property | null,
     ) {
+        this.comments = entry.comments
         this.entry = entry
         this.collection = collection
         this.createdInNewContext = createdInNewContext
@@ -340,18 +340,59 @@ export class EntryBuilder implements s.EntryBuilder {
     }
 }
 
-export class CollectionBuilder implements s.CollectionBuilder {
-    private readonly collection: Collection
+export class DictionaryBuilder implements dapi.Dictionary {
+    public readonly imp: Dictionary
     private readonly createdInNewContext: boolean
     constructor(
-        collection: Collection,
+        dictionary: Dictionary,
         createdInNewContext: boolean,
     ) {
-        this.collection = collection
+        this.imp = dictionary
         this.createdInNewContext = createdInNewContext
     }
     public createEntry() {
-        const entry = new Entry(this.collection.definition.node, this.collection.keyProperty)
-        return new EntryBuilder(this.collection, entry, this.createdInNewContext, this.collection.keyProperty)
+        const entry = new Entry(this.imp.collection.definition.node, this.imp.collection.keyProperty)
+        return new EntryBuilder(this.imp.collection, entry, this.createdInNewContext, this.imp.collection.keyProperty)
+    }
+    public forEachEntry(callback: (entry: dapi.Entry, key: string) => void) {
+        const keyProperty = this.imp.definition["key property"].get()
+        this.imp.forEachEntry((e, eKey) => {
+            callback(
+                new EntryBuilder(
+                    this.imp.collection,
+                    e,
+                    this.createdInNewContext,
+                    keyProperty,
+                ),
+                eKey
+            )
+        })
+    }
+}
+
+
+export class ListBuilder implements dapi.List {
+    private readonly list: List
+    private readonly createdInNewContext: boolean
+    constructor(
+        list: List,
+        createdInNewContext: boolean,
+    ) {
+        this.list = list
+        this.createdInNewContext = createdInNewContext
+    }
+    public createEntry() {
+        const entry = new Entry(this.list.collection.definition.node, this.list.collection.keyProperty)
+        return new EntryBuilder(this.list.collection, entry, this.createdInNewContext, this.list.collection.keyProperty)
+    }
+    public forEachEntry(callback: (entry: dapi.Entry) => void) {
+        this.list.forEachEntry(e => {
+            callback(new EntryBuilder(
+                this.list.collection,
+                e,
+                this.createdInNewContext,
+                null,
+            ))
+        })
     }
 }

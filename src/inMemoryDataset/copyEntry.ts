@@ -1,21 +1,19 @@
-import * as s from "../serialize-deserialize/index"
-import * as rapi from "../readableAPI"
+import * as dapi from "../syncAPI"
 
 
 function copyNode(
-    sourceNode: rapi.ReadableNode,
-    targetNode: s.NodeBuilder
+    sourceNode: dapi.Node,
+    targetNode: dapi.Node
 ) {
     sourceNode.forEachProperty((property, pKey) => {
         if (property.type[0] !== "dictionary") {
             return
         }
         const $ = property.type[1]
-        const targetCollection = targetNode.getCollection(pKey)
+        const targetCollection = targetNode.getDictionary(pKey)
         $.forEachEntry(e => {
             const entry = targetCollection.createEntry()
             copyEntry(e, entry)
-            entry.insert()
         })
     })
     sourceNode.forEachProperty((property, pKey) => {
@@ -23,11 +21,10 @@ function copyNode(
             return
         }
         const $ = property.type[1]
-        const targetCollection = targetNode.getCollection(pKey)
+        const targetCollection = targetNode.getList(pKey)
         $.forEachEntry(e => {
             const entry = targetCollection.createEntry()
             copyEntry(e, entry)
-            entry.insert()
         })
     })
     sourceNode.forEachProperty((property, pKey) => {
@@ -47,7 +44,9 @@ function copyNode(
         }
         const $ = property.type[1]
         const sourceState = $.getCurrentState()
-        const targetState = targetNode.getStateGroup(pKey).setState(sourceState.getStateKey())
+        const targetState = targetNode.getStateGroup(pKey).setState(sourceState.getStateKey(), () => {
+            //FIXME
+        })
         copyNode(
             sourceState.node,
             targetState.node,
@@ -57,13 +56,15 @@ function copyNode(
         if (property.type[0] !== "value") {
             return
         }
-        targetNode.getValue(pKey).setValue(sourceNode.getValue(pKey).getValue())
+        targetNode.getValue(pKey).setValue(sourceNode.getValue(pKey).getValue(), () => {
+            //FIXME
+        })
     })
 }
 
 export function copyEntry(
-    sourceEntry: rapi.ReadableEntry,
-    targetEntry: s.EntryBuilder
+    sourceEntry: dapi.Entry,
+    targetEntry: dapi.Entry
 ) {
     copyNode(sourceEntry.node, targetEntry.node)
 }

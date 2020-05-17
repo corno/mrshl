@@ -91,7 +91,10 @@ describe("main", () => {
             ).mapResultRaw(dataset => {
                 const out: string[] = []
                 astn.serialize(
-                    dataset,
+                    {
+                        schema: dataset.schema,
+                        root: dataset.root,
+                    },
                     new astn.ASTNSerializer(
                         new astn.StringStream(out, 0),
                     ),

@@ -1,9 +1,8 @@
 import * as g from "../generics/index"
-import * as bi from "../backendAPI/index"
+import * as bi from "../asynAPI"
 import * as d from "../definition/index"
-import * as s from "../serialize-deserialize/index"
-import * as rapi from "../readableAPI"
-import { Collection, CollectionBuilder, Dictionary, List } from "./Collection"
+import * as dapi from "../syncAPI"
+import { Collection, DictionaryBuilder, ListBuilder, Dictionary, List } from "./Collection"
 import { Component, ComponentBuilder } from "./Component"
 import { IParentErrorsAggregator } from "./ErrorManager"
 import { Global } from "./Global"
@@ -21,7 +20,7 @@ export type PropertyType =
     | ["state group", StateGroup]
     | ["value", Value]
 
-export class Property implements rapi.ReadableProperty {
+export class Property {
     public readonly isKeyProperty: boolean
     public readonly type: PropertyType
     constructor(
@@ -34,7 +33,18 @@ export class Property implements rapi.ReadableProperty {
     }
 }
 
-export class Node implements rapi.ReadableNode, bi.Node {
+class PropertyBuilder implements dapi.Property {
+    private readonly imp: Property
+    public readonly type: dapi.PropertyType
+    public readonly isKeyProperty: boolean
+    constructor(imp: Property) {
+        this.imp = imp
+        this.type = imp.type
+        this.isKeyProperty = this.imp.isKeyProperty
+    }
+}
+
+export class Node implements bi.Node {
     public readonly collections = new g.Dictionary<Collection>({})
     public readonly dictionaries = new g.Dictionary<Dictionary>({})
     public readonly lists = new g.Dictionary<List>({})
@@ -213,7 +223,7 @@ export function defaultInitializeNode(
     })
 }
 
-export class NodeBuilder implements s.NodeBuilder {
+export class NodeBuilder implements dapi.Node {
     private readonly node: Node
     private readonly definition: d.Node
     private readonly errorsAggregator: IParentErrorsAggregator
@@ -270,13 +280,29 @@ export class NodeBuilder implements s.NodeBuilder {
             }
         })
     }
-    public getCollection(key: string) {
+    public getDictionary(key: string) {
         const propDef = this.definition.properties.getUnsafe(key)
         if (propDef.type[0] !== "collection") {
             throw new Error("not a collection")
         }
-        const collection = this.node.collections.getUnsafe(key)
-        return new CollectionBuilder(collection, this.createdInNewContext)
+        const $ = propDef.type[1]
+        if ($.type[0] !== "dictionary") {
+            throw new Error("not a dicionary")
+        }
+        const dictionary = this.node.dictionaries.getUnsafe(key)
+        return new DictionaryBuilder(dictionary, this.createdInNewContext)
+    }
+    public getList(key: string) {
+        const propDef = this.definition.properties.getUnsafe(key)
+        if (propDef.type[0] !== "collection") {
+            throw new Error("not a collection")
+        }
+        const $ = propDef.type[1]
+        if ($.type[0] !== "list") {
+            throw new Error("not a list")
+        }
+        const list = this.node.lists.getUnsafe(key)
+        return new ListBuilder(list, this.createdInNewContext)
     }
     public getComponent(key: string) {
         const propDef = this.definition.properties.getUnsafe(key)
@@ -309,5 +335,10 @@ export class NodeBuilder implements s.NodeBuilder {
             throw new Error("not a value")
         }
         return this.node.values.getUnsafe(key)
+    }
+    public forEachProperty(callback: (property: dapi.Property, key: string) => void) {
+        this.node.forEachProperty((p, pKey) => {
+            callback(new PropertyBuilder(p), pKey)
+        })
     }
 }

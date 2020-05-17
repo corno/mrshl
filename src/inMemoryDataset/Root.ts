@@ -1,5 +1,5 @@
 import * as g from "../generics/index"
-import * as bi from "../backendAPI/index"
+import * as bi from "../asynAPI"
 import * as d from "../definition/index"
 import { ErrorManager, RootErrorsAggregator } from "./ErrorManager"
 import { Global } from "./Global"

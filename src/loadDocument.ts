@@ -1,5 +1,5 @@
 import * as path from "path"
-import { Dataset } from "./datasetAPI"
+import { Dataset } from "./syncAPI"
 import * as md from "./metaDataSchema"
 import { SideEffectsAPI, createFromURLSchemaDeserializer, deserializeDataset, deserializeSchemaFromString } from "./deserialize"
 import * as b from "./builders"

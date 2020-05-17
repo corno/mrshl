@@ -3,28 +3,28 @@
 */
 
 import * as g from "../generics/index"
-import * as bi from "../backendAPI/index"
-import * as d from "../definition/index"
-import * as s from "../serialize-deserialize/index"
-import * as rapi from "../readableAPI"
-import * as wapi from "../writableAPI"
-import { IStateChange } from "./ChangeController"
-import { FlexibleErrorsAggregator, IParentErrorsAggregator } from "./ErrorManager"
-import { Global } from "./Global"
-import { defaultInitializeNode, Node, NodeBuilder } from "./Node"
-import { Comments } from "./Comments"
+import * as bi from "../asynAPI"
+import * as d from "./index"
+import * as dapi from "../syncAPI"
+import { IStateChange } from "../inMemoryDataset/ChangeController"
+import { FlexibleErrorsAggregator, IParentErrorsAggregator } from "../inMemoryDataset/ErrorManager"
+import { Global } from "../inMemoryDataset/Global"
+import { defaultInitializeNode, Node, NodeBuilder } from "../inMemoryDataset/Node"
+import { Comments } from "../inMemoryDataset/Comments"
 
-export class State implements bi.State, rapi.ReadableState, wapi.WritableState {
+export class State implements bi.State {
     public readonly key: string
     public readonly errorsAggregator = new FlexibleErrorsAggregator()
     public readonly subentriesErrorsAggregator = new FlexibleErrorsAggregator()
     public readonly node: Node
     public readonly isCurrentState = new g.ReactiveValue<boolean>(true)
     public readonly comments = new Comments()
+    public readonly definition: d.State
     constructor(
         key: string,
         definition: d.State,
     ) {
+        this.definition = definition
         this.key = key
         this.node = new Node(definition.node, null)
     }
@@ -104,7 +104,7 @@ export function defaultInitializeState(
     return state
 }
 
-export class StateGroup implements bi.StateGroup, wapi.WritableStateGroup {
+export class StateGroup implements bi.StateGroup {
     // tslint:disable-next-line: variable-name
     public readonly statesOverTime = new g.ReactiveArray<State>()
     public readonly currentState: g.Mutable<State>
@@ -186,16 +186,18 @@ export class StateGroup implements bi.StateGroup, wapi.WritableStateGroup {
     }
 }
 
-export class StateGroupBuilder implements s.StateGroupBuilder {
+export class StateGroupBuilder implements dapi.StateGroup {
     private readonly stateGroup: StateGroup
+    public readonly comments: Comments
     private readonly global: Global
     private readonly createdInNewContext: boolean
     constructor(stateGroup: StateGroup, global: Global, createdInNewContext: boolean) {
         this.stateGroup = stateGroup
         this.global = global
         this.createdInNewContext = createdInNewContext
+        this.comments = stateGroup.comments
     }
-    public setState(stateName: string, _onError?: (errorMessage: string) => void) {
+    public setState(stateName: string, _onError: (errorMessage: string) => void) {
 
         const stateDefinition = this.stateGroup.definition.states.getUnsafe(stateName)
         const state = new State(stateName, stateDefinition)
@@ -209,13 +211,23 @@ export class StateGroupBuilder implements s.StateGroupBuilder {
             null,
         )
         //FIXME call onError
-        return new StateBuilder(nodeBuilder)
+        return new StateBuilder(state, nodeBuilder)
+    }
+    public getCurrentState() {
+        return this.stateGroup.getCurrentState()
     }
 }
 
-export class StateBuilder implements s.StateBuilder {
+export class StateBuilder implements dapi.State {
+    public state: State
     public node: NodeBuilder
-    constructor(nodeBuilder: NodeBuilder) {
-        this.node = nodeBuilder
+    public readonly comments: Comments
+    constructor (state: State, node: NodeBuilder) {
+        this.state = state
+        this.comments = state.comments
+        this.node = node
+    }
+    public getStateKey() {
+        return this.state.getStateKey()
     }
 }

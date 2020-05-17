@@ -1,6 +1,6 @@
 import * as bc from "bass-clarinet-typed"
 import * as md from "../metaDataSchema"
-import * as ds from "../datasetAPI"
+import * as ds from "../syncAPI"
 import { SideEffectsAPI } from "./SideEffectsAPI"
 
 function assertUnreachable<RT>(_x: never): RT {

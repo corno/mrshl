@@ -1,4 +1,6 @@
-// tslint:disable: interface-name
+/* eslint
+    "@typescript-eslint/no-empty-interface": off
+ */
 import * as g from "../generics/index"
 
 export interface ArrayAPI {
@@ -25,36 +27,3 @@ export interface Deserializer {
     getElement(source: ArrayAPI, index: number): ValueAPI
     assertArrayLength(source: ArrayAPI, length: number): void
 }
-
-export interface NodeBuilder {
-    getCollection(name: string): CollectionBuilder
-    getComponent(name: string): ComponentBuilder
-    getStateGroup(name: string): StateGroupBuilder
-    getValue(name: string): ValueBuilder
-}
-
-export interface ValueBuilder {
-    setValue(value: string): void
-}
-
-export interface ComponentBuilder {
-    node: NodeBuilder
-}
-
-export interface EntryBuilder {
-    node: NodeBuilder
-    insert(): void
-}
-
-export interface StateGroupBuilder {
-    setState(stateName: string): StateBuilder
-}
-
-export interface StateBuilder {
-    node: NodeBuilder
-}
-
-export interface CollectionBuilder {
-    createEntry(): EntryBuilder
-}
-

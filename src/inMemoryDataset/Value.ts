@@ -1,16 +1,14 @@
 import * as g from "../generics/index"
-import * as bi from "../backendAPI/index"
+import * as bi from "../asynAPI"
 import * as d from "../definition/index"
-import * as rapi from "../readableAPI"
-import * as wapi from "../writableAPI"
+import * as dapi from "../syncAPI"
 import { IParentErrorsAggregator, PotentialError } from "./ErrorManager"
 import { Global } from "./Global"
-import { ValueBuilder } from "../serialize-deserialize/index"
 import { Comments } from "./Comments"
 
 export type ChangeSubscriber = (oldValue: string, newValue: string) => void
 
-export class Value implements rapi.ReadableValue, wapi.WritableValue, bi.Value, ValueBuilder {
+export class Value implements bi.Value {
     public readonly isDuplicateImp = new g.ReactiveValue<boolean>(false)
     public readonly isDuplicate: PotentialError
     public readonly valueIsInvalid: PotentialError
@@ -95,5 +93,25 @@ export class Value implements rapi.ReadableValue, wapi.WritableValue, bi.Value, 
         if (this.changeStatus.get()[0] !== "not changed") {
             this.changeStatus.forceUpdate(["not changed"])
         }
+    }
+}
+
+export class ValueBuilder implements dapi.Value {
+    public comments: Comments
+    private readonly imp: Value
+    readonly isQuoted: boolean
+    constructor(imp: Value) {
+        this.imp = imp
+        this.comments = imp.comments
+        this.isQuoted = false//FIXME
+    }
+    public setValue(value: string, onError: (message: string) => void) {
+        this.imp.setValue(value, onError)
+    }
+    public getValue() {
+        return this.imp.getValue()
+    }
+    public getSuggestions() {
+        return this.imp.getSuggestions()
     }
 }

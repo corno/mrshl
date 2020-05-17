@@ -1,5 +1,5 @@
 import * as bc from "bass-clarinet"
-import * as ds from "../datasetAPI"
+import * as ds from "../syncAPI"
 import * as md from "../metaDataSchema"
 
 export type GenerateSnippets = () => string[]
@@ -20,7 +20,7 @@ export interface SideEffectsAPI {
         entryData: bc.PropertyData,
         nodeDefinition: md.Node,
         keyProperty: md.Property,
-        entry: ds.DictionaryEntry,
+        entry: ds.Entry,
     ): void
     onUnexpectedDictionaryEntry(
         entryData: bc.PropertyData,

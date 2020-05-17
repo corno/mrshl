@@ -2,7 +2,7 @@ import * as bc from "bass-clarinet-typed"
 import * as md from "../metaDataSchema"
 import { SideEffectsAPI } from "./SideEffectsAPI"
 import { createDatasetDeserializer } from "./createDatasetDeserializer"
-import * as ds from "../datasetAPI"
+import * as ds from "../syncAPI"
 import * as p from "pareto-20"
 
 function createNoOperationPropertyHandler(
