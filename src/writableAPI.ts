@@ -10,10 +10,12 @@ export interface WritableProperty {
 }
 
 export interface WritableDictionary {
-    createEntry(onError: (message: string) => void): WritableDictionaryEntry
+    createEntry(): WritableDictionaryEntry
+    //createEntry(onError: (message: string) => void): WritableDictionaryEntry
 }
 export interface WritableList {
-    createEntry(onError: (message: string) => void): WritableListEntry
+    createEntry(): WritableListEntry
+    //createEntry(onError: (message: string) => void): WritableListEntry
 }
 
 export interface WritableComponent {
@@ -56,5 +58,4 @@ export interface WritableState {
 export interface WritableValue {
     setValue(value: string, onError: (message: string) => void): void
     readonly comments: Comments
-    getSuggestions(): string[]
 }

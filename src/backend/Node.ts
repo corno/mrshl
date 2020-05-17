@@ -8,7 +8,7 @@ import { Component, ComponentBuilder } from "./Component"
 import { IParentErrorsAggregator } from "./ErrorManager"
 import { Global } from "./Global"
 import { StateGroup, StateGroupBuilder } from "./StateGroup"
-import { createValue, Value } from "./Value"
+import { Value } from "./Value"
 
 function assertUnreachable(_x: never) {
     throw new Error("Unreachable")
@@ -204,7 +204,7 @@ export function defaultInitializeNode(
             }
             case "value": {
                 const $ = property.type[1]
-                node.values.add(key, createValue($, errorsAggregator, global, createdInNewContext))
+                node.values.add(key, new Value($, errorsAggregator, global, createdInNewContext))
                 break
             }
             default:

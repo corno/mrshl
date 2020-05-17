@@ -15,10 +15,10 @@ export interface Property extends readable.ReadableProperty, writable.WritablePr
 }
 
 export interface Dictionary extends readable.ReadableDictionary, writable.WritableDictionary {
-    createEntry(onError: (message: string) => void): DictionaryEntry
+    createEntry(): DictionaryEntry
 }
 export interface List extends readable.ReadableList, writable.WritableList {
-    createEntry(onError: (message: string) => void): ListEntry
+    createEntry(): ListEntry
 }
 
 export interface Component extends readable.ReadableComponent, writable.WritableComponent {
@@ -62,5 +62,4 @@ export interface State {
 export interface Value extends readable.ReadableValue, writable.WritableValue {
     setValue(value: string, onError: (message: string) => void): void
     readonly comments: Comments
-    getSuggestions(): string[]
 }

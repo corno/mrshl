@@ -49,7 +49,8 @@ function createPropertyDeserializer(
                             return context.expectValue(context.expectDictionary(
                                 (key, propertyData, preData) => {
                                     hasEntries = true
-                                    const entry = collBuilder.createEntry(errorMessage => onError(errorMessage, propertyData.keyRange))
+                                    const entry = collBuilder.createEntry()
+                                    //const entry = collBuilder.createEntry(errorMessage => onError(errorMessage, propertyData.keyRange))
                                     entry.node.getValue($$$["key property"].name).setValue(key, errorMessage => onError(errorMessage, propertyData.keyRange))
                                     entry.comments.setComments(preData.comments.map(c => c.text))
 
@@ -113,9 +114,10 @@ function createPropertyDeserializer(
                             return context.expectValue(context.expectList(
                                 () => {
                                     hasEntries = true
-                                    const entry = collBuilder.createEntry(_errorMessage => {
-                                        //onError(errorMessage, svData.range)
-                                    })
+                                    const entry = collBuilder.createEntry()
+                                    // const entry = collBuilder.createEntry(_errorMessage => {
+                                    //     //onError(errorMessage, svData.range)
+                                    // })
                                     registerSnippetGenerators.onListEntry()
 
                                     return createNodeDeserializer(

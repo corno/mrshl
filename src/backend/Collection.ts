@@ -12,11 +12,14 @@ import { copyEntry } from "./copyEntry"
 import { FlexibleErrorsAggregator, IParentErrorsAggregator } from "./ErrorManager"
 import { Global } from "./Global"
 import { defaultInitializeNode, Node, NodeBuilder } from "./Node"
+import { Comments } from "./Comments"
+import * as wapi from "../writableAPI"
 
 export class Entry implements rapi.ReadableEntry {
     public readonly errorsAggregator = new FlexibleErrorsAggregator()
     public readonly subentriesErrorsAggregator = new FlexibleErrorsAggregator()
     public readonly node: Node
+    public readonly comments = new Comments()
     constructor(nodeDefinition: d.Node, keyProperty: d.Property | null) {
         this.node = new Node(nodeDefinition, keyProperty)
     }
@@ -169,12 +172,15 @@ class DictionaryMixin {
     }
 }
 
-export class Dictionary implements rapi.ReadableDictionary {
+export class Dictionary implements rapi.ReadableDictionary, wapi.WritableDictionary   {
     private readonly collection: Collection
     private readonly definition: d.Dictionary
     constructor(definition: d.Dictionary, collection: Collection) {
         this.collection = collection
         this.definition = definition
+    }
+    public createEntry() {
+        return this.collection.createEntry()
     }
     public forEachEntry(callback: (entry: Entry, key: string) => void) {
         this.collection.entries.forEach(e => {
@@ -186,10 +192,13 @@ export class Dictionary implements rapi.ReadableDictionary {
     }
 }
 
-export class List implements rapi.ReadableList {
+export class List implements rapi.ReadableList, wapi.WritableList {
     private readonly collection: Collection
     constructor(collection: Collection) {
         this.collection = collection
+    }
+    public createEntry() {
+        return this.collection.createEntry()
     }
     public forEachEntry(callback: (entry: Entry) => void) {
         this.collection.entries.forEach(e => {
@@ -226,6 +235,10 @@ export class Collection implements bi.Collection {
             this.keyProperty = null
         }
     }
+    public createEntry() {
+        throw new Error("IMPLEMENT PROPERLY")
+        return new Entry(this.definition.node, this.keyProperty)
+    }
     public purgeChanges() {
         this.entries.removeEntries(candidate => {
             return candidate.status.get()[0] === "inactive"
@@ -238,7 +251,7 @@ export class Collection implements bi.Collection {
     public addEntry(): void {
         const entry = new Entry(
             this.definition.node,
-            this.getKeyProperty()
+            this.keyProperty
         )
 
         defaultInitializeNode(
@@ -279,8 +292,8 @@ export class Collection implements bi.Collection {
                     console.error(e)
                     throw new Error("Unexpected, entry is not an instance of Entry")
                 }
-                const entry = new Entry(this.definition.node, this.getKeyProperty())
-                const entryBuilder = new EntryBuilder(this, entry, true, this.getKeyProperty())
+                const entry = new Entry(this.definition.node, this.keyProperty)
+                const entryBuilder = new EntryBuilder(this, entry, true, this.keyProperty)
                 copyEntry(e.entry, entryBuilder)
 
                 callback(new EntryAddition(
@@ -294,9 +307,6 @@ export class Collection implements bi.Collection {
                 ))
             })
         })
-    }
-    private getKeyProperty() {
-        return this.dictionary === null ? null : this.dictionary.definition["key property"].get()
     }
 }
 

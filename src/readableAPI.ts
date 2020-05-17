@@ -56,5 +56,6 @@ export interface ReadableStateGroup {
 export interface ReadableValue {
     readonly isQuoted: boolean
     getValue(): string
+    getSuggestions(): string[]
 }
 

@@ -49,7 +49,7 @@ export interface PotentialError {
 export interface Value {
     readonly value: g.ISubscribableValue<string>
     readonly isDuplicate: PotentialError
-    readonly isInvalidNumber: PotentialError
+    readonly valueIsInvalid: PotentialError
     readonly createdInNewContext: g.ISubscribableValue<boolean>
     readonly changeStatus: g.ISubscribableValue<ValueChangeStatus>
 

@@ -6,17 +6,21 @@ import * as g from "../generics/index"
 import * as bi from "../backendAPI/index"
 import * as d from "../definition/index"
 import * as s from "../serialize-deserialize/index"
+import * as rapi from "../readableAPI"
+import * as wapi from "../writableAPI"
 import { IStateChange } from "./ChangeController"
 import { FlexibleErrorsAggregator, IParentErrorsAggregator } from "./ErrorManager"
 import { Global } from "./Global"
 import { defaultInitializeNode, Node, NodeBuilder } from "./Node"
+import { Comments } from "./Comments"
 
-export class State implements bi.State {
+export class State implements bi.State, rapi.ReadableState, wapi.WritableState {
     public readonly key: string
     public readonly errorsAggregator = new FlexibleErrorsAggregator()
     public readonly subentriesErrorsAggregator = new FlexibleErrorsAggregator()
     public readonly node: Node
     public readonly isCurrentState = new g.ReactiveValue<boolean>(true)
+    public readonly comments = new Comments()
     constructor(
         key: string,
         definition: d.State,
@@ -100,7 +104,7 @@ export function defaultInitializeState(
     return state
 }
 
-export class StateGroup implements bi.StateGroup {
+export class StateGroup implements bi.StateGroup, wapi.WritableStateGroup {
     // tslint:disable-next-line: variable-name
     public readonly statesOverTime = new g.ReactiveArray<State>()
     public readonly currentState: g.Mutable<State>
@@ -112,6 +116,8 @@ export class StateGroup implements bi.StateGroup {
     public readonly global: Global
     public readonly initialState: State
     public readonly definition: d.StateGroup
+    public readonly comments = new Comments()
+
     private readonly focussable: g.ReactiveValue<g.Maybe<bi.IFocussable>>
     constructor(
         definition: d.StateGroup,
@@ -138,6 +144,10 @@ export class StateGroup implements bi.StateGroup {
         this.initialState.attachErrors(this)
         this.statesOverTime.addEntry(this.initialState)
     }
+    public setState(stateName: string) {
+        throw new Error("PROPERLY IMPLEMENT ME")
+        return new State(stateName, this.definition.states.get(stateName))
+    }
     //THE FRONTEND API METHODS
     public updateState(stateName: string) {
         this.global.changeController.updateState(
@@ -152,6 +162,7 @@ export class StateGroup implements bi.StateGroup {
             )
         )
     }
+
     public setMainFocussableRepresentation(focussable: bi.IFocussable) {
         this.focussable.update(new g.Maybe(focussable))
     }
@@ -184,7 +195,7 @@ export class StateGroupBuilder implements s.StateGroupBuilder {
         this.global = global
         this.createdInNewContext = createdInNewContext
     }
-    public setState(stateName: string) {
+    public setState(stateName: string, _onError?: (errorMessage: string) => void) {
 
         const stateDefinition = this.stateGroup.definition.states.get(stateName)
         const state = new State(stateName, stateDefinition)
@@ -197,6 +208,7 @@ export class StateGroupBuilder implements s.StateGroupBuilder {
             this.createdInNewContext,
             null,
         )
+        //FIXME call onError
         return new StateBuilder(nodeBuilder)
     }
 }

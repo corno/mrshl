@@ -61,10 +61,5 @@ export type TextProperty = {
 
 export type Value = {
     readonly "default value": string
-    readonly type: ValueType
+    readonly type: string //a description of the type of value. e.g. number, boolean, date
 }
-
-export type ValueType =
-    | ["number", {
-    }]
-    | ["text", TextProperty]

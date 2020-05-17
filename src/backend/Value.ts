@@ -2,21 +2,24 @@ import * as g from "../generics/index"
 import * as bi from "../backendAPI/index"
 import * as d from "../definition/index"
 import * as rapi from "../readableAPI"
+import * as wapi from "../writableAPI"
 import { IParentErrorsAggregator, PotentialError } from "./ErrorManager"
 import { Global } from "./Global"
 import { ValueBuilder } from "../serialize-deserialize/index"
+import { Comments } from "./Comments"
 
 export type ChangeSubscriber = (oldValue: string, newValue: string) => void
 
-export class Value implements rapi.ReadableValue, bi.Value, ValueBuilder {
+export class Value implements rapi.ReadableValue, wapi.WritableValue, bi.Value, ValueBuilder {
     public readonly isDuplicateImp = new g.ReactiveValue<boolean>(false)
     public readonly isDuplicate: PotentialError
-    public readonly isInvalidNumber: PotentialError
+    public readonly valueIsInvalid: PotentialError
     public readonly focussable: g.ReactiveValue<g.Maybe<bi.IFocussable>>
     public readonly value: g.ReactiveValue<string>
     public readonly changeStatus: g.ReactiveValue<bi.ValueChangeStatus>
     public readonly createdInNewContext: g.ReactiveValue<boolean>
     public readonly changeSubscribers: ChangeSubscriber[] = []
+    public readonly comments = new Comments()
     public readonly isQuoted: boolean
     private readonly global: Global
     private readonly initialValue: string
@@ -31,19 +34,21 @@ export class Value implements rapi.ReadableValue, bi.Value, ValueBuilder {
         this.focussable = new g.ReactiveValue<g.Maybe<bi.IFocussable>>(new g.Maybe<bi.IFocussable>(null))
         this.value = new g.ReactiveValue<string>(this.initialValue)
         this.isDuplicate = new PotentialError(this.isDuplicateImp, errorsAggregator, global.errorManager, this.focussable)
-        this.isInvalidNumber = new PotentialError(
+        this.valueIsInvalid = new PotentialError(
             ((): g.ISubscribableValue<boolean> => {
 
-                switch (definition.type[0]) {
-                    case "number": {
-                        return this.value.map(newValue => newValue === "" || isNaN(Number(newValue)))
-                    }
-                    case "text": {
-                        return new g.FixedReactiveValue(false)
-                    }
-                    default:
-                        return g.assertUnreachable(definition.type[0])
-                }
+                return new g.FixedReactiveValue(false)
+                //FIXME
+                // switch (definition.type[0]) {
+                //     case "number": {
+                //         return this.value.map(newValue => newValue === "" || isNaN(Number(newValue)))
+                //     }
+                //     case "text": {
+                //         return new g.FixedReactiveValue(false)
+                //     }
+                //     default:
+                //         return g.assertUnreachable(definition.type[0])
+                // }
             })(),
             errorsAggregator,
             global.errorManager,
@@ -63,7 +68,7 @@ export class Value implements rapi.ReadableValue, bi.Value, ValueBuilder {
     public getValue() {
         return this.value.get()
     }
-    public setValue(newValue: string) {
+    public setValue(newValue: string, _onError?: (messsage: string) => void) {
         const previousValue = this.value.get()
         if (previousValue === newValue) {
             return
@@ -78,6 +83,11 @@ export class Value implements rapi.ReadableValue, bi.Value, ValueBuilder {
                 }])
             }
         }
+        //FIXME call onError
+    }
+    public getSuggestions(): string[] {
+        //FIXME
+        return []
     }
 
     public purgeChanges() {
@@ -86,9 +96,4 @@ export class Value implements rapi.ReadableValue, bi.Value, ValueBuilder {
             this.changeStatus.forceUpdate(["not changed"])
         }
     }
-}
-
-export function createValue($: d.Value, errorsAggregator: IParentErrorsAggregator, global: Global, createdInNewContext: boolean) {
-    const value = new Value($, errorsAggregator, global, createdInNewContext)
-    return value
 }

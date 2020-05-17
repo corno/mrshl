@@ -1,5 +1,5 @@
 import { SideEffectsAPI, GenerateSnippets } from "./deserialize"
-import * as ds from "./datasetAPI"
+import * as rapi from "./readableAPI"
 import * as bc from "bass-clarinet"
 import * as fp from "fountain-pen"
 import * as md from "./metaDataSchema"
@@ -135,7 +135,7 @@ export class SnippetGenerator implements SideEffectsAPI {
         propertyData: bc.PropertyData,
         _propKey: string,
         propDefinition: md.Property,
-        _nodeBuilder: ds.Node,
+        _nodeBuilder: rapi.ReadableNode,
     ) {
         this.registerSnippet(
             propertyData.keyRange,
@@ -230,7 +230,7 @@ export class SnippetGenerator implements SideEffectsAPI {
             null
         )
     }
-    onValue(data: bc.StringData, value: ds.Value) {
+    onValue(data: bc.StringData, value: rapi.ReadableValue) {
         this.registerSnippet(
             data.range,
             () => {
