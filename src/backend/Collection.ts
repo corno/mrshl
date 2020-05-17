@@ -143,13 +143,13 @@ class DictionaryMixin {
         this.entries = entries
     }
     public attachKey(entry: EntryPlaceholder) {
-        const keyValue = entry.node.values.get(this.definition["key property"].name)
+        const keyValue = entry.node.values.getUnsafe(this.definition["key property"].name)
         this.checkDuplicates(keyValue.getValue())
         keyValue.changeSubscribers.push(this.keySubscriber)
     }
     public detachKey(entry: EntryPlaceholder) {
-        g.removeFromArray(entry.node.values.get(this.definition["key property"].name).changeSubscribers, e => e === this.keySubscriber)
-        const keyValue = entry.node.values.get(this.definition["key property"].name)
+        g.removeFromArray(entry.node.values.getUnsafe(this.definition["key property"].name).changeSubscribers, e => e === this.keySubscriber)
+        const keyValue = entry.node.values.getUnsafe(this.definition["key property"].name)
         this.checkDuplicates(keyValue.getValue())
     }
     private checkDuplicates(key: string) {
@@ -159,7 +159,7 @@ class DictionaryMixin {
             if (e.status.get()[0] === "inactive") {
                 return false
             }
-            return e.node.values.get(propertyName).getValue() === key
+            return e.node.values.getUnsafe(propertyName).getValue() === key
         })
         if (matches.length > 1) {
             matches.forEach(m => {

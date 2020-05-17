@@ -1,4 +1,4 @@
-import { findInArray } from "./generics"
+import { findInArray } from "./Array"
 import { Subscribers, Unsubscriber } from "./Subscribers"
 
 class PrivateReactiveEntry<T> {

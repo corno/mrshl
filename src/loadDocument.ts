@@ -1,6 +1,8 @@
 import * as path from "path"
 import { Dataset } from "./datasetAPI"
+import * as md from "./metaDataSchema"
 import { SideEffectsAPI, createFromURLSchemaDeserializer, deserializeDataset, deserializeSchemaFromString } from "./deserialize"
+import * as b from "./builders"
 import * as bc from "bass-clarinet-typed"
 import * as p from "pareto-20"
 
@@ -20,7 +22,7 @@ type DiagnosticCallback = (diagnostic: Diagnostic) => void
 
 function validateDocumentAfterExternalSchemaResolution(
 	documentText: string,
-	dataset: null | Dataset,
+	externalSchema: p.IUnsafePromise<md.Schema, null>,
 	diagnosticCallback: DiagnosticCallback,
 	sideEffects: SideEffectsAPI | null,
 ): p.IUnsafePromise<Dataset, string> {
@@ -29,7 +31,34 @@ function validateDocumentAfterExternalSchemaResolution(
 
 	return deserializeDataset(
 		documentText,
-		dataset,
+		internalSchema => {
+			return externalSchema
+				.mapResult(schema => {
+					if (internalSchema !== null) {
+						addDiagnostic(
+							diagnosticCallback,
+							"schema retrieval",
+							"found both external and internal schema. ignoring internal schema",
+							DiagnosticSeverity.warning,
+							null,
+						)
+					}
+					return p.result(new b.Dataset(schema))
+				}).tryToCatch(() => {
+					if (internalSchema !== null) {
+						return p.success(new b.Dataset(internalSchema))
+
+					}
+					addDiagnostic(
+						diagnosticCallback,
+						"structure",
+						"missing (valid) schema",
+						DiagnosticSeverity.error,
+						null,
+					)
+					return p.error(null)
+				})
+		},
 		schemaReferenceResolver,
 		(source, errorMessage, range) => {
 			addDiagnostic(
@@ -77,8 +106,6 @@ export function loadDocument(
 	diagnosticCallback: DiagnosticCallback,
 	sideEffects: SideEffectsAPI | null,
 ): p.IUnsafePromise<Dataset, null> {
-	const basename = path.basename(filePath)
-	const dir = path.dirname(filePath)
 
 	let diagnosticFound = false
 	const dc: DiagnosticCallback = (
@@ -101,6 +128,8 @@ export function loadDocument(
 		return p.result(null)
 	}
 
+	const basename = path.basename(filePath)
+	const dir = path.dirname(filePath)
 	if (basename === schemaFileName) {
 		//don't validate the schema against itself
 		dc({
@@ -112,7 +141,7 @@ export function loadDocument(
 
 		return validateDocumentAfterExternalSchemaResolution(
 			documentText,
-			null,
+			p.error(null),
 			dc,
 			sideEffects,
 		).mapError(validateThatErrorsAreFound)
@@ -136,7 +165,7 @@ export function loadDocument(
 			//there is no schema file
 			return validateDocumentAfterExternalSchemaResolution(
 				documentText,
-				null,
+				p.error(null),
 				dc,
 				sideEffects,
 			).mapError(validateThatErrorsAreFound)
@@ -156,7 +185,7 @@ export function loadDocument(
 				dataset => {
 					return validateDocumentAfterExternalSchemaResolution(
 						documentText,
-						dataset,
+						p.success(dataset),
 						dc,
 						sideEffects,
 					).mapError(validateThatErrorsAreFound)

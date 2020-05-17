@@ -1,18 +1,17 @@
 import * as bc from "bass-clarinet"
-import * as internal from "../../../metaDataSchema"
-import * as b from "./builders"
+import * as md from "../../../metaDataSchema"
 import { createDeserializer } from "./deserialize"
-import * as g from "./generics"
-import { Schema, Node, Property } from "./types"
+import { Schema } from "./types"
+import { convert } from "./convert"
 
 export * from "./types"
 
-export function attachSchemaDeserializer(parser: bc.Parser, onError: (message: string, range: bc.Range) => void, callback: (dataset: b.DatasetBuilder | null) => void) {
+export function attachSchemaDeserializer(parser: bc.Parser, onError: (message: string, range: bc.Range) => void, callback: (schema: md.Schema | null) => void) {
     attachSchemaDeserializer2(parser, onError, schema => {
         if (schema === null) {
             callback(null)
         } else {
-            callback(new b.DatasetBuilder(schema, convert(schema)))
+            callback(convert(schema))
         }
     })
 }
@@ -36,8 +35,8 @@ export function attachSchemaDeserializer2(parser: bc.Parser, onError: (message: 
                     (errorMessage, range) => {
                         onSchemaError(errorMessage, range)
                     },
-                    md => {
-                        metaData = md
+                    md2 => {
+                        metaData = md2
                     }
                 ),
                 simpleValue: (_value, svData) => {
@@ -71,123 +70,4 @@ export function attachSchemaDeserializer2(parser: bc.Parser, onError: (message: 
             }
         }
     ))
-}
-
-function assertUnreachable<RT>(_x: never): RT {
-    throw new Error("Unreachable")
-}
-
-function convertNode(node: Node, componentTypes: g.IReadonlyLookup<internal.ComponentType>, keyProperty: null | Property, resolveRegistry: g.ResolveRegistry): internal.Node {
-    const properties = new g.Dictionary<internal.Property>({})
-    node.properties.mapUnsorted((prop, key) => {
-        if (prop === keyProperty) {
-            //return
-        }
-        properties.add(key, {
-            type: ((): internal.PropertyType => {
-                switch (prop.type[0]) {
-                    case "collection": {
-                        const $ = prop.type[1]
-
-                        return ["collection", {
-
-                            type: ((): internal.CollectionType => {
-                                switch ($.type[0]) {
-                                    case "dictionary": {
-                                        const $$ = $.type[1]
-                                        const targetNode = convertNode($.node, componentTypes, $$["key property"].get(), resolveRegistry)
-                                        return ["dictionary", {
-                                            "has instances": ["yes", {
-                                                "node": targetNode,
-                                                "key property": g.createReference($$["key property"].name, targetNode.properties, resolveRegistry, keys => {
-                                                    throw new Error(`UNEXPECTED: KEY Property not found: ${$$["key property"].name}, available keys: ${keys}`);
-                                                }),
-                                            }],
-                                        }]
-                                    }
-                                    case "list": {
-                                        const targetNode = convertNode($.node, componentTypes, null, resolveRegistry)
-                                        return ["list", {
-                                            "has instances": ["yes", {
-                                                node: targetNode,
-                                            }],
-                                        }]
-                                    }
-                                    default:
-                                        return assertUnreachable($.type[0])
-                                }
-                            })(),
-                        }]
-                    }
-                    case "component": {
-                        const $ = prop.type[1]
-                        return ["component", {
-                            type: g.createReference($.type.name, componentTypes, resolveRegistry, () => {
-                                throw new Error("UNEXPECTED")
-                            }),
-                        }]
-                    }
-                    case "state group": {
-                        const $ = prop.type[1]
-                        const states = new g.Dictionary($.states.mapUnsorted(state => {
-                            return {
-                                node: convertNode(state.node, componentTypes, null, resolveRegistry),
-                            }
-                        }))
-                        return ["state group", {
-                            "states": states,
-                            "default state": g.createReference($["default state"].name, states, resolveRegistry, keys => {
-                                throw new Error(`UNEXPECTED: KEY state not found: ${$["default state"].name}, available keys: ${keys}`);
-                            }),
-                        }]
-                    }
-                    case "value": {
-                        const $ = prop.type[1]
-                        return ["value", {
-                            "default value": $["default value"],
-                            "quoted": ((): boolean => {
-                                switch ($.type[0]) {
-                                    case "boolean":
-                                        return false
-                                    case "number":
-                                        return false
-                                    case "string":
-                                        return true
-
-                                    default:
-                                        return assertUnreachable($.type[0])
-                                }
-                            })(),
-                        }]
-                    }
-                    default:
-                        return assertUnreachable(prop.type[0])
-                }
-            })(),
-        })
-    })
-    return {
-        properties: properties,
-    }
-}
-
-function convert(schema: Schema): internal.Schema {
-    const resolveRegistry = new g.ResolveRegistry()
-    const componentTypes: g.Dictionary<internal.ComponentType> = new g.Dictionary({})
-    schema["component types"].forEach((ct, ctName) => {
-        componentTypes.add(ctName, {
-            node: convertNode(ct.node, componentTypes, null, resolveRegistry),
-        })
-    })
-    const rootType = g.createReference(schema["root type"].name, componentTypes, resolveRegistry, () => {
-        throw new Error("UNEXPECTED")
-    })
-    const success = resolveRegistry.resolve()
-    if (!success) {
-        throw new Error("UNEXPECTED")
-    }
-    return {
-        "component types": componentTypes,
-        "root type": rootType,
-    }
 }

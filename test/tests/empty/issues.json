@@ -1,4 +1,4 @@
 [
     [ "parser", "error", "expected the schema start (!) or root value", 1, 1, 1, 1],
-    [ "structure", "error", "missing schema", null, null, null, null]
+    [ "structure", "error", "missing (valid) schema", null, null, null, null]
 ]

@@ -112,10 +112,10 @@ function markNodeUsage(definition: d.Node, node: rapi.ReadableNode, usedNode: t.
                 const stateKey = sg.getCurrentState().getStateKey()
                 if (usedSg.states[stateKey] === undefined) {
                     usedSg.states[stateKey] = {
-                        node: buildMetaNode($.states.get(sg.getCurrentState().getStateKey()).node, componentTypes),
+                        node: buildMetaNode($.states.getUnsafe(sg.getCurrentState().getStateKey()).node, componentTypes),
                     }
                 }
-                markNodeUsage($.states.get(sg.getCurrentState().getStateKey()).node, sg.getCurrentState().node, usedSg.states[stateKey].node, componentTypes)
+                markNodeUsage($.states.getUnsafe(sg.getCurrentState().getStateKey()).node, sg.getCurrentState().node, usedSg.states[stateKey].node, componentTypes)
                 break
             }
             case "value": {

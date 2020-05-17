@@ -146,7 +146,7 @@ export class StateGroup implements bi.StateGroup, wapi.WritableStateGroup {
     }
     public setState(stateName: string) {
         throw new Error("PROPERLY IMPLEMENT ME")
-        return new State(stateName, this.definition.states.get(stateName))
+        return new State(stateName, this.definition.states.getUnsafe(stateName))
     }
     //THE FRONTEND API METHODS
     public updateState(stateName: string) {
@@ -155,7 +155,7 @@ export class StateGroup implements bi.StateGroup, wapi.WritableStateGroup {
                 this,
                 this.currentState.get(),
                 defaultInitializeState(
-                    this.definition.states.get(stateName),
+                    this.definition.states.getUnsafe(stateName),
                     this.global,
                     true,
                 )
@@ -197,7 +197,7 @@ export class StateGroupBuilder implements s.StateGroupBuilder {
     }
     public setState(stateName: string, _onError?: (errorMessage: string) => void) {
 
-        const stateDefinition = this.stateGroup.definition.states.get(stateName)
+        const stateDefinition = this.stateGroup.definition.states.getUnsafe(stateName)
         const state = new State(stateName, stateDefinition)
         const nodeBuilder = new NodeBuilder(
             stateDefinition.node,

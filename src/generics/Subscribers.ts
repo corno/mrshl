@@ -1,4 +1,4 @@
-import { removeFromArray } from "./generics"
+import { removeFromArray } from "./Array"
 
 export class Subscribers<S> {
     private readonly subscribers: ((value: S) => void)[] = []

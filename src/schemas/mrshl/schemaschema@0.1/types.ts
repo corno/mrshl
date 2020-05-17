@@ -1,4 +1,4 @@
-import * as g from "./generics"
+import * as g from "../../../generics"
 
 export type CollectionType =
     | ["dictionary", Dictionary]

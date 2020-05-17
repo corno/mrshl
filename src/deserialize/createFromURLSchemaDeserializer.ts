@@ -1,11 +1,11 @@
 import * as url from "url"
 import { createSchemaDeserializer } from "./createSchemaDeserializer"
-import * as ds from "../datasetAPI"
+import * as md from "../metaDataSchema"
 import { makeHTTPrequest } from "../makeHTTPrequest"
 import * as p from "pareto-20"
 
 export function createFromURLSchemaDeserializer(host: string, pathStart: string, timeout: number) {
-    return (reference: string): p.IUnsafePromise<ds.Dataset, string> => {
+    return (reference: string): p.IUnsafePromise<md.Schema, string> => {
 
         // //const errors: string[] = []
         // function onSchemaError(_message: string, _range: bc.Range) {

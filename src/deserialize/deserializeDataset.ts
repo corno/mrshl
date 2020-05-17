@@ -72,7 +72,7 @@ function createNoOperationObjectHandler(_beginRange: bc.Range): bc.ObjectHandler
 
 export type ResolveSchemaReference = (
     reference: string,
-) => p.IUnsafePromise<ds.Dataset, string>
+) => p.IUnsafePromise<md.Schema, string>
 
 
 export class NOPSideEffects implements SideEffectsAPI {
@@ -131,7 +131,7 @@ export class NOPSideEffects implements SideEffectsAPI {
  */
 export function deserializeDataset(
     serializedDataset: string,
-    startDataset: ds.Dataset | null,
+    onInternalSchemaResolved: (schema: md.Schema | null) => p.IUnsafePromise<ds.Dataset, null>,
     schemaReferenceResolver: ResolveSchemaReference,
     onError: (source: string, message: string, range: bc.Range | null) => void,
     onWarning: (source: string, message: string, range: bc.Range | null) => void,
@@ -216,9 +216,9 @@ export function deserializeDataset(
 
         let compact = false
 
-        let foundSchema = false
+        let foundSchemaSpecification = false
         let foundSchemaErrors = false
-        let datasetBuilder: ds.Dataset
+        let internalSchema: md.Schema | null = null
         function onSchemaError(message: string, range: bc.Range) {
             onError("schema error", message, range)
             foundSchemaErrors = true
@@ -226,7 +226,6 @@ export function deserializeDataset(
 
         parser.onschemadata.subscribe(bc.createStackedDataSubscriber(
             {
-
                 valueHandler: {
                     array: openData => {
                         onSchemaError("unexpected array as schema", openData.range)
@@ -238,7 +237,7 @@ export function deserializeDataset(
                         },
                         md2 => {
                             if (md2 !== null) {
-                                datasetBuilder = md.createDatasetBuilder(md2)
+                                internalSchema = md2
                             }
                         }
                     ),
@@ -250,7 +249,7 @@ export function deserializeDataset(
                                 svData.pauser.continue()
                             },
                             dataset => {
-                                datasetBuilder = dataset
+                                internalSchema = dataset
                                 svData.pauser.continue()
                             },
                         )
@@ -278,51 +277,34 @@ export function deserializeDataset(
         ))
         parser.onheaderdata.subscribe({
             onHeaderStart: () => {
-                foundSchema = true
+                foundSchemaSpecification = true
             },
             onCompact: () => {
                 compact = true
             },
             onHeaderEnd: () => {
-                if (!foundSchema) {
-                    if (startDataset === null) {
-                        onError("structure", `missing schema`, null)
-                        onPromiseFail("no schema")
-                    } else {
-                        //no internal schema, no problem
-                        attach(
-                            startDataset,
-                            false
-                        )
-                    }
-                } else {
-                    if (datasetBuilder === undefined) {
-                        if (!foundSchemaErrors) {
-                            throw new Error("Unexpected: no schema errors and no schema")
-                        }
-                        onPromiseFail("errors in schema")
-                    } else {
-                        if (startDataset === null) {
-                            attach(
-                                datasetBuilder,
-                                compact,
-                            )
-                        } else {
-                            if (compact) {
-                                throw new Error("IMPLEMENT ME, EXTERNAL AND INTERAL SCHEMA AND DATA IS COMPACT")
-                            }
-                            onWarning(
-                                "structure",
-                                "ignoring internal schema",
-                                null
-                            )
-                            attach(
-                                startDataset,
-                                compact,
-                            )
-                        }
-                    }
+                if (foundSchemaSpecification && internalSchema === null && !foundSchemaErrors) {
+                    throw new Error("Unexpected: no schema errors and no schema")
                 }
+                const dataset = onInternalSchemaResolved(internalSchema)
+                dataset.handleUnsafePromise(
+                    () => {
+                        onPromiseFail("no valid schema")
+                    },
+                    dset => {
+                        if (foundSchemaSpecification) {
+                            if (internalSchema === null) {
+                                onWarning(
+                                    "structure",
+                                    "ignoring invalid internal schema",
+                                    null
+                                )
+
+                            }
+                        }
+                        attach(dset, compact)
+                    }
+                )
             },
         })
         bc.tokenizeString(

@@ -1,5 +1,9 @@
 import * as g from "../generics/index"
 
+function assertUnreachable(_x: never) {
+    throw new Error("Unreachable")
+}
+
 export interface IEntryAddition {
     apply(): void
     revert(): void
@@ -180,7 +184,7 @@ class ChangeController implements IChangeController {
                     break
                 }
                 default:
-                    return g.assertUnreachable(lastChange.type[0])
+                    return assertUnreachable(lastChange.type[0])
             }
             this.revertedChanges.push(lastChange)
             const serializeOffset = this.amountOfChangesSinceLastSerialization.get()
@@ -247,7 +251,7 @@ class ChangeController implements IChangeController {
                 break
             }
             default:
-                return g.assertUnreachable(change.type[0])
+                return assertUnreachable(change.type[0])
         }
     }
 }

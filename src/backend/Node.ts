@@ -10,7 +10,7 @@ import { Global } from "./Global"
 import { StateGroup, StateGroupBuilder } from "./StateGroup"
 import { Value } from "./Value"
 
-function assertUnreachable(_x: never) {
+function assertUnreachable<RT>(_x: never): RT {
     throw new Error("Unreachable")
 }
 
@@ -120,22 +120,22 @@ export class Node implements rapi.ReadableNode, bi.Node {
         })
     }
     public getCollection(key: string) {
-        return this.collections.get(key)
+        return this.collections.getUnsafe(key)
     }
     public getDictionary(key: string) {
-        return this.dictionaries.get(key)
+        return this.dictionaries.getUnsafe(key)
     }
     public getList(key: string) {
-        return this.lists.get(key)
+        return this.lists.getUnsafe(key)
     }
     public getComponent(key: string) {
-        return this.components.get(key)
+        return this.components.getUnsafe(key)
     }
     public getStateGroup(key: string) {
-        return this.stateGroups.get(key)
+        return this.stateGroups.getUnsafe(key)
     }
     public getValue(key: string) {
-        return this.values.get(key)
+        return this.values.getUnsafe(key)
     }
     public purgeChanges() {
         this.collections.forEach(c => c.purgeChanges())
@@ -208,7 +208,7 @@ export function defaultInitializeNode(
                 break
             }
             default:
-                return g.assertUnreachable(property.type[0])
+                return assertUnreachable(property.type[0])
         }
     })
 }
@@ -271,19 +271,19 @@ export class NodeBuilder implements s.NodeBuilder {
         })
     }
     public getCollection(key: string) {
-        const propDef = this.definition.properties.get(key)
+        const propDef = this.definition.properties.getUnsafe(key)
         if (propDef.type[0] !== "collection") {
             throw new Error("not a collection")
         }
-        const collection = this.node.collections.get(key)
+        const collection = this.node.collections.getUnsafe(key)
         return new CollectionBuilder(collection, this.createdInNewContext)
     }
     public getComponent(key: string) {
-        const propDef = this.definition.properties.get(key)
+        const propDef = this.definition.properties.getUnsafe(key)
         if (propDef.type[0] !== "component") {
             throw new Error("not a component")
         }
-        const component = this.node.components.get(key)
+        const component = this.node.components.getUnsafe(key)
         return new ComponentBuilder(
             propDef.type[1],
             component,
@@ -295,7 +295,7 @@ export class NodeBuilder implements s.NodeBuilder {
         )
     }
     public getStateGroup(key: string) {
-        const propDef = this.definition.properties.get(key)
+        const propDef = this.definition.properties.getUnsafe(key)
         if (propDef.type[0] !== "state group") {
             throw new Error("not a state group")
         }
@@ -304,10 +304,10 @@ export class NodeBuilder implements s.NodeBuilder {
         return new StateGroupBuilder(sg, this.global, this.createdInNewContext)
     }
     public getValue(key: string) {
-        const propDef = this.definition.properties.get(key)
+        const propDef = this.definition.properties.getUnsafe(key)
         if (propDef.type[0] !== "value") {
             throw new Error("not a value")
         }
-        return this.node.values.get(key)
+        return this.node.values.getUnsafe(key)
     }
 }

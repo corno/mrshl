@@ -1,12 +1,12 @@
 import * as bc from "bass-clarinet"
-import * as ds from "../datasetAPI"
+import * as md from "../metaDataSchema"
 import * as p from "pareto-20"
 import { schemas, AttachSchemaDeserializer } from "../schemas"
 
 export function createSchemaDeserializer(
     onError: (message: string, range: bc.Range) => void,
     tokenizeCallback: (tokenizer: bc.Tokenizer) => void,
-): p.IUnsafePromise<ds.Dataset, null> {
+): p.IUnsafePromise<md.Schema, null> {
     return p.wrapUnsafeFunction((onPromiseFail, onSuccess) => {
         let foundError = false
         function onSchemaError(message: string, range: bc.Range) {

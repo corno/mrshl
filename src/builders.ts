@@ -1,5 +1,5 @@
-import * as dapi from "../../datasetAPI"
-import * as md from "../../metaDataSchema"
+import * as dapi from "./datasetAPI"
+import * as md from "./metaDataSchema"
 import { RawObject } from "./generics"
 
 /* eslint
@@ -248,13 +248,14 @@ export class Node implements dapi.Node {
 
 export class StateGroup {
     public readonly definition: md.StateGroup
-    private currentState: null | State = null
+    private currentState: State
     public readonly comments = new Comments()
     constructor(definition: md.StateGroup) {
         this.definition = definition
+        this.currentState = new State(definition["default state"].name, definition["default state"].get())
     }
     public setState(stateName: string) {
-        const stateDef = this.definition.states.get(stateName)
+        const stateDef = this.definition.states.getUnsafe(stateName)
         if (stateDef === null) {
             throw new Error(`UNEXPECTED: no such state: ${stateName}`)
         }
@@ -264,9 +265,6 @@ export class StateGroup {
         return state
     }
     public getCurrentState(): State {
-        if (this.currentState === null) {
-            throw new Error("no state set")
-        }
         return this.currentState
     }
 }
