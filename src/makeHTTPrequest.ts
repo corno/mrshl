@@ -6,4 +6,4 @@ export type HTTPOptions = {
     timeout: number
 }
 
-export type makeHTTPrequest = (options: HTTPOptions) => p.IUnsafePromise<p.IStream<string>, string>
+export type MakeHTTPrequest = (options: HTTPOptions) => p.IUnsafePromise<p.IStream<string>, string>

@@ -5,7 +5,7 @@ import * as sideEffects from "./SideEffectsAPI"
 import * as bc from "bass-clarinet-typed"
 import * as p from "pareto-20"
 import { IDataset } from "./dataset"
-import { makeNativeHTTPrequest } from "./makeNativeHTTPrequest"
+import { MakeHTTPrequest } from "./makeHTTPrequest"
 
 export enum DiagnosticSeverity {
 	warning,
@@ -24,6 +24,7 @@ type DiagnosticCallback = (diagnostic: Diagnostic) => void
 function validateDocumentAfterExternalSchemaResolution(
 	documentText: string,
 	externalSchema: p.IUnsafePromise<md.Schema, null>,
+	makeHTTPrequest: MakeHTTPrequest,
 	diagnosticCallback: DiagnosticCallback,
 	sideEffectNodes: sideEffects.Node[],
 	createDataset: (schema: md.Schema) => IDataset,
@@ -33,7 +34,7 @@ function validateDocumentAfterExternalSchemaResolution(
 		'www.astn.io',
 		'/dev/schemas/',
 		7000,
-		makeNativeHTTPrequest,
+		makeHTTPrequest,
 		(instanceValidationErrorMessage, range) => {
 			addDiagnostic(
 				diagnosticCallback,
@@ -121,6 +122,7 @@ export const schemaFileName = "schema.astn-schema"
 export function loadDocument(
 	documentText: string,
 	filePath: string,
+	makeHTTPRequest: MakeHTTPrequest,
 	readSchemaFile: (dir: string, schemaFileName: string) => p.IUnsafePromise<string | null, string>,
 	diagnosticCallback: DiagnosticCallback,
 	sideEffectNodes: sideEffects.Node[],
@@ -162,6 +164,7 @@ export function loadDocument(
 		return validateDocumentAfterExternalSchemaResolution(
 			documentText,
 			p.error(null),
+			makeHTTPRequest,
 			dc,
 			sideEffectNodes,
 			createDataset,
@@ -187,6 +190,7 @@ export function loadDocument(
 			return validateDocumentAfterExternalSchemaResolution(
 				documentText,
 				p.error(null),
+				makeHTTPRequest,
 				dc,
 				sideEffectNodes,
 				createDataset,
@@ -216,6 +220,7 @@ export function loadDocument(
 					return validateDocumentAfterExternalSchemaResolution(
 						documentText,
 						p.success(schemaAndSideEffects.schema),
+						makeHTTPRequest,
 						dc,
 						sideEffectNodes.concat([schemaAndSideEffects.sideEffects]),
 						createDataset,

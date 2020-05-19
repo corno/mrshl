@@ -10,6 +10,7 @@ import { describe } from "mocha"
 import * as astn from "../src"
 import * as p from "pareto-20"
 import { readSchemaFileFromFileSystem } from "../src/readSchemaFileFromFileSystem"
+import { makeNativeHTTPrequest } from "../src/makeNativeHTTPrequest"
 
 const testsDir = "./test/tests"
 
@@ -53,6 +54,7 @@ describe("main", () => {
             return astn.loadDocument(
                 serializedDataset,
                 serializedDatasetPath,
+                makeNativeHTTPrequest,
                 readSchemaFileFromFileSystem,
                 diagnostic => {
                     if (diagnostic.range !== null) {
