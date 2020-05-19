@@ -40,7 +40,7 @@ export interface ValueSerializer {
 
 export interface RootSerializer {
     root: ValueSerializer
-    serializeSchema(dataset: syncAPI.Dataset): void
+    serializeSchema(dataset: syncAPI.ISyncDataset): void
     serializeSchemaReference(schemaReference: string): void
 }
 

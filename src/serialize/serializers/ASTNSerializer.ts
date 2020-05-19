@@ -107,7 +107,7 @@ export class ASTNSerializer implements serializers.RootSerializer {
         this.out = out
         this.root = new ASTNValueSerializer(out)
     }
-    public serializeSchema(_dataset: syncAPI.Dataset) {
+    public serializeSchema(_dataset: syncAPI.ISyncDataset) {
         this.out.add(`! "FIXME"`)
         //serializeMetaData(dataset.schema, new ASTNValueSerializer(this.out))
     }

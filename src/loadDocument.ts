@@ -1,9 +1,10 @@
 import * as path from "path"
-import { Dataset } from "./syncAPI"
+import { ISyncDataset } from "./syncAPI"
 import * as md from "./metaDataSchema"
 import { NodeSideEffectsAPI, createFromURLSchemaDeserializer, deserializeDataset, deserializeSchemaFromString } from "./deserialize"
 import * as bc from "bass-clarinet-typed"
 import * as p from "pareto-20"
+import { IAsyncDataset } from "./asyncAPI"
 
 export enum DiagnosticSeverity {
 	warning,
@@ -24,8 +25,8 @@ function validateDocumentAfterExternalSchemaResolution(
 	externalSchema: p.IUnsafePromise<md.Schema, null>,
 	diagnosticCallback: DiagnosticCallback,
 	sideEffects: NodeSideEffectsAPI[],
-	createDataset: (schema: md.Schema) => Dataset,
-): p.IUnsafePromise<Dataset, string> {
+	createDataset: (schema: md.Schema) => IDataset,
+): p.IUnsafePromise<IDataset, string> {
 
 	const schemaReferenceResolver = createFromURLSchemaDeserializer(
 		'www.astn.io',
@@ -115,14 +116,19 @@ function addDiagnostic(
 
 export const schemaFileName = "schema.astn-schema"
 
+export type IDataset = {
+	sync: ISyncDataset
+	async: IAsyncDataset
+}
+
 export function loadDocument(
 	documentText: string,
 	filePath: string,
 	readSchemaFile: (dir: string, schemaFileName: string) => p.IUnsafePromise<string | null, string>,
 	diagnosticCallback: DiagnosticCallback,
 	sideEffects: NodeSideEffectsAPI[],
-	createDataset: (schema: md.Schema) => Dataset,
-): p.IUnsafePromise<Dataset, null> {
+	createDataset: (schema: md.Schema) => IDataset,
+): p.IUnsafePromise<IDataset, null> {
 
 	let diagnosticFound = false
 	const dc: DiagnosticCallback = (
@@ -189,7 +195,6 @@ export function loadDocument(
 				createDataset,
 			).mapError(validateThatErrorsAreFound)
 		} else {
-
 			return deserializeSchemaFromString(
 				serializedSchema,
 				(message, _range) => {

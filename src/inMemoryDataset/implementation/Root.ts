@@ -1,5 +1,5 @@
 import * as g from "../../generics"
-import * as bi from "../../asyncAPI"
+import * as async from "../../asyncAPI"
 import * as d from "../../definition"
 import { ErrorManager, RootErrorsAggregator } from "./ErrorManager"
 import { Global } from "./Global"
@@ -26,7 +26,7 @@ export class RootImp {
     }
 }
 
-export class Root implements bi.Root {
+export class AsyncDataset implements async.IAsyncDataset {
 
     public readonly errorAmount: g.ReactiveValue<number>
     public readonly errorManager: ErrorManager
@@ -80,8 +80,4 @@ export class Command {
     constructor(execute: () => void) {
         this.execute = execute
     }
-}
-
-export function createBackendRoot(imp: RootImp) {
-    return new Root(imp)
 }

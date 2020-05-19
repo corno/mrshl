@@ -48,7 +48,7 @@ export interface Node {
     forEachProperty(callback: (entry: Property, key: string) => void): void
 }
 
-export interface Dataset {
+export interface ISyncDataset {
     readonly schema: md.Schema
     readonly root: Node
 }

@@ -95,8 +95,8 @@ describe("main", () => {
                 const out: string[] = []
                 astn.serialize(
                     {
-                        schema: dataset.schema,
-                        root: dataset.root,
+                        schema: dataset.sync.schema,
+                        root: dataset.sync.root,
                     },
                     new astn.ASTNSerializer(
                         new astn.StringStream(out, 0),

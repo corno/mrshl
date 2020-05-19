@@ -429,7 +429,7 @@ function createNodeDeserializer(
 
 export function createDatasetDeserializer(
     context: bc.ExpectContext,
-    dataset: ds.Dataset,
+    dataset: ds.ISyncDataset,
     isCompact: boolean,
     sideEffectsAPI: NodeSideEffectsAPI[],
     onError: OnError,

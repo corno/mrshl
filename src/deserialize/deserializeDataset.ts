@@ -2,9 +2,9 @@ import * as bc from "bass-clarinet-typed"
 import * as md from "../metaDataSchema"
 import { NodeSideEffectsAPI, DictionarySideEffectsAPI, ListSideEffectsAPI } from "./SideEffectsAPI"
 import { createDatasetDeserializer } from "./createDatasetDeserializer"
-import * as ds from "../syncAPI"
 import * as p from "pareto-20"
 import { SchemaAndSideEffects } from "../schemas"
+import { IDataset } from "../loadDocument"
 
 function createNoOperationPropertyHandler(
     _key: string,
@@ -136,21 +136,21 @@ export class NOPSideEffects implements
  */
 export function deserializeDataset(
     serializedDataset: string,
-    onInternalSchemaResolved: (schemaAndSideEffects: SchemaAndSideEffects | null) => p.IUnsafePromise<ds.Dataset, null>,
+    onInternalSchemaResolved: (schemaAndSideEffects: SchemaAndSideEffects | null) => p.IUnsafePromise<IDataset, null>,
     schemaReferenceResolver: (
         reference: string,
     ) => p.IUnsafePromise<SchemaAndSideEffects, string>,
     onError: (source: string, message: string, range: bc.Range | null) => void,
     onWarning: (source: string, message: string, range: bc.Range | null) => void,
     sideEffects: NodeSideEffectsAPI[],
-): p.IUnsafePromise<ds.Dataset, string> {
+): p.IUnsafePromise<IDataset, string> {
     return p.wrapUnsafeFunction((onPromiseFail, onResult) => {
         const parser = new bc.Parser(
             (message, range) => {
                 onError("parser", message, range)
             },
         )
-        function attach(dataset: ds.Dataset, isCompact: boolean) {
+        function attach(dataset: IDataset, isCompact: boolean) {
             const context = new bc.ExpectContext(
                 (message, range) => onError("expect", message, range),
                 (message, range) => onWarning("expect", message, range),
@@ -165,7 +165,7 @@ export function deserializeDataset(
             parser.ondata.subscribe(bc.createStackedDataSubscriber(
                 createDatasetDeserializer(
                     context,
-                    dataset,
+                    dataset.sync,
                     isCompact,
                     sideEffects,
                     (message, range) => onError("deserializer", message, range),

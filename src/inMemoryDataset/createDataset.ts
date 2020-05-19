@@ -1,14 +1,14 @@
 import * as md from "../metaDataSchema"
 import { NodeBuilder } from "./syncAPIImplementation"
-import { RootImp } from "./implementation"
+import { RootImp, AsyncDataset } from "./implementation"
+import { IDataset } from "../loadDocument"
+import { ISyncDataset } from "../syncAPI"
 
-class Dataset {
+class SyncDataset implements ISyncDataset {
     public readonly schema: md.Schema
     public readonly root: NodeBuilder
-    constructor(definition: md.Schema) {
-        this.schema = definition
-
-        const rootImp = new RootImp("FOOO", definition)
+    constructor(rootImp: RootImp) {
+        this.schema = rootImp.schema
 
         this.root = new NodeBuilder(
             rootImp.schema["root type"].get().node,
@@ -22,6 +22,11 @@ class Dataset {
     }
 }
 
-export function createInMemoryDataset(schema: md.Schema) {
-    return new Dataset(schema)
+export function createInMemoryDataset(schema: md.Schema): IDataset {
+    const rootImp = new RootImp("FOOO", schema)
+
+    return {
+        sync: new SyncDataset(rootImp),
+        async: new AsyncDataset(rootImp),
+    }
 }
