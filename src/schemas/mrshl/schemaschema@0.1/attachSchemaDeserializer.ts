@@ -7,8 +7,6 @@ import * as p from "pareto-20"
 import { DiagnosticSeverity } from "../../../loadDocument"
 import * as sideEffects from "./sideEffects"
 
-export * from "./types"
-
 export function attachSchemaDeserializer(
     parser: bc.Parser,
     onSchemaError: (message: string, range: bc.Range) => void,

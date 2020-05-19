@@ -1,5 +1,9 @@
 import * as g from "../../../generics"
 
+export interface X {
+    x: string
+}
+
 export type CollectionType =
     | ["dictionary", Dictionary]
     | ["list", List]
