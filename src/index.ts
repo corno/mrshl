@@ -5,4 +5,4 @@ export * from "./inMemoryDataset"
 export * from "./syncAPI"
 export * from "./SnippetGenerator"
 export * from "./loadDocument"
-export * from "./readSchemaFileFromFileSystem"
+//export * from "./readSchemaFileFromFileSystem" don't export this file. it uses the fs module. This module cannot be used in the browser

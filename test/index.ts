@@ -9,6 +9,7 @@ import * as path from "path"
 import { describe } from "mocha"
 import * as astn from "../src"
 import * as p from "pareto-20"
+import { readSchemaFileFromFileSystem } from "../src/readSchemaFileFromFileSystem"
 
 const testsDir = "./test/tests"
 
@@ -52,7 +53,7 @@ describe("main", () => {
             return astn.loadDocument(
                 serializedDataset,
                 serializedDatasetPath,
-                astn.readSchemaFileFromFileSystem,
+                readSchemaFileFromFileSystem,
                 diagnostic => {
                     if (diagnostic.range !== null) {
 
