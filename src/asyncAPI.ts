@@ -1,5 +1,5 @@
 // tslint:disable: interface-name
-import * as g from "./generics/index"
+import * as g from "./generics"
 
 export interface IFocussable {
     setFocus(): void

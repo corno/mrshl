@@ -2,9 +2,9 @@
     "max-classes-per-file": off,
 */
 
-import * as g from "../../generics/index"
+import * as g from "../../generics"
 import * as bi from "../../asyncAPI"
-import * as d from "../../definition/index"
+import * as d from "../../definition"
 import * as cc from "./ChangeController"
 import { copyEntry, EntryBuilder } from "../copyEntry"
 import { FlexibleErrorsAggregator, IParentErrorsAggregator } from "./ErrorManager"

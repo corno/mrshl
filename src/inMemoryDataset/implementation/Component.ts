@@ -1,5 +1,5 @@
 import * as bi from "../../asyncAPI"
-import * as d from "../../definition/index"
+import * as d from "../../definition"
 import { Node } from "./Node"
 import { Comments } from "./Comments"
 import { Global } from "./Global"

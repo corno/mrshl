@@ -9,7 +9,7 @@ import { Node, Property } from "./implementation/Node"
 import { State, StateGroup } from "./implementation/StateGroup"
 import { Component } from "./implementation/Component"
 import { List, Dictionary, Collection, Entry, EntryPlaceholder } from "./implementation/Collection"
-import * as d from "../definition/index"
+import * as d from "../definition"
 import { Global } from "./implementation/Global"
 import { IParentErrorsAggregator } from "./implementation/ErrorManager"
 

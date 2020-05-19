@@ -1,7 +1,7 @@
 /* eslint
     "@typescript-eslint/no-empty-interface": off
  */
-import * as g from "../generics/index"
+import * as g from "../generics"
 
 export interface ArrayAPI {
     readonly array: null

@@ -1,6 +1,6 @@
-import * as g from "../../generics/index"
+import * as g from "../../generics"
 import * as bi from "../../asyncAPI"
-import * as d from "../../definition/index"
+import * as d from "../../definition"
 import { Collection, Dictionary, List } from "./Collection"
 import { Component } from "./Component"
 import { IParentErrorsAggregator } from "./ErrorManager"

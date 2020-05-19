@@ -1,4 +1,4 @@
-// import * as g from "../generics/index"
+// import * as g from "../generics"
 // import { Node, Schema } from "./definitions"
 
 // function serializeNode(node: Node) {

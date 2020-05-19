@@ -2,7 +2,7 @@
     "max-classes-per-file": off,
 */
 
-import * as g from "../../generics/index"
+import * as g from "../../generics"
 import * as bi from "../../asyncAPI"
 
 export class ValidationError implements bi.ValidationError {

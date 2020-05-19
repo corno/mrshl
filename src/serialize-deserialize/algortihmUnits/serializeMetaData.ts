@@ -1,4 +1,4 @@
-import * as d from "../../definition/index"
+import * as d from "../../definition"
 import * as syncAPI from "../../syncAPI"
 import * as t from "../types"
 
