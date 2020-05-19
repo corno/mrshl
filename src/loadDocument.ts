@@ -5,6 +5,7 @@ import * as sideEffects from "./SideEffectsAPI"
 import * as bc from "bass-clarinet-typed"
 import * as p from "pareto-20"
 import { IDataset } from "./dataset"
+import { makeNativeHTTPrequest } from "./makeNativeHTTPrequest"
 
 export enum DiagnosticSeverity {
 	warning,
@@ -32,6 +33,7 @@ function validateDocumentAfterExternalSchemaResolution(
 		'www.astn.io',
 		'/dev/schemas/',
 		7000,
+		makeNativeHTTPrequest,
 		(instanceValidationErrorMessage, range) => {
 			addDiagnostic(
 				diagnosticCallback,

@@ -1,14 +1,15 @@
 import * as url from "url"
 import { createSchemaDeserializer } from "./createSchemaDeserializer"
-import { makeHTTPrequest } from "../makeHTTPrequest"
 import * as p from "pareto-20"
 import { SchemaAndSideEffects } from "../schemas"
 import * as bc from "bass-clarinet-typed"
+import { HTTPOptions } from "../makeHTTPrequest"
 
 export function createFromURLSchemaDeserializer(
     host: string,
     pathStart: string,
     timeout: number,
+    makeHTTPrequest: (options: HTTPOptions) => p.IUnsafePromise<p.IStream<string>, string>,
     onInstanceValidationError: (message: string, range: bc.Range) => void
 ) {
     return (reference: string): p.IUnsafePromise<SchemaAndSideEffects, string> => {
