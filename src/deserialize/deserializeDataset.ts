@@ -4,7 +4,7 @@ import { Node, Dictionary, List } from "../SideEffectsAPI"
 import { createDatasetDeserializer } from "./createDatasetDeserializer"
 import * as p from "pareto-20"
 import { SchemaAndSideEffects } from "../schemas"
-import { IDataset } from "../loadDocument"
+import { IDataset } from "../dataset"
 
 function createNoOperationPropertyHandler(
     _key: string,

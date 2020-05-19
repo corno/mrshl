@@ -1,10 +1,10 @@
 import * as md from "../metaDataSchema"
 import * as sync from "./syncAPIImplementation"
 import { RootImp, AsyncDataset } from "./implementation"
-import { IDataset } from "../loadDocument"
-import { ISyncDataset } from "../syncAPI"
+import { IDataset } from "../dataset"
+import * as syncAPI from "../syncAPI"
 
-class SyncDataset implements ISyncDataset {
+class SyncDataset implements syncAPI.IDataset {
     public readonly schema: md.Schema
     public readonly root: sync.Node
     constructor(rootImp: RootImp) {

@@ -1,11 +1,10 @@
 import * as path from "path"
-import { ISyncDataset } from "./syncAPI"
 import * as md from "./metaDataSchema"
 import { createFromURLSchemaDeserializer, deserializeDataset, deserializeSchemaFromString } from "./deserialize"
 import * as sideEffects from "./SideEffectsAPI"
 import * as bc from "bass-clarinet-typed"
 import * as p from "pareto-20"
-import { IAsyncDataset } from "./asyncAPI"
+import { IDataset } from "./dataset"
 
 export enum DiagnosticSeverity {
 	warning,
@@ -116,11 +115,6 @@ function addDiagnostic(
 }
 
 export const schemaFileName = "schema.astn-schema"
-
-export type IDataset = {
-	sync: ISyncDataset
-	async: IAsyncDataset
-}
 
 export function loadDocument(
 	documentText: string,

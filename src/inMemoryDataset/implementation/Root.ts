@@ -26,7 +26,7 @@ export class RootImp {
     }
 }
 
-export class AsyncDataset implements async.IAsyncDataset {
+export class AsyncDataset implements async.IDataset {
 
     public readonly errorAmount: g.ReactiveValue<number>
     public readonly errorManager: ErrorManager

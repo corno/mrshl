@@ -93,7 +93,7 @@ export interface ErrorManager {
     readonly validationErrors: g.ISubscribableArray<ValidationError>
 }
 
-export interface IAsyncDataset {
+export interface IDataset {
     readonly errorManager: ErrorManager
     readonly errorAmount: g.ISubscribableValue<number>
     readonly commands: g.Dictionary<Command>
