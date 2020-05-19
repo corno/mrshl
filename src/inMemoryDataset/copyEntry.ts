@@ -1,6 +1,6 @@
 import * as syncAPI from "../syncAPI"
 
-export { EntryBuilder } from "./syncAPIImplementation"
+export { Entry as EntryBuilder } from "./syncAPIImplementation"
 
 function copyNode(
     sourceNode: syncAPI.Node,

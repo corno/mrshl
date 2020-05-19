@@ -1,4 +1,4 @@
-import { NodeSideEffectsAPI, GenerateSnippets, DictionarySideEffectsAPI } from "./deserialize"
+import * as sideEffects from "./SideEffectsAPI"
 import * as syncAPI from "./syncAPI"
 import * as bc from "bass-clarinet"
 import * as fp from "fountain-pen"
@@ -8,7 +8,11 @@ function assertUnreachable<RT>(_x: never): RT {
     throw new Error("Unreachable")
 }
 
-export type RegisterSnippet = (range: bc.Range, intraSnippetGenerator: GenerateSnippets | null, snippetAfterGenerator: GenerateSnippets | null) => void
+export type RegisterSnippet = (
+    range: bc.Range,
+    intraSnippetGenerator: sideEffects.GenerateSnippets | null,
+    snippetAfterGenerator: sideEffects.GenerateSnippets | null
+) => void
 
 function createPropertySnippet(prop: md.Property): fp.InlinePart {
     switch (prop.type[0]) {
@@ -75,7 +79,7 @@ function createNodeSnippet(node: md.Node, keyProperty: md.Property | null): fp.I
     ]
 }
 
-export class SnippetGenerator implements NodeSideEffectsAPI, DictionarySideEffectsAPI {
+export class SnippetGenerator implements sideEffects.Node, sideEffects.Dictionary {
     private readonly registerSnippet: RegisterSnippet
     constructor(registerSnippet: RegisterSnippet) {
         this.registerSnippet = registerSnippet

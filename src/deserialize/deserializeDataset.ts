@@ -1,6 +1,6 @@
 import * as bc from "bass-clarinet-typed"
 import * as md from "../metaDataSchema"
-import { NodeSideEffectsAPI, DictionarySideEffectsAPI, ListSideEffectsAPI } from "./SideEffectsAPI"
+import { Node, Dictionary, List } from "../SideEffectsAPI"
 import { createDatasetDeserializer } from "./createDatasetDeserializer"
 import * as p from "pareto-20"
 import { SchemaAndSideEffects } from "../schemas"
@@ -72,9 +72,9 @@ function createNoOperationObjectHandler(_beginRange: bc.Range): bc.ObjectHandler
 }
 
 export class NOPSideEffects implements
-    NodeSideEffectsAPI,
-    ListSideEffectsAPI,
-    DictionarySideEffectsAPI {
+    Node,
+    List,
+    Dictionary {
     onArrayTypeClose() {
         //
     }
@@ -142,7 +142,7 @@ export function deserializeDataset(
     ) => p.IUnsafePromise<SchemaAndSideEffects, string>,
     onError: (source: string, message: string, range: bc.Range | null) => void,
     onWarning: (source: string, message: string, range: bc.Range | null) => void,
-    sideEffects: NodeSideEffectsAPI[],
+    sideEffects: Node[],
 ): p.IUnsafePromise<IDataset, string> {
     return p.wrapUnsafeFunction((onPromiseFail, onResult) => {
         const parser = new bc.Parser(

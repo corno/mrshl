@@ -1,29 +1,29 @@
 import * as bc from "bass-clarinet"
-import * as ds from "../syncAPI"
-import * as md from "../metaDataSchema"
+import * as ds from "./syncAPI"
+import * as md from "./metaDataSchema"
 
 export type GenerateSnippets = () => string[]
 
-export interface DictionarySideEffectsAPI {
+export interface Dictionary {
     onDictionaryEntry(
         entryData: bc.PropertyData,
         nodeDefinition: md.Node,
         keyProperty: md.Property,
         entry: ds.Entry,
-    ): NodeSideEffectsAPI
+    ): Node
     onUnexpectedDictionaryEntry(
         entryData: bc.PropertyData,
     ): void
     onDictionaryClose(closeData: bc.CloseData): void
 }
 
-export interface ListSideEffectsAPI {
+export interface List {
     onListClose(closeData: bc.CloseData): void
-    onListEntry(): NodeSideEffectsAPI
+    onListEntry(): Node
     onUnexpectedListEntry(): void
 }
 
-export interface NodeSideEffectsAPI {
+export interface Node {
     onTypeOpen(
         range: bc.Range,
         nodeDefinition: md.Node,
@@ -36,8 +36,8 @@ export interface NodeSideEffectsAPI {
     onDictionaryOpen(
         dictionaryName: string,
         openData: bc.OpenData
-    ): DictionarySideEffectsAPI
-    onListOpen(name: string, openData: bc.OpenData): ListSideEffectsAPI
+    ): Dictionary
+    onListOpen(name: string, openData: bc.OpenData): List
     onValue(
         valueName: string,
         data: bc.StringData,
@@ -61,7 +61,7 @@ export interface NodeSideEffectsAPI {
         tuData: bc.SimpleMetaData,
         beginPreData: bc.PreData,
         optionPreData: bc.PreData
-    ): NodeSideEffectsAPI
+    ): Node
     onUnexpectedState(
         stateName: string,
         tuData: bc.SimpleMetaData,
@@ -70,5 +70,5 @@ export interface NodeSideEffectsAPI {
         optionPreData: bc.PreData,
         stateGroupDefinition: md.StateGroup
     ): void
-    onComponent(name: string): NodeSideEffectsAPI
+    onComponent(name: string): Node
 }

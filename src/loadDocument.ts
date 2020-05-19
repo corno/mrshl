@@ -1,7 +1,8 @@
 import * as path from "path"
 import { ISyncDataset } from "./syncAPI"
 import * as md from "./metaDataSchema"
-import { NodeSideEffectsAPI, createFromURLSchemaDeserializer, deserializeDataset, deserializeSchemaFromString } from "./deserialize"
+import { createFromURLSchemaDeserializer, deserializeDataset, deserializeSchemaFromString } from "./deserialize"
+import * as sideEffects from "./SideEffectsAPI"
 import * as bc from "bass-clarinet-typed"
 import * as p from "pareto-20"
 import { IAsyncDataset } from "./asyncAPI"
@@ -24,7 +25,7 @@ function validateDocumentAfterExternalSchemaResolution(
 	documentText: string,
 	externalSchema: p.IUnsafePromise<md.Schema, null>,
 	diagnosticCallback: DiagnosticCallback,
-	sideEffects: NodeSideEffectsAPI[],
+	sideEffectNodes: sideEffects.Node[],
 	createDataset: (schema: md.Schema) => IDataset,
 ): p.IUnsafePromise<IDataset, string> {
 
@@ -43,7 +44,7 @@ function validateDocumentAfterExternalSchemaResolution(
 		}
 	)
 
-	const allSideEffects = sideEffects.slice(0)
+	const allSideEffects = sideEffectNodes.slice(0)
 
 	return deserializeDataset(
 		documentText,
@@ -126,7 +127,7 @@ export function loadDocument(
 	filePath: string,
 	readSchemaFile: (dir: string, schemaFileName: string) => p.IUnsafePromise<string | null, string>,
 	diagnosticCallback: DiagnosticCallback,
-	sideEffects: NodeSideEffectsAPI[],
+	sideEffectNodes: sideEffects.Node[],
 	createDataset: (schema: md.Schema) => IDataset,
 ): p.IUnsafePromise<IDataset, null> {
 
@@ -166,7 +167,7 @@ export function loadDocument(
 			documentText,
 			p.error(null),
 			dc,
-			sideEffects,
+			sideEffectNodes,
 			createDataset,
 		).mapError(validateThatErrorsAreFound)
 	}
@@ -191,7 +192,7 @@ export function loadDocument(
 				documentText,
 				p.error(null),
 				dc,
-				sideEffects,
+				sideEffectNodes,
 				createDataset,
 			).mapError(validateThatErrorsAreFound)
 		} else {
@@ -220,7 +221,7 @@ export function loadDocument(
 						documentText,
 						p.success(schemaAndSideEffects.schema),
 						dc,
-						sideEffects.concat([schemaAndSideEffects.sideEffects]),
+						sideEffectNodes.concat([schemaAndSideEffects.sideEffects]),
 						createDataset,
 					).mapError(validateThatErrorsAreFound)
 				}

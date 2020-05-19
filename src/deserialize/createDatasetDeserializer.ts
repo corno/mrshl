@@ -1,7 +1,7 @@
 import * as bc from "bass-clarinet-typed"
 import * as md from "../metaDataSchema"
 import * as ds from "../syncAPI"
-import { NodeSideEffectsAPI, DictionarySideEffectsAPI, ListSideEffectsAPI } from "./SideEffectsAPI"
+import * as sideEffects from "../SideEffectsAPI"
 
 function assertUnreachable<RT>(_x: never): RT {
     throw new Error("Unreachable")
@@ -15,7 +15,7 @@ function createPropertyDeserializer(
     propKey: string,
     nodeBuilder: ds.Node,
     isCompact: boolean,
-    sideEffectsAPIs: NodeSideEffectsAPI[],
+    sideEffectsAPIs: sideEffects.Node[],
     onError: OnError,
     flagIsDirty: () => void,
 ): bc.RequiredValueHandler {
@@ -27,7 +27,7 @@ function createPropertyDeserializer(
                     const $$ = $.type[1]
                     const collBuilder = nodeBuilder.getDictionary(propKey)
                     let hasEntries = false
-                    let dictionarySideEffects: null | DictionarySideEffectsAPI[] = null
+                    let dictionarySideEffects: null | sideEffects.Dictionary[] = null
                     return context.expectValue(context.expectDictionary(
                         (key, propertyData, preData) => {
                             hasEntries = true
@@ -82,7 +82,7 @@ function createPropertyDeserializer(
                 case "list": {
                     const $$ = $.type[1]
                     const collBuilder = nodeBuilder.getList(propKey)
-                    let listSideEffects: null | ListSideEffectsAPI[] = null
+                    let listSideEffects: null | sideEffects.List[] = null
 
                     let hasEntries = false
                     return context.expectValue(context.expectList(
@@ -293,7 +293,7 @@ function createNodeDeserializer(
     nodeBuilder: ds.Node,
     isCompact: boolean,
     keyProperty: md.Property | null,
-    sideEffectsAPI: NodeSideEffectsAPI[],
+    sideEffectsAPI: sideEffects.Node[],
     onError: OnError,
     flagIsDirty: () => void,
 ): bc.ValueHandler {
@@ -431,7 +431,7 @@ export function createDatasetDeserializer(
     context: bc.ExpectContext,
     dataset: ds.ISyncDataset,
     isCompact: boolean,
-    sideEffectsAPI: NodeSideEffectsAPI[],
+    sideEffectsAPI: sideEffects.Node[],
     onError: OnError,
 ): bc.RequiredValueHandler {
     return context.expectValue(createNodeDeserializer(

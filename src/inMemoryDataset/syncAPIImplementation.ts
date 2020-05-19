@@ -3,12 +3,7 @@
 */
 
 import * as syncAPI from "../syncAPI"
-import { Comments } from "./implementation/Comments"
-import { Value } from "./implementation/Value"
-import { Node, Property } from "./implementation/Node"
-import { State, StateGroup } from "./implementation/StateGroup"
-import { Component } from "./implementation/Component"
-import { List, Dictionary, Collection, Entry, EntryPlaceholder } from "./implementation/Collection"
+import * as imp from "./implementation"
 import * as d from "../definition"
 import { Global } from "./implementation/Global"
 import { IParentErrorsAggregator } from "./implementation/ErrorManager"
@@ -17,19 +12,19 @@ import { IParentErrorsAggregator } from "./implementation/ErrorManager"
 //     throw new Error("unreachable")
 // }
 
-export class ComponentBuilder implements syncAPI.Component {
-    public node: NodeBuilder
-    public readonly comments: Comments
+export class Component implements syncAPI.Component {
+    public node: Node
+    public readonly comments: imp.Comments
     constructor(
         definition: d.Component,
-        component: Component,
+        component: imp.Component,
         global: Global,
         errorsAggregator: IParentErrorsAggregator,
         subEntriesErrorsAggregator: IParentErrorsAggregator,
         createdInNewContext: boolean,
         keyProperty: d.Property | null,
     ) {
-        this.node = new NodeBuilder(
+        this.node = new Node(
             definition.type.get().node,
             component.node, global,
             errorsAggregator,
@@ -41,19 +36,19 @@ export class ComponentBuilder implements syncAPI.Component {
     }
 }
 
-class PropertyBuilder implements syncAPI.Property {
-    private readonly imp: Property
+class Property implements syncAPI.Property {
+    private readonly imp: imp.Property
     public readonly type: syncAPI.PropertyType
     public readonly isKeyProperty: boolean
-    constructor(imp: Property) {
-        this.imp = imp
-        this.type = imp.type
+    constructor(propImp: imp.Property) {
+        this.imp = propImp
+        this.type = propImp.type
         this.isKeyProperty = this.imp.isKeyProperty
     }
 }
 
-export class NodeBuilder implements syncAPI.Node {
-    private readonly node: Node
+export class Node implements syncAPI.Node {
+    private readonly node: imp.Node
     private readonly definition: d.Node
     private readonly errorsAggregator: IParentErrorsAggregator
     private readonly subEntriesErrorsAggregator: IParentErrorsAggregator
@@ -62,7 +57,7 @@ export class NodeBuilder implements syncAPI.Node {
     private readonly keyProperty: d.Property | null
     constructor(
         definition: d.Node,
-        node: Node,
+        node: imp.Node,
         global: Global,
         errorsAggregator: IParentErrorsAggregator,
         subEntriesErrorsAggregator: IParentErrorsAggregator,
@@ -121,7 +116,7 @@ export class NodeBuilder implements syncAPI.Node {
             throw new Error("not a dicionary")
         }
         const dictionary = this.node.dictionaries.getUnsafe(key)
-        return new DictionaryBuilder(dictionary, this.global, this.createdInNewContext)
+        return new Dictionary(dictionary, this.global, this.createdInNewContext)
     }
     public getList(key: string) {
         const propDef = this.definition.properties.getUnsafe(key)
@@ -141,7 +136,7 @@ export class NodeBuilder implements syncAPI.Node {
             throw new Error("not a component")
         }
         const component = this.node.components.getUnsafe(key)
-        return new ComponentBuilder(
+        return new Component(
             propDef.type[1],
             component,
             this.global,
@@ -158,7 +153,7 @@ export class NodeBuilder implements syncAPI.Node {
         }
         const sg = this.node.getStateGroup(key)
 
-        return new StateGroupBuilder(sg, this.global, this.createdInNewContext)
+        return new StateGroup(sg, this.global, this.createdInNewContext)
     }
     public getValue(key: string) {
         const propDef = this.definition.properties.getUnsafe(key)
@@ -169,18 +164,18 @@ export class NodeBuilder implements syncAPI.Node {
     }
     public forEachProperty(callback: (property: syncAPI.Property, key: string) => void) {
         this.node.forEachProperty((p, pKey) => {
-            callback(new PropertyBuilder(p), pKey)
+            callback(new Property(p), pKey)
         })
     }
 }
 
 
-export class StateGroupBuilder implements syncAPI.StateGroup {
-    private readonly imp: StateGroup
-    public readonly comments: Comments
+export class StateGroup implements syncAPI.StateGroup {
+    private readonly imp: imp.StateGroup
+    public readonly comments: imp.Comments
     private readonly global: Global
     private readonly createdInNewContext: boolean
-    constructor(stateGroup: StateGroup, global: Global, createdInNewContext: boolean) {
+    constructor(stateGroup: imp.StateGroup, global: Global, createdInNewContext: boolean) {
         this.imp = stateGroup
         this.global = global
         this.createdInNewContext = createdInNewContext
@@ -189,13 +184,13 @@ export class StateGroupBuilder implements syncAPI.StateGroup {
     public setState(stateName: string, _onError: (errorMessage: string) => void) {
 
         const stateDefinition = this.imp.definition.states.getUnsafe(stateName)
-        const state = new State(
+        const state = new imp.State(
             stateName,
             stateDefinition,
             this.global,
             false,
         )
-        const nodeBuilder = new NodeBuilder(
+        const nodeBuilder = new Node(
             stateDefinition.node,
             state.node,
             this.global,
@@ -205,20 +200,20 @@ export class StateGroupBuilder implements syncAPI.StateGroup {
             null,
         )
         //FIXME call onError
-        return new StateBuilder(state, nodeBuilder)
+        return new State(state, nodeBuilder)
     }
     public getCurrentState() {
         return this.imp.getCurrentState()
     }
 }
 
-export class StateBuilder implements syncAPI.State {
-    public node: NodeBuilder
-    public comments: Comments
-    private readonly imp: State
-    constructor(imp: State, nodeBuilder: NodeBuilder) {
+export class State implements syncAPI.State {
+    public node: Node
+    public comments: imp.Comments
+    private readonly imp: imp.State
+    constructor(stateImp: imp.State, nodeBuilder: Node) {
         this.node = nodeBuilder
-        this.imp = imp
+        this.imp = stateImp
         this.comments = this.imp.comments
     }
     public getStateKey() {
@@ -226,15 +221,15 @@ export class StateBuilder implements syncAPI.State {
     }
 }
 
-export class EntryBuilder implements syncAPI.Entry {
-    public node: NodeBuilder
-    public comments: Comments
-    private readonly entry: Entry
-    private readonly collection: Collection
+export class Entry implements syncAPI.Entry {
+    public node: Node
+    public comments: imp.Comments
+    private readonly entry: imp.Entry
+    private readonly collection: imp.Collection
     private readonly createdInNewContext: boolean
     constructor(
-        collection: Collection,
-        entry: Entry,
+        collection: imp.Collection,
+        entry: imp.Entry,
         createdInNewContext: boolean,
         keyProperty: d.Property | null,
     ) {
@@ -242,7 +237,7 @@ export class EntryBuilder implements syncAPI.Entry {
         this.entry = entry
         this.collection = collection
         this.createdInNewContext = createdInNewContext
-        this.node = new NodeBuilder(
+        this.node = new Node(
             collection.nodeDefinition,
             entry.node,
             collection.global,
@@ -253,17 +248,17 @@ export class EntryBuilder implements syncAPI.Entry {
         )
     }
     public insert() {
-        const entryPlaceHolder = new EntryPlaceholder(this.entry, this.collection, this.collection.global, this.createdInNewContext)
+        const entryPlaceHolder = new imp.EntryPlaceholder(this.entry, this.collection, this.collection.global, this.createdInNewContext)
         this.collection.insert(entryPlaceHolder)
     }
 }
 
-export class DictionaryBuilder implements syncAPI.Dictionary {
-    public readonly imp: Dictionary
+export class Dictionary implements syncAPI.Dictionary {
+    public readonly imp: imp.Dictionary
     private readonly createdInNewContext: boolean
     private readonly global: Global
     constructor(
-        dictionary: Dictionary,
+        dictionary: imp.Dictionary,
         global: Global,
         createdInNewContext: boolean,
     ) {
@@ -272,18 +267,18 @@ export class DictionaryBuilder implements syncAPI.Dictionary {
         this.createdInNewContext = createdInNewContext
     }
     public createEntry() {
-        const entry = new Entry(
+        const entry = new imp.Entry(
             this.imp.collection.nodeDefinition,
             this.global,
             this.imp.collection.keyProperty
         )
-        return new EntryBuilder(this.imp.collection, entry, this.createdInNewContext, this.imp.collection.keyProperty)
+        return new Entry(this.imp.collection, entry, this.createdInNewContext, this.imp.collection.keyProperty)
     }
     public forEachEntry(callback: (entry: syncAPI.Entry, key: string) => void) {
         const keyProperty = this.imp.definition["key property"].get()
         this.imp.forEachEntry((e, eKey) => {
             callback(
-                new EntryBuilder(
+                new Entry(
                     this.imp.collection,
                     e,
                     this.createdInNewContext,
@@ -297,11 +292,11 @@ export class DictionaryBuilder implements syncAPI.Dictionary {
 
 
 export class ListBuilder implements syncAPI.List {
-    private readonly list: List
+    private readonly list: imp.List
     private readonly global: Global
     private readonly createdInNewContext: boolean
     constructor(
-        list: List,
+        list: imp.List,
         global: Global,
         createdInNewContext: boolean,
     ) {
@@ -310,12 +305,12 @@ export class ListBuilder implements syncAPI.List {
         this.createdInNewContext = createdInNewContext
     }
     public createEntry() {
-        const entry = new Entry(this.list.collection.nodeDefinition, this.global, this.list.collection.keyProperty)
-        return new EntryBuilder(this.list.collection, entry, this.createdInNewContext, this.list.collection.keyProperty)
+        const entry = new imp.Entry(this.list.collection.nodeDefinition, this.global, this.list.collection.keyProperty)
+        return new Entry(this.list.collection, entry, this.createdInNewContext, this.list.collection.keyProperty)
     }
     public forEachEntry(callback: (entry: syncAPI.Entry) => void) {
         this.list.forEachEntry(e => {
-            callback(new EntryBuilder(
+            callback(new Entry(
                 this.list.collection,
                 e,
                 this.createdInNewContext,
@@ -326,12 +321,12 @@ export class ListBuilder implements syncAPI.List {
 }
 
 export class ValueBuilder implements syncAPI.Value {
-    public comments: Comments
-    private readonly imp: Value
+    public comments: imp.Comments
+    private readonly imp: imp.Value
     readonly isQuoted: boolean
-    constructor(imp: Value) {
-        this.imp = imp
-        this.comments = imp.comments
+    constructor(valueImp: imp.Value) {
+        this.imp = valueImp
+        this.comments = valueImp.comments
         this.isQuoted = false//FIXME
     }
     public setValue(value: string, onError: (message: string) => void) {
