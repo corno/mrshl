@@ -276,9 +276,9 @@ class StateGroup implements asyncAPI.StateGroup {
             new imp.StateChange(
                 this.imp,
                 this.imp.currentState.get(),
-                imp.createState(
-                    this.imp.definition.states.getUnsafe(stateName),
+                new imp.State(
                     stateName,
+                    this.imp.definition.states.getUnsafe(stateName),
                     this.imp.global,
                     true,
                 )

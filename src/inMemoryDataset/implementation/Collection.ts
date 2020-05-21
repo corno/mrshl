@@ -182,24 +182,6 @@ class DictionaryMixin {
     }
 }
 
-export class Dictionary {
-    public readonly collection: Collection
-    public readonly definition: d.Dictionary
-    constructor(definition: d.Dictionary, collection: Collection) {
-        this.collection = collection
-        this.definition = definition
-    }
-}
-
-export class List {
-    public readonly collection: Collection
-    public readonly definition: d.List
-    constructor(definition: d.List, collection: Collection) {
-        this.collection = collection
-        this.definition = definition
-    }
-}
-
 export class Collection {
     public readonly errorsAggregator: IParentErrorsAggregator
     public readonly global: Global

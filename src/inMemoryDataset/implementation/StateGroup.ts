@@ -5,7 +5,6 @@
 import * as g from "../../generics"
 import * as bi from "../../asyncAPI"
 import * as d from "../../definition"
-import { IStateChange } from "./ChangeController"
 import { FlexibleErrorsAggregator, IParentErrorsAggregator } from "./ErrorManager"
 import { Global } from "./Global"
 import { Node } from "./Node"
@@ -34,75 +33,10 @@ export class State {
             null
         )
     }
-    public getStateKey() {
-        return this.key
-    }
-    public attachErrors(stateGroup: StateGroup) {
-        this.errorsAggregator.attach(stateGroup.thisEntryErrorsAggregator)
-        this.subentriesErrorsAggregator.attach(stateGroup.subentriesErrorsAggregator)
-    }
     public detachErrors() {
         this.errorsAggregator.detach()
         this.subentriesErrorsAggregator.detach()
     }
-}
-
-export class StateChange implements IStateChange {
-    private readonly stateGroup: StateGroup
-    private readonly oldState: State
-    private readonly newState: State
-    constructor(stateGroup: StateGroup, oldState: State, newState: State) {
-        this.stateGroup = stateGroup
-        this.oldState = oldState
-        this.newState = newState
-    }
-    public apply() {
-        this.oldState.detachErrors()
-        this.oldState.isCurrentState.update(false)
-        this.newState.isCurrentState.update(true)
-
-        this.newState.attachErrors(this.stateGroup)
-
-        this.stateGroup.statesOverTime.addEntry(this.newState)
-        this.stateGroup.currentState.update(this.newState)
-        this.stateGroup.currentStateKey.update(this.newState.key)
-        if (this.oldState === this.stateGroup.initialState) {
-            this.stateGroup.changeStatus.update(["changed", {
-                originalStateName: this.stateGroup.initialState.key,
-            }])
-        }
-    }
-    public revert() {
-        if (this.oldState === this.stateGroup.initialState) {
-            this.stateGroup.changeStatus.update(["not changed"])
-        } else {
-            this.stateGroup.changeStatus.update(["changed", {
-                originalStateName: this.stateGroup.initialState.key,
-            }])
-        }
-        this.stateGroup.currentStateKey.update(this.oldState.key)
-        this.stateGroup.currentState.update(this.oldState)
-        this.stateGroup.statesOverTime.removeEntry(this.newState)
-        this.newState.detachErrors()
-        this.newState.isCurrentState.update(false)
-        this.oldState.isCurrentState.update(true)
-        this.oldState.attachErrors(this.stateGroup)
-    }
-}
-
-export function createState(
-    definition: d.State,
-    key: string,
-    global: Global,
-    createdInNewContext: boolean
-) {
-    const state = new State(
-        key,
-        definition,
-        global,
-        createdInNewContext,
-    )
-    return state
 }
 
 export class StateGroup {
@@ -130,9 +64,9 @@ export class StateGroup {
         this.definition = definition
         this.global = global
 
-        this.initialState = createState(
-            definition["default state"].get(),
+        this.initialState = new State(
             definition["default state"].name,
+            definition["default state"].get(),
             global,
             createdInNewContext
         )
@@ -143,16 +77,9 @@ export class StateGroup {
         this.subentriesErrorsAggregator = subentriesErrorsAggregator
         this.createdInNewContext = new g.ReactiveValue(createdInNewContext)
         this.changeStatus = new g.ReactiveValue<bi.StateGroupChangeStatus>(["not changed"])
-        this.initialState.attachErrors(this)
+
+        this.initialState.errorsAggregator.attach(this.thisEntryErrorsAggregator)
+        this.initialState.subentriesErrorsAggregator.attach(this.subentriesErrorsAggregator)
         this.statesOverTime.addEntry(this.initialState)
-    }
-    public setState(stateName: string) {
-        throw new Error("PROPERLY IMPLEMENT ME")
-        return new State(
-            stateName,
-            this.definition.states.getUnsafe(stateName),
-            this.global,
-            true,
-        )
     }
 }

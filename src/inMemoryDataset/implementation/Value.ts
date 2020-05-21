@@ -58,12 +58,8 @@ export class Value {
         this.createdInNewContext = new g.ReactiveValue(createdInNewContext)
         this.isQuoted = true //FIXME
     }
-    public setMainFocussableRepresentation(f: asyncAPI.IFocussable) {
-        this.focussable.update(new g.Maybe(f))
-    }
-    public updateValue(v: string) {
-        this.global.changeController.updateValue(this, v)
-    }
+
+    //IValue methods
     public getValue() {
         return this.value.get()
     }
@@ -83,8 +79,5 @@ export class Value {
             }
         }
         //FIXME call onError
-    }
-    public getSuggestions(): string[] {
-        return [this.definition["default value"]]
     }
 }
