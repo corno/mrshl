@@ -22,11 +22,13 @@ export type PropertyType =
 export class Property {
     public readonly isKeyProperty: boolean
     public readonly type: PropertyType
+    public readonly definition: d.Property
     constructor(
-        _definition: d.Property,
+        definition: d.Property,
         type: PropertyType,
         isKeyProperty: boolean,
     ) {
+        this.definition = definition
         this.type = type
         this.isKeyProperty = isKeyProperty
     }
@@ -34,8 +36,6 @@ export class Property {
 
 export class Node implements bi.Node {
     public readonly collections = new g.Dictionary<Collection>({})
-    public readonly dictionaries = new g.Dictionary<Dictionary>({})
-    public readonly lists = new g.Dictionary<List>({})
     public readonly components = new g.Dictionary<Component>({})
     public readonly stateGroups = new g.Dictionary<StateGroup>({})
     public readonly values = new g.Dictionary<Value>({})
@@ -73,7 +73,7 @@ export class Node implements bi.Node {
                             callback(
                                 new Property(
                                     p,
-                                    ["dictionary", this.getDictionary(pKey)],
+                                    ["dictionary", new Dictionary($.type[1], this.getCollection(pKey))],
                                     isKeyProperty,
                                 ),
                                 pKey
@@ -84,7 +84,7 @@ export class Node implements bi.Node {
                             callback(
                                 new Property(
                                     p,
-                                    ["list", this.getList(pKey)],
+                                    ["list", new List($.type[1], this.getCollection(pKey))],
                                     isKeyProperty,
                                 ),
                                 pKey
@@ -137,12 +137,6 @@ export class Node implements bi.Node {
     public getCollection(key: string) {
         return this.collections.getUnsafe(key)
     }
-    public getDictionary(key: string) {
-        return this.dictionaries.getUnsafe(key)
-    }
-    public getList(key: string) {
-        return this.lists.getUnsafe(key)
-    }
     public getComponent(key: string) {
         return this.components.getUnsafe(key)
     }
@@ -174,21 +168,6 @@ function defaultInitializeNode(
                 const $ = property.type[1]
                 const collection = new Collection($, subEntriesErrorsAggregator, global)
                 node.collections.add(key, collection)
-                switch ($.type[0]) {
-                    case "dictionary": {
-                        const $$ = $.type[1]
-                        node.dictionaries.add(key, new Dictionary($$, collection))
-
-                        break
-                    }
-                    case "list": {
-                        node.lists.add(key, new List(collection))
-
-                        break
-                    }
-                    default:
-                        assertUnreachable($.type[0])
-                }
                 break
             }
             case "component": {

@@ -8,9 +8,9 @@ import * as d from "../definition"
 import { Global } from "./implementation/Global"
 import { IParentErrorsAggregator } from "./implementation/ErrorManager"
 
-// function assertUnreachable(_x: never) {
-//     throw new Error("unreachable")
-// }
+function assertUnreachable<RT>(_x: never): RT {
+    throw new Error("unreachable")
+}
 
 export class Component implements syncAPI.Component {
     public node: Node
@@ -40,9 +40,71 @@ class Property implements syncAPI.Property {
     private readonly imp: imp.Property
     public readonly type: syncAPI.PropertyType
     public readonly isKeyProperty: boolean
-    constructor(propImp: imp.Property) {
+    constructor(
+        propImp: imp.Property,
+        global: Global,
+        errorsAggregator: IParentErrorsAggregator,
+        subEntriesErrorsAggregator: IParentErrorsAggregator,
+        createdInNewContext: boolean,
+        keyProperty: d.Property | null,
+    ) {
         this.imp = propImp
-        this.type = propImp.type
+        this.type = ((): syncAPI.PropertyType => {
+            switch (propImp.type[0]) {
+                case "component": {
+                    const $ = propImp.type[1]
+                    return ["component", new Component(
+                        $.definition,
+                        $,
+                        global,
+                        errorsAggregator,
+                        subEntriesErrorsAggregator,
+                        createdInNewContext,
+                        keyProperty,
+                    )]
+                }
+                case "dictionary": {
+                    const $ = propImp.type[1]
+                    return ["dictionary", new Dictionary(
+                        $,
+                        global,
+                        createdInNewContext,
+                    )]
+                }
+                case "list": {
+                    const $ = propImp.type[1]
+                    return ["list", new List(
+                        $,
+                        global,
+                        createdInNewContext,
+                    )]
+                }
+                case "dictionary": {
+                    const $ = propImp.type[1]
+                    return ["dictionary", new Dictionary(
+                        $,
+                        global,
+                        createdInNewContext
+                    )]
+                }
+                case "state group": {
+                    const $ = propImp.type[1]
+                    return ["state group", new StateGroup(
+                        $,
+                        global,
+                        createdInNewContext,
+                    )]
+                }
+                case "value": {
+                    const $ = propImp.type[1]
+                    return ["value", new Value(
+                        $,
+                    )]
+                }
+                default:
+                    return assertUnreachable(propImp.type[0])
+            }
+        })()
         this.isKeyProperty = this.imp.isKeyProperty
     }
 }
@@ -115,8 +177,8 @@ export class Node implements syncAPI.Node {
         if ($.type[0] !== "dictionary") {
             throw new Error("not a dicionary")
         }
-        const dictionary = this.node.dictionaries.getUnsafe(key)
-        return new Dictionary(dictionary, this.global, this.createdInNewContext)
+        const collection = this.node.collections.getUnsafe(key)
+        return new Dictionary(new imp.Dictionary($.type[1], collection), this.global, this.createdInNewContext)
     }
     public getList(key: string) {
         const propDef = this.definition.properties.getUnsafe(key)
@@ -127,8 +189,8 @@ export class Node implements syncAPI.Node {
         if ($.type[0] !== "list") {
             throw new Error("not a list")
         }
-        const list = this.node.lists.getUnsafe(key)
-        return new ListBuilder(list, this.global, this.createdInNewContext)
+        const collection = this.node.collections.getUnsafe(key)
+        return new List(new imp.List($.type[1], collection), this.global, this.createdInNewContext)
     }
     public getComponent(key: string) {
         const propDef = this.definition.properties.getUnsafe(key)
@@ -164,7 +226,17 @@ export class Node implements syncAPI.Node {
     }
     public forEachProperty(callback: (property: syncAPI.Property, key: string) => void) {
         this.node.forEachProperty((p, pKey) => {
-            callback(new Property(p), pKey)
+            callback(
+                new Property(
+                    p,
+                    this.global,
+                    this.errorsAggregator,
+                    this.subEntriesErrorsAggregator,
+                    this.createdInNewContext,
+                    this.keyProperty,
+                ),
+                pKey
+            )
         })
     }
 }
@@ -190,7 +262,7 @@ export class StateGroup implements syncAPI.StateGroup {
             this.global,
             false,
         )
-        const nodeBuilder = new Node(
+        const node = new Node(
             stateDefinition.node,
             state.node,
             this.global,
@@ -200,10 +272,28 @@ export class StateGroup implements syncAPI.StateGroup {
             null,
         )
         //FIXME call onError
-        return new State(state, nodeBuilder)
+        return new State(state, node)
     }
     public getCurrentState() {
-        return this.imp.getCurrentState()
+        const currentStateImp = this.imp.getCurrentState()
+        const stateName = currentStateImp.getStateKey()
+        const stateDefinition = this.imp.definition.states.getUnsafe(stateName)
+        const state = new imp.State(
+            stateName,
+            stateDefinition,
+            this.global,
+            false,
+        )
+        const node = new Node(
+            stateDefinition.node,
+            state.node,
+            this.global,
+            state.errorsAggregator,
+            state.subentriesErrorsAggregator,
+            this.createdInNewContext,
+            null,
+        )
+        return new State(state, node)
     }
 }
 
@@ -258,11 +348,11 @@ export class Dictionary implements syncAPI.Dictionary {
     private readonly createdInNewContext: boolean
     private readonly global: Global
     constructor(
-        dictionary: imp.Dictionary,
+        dictionaryImp: imp.Dictionary,
         global: Global,
         createdInNewContext: boolean,
     ) {
-        this.imp = dictionary
+        this.imp = dictionaryImp
         this.global = global
         this.createdInNewContext = createdInNewContext
     }
@@ -275,52 +365,56 @@ export class Dictionary implements syncAPI.Dictionary {
         return new Entry(this.imp.collection, entry, this.createdInNewContext, this.imp.collection.keyProperty)
     }
     public forEachEntry(callback: (entry: syncAPI.Entry, key: string) => void) {
-        const keyProperty = this.imp.definition["key property"].get()
-        this.imp.forEachEntry((e, eKey) => {
-            callback(
-                new Entry(
-                    this.imp.collection,
-                    e,
-                    this.createdInNewContext,
-                    keyProperty,
-                ),
-                eKey
-            )
+        const keyPropertyName = this.imp.definition["key property"].name
+        this.imp.collection.entries.forEach(e => {
+            if (e.status.get()[0] !== "inactive") {
+                callback(
+                    new Entry(
+                        this.imp.collection,
+                        e.entry,
+                        this.createdInNewContext,
+                        null,
+                    ),
+                    e.entry.node.values.getUnsafe(keyPropertyName).value.get()
+                )
+            }
         })
     }
 }
 
 
-export class ListBuilder implements syncAPI.List {
-    private readonly list: imp.List
+export class List implements syncAPI.List {
+    private readonly imp: imp.List
     private readonly global: Global
     private readonly createdInNewContext: boolean
     constructor(
-        list: imp.List,
+        listImp: imp.List,
         global: Global,
         createdInNewContext: boolean,
     ) {
-        this.list = list
+        this.imp = listImp
         this.global = global
         this.createdInNewContext = createdInNewContext
     }
     public createEntry() {
-        const entry = new imp.Entry(this.list.collection.nodeDefinition, this.global, this.list.collection.keyProperty)
-        return new Entry(this.list.collection, entry, this.createdInNewContext, this.list.collection.keyProperty)
+        const entry = new imp.Entry(this.imp.collection.nodeDefinition, this.global, this.imp.collection.keyProperty)
+        return new Entry(this.imp.collection, entry, this.createdInNewContext, this.imp.collection.keyProperty)
     }
     public forEachEntry(callback: (entry: syncAPI.Entry) => void) {
-        this.list.forEachEntry(e => {
-            callback(new Entry(
-                this.list.collection,
-                e,
-                this.createdInNewContext,
-                null,
-            ))
+        this.imp.collection.entries.forEach(e => {
+            if (e.status.get()[0] !== "inactive") {
+                callback(new Entry(
+                    this.imp.collection,
+                    e.entry,
+                    this.createdInNewContext,
+                    null,
+                ))
+            }
         })
     }
 }
 
-export class ValueBuilder implements syncAPI.Value {
+export class Value implements syncAPI.Value {
     public comments: imp.Comments
     private readonly imp: imp.Value
     readonly isQuoted: boolean

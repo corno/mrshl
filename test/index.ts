@@ -8,10 +8,14 @@ import * as fs from "fs"
 import * as path from "path"
 import { describe } from "mocha"
 import * as astn from "../src"
+import * as async from "../src/asyncAPI"
 import * as p from "pareto-20"
 import { readSchemaFileFromFileSystem } from "../src/readSchemaFileFromFileSystem"
 import { makeNativeHTTPrequest } from "../src/makeNativeHTTPrequest"
-import { printRange } from "../src"
+
+// function assertUnreachable<RT>(_x: never): RT {
+//     throw new Error("unreachable")
+// }
 
 const testsDir = "./test/tests"
 
@@ -34,13 +38,68 @@ type Snipppets = {
     }
 }
 
+function deepEqualJSON(
+    testDirPath: string,
+    name: string,
+    actual: any, //eslint-disable-line
+) {
+
+    const expectedPath = path.join(testDirPath, `${name}.expected.json`)
+    const actualPath = path.join(testDirPath, `${name}.actual.json`)
+
+    const expectedAsString = fs.readFileSync(expectedPath, { encoding: "utf-8" })
+    try {
+        chai.assert.deepEqual(actual, JSON.parse(expectedAsString))
+    } catch (e) {
+        fs.writeFileSync(actualPath, JSON.stringify(actual, undefined, "\t"))
+        throw e
+    }
+}
+
+function subscribeToNode(_node: async.Node) {
+    // node.forEachProperty((prop, propKey) => {
+    //     console.log("PROPERTY", propKey)
+    //     switch (prop.type[0]) {
+    //         case "collection": {
+    //             const $ = prop.type[1]
+    //             $.entries.subscribeToEntries(e => {
+    //                 subscribeToNode(e.entry.node)
+    //             })
+    //             break
+    //         }
+    //         case "component": {
+    //             const $ = prop.type[1]
+    //             subscribeToNode($.node)
+    //             break
+    //         }
+    //         case "state group": {
+    //             const $ = prop.type[1]
+    //             $.currentStateKey.subscribeToValue(state => {
+    //                 console.log("STATE", state)
+    //             })
+    //             $.statesOverTime.subscribeToEntries(sot => {
+    //                 subscribeToNode(sot.entry.node)
+    //             })
+    //             break
+    //         }
+    //         case "value": {
+    //             const $ = prop.type[1]
+    //             $.value.subscribeToValue(value => {
+    //                 console.log("VALUE", value)
+    //             })
+    //             break
+    //         }
+    //         default:
+    //             assertUnreachable(prop.type[0])
+    //     }
+    // })
+}
+
 describe("main", () => {
     fs.readdirSync(testsDir).forEach(dir => {
         //console.log("test:", dir)
         const testDirPath = path.join(testsDir, dir)
         const serializedDatasetPath = path.join(testDirPath, "data.astn.test")
-        const expectedSnippetsPath = path.join(testDirPath, "expectedSnippets.json")
-        const actualSnippetsPath = path.join(testDirPath, "actualSnippets.json")
         //const expectedOutputPath = path.join(testDirPath, "expected.astn.test")
         const expectedIssues = JSON.parse(fs.readFileSync(path.join(testDirPath, "issues.json"), { encoding: "utf-8" }))
 
@@ -101,7 +160,7 @@ describe("main", () => {
                 //     actualIssues.push([warningMessage, "warning", range.start.line, range.start.column, range.end.line, range.end.column])
                 // },
                 [new astn.SnippetGenerator((range, getIntraSnippets, getSnippetsAfter) => {
-                    actualSnippets[printRange(range)] = {
+                    actualSnippets[astn.printRange(range)] = {
                         inToken: getIntraSnippets === null ? null : getIntraSnippets(),
                         afterToken: getSnippetsAfter === null ? null : getSnippetsAfter(),
                     }
@@ -126,13 +185,11 @@ describe("main", () => {
                 // console.log("expected>>>.")
                 // console.log(expectedOutput.split("\n"))
                 // chai.assert.deepEqual(out.join("").split("\n"), expectedOutput.split("\n"))
-                const expectedSnippetsString = fs.readFileSync(expectedSnippetsPath, { encoding: "utf-8" })
-                try {
-                    chai.assert.deepEqual(actualSnippets, JSON.parse(expectedSnippetsString))
-                } catch (e) {
-                    fs.writeFileSync(actualSnippetsPath, JSON.stringify(actualSnippets, undefined, "\t"))
-                    throw e
-                }
+
+                deepEqualJSON(testDirPath, "snippets", actualSnippets)
+
+                subscribeToNode(dataset.async.rootNode)
+
             }).catch(
                 _e => {
                     if (actualIssues.length === 0) {

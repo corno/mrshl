@@ -8,6 +8,7 @@ import { IParentErrorsAggregator } from "./ErrorManager"
 export class Component implements bi.Component {
     public readonly node: Node
     public readonly comments = new Comments()
+    public readonly definition: d.Component
     constructor(
         definition: d.Component,
         global: Global,
@@ -15,6 +16,7 @@ export class Component implements bi.Component {
         subEntriesErrorsAggregator: IParentErrorsAggregator,
         createdInNewContext: boolean,
     ) {
+        this.definition = definition
         this.node = new Node(
             definition.type.get().node,
             global,

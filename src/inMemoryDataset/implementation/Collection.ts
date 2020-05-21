@@ -6,7 +6,8 @@ import * as g from "../../generics"
 import * as bi from "../../asyncAPI"
 import * as d from "../../definition"
 import * as cc from "./ChangeController"
-import { copyEntry, EntryBuilder } from "../copyEntry"
+import { copyEntry } from "../copyEntry"
+import * as syncAPIImp from "../syncAPIImplementation"
 import { FlexibleErrorsAggregator, IParentErrorsAggregator } from "./ErrorManager"
 import { Global } from "./Global"
 import { Node } from "./Node"
@@ -191,33 +192,14 @@ export class Dictionary {
         this.collection = collection
         this.definition = definition
     }
-    public createEntry() {
-        return this.collection.createEntry()
-    }
-    public forEachEntry(callback: (entry: Entry, key: string) => void) {
-        this.collection.entries.forEach(e => {
-            if (e.status.get()[0] !== "inactive") {
-
-                callback(e.entry, e.entry.node.getValue(this.definition["key property"].name).getValue())
-            }
-        })
-    }
 }
 
 export class List {
     public readonly collection: Collection
-    constructor(collection: Collection) {
+    public readonly definition: d.List
+    constructor(definition: d.List, collection: Collection) {
         this.collection = collection
-    }
-    public createEntry() {
-        return this.collection.createEntry()
-    }
-    public forEachEntry(callback: (entry: Entry) => void) {
-        this.collection.entries.forEach(e => {
-            if (e.status.get()[0] !== "inactive") {
-                callback(e.entry)
-            }
-        })
+        this.definition = definition
     }
 }
 
@@ -311,23 +293,24 @@ export class Collection implements bi.Collection {
     }
     public copyEntriesToHere(forEach: (callback: (entry: bi.Entry) => void) => void) {
         this.global.changeController.copyEntriesToCollection(callback => {
-            forEach(e => {
-                if (!(e instanceof EntryPlaceholder)) {
-                    console.error(e)
+            forEach(sourceEntryImp => {
+                if (!(sourceEntryImp instanceof EntryPlaceholder)) {
+                    console.error(sourceEntryImp)
                     throw new Error("Unexpected, entry is not an instance of Entry")
                 }
-                const entry = new Entry(
+                const newEntry = new Entry(
                     this.nodeDefinition,
                     this.global,
                     this.keyProperty
                 )
-                const entryBuilder = new EntryBuilder(this, entry, true, this.keyProperty)
-                copyEntry(e.entry, entryBuilder)
+                const source = new syncAPIImp.Entry(this, sourceEntryImp.entry, true, this.keyProperty)
+                const target = new syncAPIImp.Entry(this, newEntry, true, this.keyProperty)
+                copyEntry(source, target)
 
                 callback(new EntryAddition(
                     this,
                     new EntryPlaceholder(
-                        entry,
+                        newEntry,
                         this,
                         this.global,
                         true,
