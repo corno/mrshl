@@ -57,37 +57,40 @@ function deepEqualJSON(
     }
 }
 
-function subscribeToNode(node: async.Node) {
+type Event = [string, string?]
+
+function subscribeToNode(node: async.Node, actualEvents: Event[]) {
     node.forEachProperty((prop, propKey) => {
-        console.log("PROPERTY", propKey)
+        actualEvents.push(["property", propKey])
         switch (prop.type[0]) {
             case "collection": {
                 const $ = prop.type[1]
                 $.entries.subscribeToEntries(e => {
-                    console.log("COLLECTION ENTRY")
-                    subscribeToNode(e.entry.node)
+                    actualEvents.push(["collection entry"])
+                    subscribeToNode(e.entry.node, actualEvents)
                 })
                 break
             }
             case "component": {
                 const $ = prop.type[1]
-                subscribeToNode($.node)
+                subscribeToNode($.node, actualEvents)
                 break
             }
             case "state group": {
                 const $ = prop.type[1]
                 $.currentStateKey.subscribeToValue(state => {
-                    console.log("STATE", state)
+                    actualEvents.push(["current state", state])
                 })
                 $.statesOverTime.subscribeToEntries(sot => {
-                    subscribeToNode(sot.entry.node)
+                    actualEvents.push(["state", sot.entry.key])
+                    subscribeToNode(sot.entry.node, actualEvents)
                 })
                 break
             }
             case "value": {
                 const $ = prop.type[1]
                 $.value.subscribeToValue(value => {
-                    console.log("VALUE", value)
+                    actualEvents.push(["value", value])
                 })
                 break
             }
@@ -190,7 +193,10 @@ describe("main", () => {
 
                 deepEqualJSON(testDirPath, "snippets", actualSnippets)
 
-                subscribeToNode(dataset.async.rootNode)
+                const actualEvents: Event[] = []
+                subscribeToNode(dataset.async.rootNode, actualEvents)
+                deepEqualJSON(testDirPath, "events", actualEvents)
+
 
             }).catch(
                 _e => {
