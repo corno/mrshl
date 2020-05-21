@@ -13,9 +13,9 @@ import * as p from "pareto-20"
 import { readSchemaFileFromFileSystem } from "../src/readSchemaFileFromFileSystem"
 import { makeNativeHTTPrequest } from "../src/makeNativeHTTPrequest"
 
-// function assertUnreachable<RT>(_x: never): RT {
-//     throw new Error("unreachable")
-// }
+function assertUnreachable<RT>(_x: never): RT {
+    throw new Error("unreachable")
+}
 
 const testsDir = "./test/tests"
 
@@ -45,54 +45,56 @@ function deepEqualJSON(
 ) {
 
     const expectedPath = path.join(testDirPath, `${name}.expected.json`)
-    const actualPath = path.join(testDirPath, `${name}.actual.json`)
 
     const expectedAsString = fs.readFileSync(expectedPath, { encoding: "utf-8" })
     try {
         chai.assert.deepEqual(actual, JSON.parse(expectedAsString))
     } catch (e) {
+        const actualPath = path.join(".", testDirPath, `${name}.actual.json`)
+        console.log("AP", actualPath)
         fs.writeFileSync(actualPath, JSON.stringify(actual, undefined, "\t"))
         throw e
     }
 }
 
-function subscribeToNode(_node: async.Node) {
-    // node.forEachProperty((prop, propKey) => {
-    //     console.log("PROPERTY", propKey)
-    //     switch (prop.type[0]) {
-    //         case "collection": {
-    //             const $ = prop.type[1]
-    //             $.entries.subscribeToEntries(e => {
-    //                 subscribeToNode(e.entry.node)
-    //             })
-    //             break
-    //         }
-    //         case "component": {
-    //             const $ = prop.type[1]
-    //             subscribeToNode($.node)
-    //             break
-    //         }
-    //         case "state group": {
-    //             const $ = prop.type[1]
-    //             $.currentStateKey.subscribeToValue(state => {
-    //                 console.log("STATE", state)
-    //             })
-    //             $.statesOverTime.subscribeToEntries(sot => {
-    //                 subscribeToNode(sot.entry.node)
-    //             })
-    //             break
-    //         }
-    //         case "value": {
-    //             const $ = prop.type[1]
-    //             $.value.subscribeToValue(value => {
-    //                 console.log("VALUE", value)
-    //             })
-    //             break
-    //         }
-    //         default:
-    //             assertUnreachable(prop.type[0])
-    //     }
-    // })
+function subscribeToNode(node: async.Node) {
+    node.forEachProperty((prop, propKey) => {
+        console.log("PROPERTY", propKey)
+        switch (prop.type[0]) {
+            case "collection": {
+                const $ = prop.type[1]
+                $.entries.subscribeToEntries(e => {
+                    console.log("COLLECTION ENTRY")
+                    subscribeToNode(e.entry.node)
+                })
+                break
+            }
+            case "component": {
+                const $ = prop.type[1]
+                subscribeToNode($.node)
+                break
+            }
+            case "state group": {
+                const $ = prop.type[1]
+                $.currentStateKey.subscribeToValue(state => {
+                    console.log("STATE", state)
+                })
+                $.statesOverTime.subscribeToEntries(sot => {
+                    subscribeToNode(sot.entry.node)
+                })
+                break
+            }
+            case "value": {
+                const $ = prop.type[1]
+                $.value.subscribeToValue(value => {
+                    console.log("VALUE", value)
+                })
+                break
+            }
+            default:
+                assertUnreachable(prop.type[0])
+        }
+    })
 }
 
 describe("main", () => {

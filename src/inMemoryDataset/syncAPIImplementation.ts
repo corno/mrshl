@@ -37,25 +37,25 @@ export class Component implements syncAPI.Component {
 }
 
 class Property implements syncAPI.Property {
-    private readonly imp: imp.Property
     public readonly type: syncAPI.PropertyType
     public readonly isKeyProperty: boolean
     constructor(
-        propImp: imp.Property,
+        key: string,
+        definition: d.Property,
+        nodeImp: imp.Node,
         global: Global,
         errorsAggregator: IParentErrorsAggregator,
         subEntriesErrorsAggregator: IParentErrorsAggregator,
         createdInNewContext: boolean,
         keyProperty: d.Property | null,
     ) {
-        this.imp = propImp
         this.type = ((): syncAPI.PropertyType => {
-            switch (propImp.type[0]) {
+            switch (definition.type[0]) {
                 case "component": {
-                    const $ = propImp.type[1]
+                    const $ = definition.type[1]
                     return ["component", new Component(
-                        $.definition,
                         $,
+                        nodeImp.getComponent(key),
                         global,
                         errorsAggregator,
                         subEntriesErrorsAggregator,
@@ -63,49 +63,50 @@ class Property implements syncAPI.Property {
                         keyProperty,
                     )]
                 }
-                case "dictionary": {
-                    const $ = propImp.type[1]
-                    return ["dictionary", new Dictionary(
-                        $,
-                        global,
-                        createdInNewContext,
-                    )]
-                }
-                case "list": {
-                    const $ = propImp.type[1]
-                    return ["list", new List(
-                        $,
-                        global,
-                        createdInNewContext,
-                    )]
-                }
-                case "dictionary": {
-                    const $ = propImp.type[1]
-                    return ["dictionary", new Dictionary(
-                        $,
-                        global,
-                        createdInNewContext
-                    )]
+                case "collection": {
+                    const $ = definition.type[1]
+                    switch ($.type[0]) {
+                        case "dictionary": {
+                            const $$ = $.type[1]
+                            return ["dictionary", new Dictionary(
+                                new imp.Dictionary($$, nodeImp.getCollection(key)),
+                                global,
+                                createdInNewContext,
+                            )]
+
+                        }
+                        case "list": {
+                            const $$ = $.type[1]
+                            return ["list", new List(
+                                new imp.List($$, nodeImp.getCollection(key)),
+                                global,
+                                createdInNewContext,
+                            )]
+
+                        }
+                        default:
+                            return assertUnreachable($.type[0])
+                    }
                 }
                 case "state group": {
-                    const $ = propImp.type[1]
+                    //const $ = definition.type[1]
                     return ["state group", new StateGroup(
-                        $,
+                        nodeImp.getStateGroup(key),
                         global,
                         createdInNewContext,
                     )]
                 }
                 case "value": {
-                    const $ = propImp.type[1]
+                    //const $ = definition.type[1]
                     return ["value", new Value(
-                        $,
+                        nodeImp.getValue(key),
                     )]
                 }
                 default:
-                    return assertUnreachable(propImp.type[0])
+                    return assertUnreachable(definition.type[0])
             }
         })()
-        this.isKeyProperty = this.imp.isKeyProperty
+        this.isKeyProperty = keyProperty === definition
     }
 }
 
@@ -225,10 +226,12 @@ export class Node implements syncAPI.Node {
         return this.node.values.getUnsafe(key)
     }
     public forEachProperty(callback: (property: syncAPI.Property, key: string) => void) {
-        this.node.forEachProperty((p, pKey) => {
+        this.node.definition.properties.forEach((p, pKey) => {
             callback(
                 new Property(
+                    pKey,
                     p,
+                    this.node,
                     this.global,
                     this.errorsAggregator,
                     this.subEntriesErrorsAggregator,

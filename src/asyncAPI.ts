@@ -28,11 +28,22 @@ export interface Entry {
     delete(): void
 }
 
+export type PropertyType =
+    | ["collection", Collection]
+    | ["component", Component]
+    | ["state group", StateGroup]
+    | ["value", Value]
+
+export interface Property {
+    type: PropertyType
+}
+
 export interface Node {
     getCollection(name: string): Collection
     getComponent(name: string): Component
     getStateGroup(name: string): StateGroup
     getValue(name: string): Value
+    forEachProperty(callback: (property: Property, key: string) => void): void
 }
 
 

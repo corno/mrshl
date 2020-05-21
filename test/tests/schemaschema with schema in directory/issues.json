@@ -1,0 +1,3 @@
+[
+    [ "schema retrieval", "warning", "found both external and internal schema. ignoring internal schema", null, null, null, null]
+]
