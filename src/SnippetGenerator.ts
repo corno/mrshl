@@ -111,9 +111,18 @@ export class SnippetGenerator implements sideEffects.Node, sideEffects.Dictionar
             () => {
                 const out: string[] = []
                 fp.serialize(
-                    [createNodeSnippet(nodeDefinition, keyPropertyDefinition)], "    ", true, snippet => {
+                    [
+                        fp.line([
+                            " ",
+                            createNodeSnippet(nodeDefinition, keyPropertyDefinition),
+                        ]),
+                    ],
+                    "    ",
+                    true,
+                    snippet => {
                         out.push(snippet)
-                    })
+                    }
+                )
                 return [out.map((line, index) => {
                     //don't indent the first line
                     if (index === 0) {

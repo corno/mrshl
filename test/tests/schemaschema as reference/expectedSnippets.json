@@ -14,7 +14,7 @@
 	"3:9-15": {
 		"inToken": null,
 		"afterToken": [
-			"(\n    'node': (\n        'properties': {}\n    )\n)"
+			" (\n    'node': (\n        'properties': {}\n    )\n)"
 		]
 	},
 	"3:17-18": {
@@ -44,7 +44,7 @@
 	"6:21-33": {
 		"inToken": null,
 		"afterToken": [
-			"(\n    'type': | 'value' (\n        'default value': \"\"\n        'type': | 'text' (\n        )\n    )\n)"
+			" (\n    'type': | 'value' (\n        'default value': \"\"\n        'type': | 'text' (\n        )\n    )\n)"
 		]
 	},
 	"6:35-36": {
@@ -86,7 +86,7 @@
 	"10:37-43": {
 		"inToken": null,
 		"afterToken": [
-			"(\n    'type': | 'value' (\n        'default value': \"\"\n        'type': | 'text' (\n        )\n    )\n)"
+			" (\n    'type': | 'value' (\n        'default value': \"\"\n        'type': | 'text' (\n        )\n    )\n)"
 		]
 	},
 	"10:45-46": {
@@ -98,7 +98,7 @@
 	"11:37-43": {
 		"inToken": null,
 		"afterToken": [
-			"(\n    'type': | 'value' (\n        'default value': \"\"\n        'type': | 'text' (\n        )\n    )\n)"
+			" (\n    'type': | 'value' (\n        'default value': \"\"\n        'type': | 'text' (\n        )\n    )\n)"
 		]
 	},
 	"11:45-46": {
@@ -128,7 +128,7 @@
 	"14:49-61": {
 		"inToken": null,
 		"afterToken": [
-			"(\n    'node': (\n        'properties': {}\n    )\n)"
+			" (\n    'node': (\n        'properties': {}\n    )\n)"
 		]
 	},
 	"14:63-64": {
@@ -158,7 +158,7 @@
 	"17:61-67": {
 		"inToken": null,
 		"afterToken": [
-			"(\n    'type': | 'value' (\n        'default value': \"\"\n        'type': | 'text' (\n        )\n    )\n)"
+			" (\n    'type': | 'value' (\n        'default value': \"\"\n        'type': | 'text' (\n        )\n    )\n)"
 		]
 	},
 	"17:69-70": {
@@ -194,7 +194,7 @@
 	"22:61-67": {
 		"inToken": null,
 		"afterToken": [
-			"(\n    'type': | 'value' (\n        'default value': \"\"\n        'type': | 'text' (\n        )\n    )\n)"
+			" (\n    'type': | 'value' (\n        'default value': \"\"\n        'type': | 'text' (\n        )\n    )\n)"
 		]
 	},
 	"22:69-70": {
@@ -224,7 +224,7 @@
 	"25:73-85": {
 		"inToken": null,
 		"afterToken": [
-			"(\n    'node': (\n        'properties': {}\n    )\n)"
+			" (\n    'node': (\n        'properties': {}\n    )\n)"
 		]
 	},
 	"25:87-88": {
@@ -254,7 +254,7 @@
 	"28:85-99": {
 		"inToken": null,
 		"afterToken": [
-			"(\n    'type': | 'value' (\n        'default value': \"\"\n        'type': | 'text' (\n        )\n    )\n)"
+			" (\n    'type': | 'value' (\n        'default value': \"\"\n        'type': | 'text' (\n        )\n    )\n)"
 		]
 	},
 	"28:101-102": {
@@ -290,7 +290,7 @@
 	"36:73-79": {
 		"inToken": null,
 		"afterToken": [
-			"(\n    'node': (\n        'properties': {}\n    )\n)"
+			" (\n    'node': (\n        'properties': {}\n    )\n)"
 		]
 	},
 	"36:81-82": {
@@ -314,7 +314,7 @@
 	"44:49-60": {
 		"inToken": null,
 		"afterToken": [
-			"(\n    'node': (\n        'properties': {}\n    )\n)"
+			" (\n    'node': (\n        'properties': {}\n    )\n)"
 		]
 	},
 	"44:62-63": {
@@ -344,7 +344,7 @@
 	"47:61-67": {
 		"inToken": null,
 		"afterToken": [
-			"(\n    'type': | 'value' (\n        'default value': \"\"\n        'type': | 'text' (\n        )\n    )\n)"
+			" (\n    'type': | 'value' (\n        'default value': \"\"\n        'type': | 'text' (\n        )\n    )\n)"
 		]
 	},
 	"47:69-70": {
@@ -356,7 +356,7 @@
 	"51:49-62": {
 		"inToken": null,
 		"afterToken": [
-			"(\n    'node': (\n        'properties': {}\n    )\n)"
+			" (\n    'node': (\n        'properties': {}\n    )\n)"
 		]
 	},
 	"51:64-65": {
@@ -386,7 +386,7 @@
 	"54:61-69": {
 		"inToken": null,
 		"afterToken": [
-			"(\n    'type': | 'value' (\n        'default value': \"\"\n        'type': | 'text' (\n        )\n    )\n)"
+			" (\n    'type': | 'value' (\n        'default value': \"\"\n        'type': | 'text' (\n        )\n    )\n)"
 		]
 	},
 	"54:71-72": {
@@ -428,7 +428,7 @@
 	"58:77-83": {
 		"inToken": null,
 		"afterToken": [
-			"(\n    'type': | 'value' (\n        'default value': \"\"\n        'type': | 'text' (\n        )\n    )\n)"
+			" (\n    'type': | 'value' (\n        'default value': \"\"\n        'type': | 'text' (\n        )\n    )\n)"
 		]
 	},
 	"58:85-86": {
@@ -440,7 +440,7 @@
 	"59:77-83": {
 		"inToken": null,
 		"afterToken": [
-			"(\n    'type': | 'value' (\n        'default value': \"\"\n        'type': | 'text' (\n        )\n    )\n)"
+			" (\n    'type': | 'value' (\n        'default value': \"\"\n        'type': | 'text' (\n        )\n    )\n)"
 		]
 	},
 	"59:85-86": {
@@ -488,7 +488,7 @@
 	"69:61-76": {
 		"inToken": null,
 		"afterToken": [
-			"(\n    'type': | 'value' (\n        'default value': \"\"\n        'type': | 'text' (\n        )\n    )\n)"
+			" (\n    'type': | 'value' (\n        'default value': \"\"\n        'type': | 'text' (\n        )\n    )\n)"
 		]
 	},
 	"69:78-79": {
@@ -500,7 +500,7 @@
 	"73:49-56": {
 		"inToken": null,
 		"afterToken": [
-			"(\n    'node': (\n        'properties': {}\n    )\n)"
+			" (\n    'node': (\n        'properties': {}\n    )\n)"
 		]
 	},
 	"73:58-59": {
@@ -530,7 +530,7 @@
 	"76:61-76": {
 		"inToken": null,
 		"afterToken": [
-			"(\n    'type': | 'value' (\n        'default value': \"\"\n        'type': | 'text' (\n        )\n    )\n)"
+			" (\n    'type': | 'value' (\n        'default value': \"\"\n        'type': | 'text' (\n        )\n    )\n)"
 		]
 	},
 	"76:78-79": {
@@ -542,7 +542,7 @@
 	"77:61-67": {
 		"inToken": null,
 		"afterToken": [
-			"(\n    'type': | 'value' (\n        'default value': \"\"\n        'type': | 'text' (\n        )\n    )\n)"
+			" (\n    'type': | 'value' (\n        'default value': \"\"\n        'type': | 'text' (\n        )\n    )\n)"
 		]
 	},
 	"77:69-70": {
@@ -572,7 +572,7 @@
 	"80:73-81": {
 		"inToken": null,
 		"afterToken": [
-			"(\n    'node': (\n        'properties': {}\n    )\n)"
+			" (\n    'node': (\n        'properties': {}\n    )\n)"
 		]
 	},
 	"80:83-84": {
@@ -584,7 +584,7 @@
 	"81:73-79": {
 		"inToken": null,
 		"afterToken": [
-			"(\n    'node': (\n        'properties': {}\n    )\n)"
+			" (\n    'node': (\n        'properties': {}\n    )\n)"
 		]
 	},
 	"81:81-82": {
@@ -632,7 +632,7 @@
 	"101:9-15": {
 		"inToken": null,
 		"afterToken": [
-			"(\n    'node': (\n        'properties': {}\n    )\n)"
+			" (\n    'node': (\n        'properties': {}\n    )\n)"
 		]
 	},
 	"101:17-18": {
@@ -662,7 +662,7 @@
 	"104:21-38": {
 		"inToken": null,
 		"afterToken": [
-			"(\n    'type': | 'value' (\n        'default value': \"\"\n        'type': | 'text' (\n        )\n    )\n)"
+			" (\n    'type': | 'value' (\n        'default value': \"\"\n        'type': | 'text' (\n        )\n    )\n)"
 		]
 	},
 	"104:40-41": {
@@ -704,7 +704,7 @@
 	"108:37-43": {
 		"inToken": null,
 		"afterToken": [
-			"(\n    'type': | 'value' (\n        'default value': \"\"\n        'type': | 'text' (\n        )\n    )\n)"
+			" (\n    'type': | 'value' (\n        'default value': \"\"\n        'type': | 'text' (\n        )\n    )\n)"
 		]
 	},
 	"108:45-46": {
@@ -716,7 +716,7 @@
 	"109:37-43": {
 		"inToken": null,
 		"afterToken": [
-			"(\n    'type': | 'value' (\n        'default value': \"\"\n        'type': | 'text' (\n        )\n    )\n)"
+			" (\n    'type': | 'value' (\n        'default value': \"\"\n        'type': | 'text' (\n        )\n    )\n)"
 		]
 	},
 	"109:45-46": {
@@ -764,7 +764,7 @@
 	"119:21-32": {
 		"inToken": null,
 		"afterToken": [
-			"(\n    'type': | 'value' (\n        'default value': \"\"\n        'type': | 'text' (\n        )\n    )\n)"
+			" (\n    'type': | 'value' (\n        'default value': \"\"\n        'type': | 'text' (\n        )\n    )\n)"
 		]
 	},
 	"119:34-35": {
