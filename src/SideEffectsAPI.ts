@@ -2,8 +2,6 @@ import * as bc from "bass-clarinet"
 import * as ds from "./syncAPI"
 import * as md from "./metaDataSchema"
 
-export type GenerateSnippets = () => string[]
-
 export interface Dictionary {
     onDictionaryEntry(
         entryData: bc.PropertyData,
@@ -41,7 +39,8 @@ export interface Node {
     onValue(
         valueName: string,
         data: bc.StringData,
-        value: ds.Value
+        value: ds.Value,
+        definition: md.Value,
         ): void
     onProperty(
         data: bc.PropertyData,

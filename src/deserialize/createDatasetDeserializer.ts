@@ -220,7 +220,7 @@ function createPropertyDeserializer(
                 //valueBuilder.setValue(value, svData.quote !== null, svData.range, comments)
                 valueBuilder.comments.setComments(preData.comments.map(c => c.text))
                 sideEffectsAPIs.forEach(s => {
-                    s.onValue(propKey, svData, valueBuilder)
+                    s.onValue(propKey, svData, valueBuilder, $)
                 })
             }))
         }

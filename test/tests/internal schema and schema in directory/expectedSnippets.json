@@ -1,0 +1,40 @@
+{
+	"18:1-2": {
+		"inToken": null,
+		"afterToken": [
+			"\n    'a1': \"\"\n    'b': \"\"\n    'c':\n"
+		]
+	},
+	"19:5-8": {
+		"inToken": [
+			"a1",
+			"b",
+			"c"
+		],
+		"afterToken": null
+	},
+	"20:5-8": {
+		"inToken": null,
+		"afterToken": [
+			" \"\""
+		]
+	},
+	"20:10-13": {
+		"inToken": [
+			"\"\""
+		],
+		"afterToken": null
+	},
+	"21:5-8": {
+		"inToken": null,
+		"afterToken": [
+			""
+		]
+	},
+	"21:10-11": {
+		"inToken": [
+			""
+		],
+		"afterToken": null
+	}
+}

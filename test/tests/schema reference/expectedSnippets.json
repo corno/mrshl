@@ -1,0 +1,28 @@
+{
+	"2:1-2": {
+		"inToken": null,
+		"afterToken": [
+			"\n    'component types': {}\n    'root type': \"root\"\n"
+		]
+	},
+	"3:5-22": {
+		"inToken": null,
+		"afterToken": [
+			" {}"
+		]
+	},
+	"6:5-8": {
+		"inToken": [
+			"component types",
+			"root type"
+		],
+		"afterToken": null
+	},
+	"7:5-8": {
+		"inToken": [
+			"component types",
+			"root type"
+		],
+		"afterToken": null
+	}
+}

@@ -1,0 +1,14 @@
+{
+	"15:1-2": {
+		"inToken": null,
+		"afterToken": [
+			"\n    'y':\n"
+		]
+	},
+	"16:5-8": {
+		"inToken": null,
+		"afterToken": [
+			""
+		]
+	}
+}

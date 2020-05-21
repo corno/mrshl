@@ -8,11 +8,7 @@ function assertUnreachable<RT>(_x: never): RT {
     throw new Error("Unreachable")
 }
 
-export type RegisterSnippet = (
-    range: bc.Range,
-    intraSnippetGenerator: sideEffects.GenerateSnippets | null,
-    snippetAfterGenerator: sideEffects.GenerateSnippets | null
-) => void
+export type GetSnippets = () => string[]
 
 function createPropertySnippet(prop: md.Property): fp.InlinePart {
     switch (prop.type[0]) {
@@ -79,10 +75,16 @@ function createNodeSnippet(node: md.Node, keyProperty: md.Property | null): fp.I
     ]
 }
 
+export type OnToken = (
+    range: bc.Range,
+    getSnippetsInToken: GetSnippets | null,
+    getSnippetsAfterToken: GetSnippets | null
+) => void
+
 export class SnippetGenerator implements sideEffects.Node, sideEffects.Dictionary {
-    private readonly registerSnippet: RegisterSnippet
-    constructor(registerSnippet: RegisterSnippet) {
-        this.registerSnippet = registerSnippet
+    private readonly onToken: OnToken
+    constructor(onToken: OnToken) {
+        this.onToken = onToken
     }
     onArrayTypeClose() {
         //
@@ -103,7 +105,7 @@ export class SnippetGenerator implements sideEffects.Node, sideEffects.Dictionar
         nodeDefinition: md.Node,
         keyPropertyDefinition: md.Property,
     ) {
-        this.registerSnippet(
+        this.onToken(
             entryData.keyRange,
             null,
             () => {
@@ -145,7 +147,7 @@ export class SnippetGenerator implements sideEffects.Node, sideEffects.Dictionar
         propDefinition: md.Property,
         _nodeBuilder: syncAPI.Node,
     ) {
-        this.registerSnippet(
+        this.onToken(
             propertyData.keyRange,
             null,
             () => {
@@ -175,7 +177,7 @@ export class SnippetGenerator implements sideEffects.Node, sideEffects.Dictionar
         )
     }
     onUnexpectedProperty(_key: string, metaData: bc.PropertyData, _preData: bc.PreData, expectedProperties: string[]) {
-        this.registerSnippet(
+        this.onToken(
             metaData.keyRange,
             () => {
                 return expectedProperties
@@ -187,7 +189,7 @@ export class SnippetGenerator implements sideEffects.Node, sideEffects.Dictionar
         return this
     }
     onTypeOpen(range: bc.Range, nodeDefinition: md.Node, keyPropertyDefinition: md.Property | null) {
-        this.registerSnippet(
+        this.onToken(
             range,
             null,
             () => {
@@ -230,7 +232,7 @@ export class SnippetGenerator implements sideEffects.Node, sideEffects.Dictionar
         _optionPreData: bc.PreData,
         stateGroupDefinition: md.StateGroup
     ) {
-        this.registerSnippet(
+        this.onToken(
             optionData.range,
             () => {
                 return Object.keys(stateGroupDefinition.states.mapUnsorted(s => s))
@@ -238,11 +240,13 @@ export class SnippetGenerator implements sideEffects.Node, sideEffects.Dictionar
             null
         )
     }
-    onValue(_propertyName: string, data: bc.StringData, value: syncAPI.Value) {
-        this.registerSnippet(
+    onValue(_propertyName: string, data: bc.StringData, value: syncAPI.Value, definition: md.Value) {
+        this.onToken(
             data.range,
             () => {
-                return value.getSuggestions()
+                return value.getSuggestions().map(sugg => {
+                    return definition.quoted ? `"${sugg}"` : sugg
+                })
             },
             null,
         )

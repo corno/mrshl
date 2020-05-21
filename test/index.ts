@@ -11,6 +11,7 @@ import * as astn from "../src"
 import * as p from "pareto-20"
 import { readSchemaFileFromFileSystem } from "../src/readSchemaFileFromFileSystem"
 import { makeNativeHTTPrequest } from "../src/makeNativeHTTPrequest"
+import { printRange } from "../src"
 
 const testsDir = "./test/tests"
 
@@ -26,15 +27,26 @@ type Issue = [
 
 type Issues = Issue[]
 
+type Snipppets = {
+    [key: string]: {
+        inToken: string[] | null
+        afterToken: string[] | null
+    }
+}
+
 describe("main", () => {
     fs.readdirSync(testsDir).forEach(dir => {
         //console.log("test:", dir)
         const testDirPath = path.join(testsDir, dir)
         const serializedDatasetPath = path.join(testDirPath, "data.astn.test")
+        const expectedSnippetsPath = path.join(testDirPath, "expectedSnippets.json")
+        const actualSnippetsPath = path.join(testDirPath, "actualSnippets.json")
         //const expectedOutputPath = path.join(testDirPath, "expected.astn.test")
         const expectedIssues = JSON.parse(fs.readFileSync(path.join(testDirPath, "issues.json"), { encoding: "utf-8" }))
 
         const actualIssues: Issues = []
+
+        const actualSnippets: Snipppets = {}
 
         // const schemaReferenceResolver = (reference: string) => {
         //     const schemasDir = "./test/schemas"
@@ -49,7 +61,7 @@ describe("main", () => {
         function myFunc(): p.ISafePromise<void> {
 
             const serializedDataset = fs.readFileSync(serializedDatasetPath, { encoding: "utf-8" })
-            //const expectedOutput = await fs.promises.readFile(expectedOutputPath, { encoding: "utf-8" })
+
 
             return astn.loadDocument(
                 serializedDataset,
@@ -88,8 +100,11 @@ describe("main", () => {
                 // (warningMessage, range) => {
                 //     actualIssues.push([warningMessage, "warning", range.start.line, range.start.column, range.end.line, range.end.column])
                 // },
-                [new astn.SnippetGenerator(() => {
-                    //don't do anything with the snippets
+                [new astn.SnippetGenerator((range, getIntraSnippets, getSnippetsAfter) => {
+                    actualSnippets[printRange(range)] = {
+                        inToken: getIntraSnippets === null ? null : getIntraSnippets(),
+                        afterToken: getSnippetsAfter === null ? null : getSnippetsAfter(),
+                    }
                 })],
                 schema => {
                     return astn.createInMemoryDataset(schema)
@@ -111,6 +126,13 @@ describe("main", () => {
                 // console.log("expected>>>.")
                 // console.log(expectedOutput.split("\n"))
                 // chai.assert.deepEqual(out.join("").split("\n"), expectedOutput.split("\n"))
+                const expectedSnippetsString = fs.readFileSync(expectedSnippetsPath, { encoding: "utf-8" })
+                try {
+                    chai.assert.deepEqual(actualSnippets, JSON.parse(expectedSnippetsString))
+                } catch (e) {
+                    fs.writeFileSync(actualSnippetsPath, JSON.stringify(actualSnippets, undefined, "\t"))
+                    throw e
+                }
             }).catch(
                 _e => {
                     if (actualIssues.length === 0) {
