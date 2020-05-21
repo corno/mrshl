@@ -4,11 +4,13 @@
 
 import * as asyncAPI from "../asyncAPI"
 import * as imp from "./implementation"
+import * as cc from "./changeControl"
 import * as d from "../types"
 import * as g from "../generics"
 import * as syncAPIImp from "./syncAPIImplementation"
 import { copyEntry } from "./copyEntry"
 import { purgeNodeChanges } from "./implementation/purgeChanges"
+import { Global } from "./Global"
 
 function assertUnreachable<RT>(_x: never): RT {
     throw new Error("unreachable")
@@ -16,16 +18,17 @@ function assertUnreachable<RT>(_x: never): RT {
 
 class Collection implements asyncAPI.Collection {
     public readonly entries: g.ISubscribableArray<asyncAPI.Entry>
-
+    private readonly global: Global
     private readonly imp: imp.Collection
-    constructor(collectionImp: imp.Collection) {
+    constructor(collectionImp: imp.Collection, global: Global) {
         this.imp = collectionImp
+        this.global = global
         this.entries = collectionImp.entries.map(e => {
-            return new Entry(e)
+            return new Entry(e, global)
         })
     }
     public copyEntriesToHere(forEach: (callback: (entry: asyncAPI.Entry) => void) => void) {
-        this.imp.global.changeController.copyEntriesToCollection(callback => {
+        this.global.changeController.copyEntriesToCollection(callback => {
             forEach(sourceEntryImp => {
                 if (!(sourceEntryImp instanceof imp.EntryPlaceholder)) {
                     console.error(sourceEntryImp)
@@ -33,19 +36,18 @@ class Collection implements asyncAPI.Collection {
                 }
                 const newEntry = new imp.Entry(
                     this.imp.nodeDefinition,
-                    this.imp.global,
+                    this.global.errorManager,
                     this.imp.keyProperty
                 )
-                const source = new syncAPIImp.Entry(this.imp, sourceEntryImp.entry, true, this.imp.keyProperty)
-                const target = new syncAPIImp.Entry(this.imp, newEntry, true, this.imp.keyProperty)
+                const source = new syncAPIImp.Entry(this.imp, this.global, sourceEntryImp.entry, true, this.imp.keyProperty)
+                const target = new syncAPIImp.Entry(this.imp, this.global, newEntry, true, this.imp.keyProperty)
                 copyEntry(source, target)
 
-                callback(new imp.EntryAddition(
+                callback(new cc.EntryAddition(
                     this.imp,
                     new imp.EntryPlaceholder(
                         newEntry,
                         this.imp,
-                        this.imp.global,
                         true,
                     )
                 ))
@@ -55,13 +57,13 @@ class Collection implements asyncAPI.Collection {
     public addEntry(): void {
         const entry = new imp.Entry(
             this.imp.nodeDefinition,
-            this.imp.global,
+            this.global.errorManager,
             this.imp.keyProperty,
         )
 
-        this.imp.global.changeController.addEntry(new imp.EntryAddition(
+        this.global.changeController.addEntry(new cc.EntryAddition(
             this.imp,
-            new imp.EntryPlaceholder(entry, this.imp, this.imp.global, true)
+            new imp.EntryPlaceholder(entry, this.imp, true)
         ))
     }
 }
@@ -69,9 +71,9 @@ class Collection implements asyncAPI.Collection {
 class Component implements asyncAPI.Component {
     public readonly node: Node
     //private readonly imp: imp.Component
-    constructor(componentImp: imp.Component) {
+    constructor(componentImp: imp.Component, global: Global) {
         //this.imp = componentImp
-        this.node = new Node(componentImp.node)
+        this.node = new Node(componentImp.node, global)
     }
 }
 
@@ -89,10 +91,10 @@ export class Dataset implements asyncAPI.Dataset {
     private readonly imp: imp.RootImp
 
     //public readonly rootNode: Node
-    constructor(rootImp: imp.RootImp) {
+    constructor(rootImp: imp.RootImp, global: Global) {
         this.imp = rootImp
         this.commands = new g.Dictionary({})
-        this.rootNode = new Node(rootImp.rootNode)
+        this.rootNode = new Node(rootImp.rootNode, global)
         this.hasUndoActions = rootImp.global.changeController.executedChanges.hasChanges
         this.hasRedoActions = rootImp.global.changeController.revertedChanges.hasChanges
         this.errorAmount = rootImp.errorsAggregator.errorCount
@@ -132,20 +134,22 @@ class Entry implements asyncAPI.Entry {
     public readonly isAdded: g.ISubscribableValue<boolean>
     public readonly status: g.ISubscribableValue<asyncAPI.EntryStatus>
     private readonly imp: imp.EntryPlaceholder
-    constructor(entryImp: imp.EntryPlaceholder) {
+    private readonly global: Global
+    constructor(entryImp: imp.EntryPlaceholder, global: Global) {
         this.imp = entryImp
-        this.node = new Node(entryImp.node)
+        this.node = new Node(entryImp.node, global)
         this.hasSubEntryErrors = entryImp.hasSubEntryErrors
         this.tempSubEntryErrorsCount = entryImp.tempSubEntryErrorsCount
         this.isAdded = entryImp.isAdded
         this.status = entryImp.status
+        this.global = global
     }
     public delete() {
         if (this.imp.status.get()[0] === "inactive") {
             console.error("trying to delete a already inactive entry")
             return
         }
-        this.imp.global.changeController.deleteEntry(new imp.EntryRemoval(this.imp.parent, this.imp))
+        this.global.changeController.deleteEntry(new cc.EntryRemoval(this.imp.parent, this.imp))
     }
 
 }
@@ -168,8 +172,10 @@ class Property implements asyncAPI.Property {
 
 class Node implements asyncAPI.Node {
     public readonly imp: imp.Node
-    constructor(nodeImp: imp.Node) {
+    private readonly global: Global
+    constructor(nodeImp: imp.Node, global: Global) {
         this.imp = nodeImp
+        this.global = global
     }
     public forEachProperty(callback: (property: asyncAPI.Property, key: string) => void) {
         this.imp.definition.properties.forEach((p, pKey) => {
@@ -226,16 +232,16 @@ class Node implements asyncAPI.Node {
         })
     }
     public getCollection(key: string) {
-        return new Collection(this.imp.collections.getUnsafe(key))
+        return new Collection(this.imp.collections.getUnsafe(key), this.global)
     }
     public getComponent(key: string) {
-        return new Component(this.imp.components.getUnsafe(key))
+        return new Component(this.imp.components.getUnsafe(key), this.global)
     }
     public getStateGroup(key: string) {
-        return new StateGroup(this.imp.stateGroups.getUnsafe(key))
+        return new StateGroup(this.imp.stateGroups.getUnsafe(key), this.global)
     }
     public getValue(key: string) {
-        return new Value(this.imp.values.getUnsafe(key))
+        return new Value(this.imp.values.getUnsafe(key), this.global)
     }
 }
 
@@ -244,9 +250,9 @@ class State implements asyncAPI.State {
     public readonly isCurrentState: g.ISubscribableValue<boolean>
     public readonly key: string
     //private readonly imp: imp.State
-    constructor(stateImp: imp.State) {
+    constructor(stateImp: imp.State, global: Global) {
         //this.imp = stateImp
-        this.node = new Node(stateImp.node)
+        this.node = new Node(stateImp.node, global)
         this.isCurrentState = stateImp.isCurrentState
         this.key = stateImp.key
     }
@@ -257,29 +263,30 @@ class StateGroup implements asyncAPI.StateGroup {
     public readonly changeStatus: g.ISubscribableValue<asyncAPI.StateGroupChangeStatus>
     public readonly createdInNewContext: g.ISubscribableValue<boolean>
     public readonly currentStateKey: g.ISubscribableValue<string>
-
+    private readonly global: Global
     private readonly imp: imp.StateGroup
-    constructor(stateGroupImp: imp.StateGroup) {
+    constructor(stateGroupImp: imp.StateGroup, global: Global) {
         this.imp = stateGroupImp
         this.statesOverTime = this.imp.statesOverTime.map(stateImp => {
-            return new State(stateImp)
+            return new State(stateImp, global)
         })
         this.changeStatus = stateGroupImp.changeStatus
         this.createdInNewContext = stateGroupImp.createdInNewContext
         this.currentStateKey = stateGroupImp.currentStateKey
+        this.global = global
     }
     public setMainFocussableRepresentation(focussable: asyncAPI.IFocussable) {
         this.imp.focussable.update(new g.Maybe(focussable))
     }
     public updateState(stateName: string) {
-        this.imp.global.changeController.updateState(
-            new imp.StateChange(
+        this.global.changeController.updateState(
+            new cc.StateChange(
                 this.imp,
                 this.imp.currentState.get(),
                 new imp.State(
                     stateName,
                     this.imp.definition.states.getUnsafe(stateName),
-                    this.imp.global,
+                    this.global.errorManager,
                     true,
                 )
             )
@@ -297,7 +304,8 @@ class Value implements asyncAPI.Value {
     public readonly changeStatus: g.ReactiveValue<asyncAPI.ValueChangeStatus>
     public readonly createdInNewContext: g.ReactiveValue<boolean>
     private readonly imp: imp.Value
-    constructor(valueImp: imp.Value) {
+    private readonly global: Global
+    constructor(valueImp: imp.Value, global: Global) {
         this.imp = valueImp
         this.isDuplicate = valueImp.isDuplicate
         this.valueIsInvalid = valueImp.valueIsInvalid
@@ -305,9 +313,10 @@ class Value implements asyncAPI.Value {
         this.value = valueImp.value
         this.changeStatus = valueImp.changeStatus
         this.createdInNewContext = valueImp.createdInNewContext
+        this.global = global
     }
     public updateValue(v: string) {
-        this.imp.global.changeController.updateValue(this.imp, v)
+        this.global.changeController.updateValue(this.imp, v)
     }
     public setMainFocussableRepresentation(f: asyncAPI.IFocussable) {
         this.focussable.update(new g.Maybe(f))

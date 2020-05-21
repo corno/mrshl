@@ -1,8 +1,7 @@
 import * as d from "../../definition"
 import { Node } from "./Node"
 import { Comments } from "./Comments"
-import { Global } from "./Global"
-import { IParentErrorsAggregator } from "./ErrorManager"
+import { IParentErrorsAggregator, ErrorManager } from "./ErrorManager"
 
 export class Component {
     public readonly node: Node
@@ -10,7 +9,7 @@ export class Component {
     public readonly definition: d.Component
     constructor(
         definition: d.Component,
-        global: Global,
+        errorManager: ErrorManager,
         errorsAggregator: IParentErrorsAggregator,
         subEntriesErrorsAggregator: IParentErrorsAggregator,
         createdInNewContext: boolean,
@@ -18,7 +17,7 @@ export class Component {
         this.definition = definition
         this.node = new Node(
             definition.type.get().node,
-            global,
+            errorManager,
             errorsAggregator,
             subEntriesErrorsAggregator,
             createdInNewContext,

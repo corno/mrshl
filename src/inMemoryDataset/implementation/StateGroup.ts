@@ -1,12 +1,7 @@
-/* eslint
-    "max-classes-per-file": off
-*/
-
 import * as g from "../../generics"
 import * as bi from "../../asyncAPI"
 import * as d from "../../definition"
-import { FlexibleErrorsAggregator, IParentErrorsAggregator } from "./ErrorManager"
-import { Global } from "./Global"
+import { FlexibleErrorsAggregator, IParentErrorsAggregator, ErrorManager } from "./ErrorManager"
 import { Node } from "./Node"
 import { Comments } from "./Comments"
 
@@ -20,13 +15,13 @@ export class State {
     constructor(
         key: string,
         definition: d.State,
-        global: Global,
+        errorManager: ErrorManager,
         createdInNewContext: boolean,
     ) {
         this.key = key
         this.node = new Node(
             definition.node,
-            global,
+            errorManager,
             this.errorsAggregator,
             this.subentriesErrorsAggregator,
             createdInNewContext,
@@ -39,16 +34,20 @@ export class State {
     }
 }
 
+export type StateGroupChangeStatus =
+    | ["not changed"]
+    | ["changed", {
+        readonly originalStateName: string
+    }]
+
 export class StateGroup {
-    // tslint:disable-next-line: variable-name
     public readonly statesOverTime = new g.ReactiveArray<State>()
     public readonly currentState: g.Mutable<State>
     public readonly currentStateKey: g.ReactiveValue<string>
     public readonly createdInNewContext: g.ReactiveValue<boolean>
-    public readonly changeStatus: g.ReactiveValue<bi.StateGroupChangeStatus>
+    public readonly changeStatus: g.ReactiveValue<StateGroupChangeStatus>
     public readonly thisEntryErrorsAggregator: IParentErrorsAggregator
     public readonly subentriesErrorsAggregator: IParentErrorsAggregator
-    public readonly global: Global
     public readonly initialState: State
     public readonly definition: d.StateGroup
     public readonly comments = new Comments()
@@ -56,18 +55,17 @@ export class StateGroup {
     public readonly focussable: g.ReactiveValue<g.Maybe<bi.IFocussable>>
     constructor(
         definition: d.StateGroup,
+        errorManager: ErrorManager,
         thisEntryErrorsAggregator: IParentErrorsAggregator,
         subentriesErrorsAggregator: IParentErrorsAggregator,
-        global: Global,
         createdInNewContext: boolean,
     ) {
         this.definition = definition
-        this.global = global
 
         this.initialState = new State(
             definition["default state"].name,
             definition["default state"].get(),
-            global,
+            errorManager,
             createdInNewContext
         )
         this.currentState = new g.Mutable<State>(this.initialState)

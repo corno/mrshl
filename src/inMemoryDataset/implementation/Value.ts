@@ -1,8 +1,7 @@
 import * as g from "../../generics"
 import * as asyncAPI from "../../asyncAPI"
 import * as d from "../../definition"
-import { IParentErrorsAggregator, PotentialError } from "./ErrorManager"
-import { Global } from "./Global"
+import { IParentErrorsAggregator, PotentialError, ErrorManager } from "./ErrorManager"
 import { Comments } from "./Comments"
 
 export type ChangeSubscriber = (oldValue: string, newValue: string) => void
@@ -19,20 +18,19 @@ export class Value {
     public readonly comments = new Comments()
     public readonly isQuoted: boolean
     public readonly definition: d.Value
-    public readonly global: Global
     private readonly initialValue: string
 
     constructor(
         definition: d.Value,
         errorsAggregator: IParentErrorsAggregator,
-        global: Global,
-        createdInNewContext: boolean
+        createdInNewContext: boolean,
+        errorManager: ErrorManager,
     ) {
         this.definition = definition
         this.initialValue = definition["default value"]
         this.focussable = new g.ReactiveValue<g.Maybe<asyncAPI.IFocussable>>(new g.Maybe<asyncAPI.IFocussable>(null))
         this.value = new g.ReactiveValue<string>(this.initialValue)
-        this.isDuplicate = new PotentialError(this.isDuplicateImp, errorsAggregator, global.errorManager, this.focussable)
+        this.isDuplicate = new PotentialError(this.isDuplicateImp, errorsAggregator, errorManager, this.focussable)
         this.valueIsInvalid = new PotentialError(
             ((): g.ISubscribableValue<boolean> => {
 
@@ -50,10 +48,9 @@ export class Value {
                 // }
             })(),
             errorsAggregator,
-            global.errorManager,
+            errorManager,
             this.focussable
         )
-        this.global = global
         this.changeStatus = new g.ReactiveValue<asyncAPI.ValueChangeStatus>(["not changed"])
         this.createdInNewContext = new g.ReactiveValue(createdInNewContext)
         this.isQuoted = true //FIXME

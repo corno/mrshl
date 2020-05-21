@@ -3,11 +3,8 @@
 */
 
 import * as g from "../../generics"
-import * as bi from "../../asyncAPI"
 import * as d from "../../definition"
-import * as cc from "./ChangeController"
-import { FlexibleErrorsAggregator, IParentErrorsAggregator } from "./ErrorManager"
-import { Global } from "./Global"
+import { FlexibleErrorsAggregator, IParentErrorsAggregator, ErrorManager } from "./ErrorManager"
 import { Node } from "./Node"
 import { Comments } from "./Comments"
 
@@ -22,12 +19,12 @@ export class Entry {
     public readonly comments = new Comments()
     constructor(
         nodeDefinition: d.Node,
-        global: Global,
+        errorManager: ErrorManager,
         keyProperty: d.Property | null
     ) {
         this.node = new Node(
             nodeDefinition,
-            global,
+            errorManager,
             this.errorsAggregator,
             this.subentriesErrorsAggregator,
             true,
@@ -44,25 +41,30 @@ export class Entry {
     }
 }
 
+export type EntryStatus =
+    | ["active"]
+    | ["inactive", {
+        readonly reason:
+        | ["deleted"]
+        | ["moved"]
+    }]
+
 export class EntryPlaceholder {
-    public readonly status = new g.ReactiveValue<bi.EntryStatus>(["active"])
+    public readonly status = new g.ReactiveValue<EntryStatus>(["active"])
     public readonly isPurged = new g.ReactiveValue<boolean>(false)
     public readonly isAdded: g.ReactiveValue<boolean>
     public readonly entry: Entry
     public readonly node: Node
     public readonly parent: Collection
-    public readonly global: Global
     public readonly hasSubEntryErrors: g.ISubscribableValue<boolean>
     public readonly tempSubEntryErrorsCount: g.ReactiveValue<number>
     constructor(
         entry: Entry,
         parent: Collection,
-        global: Global,
         isAdded: boolean
     ) {
         this.entry = entry
         this.node = entry.node
-        this.global = global
         this.parent = parent
         this.isAdded = new g.ReactiveValue(isAdded)
         this.hasSubEntryErrors = new g.DerivedReactiveValue(entry.subentriesErrorsAggregator.errorCount, ec => ec > 0)
@@ -87,56 +89,8 @@ export class EntryPlaceholder {
         //         }
         //     })
     }
-    public delete() {
-        if (this.status.get()[0] === "inactive") {
-            console.error("trying to delete a already inactive entry")
-            return
-        }
-        this.global.changeController.deleteEntry(new EntryRemoval(this.parent, this))
-    }
     public purge() {
         this.isPurged.update(true)
-    }
-}
-
-export class EntryAddition implements cc.IEntryAddition {
-    public readonly collection: Collection
-    public readonly entry: EntryPlaceholder
-    constructor(collection: Collection, entry: EntryPlaceholder) {
-        this.collection = collection
-        this.entry = entry
-    }
-    public apply() {
-        //console.log("ATTACHING Entry")
-        this.collection.insert(this.entry)
-        this.collection.attachKey(this.entry)
-    }
-    public revert() {
-        this.collection.remove(this.entry)
-        this.collection.detachKey(this.entry)
-    }
-}
-
-export class EntryRemoval implements cc.IEntryRemoval {
-    public readonly collection: Collection
-    public readonly entry: EntryPlaceholder
-    constructor(collection: Collection, entry: EntryPlaceholder) {
-        this.collection = collection
-        this.entry = entry
-    }
-    public apply() {
-        this.entry.entry.detachErrors()
-
-        this.entry.status.update(["inactive", { reason: ["deleted"] }])
-        this.collection.detachKey(this.entry)
-    }
-    public revert() {
-
-        this.entry.entry.errorsAggregator.attach(this.collection.errorsAggregator)
-        this.entry.entry.subentriesErrorsAggregator.attach(this.collection.errorsAggregator)
-
-        this.entry.status.update(["active"])
-        this.collection.attachKey(this.entry)
     }
 }
 
@@ -184,7 +138,6 @@ class DictionaryMixin {
 
 export class Collection {
     public readonly errorsAggregator: IParentErrorsAggregator
-    public readonly global: Global
     public readonly entries = new g.ReactiveArray<EntryPlaceholder>()
     public readonly definition: d.Collection
     public readonly nodeDefinition: d.Node
@@ -193,11 +146,9 @@ export class Collection {
     constructor(
         definition: d.Collection,
         errorsAggregator: IParentErrorsAggregator,
-        global: Global,
     ) {
         this.definition = definition
         this.errorsAggregator = errorsAggregator
-        this.global = global
         if (this.definition.type[0] === "dictionary") {
             this.dictionary = new DictionaryMixin(
                 this.definition.type[1],
@@ -222,26 +173,6 @@ export class Collection {
                     return assertUnreachable(definition.type[0])
             }
         })()
-    }
-    public createEntry() {
-        throw new Error("IMPLEMENT PROPERLY")
-        return new Entry(
-            this.nodeDefinition,
-            this.global,
-            this.keyProperty
-        )
-    }
-    public addEntry(): void {
-        const entry = new Entry(
-            this.nodeDefinition,
-            this.global,
-            this.keyProperty,
-        )
-
-        this.global.changeController.addEntry(new EntryAddition(
-            this,
-            new EntryPlaceholder(entry, this, this.global, true)
-        ))
     }
     public insert(e: EntryPlaceholder): void {
         e.entry.errorsAggregator.attach(e.parent.errorsAggregator)

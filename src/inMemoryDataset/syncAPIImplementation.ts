@@ -5,7 +5,7 @@
 import * as syncAPI from "../syncAPI"
 import * as imp from "./implementation"
 import * as d from "../definition"
-import { Global } from "./implementation/Global"
+import { Global } from "./Global"
 import { IParentErrorsAggregator } from "./implementation/ErrorManager"
 
 function assertUnreachable<RT>(_x: never): RT {
@@ -264,7 +264,7 @@ export class StateGroup implements syncAPI.StateGroup {
         const state = new imp.State(
             stateName,
             stateDefinition,
-            this.global,
+            this.global.errorManager,
             false,
         )
         const node = new Node(
@@ -286,7 +286,7 @@ export class StateGroup implements syncAPI.StateGroup {
         const state = new imp.State(
             stateName,
             stateDefinition,
-            this.global,
+            this.global.errorManager,
             false,
         )
         const node = new Node(
@@ -323,19 +323,20 @@ export class Entry implements syncAPI.Entry {
     private readonly collection: imp.Collection
     private readonly createdInNewContext: boolean
     constructor(
-        collection: imp.Collection,
+        collectionImp: imp.Collection,
+        global: Global,
         entry: imp.Entry,
         createdInNewContext: boolean,
         keyProperty: d.Property | null,
     ) {
         this.comments = entry.comments
         this.entry = entry
-        this.collection = collection
+        this.collection = collectionImp
         this.createdInNewContext = createdInNewContext
         this.node = new Node(
-            collection.nodeDefinition,
+            collectionImp.nodeDefinition,
             entry.node,
-            collection.global,
+            global,
             entry.errorsAggregator,
             entry.subentriesErrorsAggregator,
             createdInNewContext,
@@ -343,7 +344,7 @@ export class Entry implements syncAPI.Entry {
         )
     }
     public insert() {
-        const entryPlaceHolder = new imp.EntryPlaceholder(this.entry, this.collection, this.collection.global, this.createdInNewContext)
+        const entryPlaceHolder = new imp.EntryPlaceholder(this.entry, this.collection, this.createdInNewContext)
         this.collection.insert(entryPlaceHolder)
     }
 }
@@ -367,10 +368,10 @@ export class Dictionary implements syncAPI.Dictionary {
     public createEntry() {
         const entry = new imp.Entry(
             this.imp.nodeDefinition,
-            this.global,
+            this.global.errorManager,
             this.imp.keyProperty
         )
-        return new Entry(this.imp, entry, this.createdInNewContext, this.imp.keyProperty)
+        return new Entry(this.imp, this.global, entry, this.createdInNewContext, this.imp.keyProperty)
     }
     public forEachEntry(callback: (entry: syncAPI.Entry, key: string) => void) {
         const keyPropertyName = this.definition["key property"].name
@@ -379,6 +380,7 @@ export class Dictionary implements syncAPI.Dictionary {
                 callback(
                     new Entry(
                         this.imp,
+                        this.global,
                         e.entry,
                         this.createdInNewContext,
                         null,
@@ -406,14 +408,15 @@ export class List implements syncAPI.List {
         this.createdInNewContext = createdInNewContext
     }
     public createEntry() {
-        const entry = new imp.Entry(this.imp.nodeDefinition, this.global, this.imp.keyProperty)
-        return new Entry(this.imp, entry, this.createdInNewContext, this.imp.keyProperty)
+        const entry = new imp.Entry(this.imp.nodeDefinition, this.global.errorManager, this.imp.keyProperty)
+        return new Entry(this.imp, this.global, entry, this.createdInNewContext, this.imp.keyProperty)
     }
     public forEachEntry(callback: (entry: syncAPI.Entry) => void) {
         this.imp.entries.forEach(e => {
             if (e.status.get()[0] !== "inactive") {
                 callback(new Entry(
                     this.imp,
+                    this.global,
                     e.entry,
                     this.createdInNewContext,
                     null,

@@ -1,10 +1,8 @@
 import * as g from "../../generics"
-import * as asyncAPI from "../../asyncAPI"
 import * as d from "../../definition"
 import { Collection } from "./Collection"
 import { Component } from "./Component"
-import { IParentErrorsAggregator } from "./ErrorManager"
-import { Global } from "./Global"
+import { IParentErrorsAggregator, ErrorManager } from "./ErrorManager"
 import { StateGroup } from "./StateGroup"
 import { Value } from "./Value"
 
@@ -12,13 +10,19 @@ function assertUnreachable<RT>(_x: never): RT {
     throw new Error("Unreachable")
 }
 
+export type PropertyType =
+    | ["collection", Collection]
+    | ["component", Component]
+    | ["state group", StateGroup]
+    | ["value", Value]
+
 export class Property {
     public readonly isKeyProperty: boolean
-    public readonly type: asyncAPI.PropertyType
+    public readonly type: PropertyType
     public readonly definition: d.Property
     constructor(
         definition: d.Property,
-        type: asyncAPI.PropertyType,
+        type: PropertyType,
         isKeyProperty: boolean,
     ) {
         this.definition = definition
@@ -36,7 +40,7 @@ export class Node {
     public readonly keyProperty: d.Property | null
     constructor(
         definition: d.Node,
-        global: Global,
+        errorManager: ErrorManager,
         errorsAggregator: IParentErrorsAggregator,
         subEntriesErrorsAggregator: IParentErrorsAggregator,
         createdInNewContext: boolean,
@@ -49,7 +53,7 @@ export class Node {
             switch (property.type[0]) {
                 case "collection": {
                     const $ = property.type[1]
-                    const collection = new Collection($, subEntriesErrorsAggregator, global)
+                    const collection = new Collection($, subEntriesErrorsAggregator)
                     this.collections.add(key, collection)
                     break
                 }
@@ -57,7 +61,7 @@ export class Node {
                     const $ = property.type[1]
                     const comp = new Component(
                         $,
-                        global,
+                        errorManager,
                         errorsAggregator,
                         subEntriesErrorsAggregator,
                         createdInNewContext,
@@ -69,9 +73,9 @@ export class Node {
                     const $ = property.type[1]
                     const sg = new StateGroup(
                         $,
+                        errorManager,
                         errorsAggregator,
                         subEntriesErrorsAggregator,
-                        global,
                         createdInNewContext,
                     )
                     this.stateGroups.add(key, sg)
@@ -79,7 +83,7 @@ export class Node {
                 }
                 case "value": {
                     const $ = property.type[1]
-                    this.values.add(key, new Value($, errorsAggregator, global, createdInNewContext))
+                    this.values.add(key, new Value($, errorsAggregator, createdInNewContext, errorManager))
                     break
                 }
                 default:

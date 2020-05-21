@@ -1,6 +1,6 @@
 import * as d from "../../definition"
 import { RootErrorsAggregator } from "./ErrorManager"
-import { Global } from "./Global"
+import { Global } from "../Global"
 import { Node } from "./Node"
 
 export class RootImp {
@@ -13,7 +13,7 @@ export class RootImp {
         this.schemaPath = schemaPath
         this.rootNode = new Node(
             schema["root type"].get().node,
-            this.global,
+            this.global.errorManager,
             this.errorsAggregator,
             this.errorsAggregator,
             false,

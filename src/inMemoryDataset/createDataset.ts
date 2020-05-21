@@ -28,6 +28,6 @@ export function createInMemoryDataset(schema: md.Schema): IDataset {
 
     return {
         sync: new SyncDataset(rootImp),
-        async: new asyncAPIImp.Dataset(rootImp),
+        async: new asyncAPIImp.Dataset(rootImp, rootImp.global),
     }
 }
