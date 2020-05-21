@@ -3,5 +3,5 @@ import * as async from "./asyncAPI"
 
 export type IDataset = {
 	sync: sync.IDataset
-	async: async.IDataset
+	async: async.Dataset
 }

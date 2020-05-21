@@ -1,11 +1,10 @@
-import * as bi from "../../asyncAPI"
 import * as d from "../../definition"
 import { Node } from "./Node"
 import { Comments } from "./Comments"
 import { Global } from "./Global"
 import { IParentErrorsAggregator } from "./ErrorManager"
 
-export class Component implements bi.Component {
+export class Component {
     public readonly node: Node
     public readonly comments = new Comments()
     public readonly definition: d.Component
@@ -25,9 +24,6 @@ export class Component implements bi.Component {
             createdInNewContext,
             null,
         )
-    }
-    public purgeChanges() {
-        this.node.purgeChanges()
     }
 }
 

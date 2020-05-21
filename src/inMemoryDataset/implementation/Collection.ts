@@ -6,8 +6,6 @@ import * as g from "../../generics"
 import * as bi from "../../asyncAPI"
 import * as d from "../../definition"
 import * as cc from "./ChangeController"
-import { copyEntry } from "../copyEntry"
-import * as syncAPIImp from "../syncAPIImplementation"
 import { FlexibleErrorsAggregator, IParentErrorsAggregator } from "./ErrorManager"
 import { Global } from "./Global"
 import { Node } from "./Node"
@@ -36,20 +34,17 @@ export class Entry {
             keyProperty
         )
     }
-    public purgeChanges() {
-        this.node.purgeChanges()
-    }
-    public attachErrors(collection: Collection) {
-        this.errorsAggregator.attach(collection.errorsAggregator)
-        this.subentriesErrorsAggregator.attach(collection.errorsAggregator)
-    }
+    // public attachErrors(collection: Collection) {
+    //     this.errorsAggregator.attach(collection.errorsAggregator)
+    //     this.subentriesErrorsAggregator.attach(collection.errorsAggregator)
+    // }
     public detachErrors() {
         this.errorsAggregator.detach()
         this.subentriesErrorsAggregator.detach()
     }
 }
 
-export class EntryPlaceholder implements bi.Entry {
+export class EntryPlaceholder {
     public readonly status = new g.ReactiveValue<bi.EntryStatus>(["active"])
     public readonly isPurged = new g.ReactiveValue<boolean>(false)
     public readonly isAdded: g.ReactiveValue<boolean>
@@ -104,7 +99,7 @@ export class EntryPlaceholder implements bi.Entry {
     }
 }
 
-class EntryAddition implements cc.IEntryAddition {
+export class EntryAddition implements cc.IEntryAddition {
     public readonly collection: Collection
     public readonly entry: EntryPlaceholder
     constructor(collection: Collection, entry: EntryPlaceholder) {
@@ -122,7 +117,7 @@ class EntryAddition implements cc.IEntryAddition {
     }
 }
 
-class EntryRemoval implements cc.IEntryRemoval {
+export class EntryRemoval implements cc.IEntryRemoval {
     public readonly collection: Collection
     public readonly entry: EntryPlaceholder
     constructor(collection: Collection, entry: EntryPlaceholder) {
@@ -136,7 +131,9 @@ class EntryRemoval implements cc.IEntryRemoval {
         this.collection.detachKey(this.entry)
     }
     public revert() {
-        this.entry.entry.attachErrors(this.collection)
+
+        this.entry.entry.errorsAggregator.attach(this.collection.errorsAggregator)
+        this.entry.entry.subentriesErrorsAggregator.attach(this.collection.errorsAggregator)
 
         this.entry.status.update(["active"])
         this.collection.attachKey(this.entry)
@@ -167,7 +164,7 @@ class DictionaryMixin {
     }
     private checkDuplicates(key: string) {
         const propertyName = this.definition["key property"].name
-        const matches = this.entries.map(e => e).filter(e => {
+        const matches = this.entries.mapToRawArray(e => e).filter(e => {
             //if it is removed, it is never a duplicate
             if (e.status.get()[0] === "inactive") {
                 return false
@@ -176,11 +173,11 @@ class DictionaryMixin {
         })
         if (matches.length > 1) {
             matches.forEach(m => {
-                m.entry.node.getValue(propertyName).isDuplicateImp.update(true)
+                m.entry.node.values.getUnsafe(propertyName).isDuplicateImp.update(true)
             })
         }
         if (matches.length === 1) {
-            matches[0].entry.node.getValue(propertyName).isDuplicateImp.update(false)
+            matches[0].entry.node.values.getUnsafe(propertyName).isDuplicateImp.update(false)
         }
     }
 }
@@ -203,7 +200,7 @@ export class List {
     }
 }
 
-export class Collection implements bi.Collection {
+export class Collection {
     public readonly errorsAggregator: IParentErrorsAggregator
     public readonly global: Global
     public readonly entries = new g.ReactiveArray<EntryPlaceholder>()
@@ -252,15 +249,6 @@ export class Collection implements bi.Collection {
             this.keyProperty
         )
     }
-    public purgeChanges() {
-        this.entries.removeEntries(candidate => {
-            return candidate.status.get()[0] === "inactive"
-        })
-        this.entries.forEach(entry => {
-            entry.isAdded.update(false)
-            entry.entry.purgeChanges()
-        })
-    }
     public addEntry(): void {
         const entry = new Entry(
             this.nodeDefinition,
@@ -274,7 +262,8 @@ export class Collection implements bi.Collection {
         ))
     }
     public insert(e: EntryPlaceholder): void {
-        e.entry.attachErrors(e.parent)
+        e.entry.errorsAggregator.attach(e.parent.errorsAggregator)
+        e.entry.subentriesErrorsAggregator.attach(e.parent.errorsAggregator)
         this.entries.addEntry(e)
     }
     public attachKey(entry: EntryPlaceholder) {
@@ -290,33 +279,5 @@ export class Collection implements bi.Collection {
     public remove(e: EntryPlaceholder): void {
         this.entries.removeEntry(e)
         e.entry.detachErrors()
-    }
-    public copyEntriesToHere(forEach: (callback: (entry: bi.Entry) => void) => void) {
-        this.global.changeController.copyEntriesToCollection(callback => {
-            forEach(sourceEntryImp => {
-                if (!(sourceEntryImp instanceof EntryPlaceholder)) {
-                    console.error(sourceEntryImp)
-                    throw new Error("Unexpected, entry is not an instance of Entry")
-                }
-                const newEntry = new Entry(
-                    this.nodeDefinition,
-                    this.global,
-                    this.keyProperty
-                )
-                const source = new syncAPIImp.Entry(this, sourceEntryImp.entry, true, this.keyProperty)
-                const target = new syncAPIImp.Entry(this, newEntry, true, this.keyProperty)
-                copyEntry(source, target)
-
-                callback(new EntryAddition(
-                    this,
-                    new EntryPlaceholder(
-                        newEntry,
-                        this,
-                        this.global,
-                        true,
-                    )
-                ))
-            })
-        })
     }
 }

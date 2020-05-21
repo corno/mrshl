@@ -11,7 +11,7 @@ import { Global } from "./Global"
 import { Node } from "./Node"
 import { Comments } from "./Comments"
 
-export class State implements bi.State {
+export class State {
     public readonly key: string
     public readonly errorsAggregator = new FlexibleErrorsAggregator()
     public readonly subentriesErrorsAggregator = new FlexibleErrorsAggregator()
@@ -33,9 +33,6 @@ export class State implements bi.State {
             createdInNewContext,
             null
         )
-    }
-    public purgeChanges() {
-        this.node.purgeChanges()
     }
     public getStateKey() {
         return this.key
@@ -93,7 +90,7 @@ export class StateChange implements IStateChange {
     }
 }
 
-function createState(
+export function createState(
     definition: d.State,
     key: string,
     global: Global,
@@ -108,7 +105,7 @@ function createState(
     return state
 }
 
-export class StateGroup implements bi.StateGroup {
+export class StateGroup {
     // tslint:disable-next-line: variable-name
     public readonly statesOverTime = new g.ReactiveArray<State>()
     public readonly currentState: g.Mutable<State>
@@ -122,7 +119,7 @@ export class StateGroup implements bi.StateGroup {
     public readonly definition: d.StateGroup
     public readonly comments = new Comments()
 
-    private readonly focussable: g.ReactiveValue<g.Maybe<bi.IFocussable>>
+    public readonly focussable: g.ReactiveValue<g.Maybe<bi.IFocussable>>
     constructor(
         definition: d.StateGroup,
         thisEntryErrorsAggregator: IParentErrorsAggregator,
@@ -157,42 +154,5 @@ export class StateGroup implements bi.StateGroup {
             this.global,
             true,
         )
-    }
-    //THE FRONTEND API METHODS
-    public updateState(stateName: string) {
-        this.global.changeController.updateState(
-            new StateChange(
-                this,
-                this.currentState.get(),
-                createState(
-                    this.definition.states.getUnsafe(stateName),
-                    stateName,
-                    this.global,
-                    true,
-                )
-            )
-        )
-    }
-
-    public setMainFocussableRepresentation(focussable: bi.IFocussable) {
-        this.focussable.update(new g.Maybe(focussable))
-    }
-    public getMainFocussableRepresentation() {
-        return this.focussable
-    }
-    //THE SERIALIZATION API
-    public getCurrentState() {
-        return this.currentState.get()
-    }
-    //INTERNAL
-    public purgeChanges() {
-        this.statesOverTime.removeEntries(sot => {
-            return !sot.isCurrentState.get()
-        })
-        if (this.changeStatus.get()[0] !== "not changed") {
-            this.changeStatus.update(["not changed"])
-        }
-        this.createdInNewContext.update(false)
-        this.currentState.get().purgeChanges()
     }
 }

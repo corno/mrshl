@@ -55,7 +55,7 @@ class Property implements syncAPI.Property {
                     const $ = definition.type[1]
                     return ["component", new Component(
                         $,
-                        nodeImp.getComponent(key),
+                        nodeImp.components.getUnsafe(key),
                         global,
                         errorsAggregator,
                         subEntriesErrorsAggregator,
@@ -69,7 +69,7 @@ class Property implements syncAPI.Property {
                         case "dictionary": {
                             const $$ = $.type[1]
                             return ["dictionary", new Dictionary(
-                                new imp.Dictionary($$, nodeImp.getCollection(key)),
+                                new imp.Dictionary($$, nodeImp.collections.getUnsafe(key)),
                                 global,
                                 createdInNewContext,
                             )]
@@ -78,7 +78,7 @@ class Property implements syncAPI.Property {
                         case "list": {
                             const $$ = $.type[1]
                             return ["list", new List(
-                                new imp.List($$, nodeImp.getCollection(key)),
+                                new imp.List($$, nodeImp.collections.getUnsafe(key)),
                                 global,
                                 createdInNewContext,
                             )]
@@ -91,7 +91,7 @@ class Property implements syncAPI.Property {
                 case "state group": {
                     //const $ = definition.type[1]
                     return ["state group", new StateGroup(
-                        nodeImp.getStateGroup(key),
+                        nodeImp.stateGroups.getUnsafe(key),
                         global,
                         createdInNewContext,
                     )]
@@ -99,7 +99,7 @@ class Property implements syncAPI.Property {
                 case "value": {
                     //const $ = definition.type[1]
                     return ["value", new Value(
-                        nodeImp.getValue(key),
+                        nodeImp.values.getUnsafe(key),
                     )]
                 }
                 default:
@@ -214,7 +214,7 @@ export class Node implements syncAPI.Node {
         if (propDef.type[0] !== "state group") {
             throw new Error("not a state group")
         }
-        const sg = this.node.getStateGroup(key)
+        const sg = this.node.stateGroups.getUnsafe(key)
 
         return new StateGroup(sg, this.global, this.createdInNewContext)
     }
@@ -278,7 +278,7 @@ export class StateGroup implements syncAPI.StateGroup {
         return new State(state, node)
     }
     public getCurrentState() {
-        const currentStateImp = this.imp.getCurrentState()
+        const currentStateImp = this.imp.currentState.get()
         const stateName = currentStateImp.getStateKey()
         const stateDefinition = this.imp.definition.states.getUnsafe(stateName)
         const state = new imp.State(

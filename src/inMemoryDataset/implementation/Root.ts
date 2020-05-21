@@ -1,7 +1,5 @@
-import * as g from "../../generics"
-import * as async from "../../asyncAPI"
 import * as d from "../../definition"
-import { ErrorManager, RootErrorsAggregator } from "./ErrorManager"
+import { RootErrorsAggregator } from "./ErrorManager"
 import { Global } from "./Global"
 import { Node } from "./Node"
 
@@ -24,55 +22,6 @@ export class RootImp {
         this.schema = schema
         this.global = new Global()
     }
-}
-
-export class AsyncDataset implements async.IDataset {
-
-    public readonly errorAmount: g.ReactiveValue<number>
-    public readonly errorManager: ErrorManager
-
-    public readonly commands: g.Dictionary<Command>
-    public readonly hasUndoActions: g.ISubscribableValue<boolean>
-    public readonly hasRedoActions: g.ISubscribableValue<boolean>
-    public readonly hasUnserializedChanges: g.ISubscribableValue<boolean>
-    public readonly rootNode: Node
-
-    private readonly imp: RootImp
-
-    //public readonly rootNode: Node
-    constructor(rootImp: RootImp) {
-        this.imp = rootImp
-        this.commands = new g.Dictionary({})
-        this.rootNode = rootImp.rootNode
-        this.hasUndoActions = rootImp.global.changeController.executedChanges.hasChanges
-        this.hasRedoActions = rootImp.global.changeController.revertedChanges.hasChanges
-        this.errorAmount = rootImp.errorsAggregator.errorCount
-        this.errorManager = rootImp.global.errorManager
-
-        this.hasUnserializedChanges = new g.DerivedReactiveValue(rootImp.global.changeController.amountOfChangesSinceLastSerialization, position => {
-            if (position === null) {
-                return true
-            } else {
-                return position !== 0
-            }
-        })
-    }
-    public serialize(_callback: (data: string) => void) {
-        throw new Error("IMPLEMENT ME")
-        //callback(s.serialize(this.imp.schemaPath, this.imp.schema.root, this.rootNode))
-        this.imp.global.changeController.resetSerializationPosition()
-    }
-    public undo() {
-        this.imp.global.changeController.undo()
-    }
-    public redo() {
-        this.imp.global.changeController.redo()
-    }
-    public purgeChanges() {
-        this.imp.global.changeController.purgeChanges()
-        this.rootNode.purgeChanges()
-    }
-
 }
 
 export class Command {

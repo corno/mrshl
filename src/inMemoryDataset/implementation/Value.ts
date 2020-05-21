@@ -7,7 +7,7 @@ import { Comments } from "./Comments"
 
 export type ChangeSubscriber = (oldValue: string, newValue: string) => void
 
-export class Value implements asyncAPI.Value {
+export class Value {
     public readonly isDuplicateImp = new g.ReactiveValue<boolean>(false)
     public readonly isDuplicate: PotentialError
     public readonly valueIsInvalid: PotentialError
@@ -19,7 +19,7 @@ export class Value implements asyncAPI.Value {
     public readonly comments = new Comments()
     public readonly isQuoted: boolean
     public readonly definition: d.Value
-    private readonly global: Global
+    public readonly global: Global
     private readonly initialValue: string
 
     constructor(
@@ -86,12 +86,5 @@ export class Value implements asyncAPI.Value {
     }
     public getSuggestions(): string[] {
         return [this.definition["default value"]]
-    }
-
-    public purgeChanges() {
-        this.createdInNewContext.update(false)
-        if (this.changeStatus.get()[0] !== "not changed") {
-            this.changeStatus.forceUpdate(["not changed"])
-        }
     }
 }

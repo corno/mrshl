@@ -82,10 +82,17 @@ export class ReactiveArray<T> implements ISubscribableArray<T> {
         this.entries.forEach(e => callback(e.entry))
         this.inForeachLoop = false
     }
-    public map<NT>(callback: (e: T) => NT): NT[] {
+    public mapToRawArray<NT>(callback: (e: T) => NT): NT[] {
         this.inForeachLoop = true
         const x = this.entries.map(e => callback(e.entry))
         this.inForeachLoop = false
         return x
+    }
+    public map<NT>(callback: (e: T) => NT): ReactiveArray<NT> {
+        this.inForeachLoop = true
+        const newArray = new ReactiveArray<NT>()
+        this.entries.forEach(e => newArray.addEntry(callback(e.entry)))
+        this.inForeachLoop = false
+        return newArray
     }
 }

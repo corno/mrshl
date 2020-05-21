@@ -3,27 +3,27 @@
 */
 
 import * as g from "../../generics"
-import * as bi from "../../asyncAPI"
+import * as asyncAPI from "../../asyncAPI"
 
-export class ValidationError implements bi.ValidationError {
-    public readonly focussable: g.ReactiveValue<g.Maybe<bi.IFocussable>>
-    constructor(focussable: g.ReactiveValue<g.Maybe<bi.IFocussable>>) {
+export class ValidationError implements asyncAPI.ValidationError {
+    public readonly focussable: g.ReactiveValue<g.Maybe<asyncAPI.IFocussable>>
+    constructor(focussable: g.ReactiveValue<g.Maybe<asyncAPI.IFocussable>>) {
         this.focussable = focussable
     }
 }
 
-export class PotentialError implements bi.PotentialError {
+export class PotentialError implements asyncAPI.PotentialError {
     public readonly isInErrorState: g.ISubscribableValue<boolean>
     private currentError: null | ValidationError = null
     //private readonly error: g.ReactiveValue<g.Maybe<ValidationError>>
     private readonly errorsAggregator: IParentErrorsAggregator
     private readonly errorManager: ErrorManager
-    private readonly focussable: g.ReactiveValue<g.Maybe<bi.IFocussable>>
+    private readonly focussable: g.ReactiveValue<g.Maybe<asyncAPI.IFocussable>>
     constructor(
         isInErrorState: g.ISubscribableValue<boolean>,
         errorsAggregator: IParentErrorsAggregator,
         errorManager: ErrorManager,
-        focussable: g.ReactiveValue<g.Maybe<bi.IFocussable>>,
+        focussable: g.ReactiveValue<g.Maybe<asyncAPI.IFocussable>>,
     ) {
         this.isInErrorState = isInErrorState
         this.errorsAggregator = errorsAggregator
@@ -117,6 +117,6 @@ export class RootErrorsAggregator implements IParentErrorsAggregator {
     }
 }
 
-export class ErrorManager implements bi.ErrorManager {
+export class ErrorManager implements asyncAPI.ErrorManager {
     public readonly validationErrors = new g.ReactiveArray<ValidationError>()
 }

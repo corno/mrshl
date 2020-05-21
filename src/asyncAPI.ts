@@ -11,13 +11,27 @@ export interface Collection {
     copyEntriesToHere(forEach: (callback: (entry: Entry) => void) => void): void
 }
 
-export type EntryStatus =
-    | ["active"]
-    | ["inactive", {
-        readonly reason:
-        | ["deleted"]
-        | ["moved"]
-    }]
+export interface Command {
+    execute(): void
+}
+
+export interface Component {
+    readonly node: Node
+}
+
+export interface Dataset {
+    readonly errorManager: ErrorManager
+    readonly errorAmount: g.ISubscribableValue<number>
+    readonly commands: g.Dictionary<Command>
+    readonly hasUndoActions: g.ISubscribableValue<boolean>
+    readonly hasRedoActions: g.ISubscribableValue<boolean>
+    readonly hasUnserializedChanges: g.ISubscribableValue<boolean>
+    readonly rootNode: Node
+    serialize(callback: (data: string) => void): void
+    purgeChanges(): void
+    redo(): void
+    undo(): void
+}
 
 export interface Entry {
     readonly node: Node
@@ -28,15 +42,31 @@ export interface Entry {
     delete(): void
 }
 
+export interface ErrorManager {
+    readonly validationErrors: g.ISubscribableArray<ValidationError>
+}
+
+export type EntryStatus =
+    | ["active"]
+    | ["inactive", {
+        readonly reason:
+        | ["deleted"]
+        | ["moved"]
+    }]
+
+export interface PotentialError {
+    readonly isInErrorState: g.ISubscribableValue<boolean>
+}
+
+export interface Property {
+    type: PropertyType
+}
+
 export type PropertyType =
     | ["collection", Collection]
     | ["component", Component]
     | ["state group", StateGroup]
     | ["value", Value]
-
-export interface Property {
-    type: PropertyType
-}
 
 export interface Node {
     getCollection(name: string): Collection
@@ -46,15 +76,29 @@ export interface Node {
     forEachProperty(callback: (property: Property, key: string) => void): void
 }
 
+export interface State {
+    readonly node: Node
+    readonly isCurrentState: g.ISubscribableValue<boolean>
+    readonly key: string
+}
 
-export type ValueChangeStatus =
+export interface StateGroup {
+    readonly statesOverTime: g.ISubscribableArray<State>
+    readonly changeStatus: g.ISubscribableValue<StateGroupChangeStatus>
+    readonly createdInNewContext: g.ISubscribableValue<boolean>
+    readonly currentStateKey: g.ISubscribableValue<string>
+    setMainFocussableRepresentation(focussable: IFocussable): void
+    updateState(stateName: string): void
+}
+
+export type StateGroupChangeStatus =
     | ["not changed"]
     | ["changed", {
-        readonly originalValue: string
+        readonly originalStateName: string
     }]
 
-export interface PotentialError {
-    readonly isInErrorState: g.ISubscribableValue<boolean>
+export interface ValidationError {
+    readonly focussable: g.ISubscribableValue<g.Maybe<IFocussable>>
 }
 
 export interface Value {
@@ -68,52 +112,8 @@ export interface Value {
     setMainFocussableRepresentation(f: IFocussable): void
 }
 
-export interface Component {
-    readonly node: Node
-}
-
-export interface State {
-    readonly node: Node
-    readonly isCurrentState: g.ISubscribableValue<boolean>
-    readonly key: string
-}
-export type StateGroupChangeStatus =
+export type ValueChangeStatus =
     | ["not changed"]
     | ["changed", {
-        readonly originalStateName: string
+        readonly originalValue: string
     }]
-
-export interface StateGroup {
-    readonly statesOverTime: g.ISubscribableArray<State>
-    readonly changeStatus: g.ISubscribableValue<StateGroupChangeStatus>
-    readonly createdInNewContext: g.ISubscribableValue<boolean>
-    readonly currentStateKey: g.ISubscribableValue<string>
-    setMainFocussableRepresentation(focussable: IFocussable): void
-    updateState(stateName: string): void
-}
-
-
-export interface Command {
-    execute(): void
-}
-export interface ValidationError {
-    readonly focussable: g.ISubscribableValue<g.Maybe<IFocussable>>
-}
-
-export interface ErrorManager {
-    readonly validationErrors: g.ISubscribableArray<ValidationError>
-}
-
-export interface IDataset {
-    readonly errorManager: ErrorManager
-    readonly errorAmount: g.ISubscribableValue<number>
-    readonly commands: g.Dictionary<Command>
-    readonly hasUndoActions: g.ISubscribableValue<boolean>
-    readonly hasRedoActions: g.ISubscribableValue<boolean>
-    readonly hasUnserializedChanges: g.ISubscribableValue<boolean>
-    readonly rootNode: Node
-    serialize(callback: (data: string) => void): void
-    purgeChanges(): void
-    redo(): void
-    undo(): void
-}
