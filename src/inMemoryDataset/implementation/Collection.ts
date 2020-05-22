@@ -35,10 +35,10 @@ export class Entry {
     //     this.errorsAggregator.attach(collection.errorsAggregator)
     //     this.subentriesErrorsAggregator.attach(collection.errorsAggregator)
     // }
-    public detachErrors() {
-        this.errorsAggregator.detach()
-        this.subentriesErrorsAggregator.detach()
-    }
+    // public detachErrors() {
+    //     this.errorsAggregator.detach()
+    //     this.subentriesErrorsAggregator.detach()
+    // }
 }
 
 export type EntryStatus =
@@ -96,8 +96,8 @@ export class EntryPlaceholder {
 
 class DictionaryMixin {
     private readonly entries: g.ReactiveArray<EntryPlaceholder>
-    private readonly keySubscriber: (oldValue: string, newValue: string) => void
-    private readonly keyPropertyName: string
+    public readonly keySubscriber: (oldValue: string, newValue: string) => void
+    public readonly keyPropertyName: string
     constructor(entries: g.ReactiveArray<EntryPlaceholder>, keyPropertyName: string) {
         this.keySubscriber = (oldValue: string, newValue: string) => {
             this.checkDuplicates(oldValue)
@@ -106,24 +106,19 @@ class DictionaryMixin {
         this.entries = entries
         this.keyPropertyName = keyPropertyName
     }
-    public attachKey(entry: EntryPlaceholder) {
-        const keyValue = entry.node.values.getUnsafe(this.keyPropertyName)
-        this.checkDuplicates(keyValue.getValue())
-        keyValue.changeSubscribers.push(this.keySubscriber)
-    }
     public detachKey(entry: EntryPlaceholder) {
         g.removeFromArray(entry.node.values.getUnsafe(this.keyPropertyName).changeSubscribers, e => e === this.keySubscriber)
         const keyValue = entry.node.values.getUnsafe(this.keyPropertyName)
-        this.checkDuplicates(keyValue.getValue())
+        this.checkDuplicates(keyValue.value.get())
     }
-    private checkDuplicates(key: string) {
+    public checkDuplicates(key: string) {
         const propertyName = this.keyPropertyName
         const matches = this.entries.mapToRawArray(e => e).filter(e => {
             //if it is removed, it is never a duplicate
             if (e.status.get()[0] === "inactive") {
                 return false
             }
-            return e.node.values.getUnsafe(propertyName).getValue() === key
+            return e.node.values.getUnsafe(propertyName).value.get() === key
         })
         if (matches.length > 1) {
             matches.forEach(m => {
@@ -140,7 +135,7 @@ export class Collection {
     public readonly errorsAggregator: IParentErrorsAggregator
     public readonly entries = new g.ReactiveArray<EntryPlaceholder>()
     public readonly nodeDefinition: d.Node
-    private readonly dictionary: DictionaryMixin | null
+    public readonly dictionary: DictionaryMixin | null
     public readonly keyProperty: d.Property | null
     constructor(
         definition: d.Collection,
@@ -171,24 +166,5 @@ export class Collection {
                     return assertUnreachable(definition.type[0])
             }
         })()
-    }
-    public insert(e: EntryPlaceholder): void {
-        e.entry.errorsAggregator.attach(e.parent.errorsAggregator)
-        e.entry.subentriesErrorsAggregator.attach(e.parent.errorsAggregator)
-        this.entries.addEntry(e)
-    }
-    public attachKey(entry: EntryPlaceholder) {
-        if (this.dictionary !== null) {
-            this.dictionary.attachKey(entry)
-        }
-    }
-    public detachKey(entry: EntryPlaceholder) {
-        if (this.dictionary !== null) {
-            this.dictionary.detachKey(entry)
-        }
-    }
-    public remove(e: EntryPlaceholder): void {
-        this.entries.removeEntry(e)
-        e.entry.detachErrors()
     }
 }

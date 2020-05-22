@@ -3,17 +3,48 @@
 */
 
 import * as asyncAPI from "../asyncAPI"
-import * as imp from "./implementation"
 import * as cc from "./changeControl"
 import * as d from "../types"
 import * as g from "../generics"
 import * as syncAPIImp from "./syncAPIImplementation"
 import { copyEntry } from "./copyEntry"
-import { purgeNodeChanges } from "./implementation/purgeChanges"
 import { Global } from "./Global"
+import { Command, RootImp } from "./Root"
+import * as imp from "./implementation"
 
 function assertUnreachable<RT>(_x: never): RT {
     throw new Error("unreachable")
+}
+
+export function purgeChanges(node: imp.Node) {
+    node.collections.forEach(c => {
+        c.entries.removeEntries(candidate => {
+            return candidate.status.get()[0] === "inactive"
+        })
+        c.entries.forEach(entry => {
+            entry.isAdded.update(false)
+            purgeChanges(entry.entry.node)
+        })
+    })
+    node.components.forEach(c => {
+        purgeChanges(c.node)
+    })
+    node.stateGroups.forEach(sg => {
+        sg.statesOverTime.removeEntries(sot => {
+            return !sot.isCurrentState.get()
+        })
+        if (sg.changeStatus.get()[0] !== "not changed") {
+            sg.changeStatus.update(["not changed"])
+        }
+        sg.createdInNewContext.update(false)
+        purgeChanges(sg.currentState.get().node)
+    })
+    node.values.forEach(v => {
+        v.createdInNewContext.update(false)
+        if (v.changeStatus.get()[0] !== "not changed") {
+            v.changeStatus.forceUpdate(["not changed"])
+        }
+    })
 }
 
 class Collection implements asyncAPI.Collection {
@@ -82,16 +113,16 @@ export class Dataset implements asyncAPI.Dataset {
     public readonly errorAmount: g.ReactiveValue<number>
     public readonly errorManager: imp.ErrorManager
 
-    public readonly commands: g.Dictionary<imp.Command>
+    public readonly commands: g.Dictionary<Command>
     public readonly hasUndoActions: g.ISubscribableValue<boolean>
     public readonly hasRedoActions: g.ISubscribableValue<boolean>
     public readonly hasUnserializedChanges: g.ISubscribableValue<boolean>
     public readonly rootNode: Node
 
-    private readonly imp: imp.RootImp
+    private readonly imp: RootImp
 
     //public readonly rootNode: Node
-    constructor(rootImp: imp.RootImp, global: Global) {
+    constructor(rootImp: RootImp, global: Global) {
         this.imp = rootImp
         this.commands = new g.Dictionary({})
         this.rootNode = new Node(rootImp.rootNode, rootImp.schema["root type"].get().node, global)
@@ -121,7 +152,7 @@ export class Dataset implements asyncAPI.Dataset {
     }
     public purgeChanges() {
         this.imp.global.changeController.purgeChanges()
-        purgeNodeChanges(this.rootNode.imp)
+        purgeChanges(this.rootNode.imp)
     }
 
 }
@@ -347,7 +378,7 @@ class Value implements asyncAPI.Value {
         this.global = global
     }
     public updateValue(v: string) {
-        this.global.changeController.updateValue(this.imp, v)
+        this.global.changeController.updateValue(new cc.ValueUpdate(this.imp), v)
     }
     public setMainFocussableRepresentation(f: asyncAPI.IFocussable) {
         this.focussable.update(new g.Maybe(f))

@@ -5,14 +5,14 @@
 import * as g from "../../generics"
 import * as asyncAPI from "../../asyncAPI"
 
-export class ValidationError implements asyncAPI.ValidationError {
+export class ValidationError {
     public readonly focussable: g.ReactiveValue<g.Maybe<asyncAPI.IFocussable>>
     constructor(focussable: g.ReactiveValue<g.Maybe<asyncAPI.IFocussable>>) {
         this.focussable = focussable
     }
 }
 
-export class PotentialError implements asyncAPI.PotentialError {
+export class PotentialError {
     public readonly isInErrorState: g.ISubscribableValue<boolean>
     private currentError: null | ValidationError = null
     //private readonly error: g.ReactiveValue<g.Maybe<ValidationError>>

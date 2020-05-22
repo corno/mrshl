@@ -1,7 +1,7 @@
-import * as d from "../../definition"
-import { RootErrorsAggregator } from "./ErrorManager"
-import { Global } from "../Global"
-import { Node } from "./Node"
+import * as d from "../definition"
+import { RootErrorsAggregator } from "./implementation/ErrorManager"
+import { Global } from "./Global"
+import { Node } from "./implementation/Node"
 
 export class RootImp {
     public readonly errorsAggregator = new RootErrorsAggregator()

@@ -7,6 +7,11 @@ function attachState(state: State, stateGroup: StateGroup) {
     state.subentriesErrorsAggregator.attach(stateGroup.subentriesErrorsAggregator)
 }
 
+function detachStateErrors(state: State) {
+    state.errorsAggregator.detach()
+    state.subentriesErrorsAggregator.detach()
+}
+
 export class StateChange implements IStateChange {
     private readonly stateGroup: StateGroup
     private readonly oldState: State
@@ -17,7 +22,7 @@ export class StateChange implements IStateChange {
         this.newState = newState
     }
     public apply() {
-        this.oldState.detachErrors()
+        detachStateErrors(this.oldState)
         this.oldState.isCurrentState.update(false)
         this.newState.isCurrentState.update(true)
 
@@ -43,7 +48,7 @@ export class StateChange implements IStateChange {
         this.stateGroup.currentStateKey.update(this.oldState.key)
         this.stateGroup.currentState.update(this.oldState)
         this.stateGroup.statesOverTime.removeEntry(this.newState)
-        this.newState.detachErrors()
+        detachStateErrors(this.newState)
         this.newState.isCurrentState.update(false)
         this.oldState.isCurrentState.update(true)
         attachState(this.oldState, this.stateGroup)

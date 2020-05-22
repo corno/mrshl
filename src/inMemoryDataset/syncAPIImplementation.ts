@@ -349,7 +349,10 @@ export class Entry implements syncAPI.Entry {
     }
     public insert() {
         const entryPlaceHolder = new imp.EntryPlaceholder(this.entry, this.collection, this.createdInNewContext)
-        this.collection.insert(entryPlaceHolder)
+
+        entryPlaceHolder.entry.errorsAggregator.attach(entryPlaceHolder.parent.errorsAggregator)
+        entryPlaceHolder.entry.subentriesErrorsAggregator.attach(entryPlaceHolder.parent.errorsAggregator)
+        this.collection.entries.addEntry(entryPlaceHolder)
     }
 }
 
@@ -442,10 +445,10 @@ export class Value implements syncAPI.Value {
         this.definition = definition
     }
     public setValue(value: string, onError: (message: string) => void) {
-        this.imp.setValue(value, onError)
+        this.setValue(value, onError)
     }
     public getValue() {
-        return this.imp.getValue()
+        return this.imp.value.get()
     }
     public getSuggestions() {
         return [this.definition["default value"]]

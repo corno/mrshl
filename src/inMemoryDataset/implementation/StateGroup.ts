@@ -1,5 +1,5 @@
 import * as g from "../../generics"
-import * as bi from "../../asyncAPI"
+import * as asyncAPI from "../../asyncAPI"
 import * as d from "../../definition"
 import { FlexibleErrorsAggregator, IParentErrorsAggregator, ErrorManager } from "./ErrorManager"
 import { Node } from "./Node"
@@ -28,10 +28,7 @@ export class State {
             null
         )
     }
-    public detachErrors() {
-        this.errorsAggregator.detach()
-        this.subentriesErrorsAggregator.detach()
-    }
+
 }
 
 export type StateGroupChangeStatus =
@@ -51,7 +48,7 @@ export class StateGroup {
     public readonly initialState: State
     public readonly comments = new Comments()
 
-    public readonly focussable: g.ReactiveValue<g.Maybe<bi.IFocussable>>
+    public readonly focussable: g.ReactiveValue<g.Maybe<asyncAPI.IFocussable>>
     constructor(
         definition: d.StateGroup,
         errorManager: ErrorManager,
@@ -67,11 +64,11 @@ export class StateGroup {
         )
         this.currentState = new g.Mutable<State>(this.initialState)
         this.currentStateKey = new g.ReactiveValue(definition["default state"].name)
-        this.focussable = new g.ReactiveValue(new g.Maybe<bi.IFocussable>(null))
+        this.focussable = new g.ReactiveValue(new g.Maybe<asyncAPI.IFocussable>(null))
         this.thisEntryErrorsAggregator = thisEntryErrorsAggregator
         this.subentriesErrorsAggregator = subentriesErrorsAggregator
         this.createdInNewContext = new g.ReactiveValue(createdInNewContext)
-        this.changeStatus = new g.ReactiveValue<bi.StateGroupChangeStatus>(["not changed"])
+        this.changeStatus = new g.ReactiveValue<asyncAPI.StateGroupChangeStatus>(["not changed"])
 
         this.initialState.errorsAggregator.attach(this.thisEntryErrorsAggregator)
         this.initialState.subentriesErrorsAggregator.attach(this.subentriesErrorsAggregator)

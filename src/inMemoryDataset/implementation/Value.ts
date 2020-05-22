@@ -17,7 +17,7 @@ export class Value {
     public readonly changeSubscribers: ChangeSubscriber[] = []
     public readonly comments = new Comments()
     public readonly isQuoted: boolean
-    private readonly initialValue: string
+    public readonly initialValue: string
 
     constructor(
         definition: d.Value,
@@ -55,24 +55,24 @@ export class Value {
     }
 
     //IValue methods
-    public getValue() {
-        return this.value.get()
-    }
-    public setValue(newValue: string, _onError?: (messsage: string) => void) {
-        const previousValue = this.value.get()
-        if (previousValue === newValue) {
-            return
-        } else {
-            this.value.update(newValue)
-            this.changeSubscribers.forEach(cs => cs(previousValue, newValue))
-            if (newValue === this.initialValue) {
-                this.changeStatus.update(["not changed"])
-            } else {
-                this.changeStatus.update(["changed", {
-                    originalValue: this.initialValue,
-                }])
-            }
-        }
-        //FIXME call onError
-    }
+    // public getValue() {
+    //     return this.value.get()
+    // }
+    // public setValue(newValue: string, _onError?: (messsage: string) => void) {
+    //     const previousValue = this.value.get()
+    //     if (previousValue === newValue) {
+    //         return
+    //     } else {
+    //         this.value.update(newValue)
+    //         this.changeSubscribers.forEach(cs => cs(previousValue, newValue))
+    //         if (newValue === this.initialValue) {
+    //             this.changeStatus.update(["not changed"])
+    //         } else {
+    //             this.changeStatus.update(["changed", {
+    //                 originalValue: this.initialValue,
+    //             }])
+    //         }
+    //     }
+    //     //FIXME call onError
+    // }
 }

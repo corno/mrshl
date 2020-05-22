@@ -1,6 +1,6 @@
 import * as md from "../metaDataSchema"
 import * as sync from "./syncAPIImplementation"
-import { RootImp } from "./implementation"
+import { RootImp } from "./Root"
 import { IDataset } from "../dataset"
 import * as syncAPI from "../syncAPI"
 import * as asyncAPIImp from "./asyncAPIImplementation"
