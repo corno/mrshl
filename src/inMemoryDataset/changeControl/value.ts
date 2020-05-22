@@ -15,15 +15,7 @@ export class ValueUpdate implements IValue {
         if (previousValue === newValue) {
             return
         } else {
-            this.imp.value.update(newValue)
-            this.imp.changeSubscribers.forEach(cs => cs(previousValue, newValue))
-            if (newValue === this.imp.initialValue) {
-                this.imp.changeStatus.update(["not changed"])
-            } else {
-                this.imp.changeStatus.update(["changed", {
-                    originalValue: this.imp.initialValue,
-                }])
-            }
+            imp.setValue(this.imp, previousValue, newValue)
         }
         //FIXME call onError
     }

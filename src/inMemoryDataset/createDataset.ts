@@ -12,10 +12,9 @@ class SyncDataset implements syncAPI.IDataset {
         this.schema = rootImp.schema
 
         this.root = new sync.Node(
-            rootImp.schema["root type"].get().node,
             rootImp.rootNode,
+            rootImp.schema["root type"].get().node,
             rootImp.global,
-            false,
             null,
         )
     }

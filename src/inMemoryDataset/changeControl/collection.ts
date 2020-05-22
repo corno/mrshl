@@ -1,5 +1,5 @@
 import * as cc from "../changeControl/ChangeController"
-import { Collection, EntryPlaceholder } from "../implementation"
+import { Collection, EntryPlaceholder, addEntry } from "../implementation"
 import * as g from "../../generics"
 
 function attachKey(collection: Collection, entry: EntryPlaceholder) {
@@ -56,9 +56,7 @@ export class EntryAddition implements cc.IEntryAddition {
     }
     public apply() {
         //console.log("ATTACHING Entry")
-        this.entry.entry.errorsAggregator.attach(this.entry.parent.errorsAggregator)
-        this.entry.entry.subentriesErrorsAggregator.attach(this.entry.parent.errorsAggregator)
-        this.collection.entries.addEntry(this.entry)
+        addEntry(this.collection, this.entry)
         attachKey(this.collection, this.entry)
     }
     public revert() {

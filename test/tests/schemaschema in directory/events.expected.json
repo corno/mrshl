@@ -4,6 +4,173 @@
 		"component types"
 	],
 	[
+		"collection entry"
+	],
+	[
+		"property",
+		"name"
+	],
+	[
+		"value",
+		"node"
+	],
+	[
+		"property",
+		"node"
+	],
+	[
+		"property",
+		"properties"
+	],
+	[
+		"collection entry"
+	],
+	[
+		"property",
+		"name"
+	],
+	[
+		"value",
+		"properties"
+	],
+	[
+		"property",
+		"type"
+	],
+	[
+		"current state",
+		"collection"
+	],
+	[
+		"state",
+		"value"
+	],
+	[
+		"property",
+		"default value"
+	],
+	[
+		"value",
+		""
+	],
+	[
+		"property",
+		"type"
+	],
+	[
+		"current state",
+		"text"
+	],
+	[
+		"state",
+		"text"
+	],
+	[
+		"collection entry"
+	],
+	[
+		"property",
+		"name"
+	],
+	[
+		"value",
+		"root"
+	],
+	[
+		"property",
+		"node"
+	],
+	[
+		"property",
+		"properties"
+	],
+	[
+		"collection entry"
+	],
+	[
+		"property",
+		"name"
+	],
+	[
+		"value",
+		"component types"
+	],
+	[
+		"property",
+		"type"
+	],
+	[
+		"current state",
+		"collection"
+	],
+	[
+		"state",
+		"value"
+	],
+	[
+		"property",
+		"default value"
+	],
+	[
+		"value",
+		""
+	],
+	[
+		"property",
+		"type"
+	],
+	[
+		"current state",
+		"text"
+	],
+	[
+		"state",
+		"text"
+	],
+	[
+		"collection entry"
+	],
+	[
+		"property",
+		"name"
+	],
+	[
+		"value",
+		"root type"
+	],
+	[
+		"property",
+		"type"
+	],
+	[
+		"current state",
+		"value"
+	],
+	[
+		"state",
+		"value"
+	],
+	[
+		"property",
+		"default value"
+	],
+	[
+		"value",
+		""
+	],
+	[
+		"property",
+		"type"
+	],
+	[
+		"current state",
+		"text"
+	],
+	[
+		"state",
+		"text"
+	],
+	[
 		"property",
 		"root type"
 	],

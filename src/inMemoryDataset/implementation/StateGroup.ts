@@ -15,7 +15,7 @@ export class State {
     public readonly comments = new Comments()
     constructor(
         key: string,
-        initializeNode: (
+        initializeStateNode: (
             node: Node,
             errorsAggregator: IParentErrorsAggregator,
             subentriesErrorsAggregator: IParentErrorsAggregator,
@@ -25,7 +25,7 @@ export class State {
         this.node = new Node(
             null,
             node => {
-                initializeNode(node, this.errorsAggregator, this.subentriesErrorsAggregator)
+                initializeStateNode(node, this.errorsAggregator, this.subentriesErrorsAggregator)
             },
         )
     }
@@ -82,4 +82,9 @@ export class StateGroup {
         this.initialState.subentriesErrorsAggregator.attach(this.subentriesErrorsAggregator)
         this.statesOverTime.addEntry(this.initialState)
     }
+}
+
+export function setState(stateGroup: StateGroup, state: State) {
+    stateGroup.currentState.update(state)
+    stateGroup.currentStateKey.update(state.key)
 }

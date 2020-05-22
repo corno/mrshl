@@ -1,4 +1,4 @@
-import { State, StateGroup } from "../implementation"
+import { State, StateGroup, setState } from "../implementation"
 import { IStateChange } from "./ChangeController"
 
 function attachState(state: State, stateGroup: StateGroup) {
@@ -29,8 +29,7 @@ export class StateChange implements IStateChange {
         attachState(this.newState, this.stateGroup)
 
         this.stateGroup.statesOverTime.addEntry(this.newState)
-        this.stateGroup.currentState.update(this.newState)
-        this.stateGroup.currentStateKey.update(this.newState.key)
+        setState(this.stateGroup, this.newState)
         if (this.oldState === this.stateGroup.initialState) {
             this.stateGroup.changeStatus.update(["changed", {
                 originalStateName: this.stateGroup.initialState.key,
@@ -45,8 +44,7 @@ export class StateChange implements IStateChange {
                 originalStateName: this.stateGroup.initialState.key,
             }])
         }
-        this.stateGroup.currentStateKey.update(this.oldState.key)
-        this.stateGroup.currentState.update(this.oldState)
+        setState(this.stateGroup, this.oldState)
         this.stateGroup.statesOverTime.removeEntry(this.newState)
         detachStateErrors(this.newState)
         this.newState.isCurrentState.update(false)

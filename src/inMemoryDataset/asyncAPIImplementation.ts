@@ -74,8 +74,8 @@ class Collection implements asyncAPI.Collection {
                     this.global.errorManager,
                     this.imp.dictionary
                 )
-                const source = new syncAPIImp.Entry(this.imp, this.global, sourceEntryImp.entry, true, this.imp.dictionary)
-                const target = new syncAPIImp.Entry(this.imp, this.global, newEntry, true, this.imp.dictionary)
+                const source = new syncAPIImp.Entry(sourceEntryImp.entry, this.imp, this.global)
+                const target = new syncAPIImp.Entry(newEntry, this.imp, this.global)
                 copyEntry(source, target)
 
                 callback(new cc.EntryAddition(

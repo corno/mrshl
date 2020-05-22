@@ -97,7 +97,7 @@ export class Dictionary {
     public readonly keyPropertyName: string
     public readonly keyProperty: d.Property
     /**
-     * 
+     *
      * @param keyPropertyName
      * @param keyProperty
      * @param duplicatesCheckFunction a function that can be used to subscribe to the keys of the entries to check for duplicates
@@ -140,4 +140,10 @@ export class Collection {
             }
         })()
     }
+}
+
+export function addEntry(collection: Collection, entryPlaceholder: EntryPlaceholder) {
+    entryPlaceholder.entry.errorsAggregator.attach(entryPlaceholder.parent.errorsAggregator)
+    entryPlaceholder.entry.subentriesErrorsAggregator.attach(entryPlaceholder.parent.errorsAggregator)
+    collection.entries.addEntry(entryPlaceholder)
 }

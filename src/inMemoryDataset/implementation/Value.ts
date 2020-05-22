@@ -76,3 +76,16 @@ export class Value {
     //     //FIXME call onError
     // }
 }
+
+export function setValue(valueProperty: Value, previousValue: string, newValue: string) {
+
+    valueProperty.value.update(newValue)
+    valueProperty.changeSubscribers.forEach(cs => cs(previousValue, newValue))
+    if (newValue === valueProperty.initialValue) {
+        valueProperty.changeStatus.update(["not changed"])
+    } else {
+        valueProperty.changeStatus.update(["changed", {
+            originalValue: valueProperty.initialValue,
+        }])
+    }
+}
