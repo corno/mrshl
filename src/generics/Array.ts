@@ -9,7 +9,7 @@ export function findInArray<T>(array: T[], callback: (element: T) => boolean): M
     return new Maybe<number>(null)
 }
 
-export function removeFromArray<T>(array: T[], callback: (element: T) => boolean) {
+export function removeFromArray<T>(array: T[], callback: (element: T) => boolean): void {
     const index = findInArray(array, callback)
     index.map(
         i => array.splice(i, 1),

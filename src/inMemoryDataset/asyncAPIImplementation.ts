@@ -18,7 +18,7 @@ function assertUnreachable<RT>(_x: never): RT {
     throw new Error("unreachable")
 }
 
-export function purgeChanges(node: imp.Node) {
+function purgeChanges(node: imp.Node): void {
     node.collections.forEach(c => {
         c.entries.removeEntries(candidate => {
 
@@ -143,18 +143,18 @@ export class Dataset implements asyncAPI.Dataset {
             }
         })
     }
-    public serialize(_callback: (data: string) => void) {
+    public serialize(_callback: (data: string) => void): void {
         throw new Error("IMPLEMENT ME")
         //callback(s.serialize(this.imp.schemaPath, this.imp.schema.root, this.rootNode))
         this.imp.global.changeController.resetSerializationPosition()
     }
-    public undo() {
+    public undo(): void {
         this.imp.global.changeController.undo()
     }
-    public redo() {
+    public redo(): void {
         this.imp.global.changeController.redo()
     }
-    public purgeChanges() {
+    public purgeChanges(): void {
         this.imp.global.changeController.purgeChanges()
         purgeChanges(this.rootNode.imp)
     }

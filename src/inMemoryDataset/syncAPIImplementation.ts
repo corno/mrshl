@@ -116,7 +116,7 @@ export class Node implements syncAPI.Node {
         this.global = global
         this.keyProperty = keyProperty
     }
-    public getDictionary(key: string) {
+    public getDictionary(key: string): Dictionary {
         const propDef = this.definition.properties.getUnsafe(key)
         if (propDef.type[0] !== "collection") {
             throw new Error("not a collection")
@@ -128,7 +128,7 @@ export class Node implements syncAPI.Node {
         const collection = this.imp.collections.getUnsafe(key)
         return new Dictionary(collection, $.type[1], this.global)
     }
-    public getList(key: string) {
+    public getList(key: string): List {
         const propDef = this.definition.properties.getUnsafe(key)
         if (propDef.type[0] !== "collection") {
             throw new Error("not a collection")
@@ -140,7 +140,7 @@ export class Node implements syncAPI.Node {
         const collection = this.imp.collections.getUnsafe(key)
         return new List(collection, this.global)
     }
-    public getComponent(key: string) {
+    public getComponent(key: string): Component {
         const propDef = this.definition.properties.getUnsafe(key)
         if (propDef.type[0] !== "component") {
             throw new Error("not a component")
@@ -153,7 +153,7 @@ export class Node implements syncAPI.Node {
             this.keyProperty,
         )
     }
-    public getStateGroup(key: string) {
+    public getStateGroup(key: string): StateGroup {
         const propDef = this.definition.properties.getUnsafe(key)
         if (propDef.type[0] !== "state group") {
             throw new Error("not a state group")
@@ -162,14 +162,14 @@ export class Node implements syncAPI.Node {
 
         return new StateGroup(sg, propDef.type[1], this.global)
     }
-    public getValue(key: string) {
+    public getValue(key: string): Value {
         const propDef = this.definition.properties.getUnsafe(key)
         if (propDef.type[0] !== "value") {
             throw new Error("not a value")
         }
         return new Value(this.imp.values.getUnsafe(key), propDef.type[1])
     }
-    public forEachProperty(callback: (property: syncAPI.Property, key: string) => void) {
+    public forEachProperty(callback: (property: syncAPI.Property, key: string) => void): void {
         this.definition.properties.forEach((p, pKey) => {
             callback(
                 new Property(
@@ -197,7 +197,7 @@ export class StateGroup implements syncAPI.StateGroup {
         this.definition = definition
         this.comments = stateGroup.comments
     }
-    public setState(stateName: string, _onError: (errorMessage: string) => void) {
+    public setState(stateName: string, _onError: (errorMessage: string) => void): State {
 
         const stateDefinition = this.definition.states.getUnsafe(stateName)
         const stateImp = new imp.State(
@@ -217,7 +217,7 @@ export class StateGroup implements syncAPI.StateGroup {
         //FIXME call onError
         return new State(stateImp, stateDefinition, this.global)
     }
-    public getCurrentState() {
+    public getCurrentState(): State {
         const currentStateImp = this.imp.currentState.get()
         const stateName = currentStateImp.key
         const stateImp = this.imp.currentState.get()
@@ -234,7 +234,7 @@ export class State implements syncAPI.State {
         this.imp = stateImp
         this.comments = this.imp.comments
     }
-    public getStateKey() {
+    public getStateKey(): string {
         return this.imp.key
     }
 }
@@ -281,7 +281,7 @@ export class Dictionary implements syncAPI.Dictionary {
         this.definition = definition
         this.global = global
     }
-    public createEntry() {
+    public createEntry(): Entry {
         const entryImp = new imp.Entry(
             this.imp.nodeDefinition,
             this.global.errorManager,
@@ -292,7 +292,7 @@ export class Dictionary implements syncAPI.Dictionary {
         imp.addEntry(this.imp, entryPlaceHolder)
         return entry
     }
-    public forEachEntry(callback: (entry: syncAPI.Entry, key: string) => void) {
+    public forEachEntry(callback: (entry: syncAPI.Entry, key: string) => void): void {
         const keyPropertyName = this.definition["key property"].name
         this.imp.entries.forEach(e => {
             if (e.status.get()[0] !== "inactive") {
@@ -321,7 +321,7 @@ export class List implements syncAPI.List {
         this.imp = collectionImp
         this.global = global
     }
-    public createEntry() {
+    public createEntry(): Entry {
         const entryImp = new imp.Entry(this.imp.nodeDefinition, this.global.errorManager, this.imp.dictionary)
 
         const entryPlaceHolder = new imp.EntryPlaceholder(entryImp, this.imp, true)
@@ -329,7 +329,7 @@ export class List implements syncAPI.List {
         imp.addEntry(this.imp, entryPlaceHolder)
         return entry
     }
-    public forEachEntry(callback: (entry: syncAPI.Entry) => void) {
+    public forEachEntry(callback: (entry: syncAPI.Entry) => void): void {
         this.imp.entries.forEach(e => {
             if (e.status.get()[0] !== "inactive") {
                 callback(new Entry(
@@ -353,14 +353,14 @@ export class Value implements syncAPI.Value {
         this.isQuoted = false//FIXME
         this.definition = definition
     }
-    public setValue(value: string, _onError: (message: string) => void) {
+    public setValue(value: string, _onError: (message: string) => void): void {
         imp.setValue(this.imp, this.imp.value.get(), value)
         //FIXME handle onError
     }
-    public getValue() {
+    public getValue(): string {
         return this.imp.value.get()
     }
-    public getSuggestions() {
+    public getSuggestions(): string[] {
         return [this.definition["default value"]]
     }
 }

@@ -20,8 +20,6 @@ module.exports = {
     "rules": {
         "@typescript-eslint/adjacent-overload-signatures": "error",
         "@typescript-eslint/array-type": "error",
-        "@typescript-eslint/ban-types": "error",
-        "@typescript-eslint/class-name-casing": "error",
         "@typescript-eslint/consistent-type-assertions": "error",
         "@typescript-eslint/consistent-type-definitions": "off",
         "@typescript-eslint/explicit-function-return-type": "off",

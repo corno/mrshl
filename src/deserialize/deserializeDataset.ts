@@ -1,6 +1,6 @@
 import * as bc from "bass-clarinet-typed"
 import * as md from "../metaDataSchema"
-import { Node, Dictionary, List } from "../SideEffectsAPI"
+import * as sideEffects from "../SideEffectsAPI"
 import { createDatasetDeserializer } from "./createDatasetDeserializer"
 import * as p from "pareto-20"
 import { SchemaAndSideEffects } from "../schemas"
@@ -71,10 +71,10 @@ function createNoOperationObjectHandler(_beginRange: bc.Range): bc.ObjectHandler
     }
 }
 
-export class NOPSideEffects implements
-    Node,
-    List,
-    Dictionary {
+class NOPSideEffects implements
+    sideEffects.Node,
+    sideEffects.List,
+    sideEffects.Dictionary {
     onArrayTypeClose() {
         //
     }
@@ -131,6 +131,10 @@ export class NOPSideEffects implements
     }
 }
 
+export function createNOPSideEffects(): sideEffects.Node {
+    return new NOPSideEffects()
+}
+
 /**
  * this function returns a promise to a dataset and the promise is resolved when the validation has been completed
  */
@@ -142,7 +146,7 @@ export function deserializeDataset(
     ) => p.IUnsafePromise<SchemaAndSideEffects, string>,
     onError: (source: string, message: string, range: bc.Range | null) => void,
     onWarning: (source: string, message: string, range: bc.Range | null) => void,
-    sideEffects: Node[],
+    sideEffectsHandlers: sideEffects.Node[],
 ): p.IUnsafePromise<IDataset, string> {
     return p.wrapUnsafeFunction((onPromiseFail, onResult) => {
         const parser = new bc.Parser(
@@ -167,7 +171,7 @@ export function deserializeDataset(
                     context,
                     dataset.sync,
                     isCompact,
-                    sideEffects,
+                    sideEffectsHandlers,
                     (message, range) => onError("deserializer", message, range),
                 ),
                 error => {

@@ -4,10 +4,10 @@ export class Mutable<T> {
     constructor(t: T) {
         this.t = t
     }
-    public update(t: T) {
+    public update(t: T): void {
         this.t = t
     }
-    public get() {
+    public get(): T {
         return this.t
     }
 }

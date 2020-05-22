@@ -16,7 +16,7 @@ export class ReactiveEntry<T> {
         this.entry = entry
         this.deletionSubscribers = deletionSubscribers
     }
-    public subscribeToDeletion(subscriber: () => void) {
+    public subscribeToDeletion(subscriber: () => void): Unsubscriber {
         return this.deletionSubscribers.add(subscriber)
     }
 }
@@ -29,7 +29,7 @@ export class ReactiveArray<T> implements ISubscribableArray<T> {
     private readonly entriesSubscribers = new Subscribers<ReactiveEntry<T>>()
     private readonly entries: PrivateReactiveEntry<T>[] = []
     private inForeachLoop = false
-    public addEntry(entry: T) {
+    public addEntry(entry: T): void {
         const privateEntryWrapper = new PrivateReactiveEntry(entry)
         const index = findInArray(this.entries, e => e.entry === entry)
         index.map(
@@ -43,14 +43,14 @@ export class ReactiveArray<T> implements ISubscribableArray<T> {
             }
         )
     }
-    public subscribeToEntries(subscriber: (newEntry: ReactiveEntry<T>) => void) {
+    public subscribeToEntries(subscriber: (newEntry: ReactiveEntry<T>) => void): Unsubscriber {
         this.entries.forEach(e => {
             const publicEntry = new ReactiveEntry(e.entry, e.deletionSubscribers)
             subscriber(publicEntry)
         })
         return this.entriesSubscribers.add(subscriber)
     }
-    public removeEntries(mustBeDeletedCallback: (t: T) => boolean) {
+    public removeEntries(mustBeDeletedCallback: (t: T) => boolean): void {
         let i = 0
         while (i !== this.entries.length) {
             const entry = this.entries[i]
@@ -71,13 +71,13 @@ export class ReactiveArray<T> implements ISubscribableArray<T> {
             () => null,
         )
     }
-    public removeEntry(t: T) {
+    public removeEntry(t: T): void {
         if (this.inForeachLoop) {
             throw new Error("Don't use 'removeEntry' in forEach or map loop, use 'removeEntries'")
         }
         this.removeEntries(c => c === t)
     }
-    public forEach(callback: (e: T) => void) {
+    public forEach(callback: (e: T) => void): void {
         this.inForeachLoop = true
         this.entries.forEach(e => callback(e.entry))
         this.inForeachLoop = false

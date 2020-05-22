@@ -66,6 +66,6 @@ function copyNode(
 export function copyEntry(
     sourceEntry: syncAPI.Entry,
     targetEntry: syncAPI.Entry
-) {
+): void {
     copyNode(sourceEntry.node, targetEntry.node)
 }

@@ -17,7 +17,7 @@ export function initializeNode(
     errorsAggregator: IParentErrorsAggregator,
     subEntriesErrorsAggregator: IParentErrorsAggregator,
     createdInNewContext: boolean,
-) {
+): void {
     definition.properties.forEach((property, key) => {
         switch (property.type[0]) {
             case "collection": {

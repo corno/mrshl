@@ -11,10 +11,10 @@ type Resolve = () => boolean
 
 export class ResolveRegistry {
     public readonly references: Resolve[] = []
-    public register(reference: Resolve) {
+    public register(reference: Resolve): void {
         this.references.push(reference)
     }
-    public resolve() {
+    public resolve(): boolean {
         let foundErrors = false
         this.references.forEach(r => {
             const success = r()
@@ -37,7 +37,7 @@ export function createReference<T>(name: string, lookup: IReadonlyLookup<T>, res
         return true
     })
     return {
-        get: () => {
+        get: (): T => {
             if (t === null) {
                 throw new Error("UNEXPECTED: not resolved")
             }

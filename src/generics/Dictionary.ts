@@ -17,7 +17,7 @@ export class Dictionary<T> implements IReadonlyDictionary<T>, IReadonlyLookup<T>
     constructor(imp: { [key: string]: T }) {
         this.imp = imp
     }
-    public forEach(callback: (entry: T, key: string) => void) {
+    public forEach(callback: (entry: T, key: string) => void): void {
         Object.keys(this.imp).sort().forEach(key => callback(this.imp[key], key))
     }
     public map<RT>(callback: (entry: T, key: string) => RT): RawObject<RT> {
@@ -37,17 +37,17 @@ export class Dictionary<T> implements IReadonlyDictionary<T>, IReadonlyLookup<T>
         })
         return new Dictionary(rt)
     }
-    public add(key: string, value: T) {
+    public add(key: string, value: T): void {
         this.imp[key] = value
     }
-    public getUnsafe(key: string) {
+    public getUnsafe(key: string): T {
         const entry = this.imp[key]
         if (entry === undefined) {
             throw new Error(`no such entry: ${key}, options: ${Object.keys(this.imp).join(", ")}`)
         }
         return entry
     }
-    public get(key: string) {
+    public get(key: string): T | null {
         const entry = this.imp[key]
         if (entry === undefined) {
             return null
@@ -68,10 +68,10 @@ export class Dictionary<T> implements IReadonlyDictionary<T>, IReadonlyLookup<T>
         })
         return rt
     }
-    public isEmpty() {
+    public isEmpty(): boolean {
         return Object.keys(this.imp).length === 0
     }
-    public getKeys() {
+    public getKeys(): string[] {
         return Object.keys(this.imp).sort()
     }
 }
@@ -81,10 +81,10 @@ export class Lookup<T> {
     constructor(imp: { [key: string]: T }) {
         this.imp = imp
     }
-    public add(key: string, value: T) {
+    public add(key: string, value: T): void {
         this.imp[key] = value
     }
-    public get(key: string) {
+    public get(key: string): T {
         const entry = this.imp[key]
         if (entry === undefined) {
             throw new Error(`no such entry: ${key}, options: ${Object.keys(this.imp).join(", ")}`)

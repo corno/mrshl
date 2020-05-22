@@ -4,7 +4,7 @@ export class Maybe<T> {
     constructor(t: T | null) {
         this.t = t
     }
-    public ifExists(callback: (t: T) => void) {
+    public ifExists(callback: (t: T) => void): void {
         if (this.t !== null) {
             callback(this.t)
         }

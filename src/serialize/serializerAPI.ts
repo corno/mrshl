@@ -10,10 +10,10 @@ export class StringStream {
         this.str = str
         this.indentationLevel = indentationLevel
     }
-    public add(str: string) {
+    public add(str: string): void {
         this.str.push(str)
     }
-    public newLine() {
+    public newLine(): void {
         if (this.indentationLevel !== null) {
 
             this.str.push("\r\n")
@@ -51,7 +51,7 @@ export class ArraySerializer {
     constructor(onAdd: (isFirst: boolean) => ValueSerializer) {
         this.onAdd = onAdd
     }
-    public add(callback: (vb: ValueSerializer) => void) {
+    public add(callback: (vb: ValueSerializer) => void): void {
         callback(this.onAdd(this.isFirst))
         this.isFirst = false
     }
@@ -63,7 +63,7 @@ export class DictionarySerializer {
     constructor(onAdd: (key: string, isFirst: boolean) => ValueSerializer) {
         this.onAdd = onAdd
     }
-    public add(key: string, isKeyProperty: boolean, callback: (vb: ValueSerializer) => void) {
+    public add(key: string, isKeyProperty: boolean, callback: (vb: ValueSerializer) => void): void {
         callback(this.onAdd(key, this.isFirst, isKeyProperty))
         this.isFirst = false
     }
@@ -74,7 +74,7 @@ export class TypeSerializer {
     constructor(onAdd: (key: string, isFirst: boolean, isKeyProperty: boolean) => ValueSerializer) {
         this.onAdd = onAdd
     }
-    public add(key: string, isKeyProperty: boolean, callback: (vb: ValueSerializer) => void) {
+    public add(key: string, isKeyProperty: boolean, callback: (vb: ValueSerializer) => void): void {
         callback(this.onAdd(key, this.isFirst, isKeyProperty))
         this.isFirst = false
     }

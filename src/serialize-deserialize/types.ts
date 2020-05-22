@@ -13,7 +13,7 @@ export type Property = {
 }
 
 export type PropertyType =
-    | ["value", {}]
+    | ["value", {}] //eslint-disable-line @typescript-eslint/ban-types
     | ["component", Component]
     | ["collection", Collection]
     | ["state group", StateGroup]

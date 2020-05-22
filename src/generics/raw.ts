@@ -1,5 +1,5 @@
 /* eslint
-   "@typescript-eslint/ban-ts-ignore" : "off",
+   "@typescript-eslint/ban-ts-comment" : "off",
 */
 export type IReadonlyDictionary<T> = { [key: string]: T }
 

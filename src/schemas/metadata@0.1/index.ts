@@ -2,7 +2,7 @@ import * as bc from "bass-clarinet"
 import * as p from "pareto-20"
 import { createDeserializer } from "./deserialize"
 import { SchemaAndSideEffects } from "../../schemas"
-import { NOPSideEffects } from "../../deserialize"
+import { createNOPSideEffects } from "../../deserialize"
 import { DiagnosticSeverity } from "../../loadDocument"
 
 export function attachSchemaDeserializer(
@@ -34,7 +34,7 @@ export function attachSchemaDeserializer(
                                 ? null
                                 : {
                                     schema: md2,
-                                    sideEffects: new NOPSideEffects(),
+                                    sideEffects: createNOPSideEffects(),
                                 }
                         }
                     ),

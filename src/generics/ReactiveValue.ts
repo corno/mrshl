@@ -19,12 +19,12 @@ export class ReactiveValue<T> implements ISubscribableValue<T> {
     constructor(initialValue: T) {
         this.value = initialValue
     }
-    public update(value: T) {
+    public update(value: T): void {
         if (this.value !== value) {
             this.forceUpdate(value)
         }
     }
-    public forceUpdate(value: T) {
+    public forceUpdate(value: T): void {
         const oldValue = this.value
         this.value = value
         this.valueSubscribers.signal(value)
@@ -34,7 +34,7 @@ export class ReactiveValue<T> implements ISubscribableValue<T> {
         callback(this.value)
         return this.valueSubscribers.add(callback)
     }
-    public get() {
+    public get(): T {
         return this.value
     }
     public map<NewT>(callback: (t: T) => NewT): ISubscribableValue<NewT> {
@@ -49,7 +49,7 @@ export class FixedReactiveValue<Type> implements ISubscribableValue<Type> {
     }
     public subscribeToValue(callback: (value: Type) => void): Unsubscriber {
         callback(this.value)
-        return () => {
+        return (): void => {
             //
         }
     }
@@ -85,7 +85,7 @@ export class LocalValueCache<Type> {
     public map<NT>(
         onSet: (v: Type) => NT,
         onNotSet: () => NT
-    ) {
+    ): NT {
         if (this.value === null) {
             return onNotSet()
         } else {
@@ -93,45 +93,45 @@ export class LocalValueCache<Type> {
         }
 
     }
-    public getValue() {
+    public getValue(): Type | null {
         return this.value
     }
 }
 
-export class CombinedReactiveValue<FirstType, SecondType, ResultType> implements ISubscribableValue<ResultType> {
-    private readonly firstParent: ISubscribableValue<FirstType>
-    private readonly secondParent: ISubscribableValue<SecondType>
-    private readonly mapper: (first: FirstType, second: SecondType) => ResultType
-    private firstValue: FirstType | null = null
-    private secondValue: SecondType | null = null
-    constructor(firstParent: ISubscribableValue<FirstType>, secondParent: ISubscribableValue<SecondType>, mapper: (first: FirstType, second: SecondType) => ResultType) {
-        this.firstParent = firstParent
-        this.secondParent = secondParent
-        this.mapper = mapper
-    }
-    public subscribeToValue(callback: (value: ResultType) => void): Unsubscriber {
-        const firstUnsubscriber = this.firstParent.subscribeToValue(value => {
-            this.firstValue = value
-            if (this.secondValue !== null) {
-                callback(this.mapper(value, this.secondValue))
-            }
-        })
-        const secondUnsubscriber = this.secondParent.subscribeToValue(value => {
-            this.secondValue = value
-            if (this.firstValue !== null) {
-                callback(this.mapper(this.firstValue, value))
-            }
-        })
-        return () => {
-            firstUnsubscriber()
-            secondUnsubscriber()
-        }
-    }
-    public map<NewType>(callback: (t: ResultType) => NewType): ISubscribableValue<NewType> {
-        return new DerivedReactiveValue<ResultType, NewType>(this, callback)
-    }
-}
+// class CombinedReactiveValue<FirstType, SecondType, ResultType> implements ISubscribableValue<ResultType> {
+//     private readonly firstParent: ISubscribableValue<FirstType>
+//     private readonly secondParent: ISubscribableValue<SecondType>
+//     private readonly mapper: (first: FirstType, second: SecondType) => ResultType
+//     private firstValue: FirstType | null = null
+//     private secondValue: SecondType | null = null
+//     constructor(firstParent: ISubscribableValue<FirstType>, secondParent: ISubscribableValue<SecondType>, mapper: (first: FirstType, second: SecondType) => ResultType) {
+//         this.firstParent = firstParent
+//         this.secondParent = secondParent
+//         this.mapper = mapper
+//     }
+//     public subscribeToValue(callback: (value: ResultType) => void): Unsubscriber {
+//         const firstUnsubscriber = this.firstParent.subscribeToValue(value => {
+//             this.firstValue = value
+//             if (this.secondValue !== null) {
+//                 callback(this.mapper(value, this.secondValue))
+//             }
+//         })
+//         const secondUnsubscriber = this.secondParent.subscribeToValue(value => {
+//             this.secondValue = value
+//             if (this.firstValue !== null) {
+//                 callback(this.mapper(this.firstValue, value))
+//             }
+//         })
+//         return (): void => {
+//             firstUnsubscriber()
+//             secondUnsubscriber()
+//         }
+//     }
+//     public map<NewType>(callback: (t: ResultType) => NewType): ISubscribableValue<NewType> {
+//         return new DerivedReactiveValue<ResultType, NewType>(this, callback)
+//     }
+// }
 
-export function createReactiveValue<T>(initialValue: T) {
+export function createReactiveValue<T>(initialValue: T): ISubscribableValue<T> {
     return new ReactiveValue(initialValue)
 }
