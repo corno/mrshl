@@ -17,7 +17,6 @@ export class Value {
     public readonly changeSubscribers: ChangeSubscriber[] = []
     public readonly comments = new Comments()
     public readonly isQuoted: boolean
-    public readonly definition: d.Value
     private readonly initialValue: string
 
     constructor(
@@ -26,7 +25,6 @@ export class Value {
         createdInNewContext: boolean,
         errorManager: ErrorManager,
     ) {
-        this.definition = definition
         this.initialValue = definition["default value"]
         this.focussable = new g.ReactiveValue<g.Maybe<asyncAPI.IFocussable>>(new g.Maybe<asyncAPI.IFocussable>(null))
         this.value = new g.ReactiveValue<string>(this.initialValue)

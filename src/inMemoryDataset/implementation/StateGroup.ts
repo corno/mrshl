@@ -49,7 +49,6 @@ export class StateGroup {
     public readonly thisEntryErrorsAggregator: IParentErrorsAggregator
     public readonly subentriesErrorsAggregator: IParentErrorsAggregator
     public readonly initialState: State
-    public readonly definition: d.StateGroup
     public readonly comments = new Comments()
 
     public readonly focussable: g.ReactiveValue<g.Maybe<bi.IFocussable>>
@@ -60,8 +59,6 @@ export class StateGroup {
         subentriesErrorsAggregator: IParentErrorsAggregator,
         createdInNewContext: boolean,
     ) {
-        this.definition = definition
-
         this.initialState = new State(
             definition["default state"].name,
             definition["default state"].get(),

@@ -91,17 +91,19 @@ class Property implements syncAPI.Property {
                     }
                 }
                 case "state group": {
-                    //const $ = definition.type[1]
+                    const $ = definition.type[1]
                     return ["state group", new StateGroup(
                         nodeImp.stateGroups.getUnsafe(key),
+                        $,
                         global,
                         createdInNewContext,
                     )]
                 }
                 case "value": {
-                    //const $ = definition.type[1]
+                    const $ = definition.type[1]
                     return ["value", new Value(
                         nodeImp.values.getUnsafe(key),
+                        $,
                     )]
                 }
                 default:
@@ -113,7 +115,7 @@ class Property implements syncAPI.Property {
 }
 
 export class Node implements syncAPI.Node {
-    private readonly node: imp.Node
+    private readonly imp: imp.Node
     private readonly definition: d.Node
     private readonly errorsAggregator: IParentErrorsAggregator
     private readonly subEntriesErrorsAggregator: IParentErrorsAggregator
@@ -130,7 +132,7 @@ export class Node implements syncAPI.Node {
         keyProperty: d.Property | null,
     ) {
         this.definition = definition
-        this.node = node
+        this.imp = node
         this.errorsAggregator = errorsAggregator
         this.subEntriesErrorsAggregator = subEntriesErrorsAggregator
         this.global = global
@@ -180,7 +182,7 @@ export class Node implements syncAPI.Node {
         if ($.type[0] !== "dictionary") {
             throw new Error("not a dicionary")
         }
-        const collection = this.node.collections.getUnsafe(key)
+        const collection = this.imp.collections.getUnsafe(key)
         return new Dictionary(collection, $.type[1], this.global, this.createdInNewContext)
     }
     public getList(key: string) {
@@ -192,7 +194,7 @@ export class Node implements syncAPI.Node {
         if ($.type[0] !== "list") {
             throw new Error("not a list")
         }
-        const collection = this.node.collections.getUnsafe(key)
+        const collection = this.imp.collections.getUnsafe(key)
         return new List(collection, this.global, this.createdInNewContext)
     }
     public getComponent(key: string) {
@@ -200,7 +202,7 @@ export class Node implements syncAPI.Node {
         if (propDef.type[0] !== "component") {
             throw new Error("not a component")
         }
-        const component = this.node.components.getUnsafe(key)
+        const component = this.imp.components.getUnsafe(key)
         return new Component(
             propDef.type[1],
             component,
@@ -216,24 +218,24 @@ export class Node implements syncAPI.Node {
         if (propDef.type[0] !== "state group") {
             throw new Error("not a state group")
         }
-        const sg = this.node.stateGroups.getUnsafe(key)
+        const sg = this.imp.stateGroups.getUnsafe(key)
 
-        return new StateGroup(sg, this.global, this.createdInNewContext)
+        return new StateGroup(sg, propDef.type[1], this.global, this.createdInNewContext)
     }
     public getValue(key: string) {
         const propDef = this.definition.properties.getUnsafe(key)
         if (propDef.type[0] !== "value") {
             throw new Error("not a value")
         }
-        return new Value( this.node.values.getUnsafe(key))
+        return new Value(this.imp.values.getUnsafe(key), propDef.type[1])
     }
     public forEachProperty(callback: (property: syncAPI.Property, key: string) => void) {
-        this.node.definition.properties.forEach((p, pKey) => {
+        this.definition.properties.forEach((p, pKey) => {
             callback(
                 new Property(
                     pKey,
                     p,
-                    this.node,
+                    this.imp,
                     this.global,
                     this.errorsAggregator,
                     this.subEntriesErrorsAggregator,
@@ -252,15 +254,17 @@ export class StateGroup implements syncAPI.StateGroup {
     public readonly comments: imp.Comments
     private readonly global: Global
     private readonly createdInNewContext: boolean
-    constructor(stateGroup: imp.StateGroup, global: Global, createdInNewContext: boolean) {
+    private readonly definition: d.StateGroup
+    constructor(stateGroup: imp.StateGroup, definition: d.StateGroup, global: Global, createdInNewContext: boolean) {
         this.imp = stateGroup
         this.global = global
+        this.definition = definition
         this.createdInNewContext = createdInNewContext
         this.comments = stateGroup.comments
     }
     public setState(stateName: string, _onError: (errorMessage: string) => void) {
 
-        const stateDefinition = this.imp.definition.states.getUnsafe(stateName)
+        const stateDefinition = this.definition.states.getUnsafe(stateName)
         const state = new imp.State(
             stateName,
             stateDefinition,
@@ -282,7 +286,7 @@ export class StateGroup implements syncAPI.StateGroup {
     public getCurrentState() {
         const currentStateImp = this.imp.currentState.get()
         const stateName = currentStateImp.key
-        const stateDefinition = this.imp.definition.states.getUnsafe(stateName)
+        const stateDefinition = this.definition.states.getUnsafe(stateName)
         const state = new imp.State(
             stateName,
             stateDefinition,
@@ -430,10 +434,12 @@ export class Value implements syncAPI.Value {
     public comments: imp.Comments
     private readonly imp: imp.Value
     readonly isQuoted: boolean
-    constructor(valueImp: imp.Value) {
+    private readonly definition: d.Value
+    constructor(valueImp: imp.Value, definition: d.Value) {
         this.imp = valueImp
         this.comments = valueImp.comments
         this.isQuoted = false//FIXME
+        this.definition = definition
     }
     public setValue(value: string, onError: (message: string) => void) {
         this.imp.setValue(value, onError)
@@ -442,6 +448,6 @@ export class Value implements syncAPI.Value {
         return this.imp.getValue()
     }
     public getSuggestions() {
-        return [this.imp.definition["default value"]]
+        return [this.definition["default value"]]
     }
 }

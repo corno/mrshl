@@ -95,29 +95,29 @@ export class EntryPlaceholder {
 }
 
 class DictionaryMixin {
-    public readonly definition: d.Dictionary
     private readonly entries: g.ReactiveArray<EntryPlaceholder>
     private readonly keySubscriber: (oldValue: string, newValue: string) => void
-    constructor(definition: d.Dictionary, entries: g.ReactiveArray<EntryPlaceholder>) {
-        this.definition = definition
+    private readonly keyPropertyName: string
+    constructor(entries: g.ReactiveArray<EntryPlaceholder>, keyPropertyName: string) {
         this.keySubscriber = (oldValue: string, newValue: string) => {
             this.checkDuplicates(oldValue)
             this.checkDuplicates(newValue)
         }
         this.entries = entries
+        this.keyPropertyName = keyPropertyName
     }
     public attachKey(entry: EntryPlaceholder) {
-        const keyValue = entry.node.values.getUnsafe(this.definition["key property"].name)
+        const keyValue = entry.node.values.getUnsafe(this.keyPropertyName)
         this.checkDuplicates(keyValue.getValue())
         keyValue.changeSubscribers.push(this.keySubscriber)
     }
     public detachKey(entry: EntryPlaceholder) {
-        g.removeFromArray(entry.node.values.getUnsafe(this.definition["key property"].name).changeSubscribers, e => e === this.keySubscriber)
-        const keyValue = entry.node.values.getUnsafe(this.definition["key property"].name)
+        g.removeFromArray(entry.node.values.getUnsafe(this.keyPropertyName).changeSubscribers, e => e === this.keySubscriber)
+        const keyValue = entry.node.values.getUnsafe(this.keyPropertyName)
         this.checkDuplicates(keyValue.getValue())
     }
     private checkDuplicates(key: string) {
-        const propertyName = this.definition["key property"].name
+        const propertyName = this.keyPropertyName
         const matches = this.entries.mapToRawArray(e => e).filter(e => {
             //if it is removed, it is never a duplicate
             if (e.status.get()[0] === "inactive") {
@@ -139,7 +139,6 @@ class DictionaryMixin {
 export class Collection {
     public readonly errorsAggregator: IParentErrorsAggregator
     public readonly entries = new g.ReactiveArray<EntryPlaceholder>()
-    public readonly definition: d.Collection
     public readonly nodeDefinition: d.Node
     private readonly dictionary: DictionaryMixin | null
     public readonly keyProperty: d.Property | null
@@ -147,14 +146,13 @@ export class Collection {
         definition: d.Collection,
         errorsAggregator: IParentErrorsAggregator,
     ) {
-        this.definition = definition
         this.errorsAggregator = errorsAggregator
-        if (this.definition.type[0] === "dictionary") {
+        if (definition.type[0] === "dictionary") {
             this.dictionary = new DictionaryMixin(
-                this.definition.type[1],
                 this.entries,
+                definition.type[1]["key property"].name,
             )
-            this.keyProperty = this.definition.type[1]["key property"].get()
+            this.keyProperty = definition.type[1]["key property"].get()
         } else {
             this.dictionary = null
             this.keyProperty = null

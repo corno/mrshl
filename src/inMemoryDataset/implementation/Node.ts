@@ -10,33 +10,11 @@ function assertUnreachable<RT>(_x: never): RT {
     throw new Error("Unreachable")
 }
 
-export type PropertyType =
-    | ["collection", Collection]
-    | ["component", Component]
-    | ["state group", StateGroup]
-    | ["value", Value]
-
-export class Property {
-    public readonly isKeyProperty: boolean
-    public readonly type: PropertyType
-    public readonly definition: d.Property
-    constructor(
-        definition: d.Property,
-        type: PropertyType,
-        isKeyProperty: boolean,
-    ) {
-        this.definition = definition
-        this.type = type
-        this.isKeyProperty = isKeyProperty
-    }
-}
-
 export class Node {
     public readonly collections = new g.Dictionary<Collection>({})
     public readonly components = new g.Dictionary<Component>({})
     public readonly stateGroups = new g.Dictionary<StateGroup>({})
     public readonly values = new g.Dictionary<Value>({})
-    public readonly definition: d.Node
     public readonly keyProperty: d.Property | null
     constructor(
         definition: d.Node,
@@ -46,7 +24,6 @@ export class Node {
         createdInNewContext: boolean,
         keyProperty: null | d.Property
     ) {
-        this.definition = definition
         this.keyProperty = keyProperty
 
         definition.properties.forEach((property, key) => {
