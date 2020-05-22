@@ -4,6 +4,7 @@ import * as d from "../../definition"
 import { FlexibleErrorsAggregator, IParentErrorsAggregator, ErrorManager } from "./ErrorManager"
 import { Node } from "./Node"
 import { Comments } from "./Comments"
+import { initializeNode } from "../initializeNode"
 
 export class State {
     public readonly key: string
@@ -14,18 +15,18 @@ export class State {
     public readonly comments = new Comments()
     constructor(
         key: string,
-        definition: d.State,
-        errorManager: ErrorManager,
-        createdInNewContext: boolean,
+        initializeNode: (
+            node: Node,
+            errorsAggregator: IParentErrorsAggregator,
+            subentriesErrorsAggregator: IParentErrorsAggregator,
+        ) => void,
     ) {
         this.key = key
         this.node = new Node(
-            definition.node,
-            errorManager,
-            this.errorsAggregator,
-            this.subentriesErrorsAggregator,
-            createdInNewContext,
-            null
+            null,
+            node => {
+                initializeNode(node, this.errorsAggregator, this.subentriesErrorsAggregator)
+            },
         )
     }
 
@@ -58,9 +59,16 @@ export class StateGroup {
     ) {
         this.initialState = new State(
             definition["default state"].name,
-            definition["default state"].get(),
-            errorManager,
-            createdInNewContext
+            (stateNode, errorsAggregator, stateSubentriesErrorsAggregator) => {
+                initializeNode(
+                    stateNode,
+                    definition["default state"].get().node,
+                    errorManager,
+                    errorsAggregator,
+                    stateSubentriesErrorsAggregator,
+                    true
+                )
+            }
         )
         this.currentState = new g.Mutable<State>(this.initialState)
         this.currentStateKey = new g.ReactiveValue(definition["default state"].name)

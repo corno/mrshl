@@ -7,6 +7,7 @@ import * as imp from "./implementation"
 import * as d from "../definition"
 import { Global } from "./Global"
 import { IParentErrorsAggregator } from "./implementation/ErrorManager"
+import { initializeNode } from "./initializeNode"
 
 function assertUnreachable<RT>(_x: never): RT {
     throw new Error("unreachable")
@@ -267,9 +268,16 @@ export class StateGroup implements syncAPI.StateGroup {
         const stateDefinition = this.definition.states.getUnsafe(stateName)
         const state = new imp.State(
             stateName,
-            stateDefinition,
-            this.global.errorManager,
-            false,
+            (stateNode, errorsAggregator, subEntriesErrorsAggregator) => {
+                initializeNode(
+                    stateNode,
+                    stateDefinition.node,
+                    this.global.errorManager,
+                    errorsAggregator,
+                    subEntriesErrorsAggregator,
+                    false,
+                )
+            }
         )
         const node = new Node(
             stateDefinition.node,
@@ -287,22 +295,17 @@ export class StateGroup implements syncAPI.StateGroup {
         const currentStateImp = this.imp.currentState.get()
         const stateName = currentStateImp.key
         const stateDefinition = this.definition.states.getUnsafe(stateName)
-        const state = new imp.State(
-            stateName,
-            stateDefinition,
-            this.global.errorManager,
-            false,
-        )
+        const stateImp = this.imp.currentState.get()
         const node = new Node(
             stateDefinition.node,
-            state.node,
+            stateImp.node,
             this.global,
-            state.errorsAggregator,
-            state.subentriesErrorsAggregator,
+            stateImp.errorsAggregator,
+            stateImp.subentriesErrorsAggregator,
             this.createdInNewContext,
             null,
         )
-        return new State(state, node)
+        return new State(stateImp, node)
     }
 }
 
@@ -331,7 +334,7 @@ export class Entry implements syncAPI.Entry {
         global: Global,
         entry: imp.Entry,
         createdInNewContext: boolean,
-        keyProperty: d.Property | null,
+        dictionary: imp.Dictionary | null,
     ) {
         this.comments = entry.comments
         this.entry = entry
@@ -344,7 +347,7 @@ export class Entry implements syncAPI.Entry {
             entry.errorsAggregator,
             entry.subentriesErrorsAggregator,
             createdInNewContext,
-            keyProperty,
+            dictionary === null ? null : dictionary.keyProperty,
         )
     }
     public insert() {
@@ -376,9 +379,9 @@ export class Dictionary implements syncAPI.Dictionary {
         const entry = new imp.Entry(
             this.imp.nodeDefinition,
             this.global.errorManager,
-            this.imp.keyProperty
+            this.imp.dictionary
         )
-        return new Entry(this.imp, this.global, entry, this.createdInNewContext, this.imp.keyProperty)
+        return new Entry(this.imp, this.global, entry, this.createdInNewContext, this.imp.dictionary)
     }
     public forEachEntry(callback: (entry: syncAPI.Entry, key: string) => void) {
         const keyPropertyName = this.definition["key property"].name
@@ -415,8 +418,8 @@ export class List implements syncAPI.List {
         this.createdInNewContext = createdInNewContext
     }
     public createEntry() {
-        const entry = new imp.Entry(this.imp.nodeDefinition, this.global.errorManager, this.imp.keyProperty)
-        return new Entry(this.imp, this.global, entry, this.createdInNewContext, this.imp.keyProperty)
+        const entry = new imp.Entry(this.imp.nodeDefinition, this.global.errorManager, this.imp.dictionary)
+        return new Entry(this.imp, this.global, entry, this.createdInNewContext, this.imp.dictionary)
     }
     public forEachEntry(callback: (entry: syncAPI.Entry) => void) {
         this.imp.entries.forEach(e => {

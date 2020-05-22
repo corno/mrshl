@@ -7,6 +7,7 @@ import * as d from "../../definition"
 import { FlexibleErrorsAggregator, IParentErrorsAggregator, ErrorManager } from "./ErrorManager"
 import { Node } from "./Node"
 import { Comments } from "./Comments"
+import { initializeNode } from "../initializeNode"
 
 function assertUnreachable<RT>(_x: never): RT {
     throw new Error("unreachable")
@@ -20,25 +21,22 @@ export class Entry {
     constructor(
         nodeDefinition: d.Node,
         errorManager: ErrorManager,
-        keyProperty: d.Property | null
+        dictionary: Dictionary | null
     ) {
         this.node = new Node(
-            nodeDefinition,
-            errorManager,
-            this.errorsAggregator,
-            this.subentriesErrorsAggregator,
-            true,
-            keyProperty
+            dictionary === null ? null : dictionary.keyProperty,
+            node => {
+                initializeNode(
+                    node,
+                    nodeDefinition,
+                    errorManager,
+                    this.errorsAggregator,
+                    this.subentriesErrorsAggregator,
+                    true,
+                )
+            }
         )
     }
-    // public attachErrors(collection: Collection) {
-    //     this.errorsAggregator.attach(collection.errorsAggregator)
-    //     this.subentriesErrorsAggregator.attach(collection.errorsAggregator)
-    // }
-    // public detachErrors() {
-    //     this.errorsAggregator.detach()
-    //     this.subentriesErrorsAggregator.detach()
-    // }
 }
 
 export type EntryStatus =
@@ -89,45 +87,29 @@ export class EntryPlaceholder {
         //         }
         //     })
     }
-    public purge() {
-        this.isPurged.update(true)
-    }
 }
 
-class DictionaryMixin {
-    private readonly entries: g.ReactiveArray<EntryPlaceholder>
-    public readonly keySubscriber: (oldValue: string, newValue: string) => void
+/**
+ *
+ */
+export class Dictionary {
+    public duplicatesCheckFunction: (oldValue: string, newValue: string) => void
     public readonly keyPropertyName: string
-    constructor(entries: g.ReactiveArray<EntryPlaceholder>, keyPropertyName: string) {
-        this.keySubscriber = (oldValue: string, newValue: string) => {
-            this.checkDuplicates(oldValue)
-            this.checkDuplicates(newValue)
-        }
-        this.entries = entries
+    public readonly keyProperty: d.Property
+    /**
+     * 
+     * @param keyPropertyName
+     * @param keyProperty
+     * @param duplicatesCheckFunction a function that can be used to subscribe to the keys of the entries to check for duplicates
+     */
+    constructor(
+        keyPropertyName: string,
+        keyProperty: d.Property,
+        duplicatesCheckFunction: (oldValue: string, newValue: string) => void,
+    ) {
+        this.duplicatesCheckFunction = duplicatesCheckFunction
+        this.keyProperty = keyProperty
         this.keyPropertyName = keyPropertyName
-    }
-    public detachKey(entry: EntryPlaceholder) {
-        g.removeFromArray(entry.node.values.getUnsafe(this.keyPropertyName).changeSubscribers, e => e === this.keySubscriber)
-        const keyValue = entry.node.values.getUnsafe(this.keyPropertyName)
-        this.checkDuplicates(keyValue.value.get())
-    }
-    public checkDuplicates(key: string) {
-        const propertyName = this.keyPropertyName
-        const matches = this.entries.mapToRawArray(e => e).filter(e => {
-            //if it is removed, it is never a duplicate
-            if (e.status.get()[0] === "inactive") {
-                return false
-            }
-            return e.node.values.getUnsafe(propertyName).value.get() === key
-        })
-        if (matches.length > 1) {
-            matches.forEach(m => {
-                m.entry.node.values.getUnsafe(propertyName).isDuplicateImp.update(true)
-            })
-        }
-        if (matches.length === 1) {
-            matches[0].entry.node.values.getUnsafe(propertyName).isDuplicateImp.update(false)
-        }
     }
 }
 
@@ -135,23 +117,14 @@ export class Collection {
     public readonly errorsAggregator: IParentErrorsAggregator
     public readonly entries = new g.ReactiveArray<EntryPlaceholder>()
     public readonly nodeDefinition: d.Node
-    public readonly dictionary: DictionaryMixin | null
-    public readonly keyProperty: d.Property | null
+    public readonly dictionary: Dictionary | null
     constructor(
         definition: d.Collection,
         errorsAggregator: IParentErrorsAggregator,
+        dictionary: Dictionary | null,
     ) {
         this.errorsAggregator = errorsAggregator
-        if (definition.type[0] === "dictionary") {
-            this.dictionary = new DictionaryMixin(
-                this.entries,
-                definition.type[1]["key property"].name,
-            )
-            this.keyProperty = definition.type[1]["key property"].get()
-        } else {
-            this.dictionary = null
-            this.keyProperty = null
-        }
+        this.dictionary = dictionary
         this.nodeDefinition = ((): d.Node => {
             switch (definition.type[0]) {
                 case "dictionary": {

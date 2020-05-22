@@ -11,6 +11,8 @@ import { copyEntry } from "./copyEntry"
 import { Global } from "./Global"
 import { Command, RootImp } from "./Root"
 import * as imp from "./implementation"
+import { IFocussable } from "./implementation/IFocussable"
+import { initializeNode } from "./initializeNode"
 
 function assertUnreachable<RT>(_x: never): RT {
     throw new Error("unreachable")
@@ -19,6 +21,8 @@ function assertUnreachable<RT>(_x: never): RT {
 export function purgeChanges(node: imp.Node) {
     node.collections.forEach(c => {
         c.entries.removeEntries(candidate => {
+
+            candidate.isPurged.update(true)
             return candidate.status.get()[0] === "inactive"
         })
         c.entries.forEach(entry => {
@@ -68,10 +72,10 @@ class Collection implements asyncAPI.Collection {
                 const newEntry = new imp.Entry(
                     this.imp.nodeDefinition,
                     this.global.errorManager,
-                    this.imp.keyProperty
+                    this.imp.dictionary
                 )
-                const source = new syncAPIImp.Entry(this.imp, this.global, sourceEntryImp.entry, true, this.imp.keyProperty)
-                const target = new syncAPIImp.Entry(this.imp, this.global, newEntry, true, this.imp.keyProperty)
+                const source = new syncAPIImp.Entry(this.imp, this.global, sourceEntryImp.entry, true, this.imp.dictionary)
+                const target = new syncAPIImp.Entry(this.imp, this.global, newEntry, true, this.imp.dictionary)
                 copyEntry(source, target)
 
                 callback(new cc.EntryAddition(
@@ -89,7 +93,7 @@ class Collection implements asyncAPI.Collection {
         const entry = new imp.Entry(
             this.imp.nodeDefinition,
             this.global.errorManager,
-            this.imp.keyProperty,
+            this.imp.dictionary,
         )
 
         this.global.changeController.addEntry(new cc.EntryAddition(
@@ -337,7 +341,7 @@ class StateGroup implements asyncAPI.StateGroup {
         this.currentStateKey = stateGroupImp.currentStateKey
         this.global = global
     }
-    public setMainFocussableRepresentation(focussable: asyncAPI.IFocussable) {
+    public setMainFocussableRepresentation(focussable: IFocussable) {
         this.imp.focussable.update(new g.Maybe(focussable))
     }
     public updateState(stateName: string) {
@@ -347,9 +351,16 @@ class StateGroup implements asyncAPI.StateGroup {
                 this.imp.currentState.get(),
                 new imp.State(
                     stateName,
-                    this.definition.states.getUnsafe(stateName),
-                    this.global.errorManager,
-                    true,
+                    (stateNode, errorsAggregator, subentriesErrorsAggregator) => {
+                        initializeNode(
+                            stateNode,
+                            this.definition.states.getUnsafe(stateName).node,
+                            this.global.errorManager,
+                            errorsAggregator,
+                            subentriesErrorsAggregator,
+                            true,
+                        )
+                    }
                 )
             )
         )

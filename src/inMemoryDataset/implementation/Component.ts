@@ -2,6 +2,7 @@ import * as d from "../../definition"
 import { Node } from "./Node"
 import { Comments } from "./Comments"
 import { IParentErrorsAggregator, ErrorManager } from "./ErrorManager"
+import { initializeNode } from "../initializeNode"
 
 export class Component {
     public readonly node: Node
@@ -14,12 +15,17 @@ export class Component {
         createdInNewContext: boolean,
     ) {
         this.node = new Node(
-            definition.type.get().node,
-            errorManager,
-            errorsAggregator,
-            subEntriesErrorsAggregator,
-            createdInNewContext,
             null,
+            node => {
+                initializeNode(
+                    node,
+                    definition.type.get().node,
+                    errorManager,
+                    errorsAggregator,
+                    subEntriesErrorsAggregator,
+                    createdInNewContext,
+                )
+            }
         )
     }
 }

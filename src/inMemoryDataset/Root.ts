@@ -2,6 +2,7 @@ import * as d from "../definition"
 import { RootErrorsAggregator } from "./implementation/ErrorManager"
 import { Global } from "./Global"
 import { Node } from "./implementation/Node"
+import { initializeNode } from "./initializeNode"
 
 export class RootImp {
     public readonly errorsAggregator = new RootErrorsAggregator()
@@ -12,12 +13,17 @@ export class RootImp {
     constructor(schemaPath: string, schema: d.Schema) {
         this.schemaPath = schemaPath
         this.rootNode = new Node(
-            schema["root type"].get().node,
-            this.global.errorManager,
-            this.errorsAggregator,
-            this.errorsAggregator,
-            false,
-            null
+            null,
+            node => {
+                initializeNode(
+                    node,
+                    schema["root type"].get().node,
+                    this.global.errorManager,
+                    this.errorsAggregator,
+                    this.errorsAggregator,
+                    false
+                )
+            }
         )
         this.schema = schema
         this.global = new Global()
