@@ -6,7 +6,6 @@ import * as syncAPI from "../syncAPI"
 import * as imp from "./implementation"
 import * as d from "../definition"
 import { Global } from "./Global"
-import { IParentErrorsAggregator } from "./implementation/ErrorManager"
 import { initializeNode } from "./initializeNode"
 
 function assertUnreachable<RT>(_x: never): RT {
@@ -20,16 +19,12 @@ export class Component implements syncAPI.Component {
         definition: d.Component,
         component: imp.Component,
         global: Global,
-        errorsAggregator: IParentErrorsAggregator,
-        subEntriesErrorsAggregator: IParentErrorsAggregator,
         createdInNewContext: boolean,
         keyProperty: d.Property | null,
     ) {
         this.node = new Node(
             definition.type.get().node,
             component.node, global,
-            errorsAggregator,
-            subEntriesErrorsAggregator,
             createdInNewContext,
             keyProperty,
         )
@@ -45,8 +40,6 @@ class Property implements syncAPI.Property {
         definition: d.Property,
         nodeImp: imp.Node,
         global: Global,
-        errorsAggregator: IParentErrorsAggregator,
-        subEntriesErrorsAggregator: IParentErrorsAggregator,
         createdInNewContext: boolean,
         keyProperty: d.Property | null,
     ) {
@@ -58,8 +51,6 @@ class Property implements syncAPI.Property {
                         $,
                         nodeImp.components.getUnsafe(key),
                         global,
-                        errorsAggregator,
-                        subEntriesErrorsAggregator,
                         createdInNewContext,
                         keyProperty,
                     )]
@@ -118,8 +109,6 @@ class Property implements syncAPI.Property {
 export class Node implements syncAPI.Node {
     private readonly imp: imp.Node
     private readonly definition: d.Node
-    private readonly errorsAggregator: IParentErrorsAggregator
-    private readonly subEntriesErrorsAggregator: IParentErrorsAggregator
     private readonly global: Global
     private readonly createdInNewContext: boolean
     private readonly keyProperty: d.Property | null
@@ -127,15 +116,11 @@ export class Node implements syncAPI.Node {
         definition: d.Node,
         node: imp.Node,
         global: Global,
-        errorsAggregator: IParentErrorsAggregator,
-        subEntriesErrorsAggregator: IParentErrorsAggregator,
         createdInNewContext: boolean,
         keyProperty: d.Property | null,
     ) {
         this.definition = definition
         this.imp = node
-        this.errorsAggregator = errorsAggregator
-        this.subEntriesErrorsAggregator = subEntriesErrorsAggregator
         this.global = global
         this.createdInNewContext = createdInNewContext
         this.keyProperty = keyProperty
@@ -208,8 +193,6 @@ export class Node implements syncAPI.Node {
             propDef.type[1],
             component,
             this.global,
-            this.errorsAggregator,
-            this.subEntriesErrorsAggregator,
             this.createdInNewContext,
             this.keyProperty,
         )
@@ -238,8 +221,6 @@ export class Node implements syncAPI.Node {
                     p,
                     this.imp,
                     this.global,
-                    this.errorsAggregator,
-                    this.subEntriesErrorsAggregator,
                     this.createdInNewContext,
                     this.keyProperty,
                 ),
@@ -283,8 +264,6 @@ export class StateGroup implements syncAPI.StateGroup {
             stateDefinition.node,
             state.node,
             this.global,
-            state.errorsAggregator,
-            state.subentriesErrorsAggregator,
             this.createdInNewContext,
             null,
         )
@@ -300,8 +279,6 @@ export class StateGroup implements syncAPI.StateGroup {
             stateDefinition.node,
             stateImp.node,
             this.global,
-            stateImp.errorsAggregator,
-            stateImp.subentriesErrorsAggregator,
             this.createdInNewContext,
             null,
         )
@@ -344,8 +321,6 @@ export class Entry implements syncAPI.Entry {
             collectionImp.nodeDefinition,
             entry.node,
             global,
-            entry.errorsAggregator,
-            entry.subentriesErrorsAggregator,
             createdInNewContext,
             dictionary === null ? null : dictionary.keyProperty,
         )

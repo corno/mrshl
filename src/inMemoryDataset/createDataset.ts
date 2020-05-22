@@ -15,8 +15,6 @@ class SyncDataset implements syncAPI.IDataset {
             rootImp.schema["root type"].get().node,
             rootImp.rootNode,
             rootImp.global,
-            rootImp.errorsAggregator,
-            rootImp.errorsAggregator,
             false,
             null,
         )
