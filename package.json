@@ -28,7 +28,7 @@
   "dependencies": {
     "bass-clarinet-typed": "^0.72.5",
     "fountain-pen": "^3.0.1",
-    "pareto-fs": "^0.4.5"
+    "pareto-fs": "^0.4.6"
   },
   "devDependencies": {
     "@types/chai": "^4.2.11",
