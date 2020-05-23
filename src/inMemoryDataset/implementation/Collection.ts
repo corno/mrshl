@@ -93,7 +93,7 @@ export class EntryPlaceholder {
  *
  */
 export class Dictionary {
-    public duplicatesCheckFunction: (oldValue: string, newValue: string) => void
+    public readonly duplicatesCheckFunction: (oldValue: string, newValue: string) => void
     public readonly keyPropertyName: string
     public readonly keyProperty: d.Property
     /**

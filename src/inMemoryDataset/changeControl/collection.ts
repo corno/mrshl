@@ -6,16 +6,8 @@ function attachKey(collection: Collection, entry: EntryPlaceholder) {
     if (collection.dictionary !== null) {
 
         const cd = collection.dictionary
-
         const keyValue = entry.node.values.getUnsafe(collection.dictionary.keyPropertyName)
         checkDuplicates(collection, keyValue.value.get(), cd.keyPropertyName)
-        if (cd.duplicatesCheckFunction !== null) {
-            throw new Error("unexpeded")
-        }
-        cd.duplicatesCheckFunction = (oldValue: string, newValue: string) => {
-            checkDuplicates(collection, oldValue, cd.keyPropertyName)
-            checkDuplicates(collection, newValue, cd.keyPropertyName)
-        }
         keyValue.changeSubscribers.push(cd.duplicatesCheckFunction)
     }
 }
