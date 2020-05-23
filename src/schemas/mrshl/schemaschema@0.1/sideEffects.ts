@@ -11,7 +11,7 @@ function assertUnreachable(_x: never) {
     throw new Error("unreachable")
 }
 
-export class Dictionary implements sideEffects.Dictionary {
+class Dictionary implements sideEffects.Dictionary {
     private readonly collectionDefinition: t.Collection
     //private readonly definition: t.Dictionary
     private readonly onError: (message: string, range: bc.Range, severity: DiagnosticSeverity) => void
@@ -34,7 +34,8 @@ export class Dictionary implements sideEffects.Dictionary {
         return new Node(this.collectionDefinition.node, this.onError)
     }
 }
-export class List implements sideEffects.List {
+
+class List implements sideEffects.List {
     private readonly collectionDefinition: t.Collection
     //private readonly definition: t.List
     private readonly onError: (message: string, range: bc.Range, severity: DiagnosticSeverity) => void
@@ -59,8 +60,20 @@ export class List implements sideEffects.List {
     }
 }
 
+export class Root implements sideEffects.Root {
+    public readonly node: Node
+    constructor(
+        schema: t.Schema,
+        onError: (message: string, range: bc.Range, severity: DiagnosticSeverity) => void
+    ) {
+        this.node = new Node(schema["root type"].get().node, onError)
+    }
+    public onEnd(): void {
+        //
+    }
+}
 
-export class Node implements sideEffects.Node {
+class Node implements sideEffects.Node {
     private readonly definition: t.Node
     private readonly onError: (message: string, range: bc.Range, severity: DiagnosticSeverity) => void
 

@@ -106,7 +106,12 @@ describe("main", () => {
         const testDirPath = path.join(testsDir, dir)
         const serializedDatasetPath = path.join(testDirPath, "data.astn.test")
         //const expectedOutputPath = path.join(testDirPath, "expected.astn.test")
-        const expectedIssues = JSON.parse(fs.readFileSync(path.join(testDirPath, "issues.json"), { encoding: "utf-8" }))
+        const expectedIssues = JSON.parse( //eslint-disable-line @typescript-eslint/no-unsafe-assignment
+            fs.readFileSync(
+                path.join(testDirPath, "issues.json"),
+                { encoding: "utf-8" }
+            )
+        )
 
         const actualIssues: Issues = []
 
@@ -164,12 +169,17 @@ describe("main", () => {
                 // (warningMessage, range) => {
                 //     actualIssues.push([warningMessage, "warning", range.start.line, range.start.column, range.end.line, range.end.column])
                 // },
-                [new astn.SnippetGenerator((range, getIntraSnippets, getSnippetsAfter) => {
-                    actualSnippets[astn.printRange(range)] = {
-                        inToken: getIntraSnippets === null ? null : getIntraSnippets(),
-                        afterToken: getSnippetsAfter === null ? null : getSnippetsAfter(),
-                    }
-                })],
+                [astn.createSnippetGenerator(
+                    (range, getIntraSnippets, getSnippetsAfter) => {
+                        actualSnippets[astn.printRange(range)] = {
+                            inToken: getIntraSnippets === null ? null : getIntraSnippets(),
+                            afterToken: getSnippetsAfter === null ? null : getSnippetsAfter(),
+                        }
+                    },
+                    () => {
+                        //
+                    },
+                )],
                 schema => {
                     return astn.createInMemoryDataset(schema)
                 }

@@ -431,7 +431,7 @@ export function createDatasetDeserializer(
     context: bc.ExpectContext,
     dataset: ds.IDataset,
     isCompact: boolean,
-    sideEffectsAPI: sideEffects.Node[],
+    sideEffectsHandlers: sideEffects.Node[],
     onError: OnError,
 ): bc.RequiredValueHandler {
     return context.expectValue(createNodeDeserializer(
@@ -440,7 +440,7 @@ export function createDatasetDeserializer(
         null,
         dataset.root, isCompact,
         null,
-        sideEffectsAPI,
+        sideEffectsHandlers,
         onError,
         () => {
             //

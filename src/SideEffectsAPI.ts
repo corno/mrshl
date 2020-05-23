@@ -2,6 +2,11 @@ import * as bc from "bass-clarinet"
 import * as ds from "./syncAPI"
 import * as md from "./metaDataSchema"
 
+export interface Root {
+    node: Node
+    onEnd: () => void
+}
+
 export interface Dictionary {
     onDictionaryEntry(
         entryData: bc.PropertyData,

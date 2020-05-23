@@ -9,8 +9,8 @@ export function attachSchemaDeserializer(
     parser: bc.Parser,
     onSchemaError: (message: string, range: bc.Range) => void,
     _onValidationError: (message: string, range: bc.Range, severity: DiagnosticSeverity) => void
-) {
-    return p.wrapUnsafeFunction<SchemaAndSideEffects, null>((onPromiseFail, onSuccess) => {
+): p.IUnsafePromise<SchemaAndSideEffects, null> {
+    return p.wrapUnsafeFunction((onPromiseFail, onSuccess) => {
         let foundError = false
         function onSchemaSchemaError(message: string, range: bc.Range) {
             onSchemaError(message, range)

@@ -74,7 +74,15 @@ function createNoOperationObjectHandler(_beginRange: bc.Range): bc.ObjectHandler
 class NOPSideEffects implements
     sideEffects.Node,
     sideEffects.List,
-    sideEffects.Dictionary {
+    sideEffects.Dictionary,
+    sideEffects.Root {
+    node: sideEffects.Node
+    constructor() {
+        this.node = this
+    }
+    onEnd() {
+        //
+    }
     onArrayTypeClose() {
         //
     }
@@ -131,7 +139,7 @@ class NOPSideEffects implements
     }
 }
 
-export function createNOPSideEffects(): sideEffects.Node {
+export function createNOPSideEffects(): sideEffects.Root {
     return new NOPSideEffects()
 }
 
@@ -146,7 +154,7 @@ export function deserializeDataset(
     ) => p.IUnsafePromise<SchemaAndSideEffects, string>,
     onError: (source: string, message: string, range: bc.Range | null) => void,
     onWarning: (source: string, message: string, range: bc.Range | null) => void,
-    sideEffectsHandlers: sideEffects.Node[],
+    sideEffectsHandlers: sideEffects.Root[],
 ): p.IUnsafePromise<IDataset, string> {
     return p.wrapUnsafeFunction((onPromiseFail, onResult) => {
         const parser = new bc.Parser(
@@ -171,14 +179,16 @@ export function deserializeDataset(
                     context,
                     dataset.sync,
                     isCompact,
-                    sideEffectsHandlers,
+                    sideEffectsHandlers.map(h => h.node),
                     (message, range) => onError("deserializer", message, range),
                 ),
                 error => {
                     onError("X", error.rangeLessMessage, error.range)
                 },
                 () => {
-                    //
+                    sideEffectsHandlers.forEach(h => {
+                        h.onEnd()
+                    })
                 }
             ))
             parser.ondata.subscribe({

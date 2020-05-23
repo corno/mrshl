@@ -26,7 +26,7 @@ function validateDocumentAfterExternalSchemaResolution(
 	externalSchema: p.IUnsafePromise<md.Schema, null>,
 	makeHTTPrequest: MakeHTTPrequest,
 	diagnosticCallback: DiagnosticCallback,
-	sideEffectNodes: sideEffects.Node[],
+	sideEffectHandlers: sideEffects.Root[],
 	createDataset: (schema: md.Schema) => IDataset,
 ): p.IUnsafePromise<IDataset, string> {
 
@@ -46,14 +46,14 @@ function validateDocumentAfterExternalSchemaResolution(
 		}
 	)
 
-	const allSideEffects = sideEffectNodes.slice(0)
+	const allSideEffects = sideEffectHandlers.slice(0)
 
 	return deserializeDataset(
 		documentText,
-		internalSchemaAndSideEffects => {
+		internalSchemaAndSideEffectHandlers => {
 			return externalSchema
 				.mapResult(schema => {
-					if (internalSchemaAndSideEffects !== null) {
+					if (internalSchemaAndSideEffectHandlers !== null) {
 						addDiagnostic(
 							diagnosticCallback,
 							"schema retrieval",
@@ -64,9 +64,9 @@ function validateDocumentAfterExternalSchemaResolution(
 					}
 					return p.result(createDataset(schema))
 				}).tryToCatch(() => {
-					if (internalSchemaAndSideEffects !== null) {
-						allSideEffects.push(internalSchemaAndSideEffects.sideEffects)
-						return p.success(createDataset(internalSchemaAndSideEffects.schema))
+					if (internalSchemaAndSideEffectHandlers !== null) {
+						allSideEffects.push(internalSchemaAndSideEffectHandlers.sideEffects)
+						return p.success(createDataset(internalSchemaAndSideEffectHandlers.schema))
 
 					}
 					addDiagnostic(
@@ -125,7 +125,7 @@ export function loadDocument(
 	makeHTTPRequest: MakeHTTPrequest,
 	readSchemaFile: (dir: string, schemaFileName: string) => p.IUnsafePromise<string | null, string>,
 	diagnosticCallback: DiagnosticCallback,
-	sideEffectNodes: sideEffects.Node[],
+	sideEffectHandlers: sideEffects.Root[],
 	createDataset: (schema: md.Schema) => IDataset,
 ): p.IUnsafePromise<IDataset, null> {
 
@@ -166,7 +166,7 @@ export function loadDocument(
 			p.error(null),
 			makeHTTPRequest,
 			dc,
-			sideEffectNodes,
+			sideEffectHandlers,
 			createDataset,
 		).mapError(validateThatErrorsAreFound)
 	}
@@ -192,7 +192,7 @@ export function loadDocument(
 				p.error(null),
 				makeHTTPRequest,
 				dc,
-				sideEffectNodes,
+				sideEffectHandlers,
 				createDataset,
 			).mapError(validateThatErrorsAreFound)
 		} else {
@@ -222,7 +222,7 @@ export function loadDocument(
 						p.success(schemaAndSideEffects.schema),
 						makeHTTPRequest,
 						dc,
-						sideEffectNodes.concat([schemaAndSideEffects.sideEffects]),
+						sideEffectHandlers.concat([schemaAndSideEffects.sideEffects]),
 						createDataset,
 					).mapError(validateThatErrorsAreFound)
 				}

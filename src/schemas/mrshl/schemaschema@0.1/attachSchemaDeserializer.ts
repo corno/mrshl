@@ -16,7 +16,7 @@ export function attachSchemaDeserializer(
         if (schema !== null) {
             return p.success({
                 schema: convert(schema),
-                sideEffects: new sideEffects.Node(schema["root type"].get().node, onValidationError),
+                sideEffects: new sideEffects.Root(schema, onValidationError),
             })
         } else {
             return p.error(null)

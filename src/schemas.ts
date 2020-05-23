@@ -8,7 +8,7 @@ import { DiagnosticSeverity } from "./loadDocument"
 
 export type SchemaAndSideEffects = {
     schema: md.Schema
-    sideEffects: sideEffects.Node
+    sideEffects: sideEffects.Root
 }
 
 export type AttachSchemaDeserializer = (

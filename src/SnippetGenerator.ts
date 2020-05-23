@@ -81,10 +81,20 @@ export type OnToken = (
     getSnippetsAfterToken: GetSnippets | null
 ) => void
 
-export class SnippetGenerator implements sideEffects.Node, sideEffects.Dictionary {
+class SnippetGenerator implements sideEffects.Node, sideEffects.Dictionary, sideEffects.Root {
+    public node: sideEffects.Node
     private readonly onToken: OnToken
-    constructor(onToken: OnToken) {
+    private readonly onEndCallback: () => void
+    constructor(
+        onToken: OnToken,
+        onEnd: () => void,
+    ) {
         this.onToken = onToken
+        this.node = this
+        this.onEndCallback = onEnd
+    }
+    onEnd() {
+        this.onEndCallback()
     }
     onArrayTypeClose() {
         //
@@ -263,4 +273,11 @@ export class SnippetGenerator implements sideEffects.Node, sideEffects.Dictionar
     onComponent() {
         return this
     }
+}
+
+export function createSnippetGenerator(
+    onToken: OnToken,
+    onEnd: () => void,
+    ): sideEffects.Root {
+    return new SnippetGenerator(onToken, onEnd)
 }
