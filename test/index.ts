@@ -169,7 +169,7 @@ describe("main", () => {
                 // (warningMessage, range) => {
                 //     actualIssues.push([warningMessage, "warning", range.start.line, range.start.column, range.end.line, range.end.column])
                 // },
-                [astn.createSnippetGenerator(
+                [astn.createSnippetsGenerator(
                     (range, getIntraSnippets, getSnippetsAfter) => {
                         actualSnippets[astn.printRange(range)] = {
                             inToken: getIntraSnippets === null ? null : getIntraSnippets(),

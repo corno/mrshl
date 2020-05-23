@@ -8,7 +8,7 @@ function assertUnreachable<RT>(_x: never): RT {
     throw new Error("Unreachable")
 }
 
-export type GetSnippets = () => string[]
+type GetSnippets = () => string[]
 
 function createPropertySnippet(prop: md.Property): fp.InlinePart {
     switch (prop.type[0]) {
@@ -275,7 +275,7 @@ class SnippetGenerator implements sideEffects.Node, sideEffects.Dictionary, side
     }
 }
 
-export function createSnippetGenerator(
+export function createSnippetsGenerator(
     onToken: OnToken,
     onEnd: () => void,
     ): sideEffects.Root {
