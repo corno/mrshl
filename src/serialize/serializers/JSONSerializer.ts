@@ -24,7 +24,7 @@ class DummySerializer implements serializers.ValueSerializer {
     }
 }
 
-export class JSONValueSerializer implements serializers.ValueSerializer {
+class JSONValueSerializer implements serializers.ValueSerializer {
     private readonly out: serializers.StringStream
     constructor(out: serializers.StringStream) {
         this.out = out
@@ -115,7 +115,7 @@ export class JSONValueSerializer implements serializers.ValueSerializer {
     }
 }
 
-export class JSONSerializer implements serializers.RootSerializer {
+class JSONSerializer implements serializers.RootSerializer {
     public root: JSONValueSerializer
     //private readonly out: StringStream
     constructor(out: serializers.StringStream) {
@@ -128,4 +128,8 @@ export class JSONSerializer implements serializers.RootSerializer {
     public serializeSchemaReference() {
         //JSON does not know about schemas, output nothing
     }
+}
+
+export function createJSONSerializer(out: serializers.StringStream): serializers.RootSerializer {
+    return new JSONSerializer(out)
 }

@@ -350,7 +350,7 @@ export class Value implements syncAPI.Value {
     constructor(valueImp: imp.Value, definition: d.Value) {
         this.imp = valueImp
         this.comments = valueImp.comments
-        this.isQuoted = false//FIXME
+        this.isQuoted = definition.quoted
         this.definition = definition
     }
     public setValue(value: string, _onError: (message: string) => void): void {

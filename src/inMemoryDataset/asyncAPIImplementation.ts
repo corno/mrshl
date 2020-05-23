@@ -6,6 +6,8 @@ import * as asyncAPI from "../asyncAPI"
 import * as cc from "./changeControl"
 import * as d from "../types"
 import * as g from "../generics"
+import * as s from "../serialize"
+import * as syncAPI from "../syncAPI"
 import * as syncAPIImp from "./syncAPIImplementation"
 import { copyEntry } from "./copyEntry"
 import { Global } from "./Global"
@@ -13,6 +15,7 @@ import { Command, RootImp } from "./Root"
 import * as imp from "./implementation"
 import { IFocussable } from "./implementation/IFocussable"
 import { initializeNode } from "./initializeNode"
+import { createASTNSerializer } from "../serialize"
 
 function assertUnreachable<RT>(_x: never): RT {
     throw new Error("unreachable")
@@ -124,10 +127,16 @@ export class Dataset implements asyncAPI.Dataset {
     public readonly rootNode: Node
 
     private readonly imp: RootImp
+    private readonly syncDataset: syncAPI.IDataset
 
     //public readonly rootNode: Node
-    constructor(rootImp: RootImp, global: Global) {
+    constructor(
+        rootImp: RootImp,
+        global: Global,
+        syncDataset: syncAPI.IDataset
+    ) {
         this.imp = rootImp
+        this.syncDataset = syncDataset
         this.commands = new g.Dictionary({})
         this.rootNode = new Node(rootImp.rootNode, rootImp.schema["root type"].get().node, global)
         this.hasUndoActions = rootImp.global.changeController.executedChanges.hasChanges
@@ -143,9 +152,18 @@ export class Dataset implements asyncAPI.Dataset {
             }
         })
     }
-    public serialize(_callback: (data: string) => void): void {
-        throw new Error("IMPLEMENT ME")
-        //callback(s.serialize(this.imp.schemaPath, this.imp.schema.root, this.rootNode))
+    public serialize(callback: (data: string) => void): void {
+        const out: string[] = []
+
+        s.serialize(
+            this.imp.schemaPath,
+            this.syncDataset,
+            createASTNSerializer(
+                new s.StringStream(out, 0),
+            ),
+            false,
+        )
+        callback(out.join(""))
         this.imp.global.changeController.resetSerializationPosition()
     }
     public undo(): void {

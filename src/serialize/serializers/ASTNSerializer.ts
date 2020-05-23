@@ -26,7 +26,7 @@ class DummySerializer implements serializers.ValueSerializer {
     }
 }
 
-export class ASTNValueSerializer implements serializers.ValueSerializer {
+class ASTNValueSerializer implements serializers.ValueSerializer {
     private readonly out: serializers.StringStream
     constructor(out: serializers.StringStream) {
         this.out = out
@@ -50,6 +50,7 @@ export class ASTNValueSerializer implements serializers.ValueSerializer {
                 }
             }))
         })
+        this.out.newLine()
         this.out.add(`)`)
     }
     public dictionary(callback: (os: serializers.DictionarySerializer) => void) {
@@ -100,7 +101,7 @@ export class ASTNValueSerializer implements serializers.ValueSerializer {
     }
 }
 
-export class ASTNSerializer implements serializers.RootSerializer {
+class ASTNSerializer implements serializers.RootSerializer {
     public root: ASTNValueSerializer
     private readonly out: serializers.StringStream
     constructor(out: serializers.StringStream) {
@@ -108,10 +109,14 @@ export class ASTNSerializer implements serializers.RootSerializer {
         this.root = new ASTNValueSerializer(out)
     }
     public serializeSchema(_dataset: syncAPI.IDataset) {
-        this.out.add(`! "FIXME"`)
+        this.out.add(`! FIXME `)
         //serializeMetaData(dataset.schema, new ASTNValueSerializer(this.out))
     }
     public serializeSchemaReference(schemaReference: string) {
-        this.out.add(`! ${JSON.stringify(schemaReference)}`)
+        this.out.add(`! ${JSON.stringify(schemaReference)} `)
     }
+}
+
+export function createASTNSerializer(out: serializers.StringStream): serializers.RootSerializer {
+    return new ASTNSerializer(out)
 }

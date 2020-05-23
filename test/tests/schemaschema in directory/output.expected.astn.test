@@ -1,0 +1,190 @@
+! FIXME (
+	'component types': {
+		'node': (
+			'node': (
+				'properties': {
+					'properties': (
+						'type': | 'collection' (
+							'node': (
+								'properties': {
+									'name': (
+										'type': | 'value' (
+											'default value': ""
+											'type': | 'text' (
+											)
+										)
+									)
+									'type': (
+										'type': | 'state group' (
+											'default state': "value"
+											'states': {
+												'collection': (
+													'node': (
+														'properties': {
+															'node': (
+																'type': | 'component' (
+																	'type': "node"
+																)
+															)
+															'type': (
+																'type': | 'state group' (
+																	'default state': "list"
+																	'states': {
+																		'dictionary': (
+																			'node': (
+																				'properties': {
+																					'key property': (
+																						'type': | 'value' (
+																							'default value': "name"
+																							'type': | 'text' (
+																							)
+																						)
+																					)
+																				}
+																			)
+																		)
+																		'list': (
+																			'node': (
+																				'properties': {
+																				}
+																			)
+																		)
+																	}
+																)
+															)
+														}
+													)
+												)
+												'component': (
+													'node': (
+														'properties': {
+															'type': (
+																'type': | 'value' (
+																	'default value': ""
+																	'type': | 'text' (
+																	)
+																)
+															)
+														}
+													)
+												)
+												'state group': (
+													'node': (
+														'properties': {
+															'states': (
+																'type': | 'collection' (
+																	'node': (
+																		'properties': {
+																			'name': (
+																				'type': | 'value' (
+																					'default value': ""
+																					'type': | 'text' (
+																					)
+																				)
+																			)
+																			'node': (
+																				'type': | 'component' (
+																					'type': "node"
+																				)
+																			)
+																		}
+																	)
+																	'type': | 'dictionary' (
+																		'key property': "name"
+																	)
+																)
+															)
+															'default state': (
+																'type': | 'value' (
+																	'default value': ""
+																	'type': | 'text' (
+																	)
+																)
+															)
+														}
+													)
+												)
+												'value': (
+													'node': (
+														'properties': {
+															'default value': (
+																'type': | 'value' (
+																	'default value': ""
+																	'type': | 'text' (
+																	)
+																)
+															)
+															'type': (
+																'type': | 'state group' (
+																	'default state': "text"
+																	'states': {
+																		'number': (
+																			'node': (
+																				'properties': {
+																				}
+																			)
+																		)
+																		'text': (
+																			'node': (
+																				'properties': {
+																				}
+																			)
+																		)
+																	}
+																)
+															)
+														}
+													)
+												)
+											}
+										)
+									)
+								}
+							)
+							'type': | 'dictionary' (
+								'key property': "name"
+							)
+						)
+					)
+				}
+			)
+		)
+		'root': (
+			'node': (
+				'properties': {
+					'component types': (
+						'type': | 'collection' (
+							'node': (
+								'properties': {
+									'name': (
+										'type': | 'value' (
+											'default value': ""
+											'type': | 'text' (
+											)
+										)
+									)
+									'node': (
+										'type': | 'component' (
+											'type': "node"
+										)
+									)
+								}
+							)
+							'type': | 'dictionary' (
+								'key property': "name"
+							)
+						)
+					)
+					'root type': (
+						'type': | 'value' (
+							'default value': "root"
+							'type': | 'text' (
+							)
+						)
+					)
+				}
+			)
+		)
+	}
+	'root type': "root"
+)

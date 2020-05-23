@@ -1,23 +1,5 @@
-! (
-        'component types': {
-                'root': (
-                        'node': (
-                                'properties': {
-                                        'a1': (
-                                                'type': | 'value' (
-                                                        'default value': ""
-                                                        'quoted': true))
-                                        'b': (
-                                                'type': | 'value' (
-                                                        'default value': ""
-                                                        'quoted': true))
-                                        'c': (
-                                                'type': | 'value' (
-                                                        'default value': ""
-                                                        'quoted': false))
-                                }))
-        }
-        'root type': "root")(
-        'a1': ""
-        'b': "X"
-        'c': C)
+! FIXME (
+	'a1': ""
+	'b': "X"
+	'c': C
+)

@@ -38,24 +38,43 @@ type Snipppets = {
     }
 }
 
+function deepEqual(
+    testDirPath: string,
+    name: string,
+    extension: string,
+    parseExpected: (expectedString: string) => any, //eslint-disable-line
+    actual: any, //eslint-disable-line
+    actualAsString: string,
+) {
+
+    const expectedPath = path.join(testDirPath, `${name}.expected.${extension}`)
+
+    const expectedAsString = fs.readFileSync(expectedPath, { encoding: "utf-8" })
+    try {
+        chai.assert.deepEqual(actual, parseExpected(expectedAsString))
+    } catch (e) {
+        const actualPath = path.join(".", testDirPath, `${name}.expected.${extension}`)
+        console.log("AP", actualPath)
+        fs.writeFileSync(actualPath, actualAsString)
+        throw e
+    }
+}
+
 function deepEqualJSON(
     testDirPath: string,
     name: string,
     actual: any, //eslint-disable-line
 ) {
-
-    const expectedPath = path.join(testDirPath, `${name}.expected.json`)
-
-    const expectedAsString = fs.readFileSync(expectedPath, { encoding: "utf-8" })
-    try {
-        chai.assert.deepEqual(actual, JSON.parse(expectedAsString))
-    } catch (e) {
-        const actualPath = path.join(".", testDirPath, `${name}.actual.json`)
-        console.log("AP", actualPath)
-        fs.writeFileSync(actualPath, JSON.stringify(actual, undefined, "\t"))
-        throw e
-    }
+    deepEqual(
+        testDirPath,
+        name,
+        "json",
+        str => JSON.parse(str),//eslint-disable-line
+        actual,
+        JSON.stringify(actual, undefined, "\t"),
+    )
 }
+
 
 type Event = [string, string?]
 
@@ -186,14 +205,23 @@ describe("main", () => {
             ).mapResultRaw(dataset => {
                 const out: string[] = []
                 astn.serialize(
+                    "foo",
                     {
                         schema: dataset.sync.schema,
                         root: dataset.sync.root,
                     },
-                    new astn.ASTNSerializer(
+                    astn.createASTNSerializer(
                         new astn.StringStream(out, 0),
                     ),
                     false,
+                )
+                deepEqual(
+                    testDirPath,
+                    "output",
+                    "astn.test",
+                    str => str,
+                    out.join(""),
+                    out.join(""),
                 )
                 // console.log("actual>>>.")
                 // console.log(out.join("").split("\n"))

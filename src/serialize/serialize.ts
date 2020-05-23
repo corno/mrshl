@@ -91,6 +91,7 @@ function serializeNode(
 }
 
 export function serialize(
+    _schemaPath: string | null,
     dataset: syncAPI.IDataset,
     serializer: RootSerializer,
     compact: boolean,

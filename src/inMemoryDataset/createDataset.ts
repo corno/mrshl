@@ -22,9 +22,9 @@ class SyncDataset implements syncAPI.IDataset {
 
 export function createInMemoryDataset(schema: md.Schema): IDataset {
     const rootImp = new RootImp("FOOO", schema)
-
+    const syncDataset = new SyncDataset(rootImp)
     return {
-        sync: new SyncDataset(rootImp),
-        async: new asyncAPIImp.Dataset(rootImp, rootImp.global),
+        sync: syncDataset,
+        async: new asyncAPIImp.Dataset(rootImp, rootImp.global, syncDataset),
     }
 }
