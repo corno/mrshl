@@ -15,7 +15,7 @@ export function makeNativeHTTPrequest(options: HTTPOptions): p.IUnsafePromise<p.
                     res.on(
                         'data',
                         chunk => {
-                            onData(chunk, () => {
+                            onData(chunk.toString(), () => { //eslint-disable-line
                                 //
                             })
                         }

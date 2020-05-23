@@ -38,7 +38,8 @@ export function createFromURLSchemaDeserializer(
                         stream.processStream(
                             null,
                             chunk => {
-                                schemaTokenizer.write(chunk.toString(), {
+                                //console.log(chunk)
+                                schemaTokenizer.write(chunk, {
                                     pause: () => {
                                         //
                                     },
