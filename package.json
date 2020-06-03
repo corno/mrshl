@@ -27,7 +27,7 @@
   ],
   "dependencies": {
     "@types/chai-as-promised": "^7.1.2",
-    "bass-clarinet-typed": "^0.81.0",
+    "bass-clarinet-typed": "^0.81.2",
     "chai-as-promised": "^7.1.1",
     "fountain-pen": "^3.0.1"
   },

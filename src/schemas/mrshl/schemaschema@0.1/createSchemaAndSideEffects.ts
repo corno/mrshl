@@ -1,5 +1,5 @@
 import * as bc from "bass-clarinet"
-import { createDeserializer } from "./deserialize"
+import { createDeserializer } from "./createDeserializer"
 import * as t from "./types"
 import { convert } from "./convert"
 import { SchemaAndSideEffects } from "../../../schemas"

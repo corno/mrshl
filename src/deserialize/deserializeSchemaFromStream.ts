@@ -7,7 +7,7 @@ export function deserializeSchemaFromStream(
     schemaStream: p.IStream<string, null>,
     onError: (message: string, range: bc.Range) => void,
 ): p.IUnsafeValue<SchemaAndSideEffects, string> {
-    console.log("FROM STRING")
+    //console.log("FROM STRING")
     const schemaDeserializer = createSchemaDeserializer(
         onError,
     )

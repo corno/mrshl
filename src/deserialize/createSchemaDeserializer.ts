@@ -35,7 +35,7 @@ export function createSchemaDeserializer(
                         simpleValue: (range, svData) => {
                             const createSchemaFunc = schemas[svData.value]
                             if (createSchemaFunc === undefined) {
-                                console.error(`unknown schema schema '${svData.value}, no createSchemaAndSideEffects function`)
+                                console.error(`unknown schema schema '${svData.value},`)
                                 onSchemaError(`unknown schema schema ${svData.value}`, range)
                             } else {
                                 schemaProcessor = createSchemaFunc
@@ -69,8 +69,8 @@ export function createSchemaDeserializer(
             //compact = true
         },
         onHeaderEnd: (range: bc.Range): ParserEventConsumer<SchemaAndSideEffects, null> => {
-            console.log("!!!!!!!!!!!!!")
             if (!schemaDefinitionFound) {
+                //console.error("missing schema schema definition")
                 onSchemaError(`missing schema schema definition`, range)
                 return {
                     onData: () => {
@@ -103,7 +103,7 @@ export function createSchemaDeserializer(
             }
         },
     })
-    console.log("SCHEMA DESER")
+    //console.log("SCHEMA DESER")
     const schemaTok = bc.createStreamTokenizer(
         schemaParser,
         (message, range) => {

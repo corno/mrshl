@@ -6,7 +6,7 @@
 import * as chai from "chai"
 import * as fs from "fs"
 import * as path from "path"
-import * as p20 from "pareto-20"
+//import * as p20 from "pareto-20"
 import * as p from "pareto"
 import { describe } from "mocha"
 import * as astn from "../src"
@@ -253,8 +253,9 @@ export function directoryTests(): void {
 
 describe("main", () => {
     describe('functions', () => {
-        it("x", () => {
-            const parser = bc.createParser(
+        function createDummyParser() {
+
+            const parser = bc.createParser<null, null>(
                 err => {
                     console.log(err)
                 },
@@ -286,31 +287,43 @@ describe("main", () => {
             )
 
             console.log("SIMPLE TEST")
-            const st = bc.createStreamTokenizer(
+            return bc.createStreamTokenizer(
                 parser,
-                (_message, _location) => {
-                    console.log("!!!!!!")
+                (message, _location) => {
+                    console.error("error found", message)
                     //actualEvents.push(["tokenizererror", message])
                 },
             )
-            return p20.wrap.UnsafeValue(p20.createArray(['! "mrshl/schemaschema@0.1" # ()']).streamify().toUnsafeValue(
-                null,
-                data => st.onData(data),
-                (aborted, endData) => st.onEnd(aborted, endData)
-            )).convertToNativePromise(() => "error during parsing").then(() => {
+        }
+        // it("from string", () => {
+        //     const st = createDummyParser()
+        //     return p20.createArray(['! "mrshl/schemaschema@0.1" # ()']).streamify().toUnsafeValue(
+        //         null,
+        //         data => st.onData(data),
+        //         (aborted, endData) => st.onEnd(aborted, endData)
+        //     ).convertToNativePromise(() => "error during parsing").then(() => {
+        //         //
+        //     })
+        // })
+        it("from http", () => {
+            const st = createDummyParser()
+            return makeNativeHTTPrequest({
+                host: "www.astn.io",
+                path:   '/dev/schemas/mrshl/schemaschema@0.1',
+                timeout: 7000,
+            }).try(stream => {
+                return stream.toUnsafeValue<null, null>(
+                    null,
+                    data => {
+                        //console.log(data)
+                        return st.onData(data)
+                    },
+                    (aborted, endData) => st.onEnd(aborted, endData)
+                ).mapError(() => {
+                    return p.result("hmm")
+                })
+            }).convertToNativePromise(() => "error during parsing").then(() => {
                 //
-
-                // if (test.events !== undefined) {
-                //     chai.assert.deepEqual(actualEvents, test.events)
-                // }
-                // const expectedFormattedText = test.formattedText ? test.formattedText : test.text
-                // chai.assert.equal(
-                //     formattedText
-                //         .replace(/\r\n/g, "\n")
-                //         .replace(/\n\r/g, "\n")
-                //         .replace(/\r/g, "\n"),
-                //     expectedFormattedText
-                // )
             })
         })
         // it("deserializeSchemaFromString", () => {

@@ -30,7 +30,7 @@ export function createFromURLSchemaDeserializer(
             return p.result(errorMessage)
         }).try(
             stream => {
-                console.log("FROM URL")
+                //console.log("FROM URL")
                 const schemaTok = createSchemaDeserializer(
                     message => {
                         //do nothing with errors

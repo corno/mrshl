@@ -9,23 +9,35 @@ export function makeNativeHTTPrequest(
 ): p.IUnsafeValue<p.IStream<string, null>, string> {
     return p20.wrapUnsafeFunction((onError, onSucces) => {
 
-        const request = http.request(options, res => {
-            if (res.statusCode !== 200) {
-                onError(`'${options.path}' not found`)
-                return
+        const request = http.request(
+            {
+                host: options.host,
+                path: options.path,
+                timeout: options.timeout,
+            },
+            res => {
+                if (res.statusCode !== 200) {
+                    onError(`'${options.path}' not found`)
+                    return
+                }
+                onSucces(p20.createStream((_limiter, consumer) => {
+                    res.on(
+                        'data',
+                        chunk => {
+                            res.pause()
+                            consumer.onData(chunk.toString()).handle(
+                                _abortRequested => {
+                                    res.resume()
+                                }
+                            )
+                        }
+                    )
+                    res.on('end', () => {
+                        consumer.onEnd(false, null)
+                    })
+                }))
             }
-            onSucces(p20.createStream((_limiter, consumer) => {
-                res.on(
-                    'data',
-                    chunk => {
-                        consumer.onData(chunk.toString())
-                    }
-                )
-                res.on('end', () => {
-                    consumer.onEnd(false, null)
-                })
-            }))
-        })
+        )
         request.on('timeout', () => {
             console.error("timeout")
             onError("timeout")

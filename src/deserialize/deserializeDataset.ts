@@ -303,7 +303,7 @@ export function deserializeDataset(
         foundSchemaErrors = true
     }
 
-    console.log("DATASET DESER")
+    //console.log("DATASET DESER")
 
     const st = bc.createStreamTokenizer(
         parser,
