@@ -1,18 +1,42 @@
 import * as bc from "bass-clarinet"
-import * as p from "pareto-20"
 import { createDeserializer } from "./deserialize"
-import { SchemaAndSideEffects } from "../../schemas"
-import { createNOPSideEffects } from "../../deserialize"
+import * as t from "./types"
+import { convert } from "./convert"
+import { SchemaAndSideEffects } from "../../../schemas"
+import * as p from "pareto-20"
+import { DiagnosticSeverity } from "../../../loadDocument"
+import * as sideEffects from "./sideEffects"
 
 export function createSchemaAndSideEffects(
     onSchemaError: (message: string, range: bc.Range) => void,
 ): bc.ParserEventConsumer<SchemaAndSideEffects, null> {
+    const isb = createInternalSchemaBuilder(onSchemaError)
+    return {
+        onData: (data: bc.ParserEvent): p.IValue<boolean> => {
+            return isb.onData(data)
+        },
+        onEnd: (aborted: boolean, location: bc.Location): p.IUnsafeValue<SchemaAndSideEffects, null> => {
+            return isb.onEnd(aborted, location).mapResult(schema => {
+                return p.result({
+                    schema: convert(schema),
+                    createSideEffects: (
+                        onValidationError: (message: string, range: bc.Range, severity: DiagnosticSeverity) => void,
+                    ) => new sideEffects.Root(schema, onValidationError),
+                })
+            })
+        },
+    }
+}
+
+export function createInternalSchemaBuilder(
+    onSchemaError: (message: string, range: bc.Range) => void,
+): bc.ParserEventConsumer<t.Schema, null> {
     let foundError = false
     function onSchemaSchemaError(message: string, range: bc.Range) {
         onSchemaError(message, range)
         foundError = true
     }
-    let metadata: null | SchemaAndSideEffects = null
+    let metaData: null | t.Schema = null
 
     return bc.createStackedDataSubscriber(
         {
@@ -26,16 +50,11 @@ export function createSchemaAndSideEffects(
                         onSchemaSchemaError(errorMessage, range)
                     },
                     md2 => {
-                        metadata = md2 === null
-                            ? null
-                            : {
-                                schema: md2,
-                                createSideEffects: () => createNOPSideEffects(),
-                            }
+                        metaData = md2
                     }
                 ),
-                simpleValue: (range: bc.Range, _data: bc.SimpleValueData): p.IValue<boolean> => {
-                    onSchemaSchemaError("unexpected simple value as schema", range)
+                simpleValue: (range: bc.Range): p.IValue<boolean> => {
+                    onSchemaSchemaError("unexpected string as schema", range)
                     return p.result(false)
                 },
                 taggedUnion: (range: bc.Range): bc.TaggedUnionHandler => {
@@ -55,16 +74,15 @@ export function createSchemaAndSideEffects(
         error => {
             onSchemaSchemaError(error.rangeLessMessage, error.range)
         },
-        () => {
-            if (metadata === null) {
+        (): p.IUnsafeValue<t.Schema, null> => {
+            if (metaData === null) {
                 if (!foundError) {
                     throw new Error("UNEXPECTED: NO SCHEMA AND NO ERRORS")
                 }
-                return p.error<SchemaAndSideEffects, null>(null)
+                return p.error(null)
             } else {
-                return p.success(metadata)
+                return p.success(metaData)
             }
         }
     )
-
 }

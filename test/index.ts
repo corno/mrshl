@@ -6,12 +6,15 @@
 import * as chai from "chai"
 import * as fs from "fs"
 import * as path from "path"
+import * as p20 from "pareto-20"
+import * as p from "pareto"
 import { describe } from "mocha"
 import * as astn from "../src"
+import * as bc from "bass-clarinet-typed"
 import * as async from "../src/asyncAPI"
-import * as p from "pareto-20"
-import { readSchemaFileFromFileSystem } from "../src/readSchemaFileFromFileSystem"
+import { readFileFromFileSystem } from "../src/readFileFromFileSystem"
 import { makeNativeHTTPrequest } from "../src/makeNativeHTTPrequest"
+//import { deserializeSchemaFromString } from "../src"
 
 function assertUnreachable<RT>(_x: never): RT {
     throw new Error("unreachable")
@@ -54,7 +57,6 @@ function deepEqual(
         chai.assert.deepEqual(actual, parseExpected(expectedAsString))
     } catch (e) {
         const actualPath = path.join(".", testDirPath, `${name}.expected.${extension}`)
-        console.log("AP", actualPath)
         fs.writeFileSync(actualPath, actualAsString)
         throw e
     }
@@ -119,136 +121,216 @@ function subscribeToNode(node: async.Node, actualEvents: Event[]) {
     })
 }
 
-describe("main", () => {
-    fs.readdirSync(testsDir).forEach(dir => {
-        //console.log("test:", dir)
-        const testDirPath = path.join(testsDir, dir)
-        const serializedDatasetPath = path.join(testDirPath, "data.astn.test")
-        //const expectedOutputPath = path.join(testDirPath, "expected.astn.test")
-        const expectedIssues = JSON.parse( //eslint-disable-line @typescript-eslint/no-unsafe-assignment
-            fs.readFileSync(
-                path.join(testDirPath, "issues.json"),
-                { encoding: "utf-8" }
+export function directoryTests(): void {
+
+    describe("'tests' directory", () => {
+        fs.readdirSync(testsDir).forEach(dir => {
+            //console.log("test:", dir)
+            const testDirPath = path.join(testsDir, dir)
+            const serializedDatasetPath = path.join(testDirPath, "data.astn.test")
+            //const expectedOutputPath = path.join(testDirPath, "expected.astn.test")
+            const expectedIssues: Issues = JSON.parse( //eslint-disable-line @typescript-eslint/no-unsafe-assignment
+                fs.readFileSync(
+                    path.join(testDirPath, "issues.json"),
+                    { encoding: "utf-8" }
+                )
             )
-        )
 
-        const actualIssues: Issues = []
+            const actualIssues: Issues = []
 
-        const actualSnippets: Snipppets = {}
+            const actualSnippets: Snipppets = {}
 
-        // const schemaReferenceResolver = (reference: string) => {
-        //     const schemasDir = "./test/schemas"
-        //     return astn.deserializeSchemaFromString(
-        //         fs.readFileSync(path.join(schemasDir, reference + ".astn-schema"), { encoding: "utf-8" }),
-        //         (errorMessage, range) => {
-        //             actualIssues.push([errorMessage, "error", range.start.line, range.start.column, range.end.line, range.end.column])
-        //         },
-        //     )
-        // }
+            // const schemaReferenceResolver = (reference: string) => {
+            //     const schemasDir = "./test/schemas"
+            //     return astn.deserializeSchemaFromString(
+            //         fs.readFileSync(path.join(schemasDir, reference + ".astn-schema"), { encoding: "utf-8" }),
+            //         (errorMessage, range) => {
+            //             actualIssues.push([errorMessage, "error", range.start.line, range.start.column, range.end.line, range.end.column])
+            //         },
+            //     )
+            // }
 
-        function myFunc(): p.ISafePromise<void> {
+            function myFunc(): p.IValue<void> {
 
-            const serializedDataset = fs.readFileSync(serializedDatasetPath, { encoding: "utf-8" })
+                const serializedDataset = fs.readFileSync(serializedDatasetPath, { encoding: "utf-8" })
+                return astn.loadDocument(
+                    serializedDataset,
+                    serializedDatasetPath,
+                    makeNativeHTTPrequest,
+                    readFileFromFileSystem,
+                    diagnostic => {
+                        if (diagnostic.range !== null) {
 
+                            actualIssues.push([
+                                diagnostic.source,
+                                diagnostic.severity === astn.DiagnosticSeverity.error ? "error" : "warning",
+                                diagnostic.message,
+                                diagnostic.range.start.line,
+                                diagnostic.range.start.column,
+                                diagnostic.range.end.line,
+                                diagnostic.range.end.column,
+                            ])
+                        } else {
 
-            return astn.loadDocument(
-                serializedDataset,
-                serializedDatasetPath,
-                makeNativeHTTPrequest,
-                readSchemaFileFromFileSystem,
-                diagnostic => {
-                    if (diagnostic.range !== null) {
-
-                        actualIssues.push([
-                            diagnostic.source,
-                            diagnostic.severity === astn.DiagnosticSeverity.error ? "error" : "warning",
-                            diagnostic.message,
-                            diagnostic.range.start.line,
-                            diagnostic.range.start.column,
-                            diagnostic.range.end.line,
-                            diagnostic.range.end.column,
-                        ])
-                    } else {
-
-                        actualIssues.push([
-                            diagnostic.source,
-                            diagnostic.severity === astn.DiagnosticSeverity.error ? "error" : "warning",
-                            diagnostic.message,
-                            null,
-                            null,
-                            null,
-                            null,
-                        ])
-                    }
-
-                },
-                // (errorMessage, range) => {
-                //     actualIssues.push([errorMessage, "error", range.start.line, range.start.column, range.end.line, range.end.column])
-                // },
-                // (warningMessage, range) => {
-                //     actualIssues.push([warningMessage, "warning", range.start.line, range.start.column, range.end.line, range.end.column])
-                // },
-                [astn.createSnippetsGenerator(
-                    (range, getIntraSnippets, getSnippetsAfter) => {
-                        actualSnippets[astn.printRange(range)] = {
-                            inToken: getIntraSnippets === null ? null : getIntraSnippets(),
-                            afterToken: getSnippetsAfter === null ? null : getSnippetsAfter(),
+                            actualIssues.push([
+                                diagnostic.source,
+                                diagnostic.severity === astn.DiagnosticSeverity.error ? "error" : "warning",
+                                diagnostic.message,
+                                null,
+                                null,
+                                null,
+                                null,
+                            ])
                         }
+
                     },
-                    () => {
-                        //
-                    },
-                )],
-                schema => {
-                    return astn.createInMemoryDataset(schema)
-                }
-            ).mapResultRaw(dataset => {
-                const out: string[] = []
-                astn.serialize(
-                    "foo",
-                    {
-                        schema: dataset.sync.schema,
-                        root: dataset.sync.root,
-                    },
-                    astn.createASTNSerializer(
-                        new astn.StringStream(out, 0),
-                    ),
-                    false,
-                )
-                deepEqual(
-                    testDirPath,
-                    "output",
-                    "astn.test",
-                    str => str,
-                    out.join(""),
-                    out.join(""),
-                )
-                // console.log("actual>>>.")
-                // console.log(out.join("").split("\n"))
-                // console.log("expected>>>.")
-                // console.log(expectedOutput.split("\n"))
-                // chai.assert.deepEqual(out.join("").split("\n"), expectedOutput.split("\n"))
-
-                deepEqualJSON(testDirPath, "snippets", actualSnippets)
-
-                const actualEvents: Event[] = []
-                subscribeToNode(dataset.async.rootNode, actualEvents)
-                deepEqualJSON(testDirPath, "events", actualEvents)
-
-
-            }).catch(
-                _e => {
-                    if (actualIssues.length === 0) {
-                        throw new Error("ERROR FOUND, BUT NOTHING WAS REPORTED")
+                    // (errorMessage, range) => {
+                    //     actualIssues.push([errorMessage, "error", range.start.line, range.start.column, range.end.line, range.end.column])
+                    // },
+                    // (warningMessage, range) => {
+                    //     actualIssues.push([warningMessage, "warning", range.start.line, range.start.column, range.end.line, range.end.column])
+                    // },
+                    [astn.createSnippetsGenerator(
+                        (range, getIntraSnippets, getSnippetsAfter) => {
+                            actualSnippets[astn.printRange(range)] = {
+                                inToken: getIntraSnippets === null ? null : getIntraSnippets(),
+                                afterToken: getSnippetsAfter === null ? null : getSnippetsAfter(),
+                            }
+                        },
+                        () => {
+                            //
+                        },
+                    )],
+                    schema => {
+                        return astn.createInMemoryDataset(schema)
                     }
-                }
-            )
+                ).mapResultRaw(dataset => {
+                    const out: string[] = []
+                    astn.serialize(
+                        "FIXME SCHEMAPATH",
+                        {
+                            schema: dataset.sync.schema,
+                            root: dataset.sync.root,
+                        },
+                        astn.createASTNSerializer(
+                            new astn.StringStream(out, 0),
+                        ),
+                        false,
+                    )
+                    deepEqual(
+                        testDirPath,
+                        "output",
+                        "astn.test",
+                        str => str,
+                        out.join(""),
+                        out.join(""),
+                    )
 
-        }
-        it(dir, async () => {
-            return myFunc().convertToNativePromise().then(() => {
-                chai.assert.deepEqual(actualIssues, expectedIssues)
+                    deepEqualJSON(testDirPath, "snippets", actualSnippets)
+
+                    const actualEvents: Event[] = []
+                    subscribeToNode(dataset.async.rootNode, actualEvents)
+                    deepEqualJSON(testDirPath, "events", actualEvents)
+
+
+                }).catch(
+                    _e => {
+                        if (actualIssues.length === 0) {
+                            throw new Error("ERROR FOUND, BUT NOTHING WAS REPORTED")
+                        }
+                    }
+                )
+            }
+            it(dir, async () => {
+                return myFunc().convertToNativePromise(
+                ).then(() => {
+                    chai.assert.deepEqual(actualIssues, expectedIssues)
+                })
             })
         })
     })
+}
+
+describe("main", () => {
+    describe('functions', () => {
+        it("x", () => {
+            const parser = bc.createParser(
+                err => {
+                    console.log(err)
+                },
+                {
+                    onHeaderStart: () => {
+                        return {
+                            onData: () => {
+                                return p.result(false)
+                            },
+                            onEnd: () => {
+                                return p.success<null, null>(null)
+                            },
+                        }
+                    },
+                    onCompact: () => {
+                        //
+                    },
+                    onHeaderEnd: () => {
+                        return {
+                            onData: () => {
+                                return p.result(false)
+                            },
+                            onEnd: () => {
+                                return p.success(null)
+                            },
+                        }
+                    },
+                }
+            )
+
+            console.log("SIMPLE TEST")
+            const st = bc.createStreamTokenizer(
+                parser,
+                (_message, _location) => {
+                    console.log("!!!!!!")
+                    //actualEvents.push(["tokenizererror", message])
+                },
+            )
+            return p20.wrap.UnsafeValue(p20.createArray(['! "mrshl/schemaschema@0.1" # ()']).streamify().toUnsafeValue(
+                null,
+                data => st.onData(data),
+                (aborted, endData) => st.onEnd(aborted, endData)
+            )).convertToNativePromise(() => "error during parsing").then(() => {
+                //
+
+                // if (test.events !== undefined) {
+                //     chai.assert.deepEqual(actualEvents, test.events)
+                // }
+                // const expectedFormattedText = test.formattedText ? test.formattedText : test.text
+                // chai.assert.equal(
+                //     formattedText
+                //         .replace(/\r\n/g, "\n")
+                //         .replace(/\n\r/g, "\n")
+                //         .replace(/\r/g, "\n"),
+                //     expectedFormattedText
+                // )
+            })
+        })
+        // it("deserializeSchemaFromString", () => {
+        //     return deserializeSchemaFromString(
+        //         '! "mrshl/schemaschema@0.1" # ()',
+        //         schemaErrorMessage => {
+        //             console.log("SEM", schemaErrorMessage)
+        //         },
+        //     ).mapError(e => {
+        //         console.log("!!!!!!", e)
+        //         return p.result(e)
+        //     }).convertToNativePromise().then(
+        //         () => {
+        //             //
+        //         },
+        //         e => {
+        //             chai.assert.fail(e)
+        //         }
+        //     )
+        // })
+    })
+    directoryTests()
 })

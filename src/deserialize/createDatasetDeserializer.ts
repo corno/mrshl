@@ -1,3 +1,4 @@
+import * as p from "pareto"
 import * as bc from "bass-clarinet-typed"
 import * as md from "../metaDataSchema"
 import * as ds from "../syncAPI"
@@ -29,11 +30,11 @@ function createPropertyDeserializer(
                     let hasEntries = false
                     let dictionarySideEffects: null | sideEffects.Dictionary[] = null
                     return context.expectValue(context.expectDictionary(
-                        (key, propertyData, preData) => {
+                        (key, range, preData) => {
                             hasEntries = true
                             const entry = collBuilder.createEntry()
                             //const entry = collBuilder.createEntry(errorMessage => onError(errorMessage, propertyData.keyRange))
-                            entry.node.getValue($$["key property"].name).setValue(key, errorMessage => onError(errorMessage, propertyData.keyRange))
+                            entry.node.getValue($$["key property"].name).setValue(key, errorMessage => onError(errorMessage, range))
                             entry.comments.setComments(preData.comments.map(c => c.text))
 
                             if (dictionarySideEffects === null) {
@@ -41,7 +42,7 @@ function createPropertyDeserializer(
                             }
                             const propertySideEffects = dictionarySideEffects.map(s => {
                                 return s.onDictionaryEntry(
-                                    propertyData,
+                                    range,
                                     $$.node,
                                     $$["key property"].get(),
                                     entry
@@ -61,17 +62,17 @@ function createPropertyDeserializer(
                                 },
                             ))
                         },
-                        beginData => {
+                        (range, beginData) => {
                             dictionarySideEffects = sideEffectsAPIs.map(s => {
-                                return s.onDictionaryOpen(propKey, beginData)
+                                return s.onDictionaryOpen(propKey, range, beginData)
                             })
                         },
-                        endData => {
+                        (endRange, endData) => {
                             if (dictionarySideEffects === null) {
                                 throw new Error("UNEXPECTED")
                             }
                             dictionarySideEffects.forEach(s => {
-                                s.onDictionaryClose(endData)
+                                s.onDictionaryClose(endRange, endData)
                             })
                             if (hasEntries) {
                                 flagIsDirty()
@@ -112,12 +113,12 @@ function createPropertyDeserializer(
                                 },
                             )
                         },
-                        beginData => {
+                        (beginRange, beginData) => {
                             listSideEffects = sideEffectsAPIs.map(s => {
-                                return s.onListOpen(propKey, beginData)
+                                return s.onListOpen(propKey, beginRange, beginData)
                             })
                         },
-                        endData => {
+                        (endRange, endData) => {
                             if (hasEntries) {
                                 flagIsDirty()
                             }
@@ -125,7 +126,7 @@ function createPropertyDeserializer(
                                 throw new Error("UNEXPECTED")
                             }
                             listSideEffects.forEach(s => {
-                                s.onListClose(endData)
+                                s.onListClose(endRange, endData)
                             })
                         },
                     ))
@@ -155,19 +156,20 @@ function createPropertyDeserializer(
             const $ = propDefinition.type[1]
             return context.expectValue(context.expectTaggedUnion(
                 $.states.mapUnsorted((stateDef, stateName) => {
-                    return (tuData, tuPreData, optionData, optionPreData) => {
+                    return (tuRange, tuPreData, optionRange, optionPreData) => {
                         const stateSideEffects = sideEffectsAPIs.map(s => {
                             return s.onState(
                                 propKey,
                                 stateName,
-                                tuData,
+                                tuRange,
                                 tuPreData,
+                                optionRange,
                                 optionPreData
                             )
                         })
                         const stateGroup = nodeBuilder.getStateGroup(propKey)
                         stateGroup.comments.setComments(tuPreData.comments.map(c => c.text))
-                        const state = stateGroup.setState(stateName, errorMessage => onError(errorMessage, optionData.range))
+                        const state = stateGroup.setState(stateName, errorMessage => onError(errorMessage, optionRange))
                         state.comments.setComments(optionPreData.comments.map(c => c.text))
                         if ($["default state"].get() !== stateDef) {
                             flagIsDirty()
@@ -201,27 +203,29 @@ function createPropertyDeserializer(
         }
         case "value": {
             const $ = propDefinition.type[1]
-            return context.expectValue(context.expectSimpleValue((value, svData, preData) => {
+            return context.expectValue(context.expectSimpleValue((range, data, preData) => {
                 const valueBuilder = nodeBuilder.getValue(propKey)
-                if (value !== $["default value"]) {
+                if (data.value !== $["default value"]) {
                     flagIsDirty()
                 }
-                valueBuilder.setValue(value, errorMessage => onError(errorMessage, svData.range))
-                if (svData.quote !== null) {
+                valueBuilder.setValue(data.value, errorMessage => onError(errorMessage, range))
+                if (data.quote !== null) {
                     if (!$.quoted) {
-                        onError(`value '${value}' must be unquoted`, svData.range)
+                        onError(`value '${data.value}' must be unquoted`, range)
                     }
                 } else {
                     if ($.quoted) {
-                        onError(`value '${value}' must be quoted`, svData.range)
+                        onError(`value '${data.value}' must be quoted`, range)
                     }
 
                 }
                 //valueBuilder.setValue(value, svData.quote !== null, svData.range, comments)
                 valueBuilder.comments.setComments(preData.comments.map(c => c.text))
+
                 sideEffectsAPIs.forEach(s => {
-                    s.onValue(propKey, svData, valueBuilder, $)
+                    s.onValue(propKey, valueBuilder, range, data, $)
                 })
+                return p.result(false)
             }))
         }
         default:
@@ -318,14 +322,14 @@ function createNodeDeserializer(
         })
         return context.expectArrayType(
             expectedElements,
-            startData => {
+            (startRange, startData) => {
                 sideEffectsAPI.forEach(s => {
-                    s.onArrayTypeOpen(startData)
+                    s.onArrayTypeOpen(startRange, startData)
                 })
             },
-            endData => {
+            (endRange, endData) => {
                 sideEffectsAPI.forEach(s => {
-                    s.onArrayTypeClose(endData)
+                    s.onArrayTypeClose(endRange, endData)
                 })
             }
         )
@@ -343,16 +347,16 @@ function createNodeDeserializer(
                 return
             }
             expectedProperties[propKey] = {
-                onExists: propertyData => {
+                onExists: range => {
                     const processedProperty = {
-                        range: propertyData.keyRange,
+                        range: range,
                         isDirty: false,
                     }
                     processedProperties[propKey] = processedProperty
                     sideEffectsAPI.forEach(s => {
                         s.onProperty(
-                            propertyData,
                             propKey,
+                            range,
                             propDefinition,
                             nodeBuilder,
                         )
@@ -370,12 +374,12 @@ function createNodeDeserializer(
                         }
                     )
                 },
-                onNotExists: beginData => {
+                onNotExists: beginRange => {
                     defaultInitializeProperty(
                         propDefinition,
                         propKey,
                         nodeBuilder,
-                        beginData.range,
+                        beginRange,
                         onError,
                     )
                 },
@@ -383,17 +387,17 @@ function createNodeDeserializer(
         })
         return context.expectType(
             expectedProperties,
-            openData => {
+            range => {
                 sideEffectsAPI.forEach(s => {
                     s.onTypeOpen(
-                        openData.range,
+                        range,
                         nodeDefinition,
                         keyPropertyDefinition,
                         nodeBuilder,
                     )
                 })
             },
-            (_hasErrors, endData) => {
+            (_hasErrors, endRange) => {
                 let hasDirtyProperties = false
                 nodeDefinition.properties.forEach((_prop, propKey) => {
                     const processedProperty = processedProperties[propKey]
@@ -409,7 +413,7 @@ function createNodeDeserializer(
                     flagIsDirty()
                 }
                 sideEffectsAPI.forEach(s => {
-                    s.onTypeClose(endData.range)
+                    s.onTypeClose(endRange)
                 })
             },
             (key, metaData, preData) => {

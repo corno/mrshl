@@ -106,17 +106,16 @@ class SnippetGenerator implements sideEffects.Node, sideEffects.Dictionary, side
         //
     }
     onUnexpectedDictionaryEntry(
-        _entryData: bc.PropertyData,
     ) {
         //
     }
     onDictionaryEntry(
-        entryData: bc.PropertyData,
+        range: bc.Range,
         nodeDefinition: md.Node,
         keyPropertyDefinition: md.Property,
     ) {
         this.onToken(
-            entryData.keyRange,
+            range,
             null,
             () => {
                 const out: string[] = []
@@ -161,13 +160,13 @@ class SnippetGenerator implements sideEffects.Node, sideEffects.Dictionary, side
         //
     }
     onProperty(
-        propertyData: bc.PropertyData,
         _propKey: string,
+        propRange: bc.Range,
         propDefinition: md.Property,
         _nodeBuilder: syncAPI.Node,
     ) {
         this.onToken(
-            propertyData.keyRange,
+            propRange,
             null,
             () => {
                 const out: string[] = []
@@ -195,9 +194,14 @@ class SnippetGenerator implements sideEffects.Node, sideEffects.Dictionary, side
             },
         )
     }
-    onUnexpectedProperty(_key: string, metaData: bc.PropertyData, _preData: bc.PreData, expectedProperties: string[]) {
+    onUnexpectedProperty(
+        _key: string,
+        range: bc.Range,
+        _preData: bc.PreData,
+        expectedProperties: string[]
+    ) {
         this.onToken(
-            metaData.keyRange,
+            range,
             () => {
                 return expectedProperties
             },
@@ -245,25 +249,31 @@ class SnippetGenerator implements sideEffects.Node, sideEffects.Dictionary, side
     }
     onUnexpectedState(
         _stateName: string,
-        _tuData: bc.SimpleMetaData,
-        _beginPreData: bc.PreData,
-        optionData: bc.SimpleMetaData,
+        _tuRange: bc.Range,
+        _tuPreData: bc.PreData,
+        optionRange: bc.Range,
         _optionPreData: bc.PreData,
         stateGroupDefinition: md.StateGroup
     ) {
         this.onToken(
-            optionData.range,
+            optionRange,
             () => {
                 return Object.keys(stateGroupDefinition.states.mapUnsorted(s => s))
             },
             null
         )
     }
-    onValue(_propertyName: string, data: bc.StringData, value: syncAPI.Value, definition: md.Value) {
+    onValue(
+        _valueName: string,
+        syncValue: syncAPI.Value,
+        range: bc.Range,
+        _data: bc.SimpleValueData,
+        definition: md.Value,
+    ) {
         this.onToken(
-            data.range,
+            range,
             () => {
-                return value.getSuggestions().map(sugg => {
+                return syncValue.getSuggestions().map(sugg => {
                     return definition.quoted ? `"${sugg}"` : sugg
                 })
             },
@@ -278,6 +288,6 @@ class SnippetGenerator implements sideEffects.Node, sideEffects.Dictionary, side
 export function createSnippetsGenerator(
     onToken: OnToken,
     onEnd: () => void,
-    ): sideEffects.Root {
+): sideEffects.Root {
     return new SnippetGenerator(onToken, onEnd)
 }

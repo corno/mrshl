@@ -2,6 +2,7 @@
     quote-props: "off",
 
 */
+import * as p from "pareto"
 import * as bc from "bass-clarinet-typed"
 import * as g from "../../../generics"
 import * as t from "./types"
@@ -66,16 +67,17 @@ function createExpectedNodeHandler(
                                                                                 return context.expectValue(context.expectType(
                                                                                     {
                                                                                         "key property": {
-                                                                                            onExists: () => context.expectValue(context.expectSimpleValue((sourceKeyProperty, metaData) => {
+                                                                                            onExists: () => context.expectValue(context.expectSimpleValue((range, data) => {
                                                                                                 targetKeyProperty = {
-                                                                                                    value: sourceKeyProperty,
-                                                                                                    range: metaData.range,
+                                                                                                    value: data.value,
+                                                                                                    range: range,
                                                                                                 }
+                                                                                                return p.result(false)
                                                                                             })),
-                                                                                            onNotExists: beginData => {
+                                                                                            onNotExists: range => {
                                                                                                 targetKeyProperty = {
                                                                                                     value: "name",
-                                                                                                    range: beginData.range,
+                                                                                                    range: range,
                                                                                                 }
                                                                                             },
                                                                                         },
@@ -140,16 +142,17 @@ function createExpectedNodeHandler(
                                                         return context.expectValue(context.expectType(
                                                             {
                                                                 "type": {
-                                                                    onExists: () => context.expectValue(context.expectSimpleValue((sourceComponentTypeName, metaData) => {
+                                                                    onExists: () => context.expectValue(context.expectSimpleValue((range, data) => {
                                                                         targetComponentTypeName = {
-                                                                            value: sourceComponentTypeName,
-                                                                            range: metaData.range,
+                                                                            value: data.value,
+                                                                            range: range,
                                                                         }
+                                                                        return p.result(false)
                                                                     })),
-                                                                    onNotExists: beginData => {
+                                                                    onNotExists: range => {
                                                                         targetComponentTypeName = {
                                                                             value: "",
-                                                                            range: beginData.range,
+                                                                            range: range,
                                                                         }
                                                                     },
                                                                 },
@@ -212,16 +215,17 @@ function createExpectedNodeHandler(
                                                                     },
                                                                 },
                                                                 "default state": {
-                                                                    onExists: () => context.expectValue(context.expectSimpleValue((sourceDefaultState, metaData) => {
+                                                                    onExists: () => context.expectValue(context.expectSimpleValue((range, data) => {
                                                                         targetDefaultState = {
-                                                                            value: sourceDefaultState,
-                                                                            range: metaData.range,
+                                                                            value: data.value,
+                                                                            range: range,
                                                                         }
+                                                                        return p.result(false)
                                                                     })),
-                                                                    onNotExists: beginData => {
+                                                                    onNotExists: range => {
                                                                         targetDefaultState = {
                                                                             value: "yes",
-                                                                            range: beginData.range,
+                                                                            range: range,
                                                                         }
                                                                     },
                                                                 },
@@ -278,8 +282,9 @@ function createExpectedNodeHandler(
                                                                     },
                                                                 },
                                                                 "default value": {
-                                                                    onExists: () => context.expectValue(context.expectSimpleValue((value, _metaData) => {
-                                                                        defaultValue = value
+                                                                    onExists: () => context.expectValue(context.expectSimpleValue((_range, data) => {
+                                                                        defaultValue = data.value
+                                                                        return p.result(false)
                                                                     })),
                                                                     onNotExists: () => {
                                                                         defaultValue = ""
@@ -374,7 +379,7 @@ export function createDeserializer(onError: (message: string, range: bc.Range) =
     return context.createTypeHandler(
         {
             "component types": {
-                onExists: () => context.expectValue(context.expectDictionary(
+                onExists: (): bc.RequiredValueHandler => context.expectValue(context.expectDictionary(
                     key => {
                         let targetNode: t.Node | null = null
                         return context.expectValue(context.expectType(
@@ -400,21 +405,23 @@ export function createDeserializer(onError: (message: string, range: bc.Range) =
                         ))
                     },
                 )),
-                onNotExists: () => {
+                onNotExists: (): void => {
                     //nothing to do, component types already initialized
                 },
             },
             "root type": {
-                onExists: () => context.expectValue(context.expectSimpleValue((sourceRootName, svData) => {
+                onExists: (): bc.RequiredValueHandler => context.expectValue(context.expectSimpleValue((range, svData) => {
                     rootName = {
-                        value: sourceRootName,
-                        range: svData.range,
+                        value: svData.value,
+                        range: range,
                     }
+                    return p.result(false)
+
                 })),
-                onNotExists: beginData => {
+                onNotExists: (range: bc.Range): void => {
                     rootName = {
                         value: "root",
-                        range: beginData.range,
+                        range: range,
                     }
                 },
             },

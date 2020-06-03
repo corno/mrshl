@@ -1,18 +1,16 @@
 import * as url from "url"
 import { createSchemaDeserializer } from "./createSchemaDeserializer"
-import * as p from "pareto-20"
+import * as p from "pareto"
 import { SchemaAndSideEffects } from "../schemas"
-import * as bc from "bass-clarinet-typed"
 import { HTTPOptions } from "../makeHTTPrequest"
 
 export function createFromURLSchemaDeserializer(
     host: string,
     pathStart: string,
     timeout: number,
-    makeHTTPrequest: (options: HTTPOptions) => p.IUnsafePromise<p.IStream<string>, string>,
-    onInstanceValidationError: (message: string, range: bc.Range) => void
+    makeHTTPrequest: (options: HTTPOptions) => p.IUnsafeValue<p.IStream<string, null>, string>,
 ) {
-    return (reference: string): p.IUnsafePromise<SchemaAndSideEffects, string> => {
+    return (reference: string): p.IUnsafeValue<SchemaAndSideEffects, string> => {
 
         // //const errors: string[] = []
         // function onSchemaError(_message: string, _range: bc.Range) {
@@ -26,32 +24,27 @@ export function createFromURLSchemaDeserializer(
             path: url.resolve(pathStart, encodeURI(reference)),
             timeout: timeout,
         }
-        return makeHTTPrequest(options).try(
+        return makeHTTPrequest(
+            options
+        ).mapError(errorMessage => {
+            return p.result(errorMessage)
+        }).try(
             stream => {
-                return createSchemaDeserializer(
+                console.log("FROM URL")
+                const schemaTok = createSchemaDeserializer(
                     message => {
                         //do nothing with errors
                         console.error("SCHEMA ERROR", message)
                     },
-                    onInstanceValidationError,
-                    schemaTokenizer => {
-                        stream.processStream(
-                            null,
-                            chunk => {
-                                //console.log(chunk)
-                                schemaTokenizer.write(chunk, {
-                                    pause: () => {
-                                        //
-                                    },
-                                    continue: () => {
-                                        //
-                                    },
-                                })
-                            },
-                            () => {
-                                schemaTokenizer.end()
-                            },
-                        )
+                )
+
+                return stream.toUnsafeValue(
+                    null,
+                    chunk => {
+                        return schemaTok.onData(chunk)
+                    },
+                    () => {
+                        return schemaTok.onEnd(false, null)
                     },
                 ).mapError(
                     () => {

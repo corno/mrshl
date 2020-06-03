@@ -2,7 +2,8 @@ import * as bc from "bass-clarinet-typed"
 import * as md from "../metaDataSchema"
 import * as sideEffects from "../SideEffectsAPI"
 import { createDatasetDeserializer } from "./createDatasetDeserializer"
-import * as p from "pareto-20"
+import * as p20 from "pareto-20"
+import * as p from "pareto"
 import { SchemaAndSideEffects } from "../schemas"
 import { IDataset } from "../dataset"
 
@@ -18,14 +19,15 @@ function createNoOperationPropertyHandler(
 
 function createNoOperationValueHandler(): bc.ValueHandler {
     return {
-        array: openData => {
-            return createNoOperationArrayHandler(openData.range)
+        array: range => {
+            return createNoOperationArrayHandler(range)
         },
-        object: openData => {
-            return createNoOperationObjectHandler(openData.range)
+        object: range => {
+            return createNoOperationObjectHandler(range)
         },
         simpleValue: (_value, _stringData) => {
             //registerSnippetGenerators.register(stringData.range, null, null)
+            return p.result(false)
         },
         taggedUnion: () => {
             //registerSnippetGenerators.register(tuData.startRange, null, null)
@@ -148,194 +150,171 @@ export function createNOPSideEffects(): sideEffects.Root {
  */
 export function deserializeDataset(
     serializedDataset: string,
-    onInternalSchemaResolved: (schemaAndSideEffects: SchemaAndSideEffects | null) => p.IUnsafePromise<IDataset, null>,
+    onInternalSchemaResolved: (schemaAndSideEffects: SchemaAndSideEffects | null) => IDataset | null,
     schemaReferenceResolver: (
         reference: string,
-    ) => p.IUnsafePromise<SchemaAndSideEffects, string>,
+    ) => p.IUnsafeValue<SchemaAndSideEffects, string>,
     onError: (source: string, message: string, range: bc.Range | null) => void,
     onWarning: (source: string, message: string, range: bc.Range | null) => void,
     sideEffectsHandlers: sideEffects.Root[],
-): p.IUnsafePromise<IDataset, string> {
-    return p.wrapUnsafeFunction((onPromiseFail, onResult) => {
-        const parser = new bc.Parser(
-            (message, range) => {
-                onError("parser", message, range)
-            },
+): p.IUnsafeValue<IDataset, string> {
+
+
+    function createDSD(dataset: IDataset, isCompact: boolean): bc.ParserEventConsumer<IDataset, string> {
+
+        const context = new bc.ExpectContext(
+            (message, range) => onError("expect", message, range),
+            (message, range) => onWarning("expect", message, range),
+            range => createNoOperationArrayHandler(range),
+            range => createNoOperationObjectHandler(range),
+            (_range, key, preData) => createNoOperationPropertyHandler(key, preData),
+            () => createNoOperationValueHandler(),
+            bc.Severity.warning,
+            bc.OnDuplicateEntry.ignore
         )
-        function attach(dataset: IDataset, isCompact: boolean) {
-            const context = new bc.ExpectContext(
-                (message, range) => onError("expect", message, range),
-                (message, range) => onWarning("expect", message, range),
-                openData => createNoOperationArrayHandler(openData.range),
-                openData => createNoOperationObjectHandler(openData.range),
-                (key, _propertyData, preData) => createNoOperationPropertyHandler(key, preData),
-                () => createNoOperationValueHandler(),
-                bc.Severity.warning,
-                bc.OnDuplicateEntry.ignore
-            )
-
-            parser.ondata.subscribe(bc.createStackedDataSubscriber(
-                createDatasetDeserializer(
-                    context,
-                    dataset.sync,
-                    isCompact,
-                    sideEffectsHandlers.map(h => h.node),
-                    (message, range) => onError("deserializer", message, range),
-                ),
-                error => {
-                    onError("X", error.rangeLessMessage, error.range)
-                },
-                () => {
-                    sideEffectsHandlers.forEach(h => {
-                        h.onEnd()
-                    })
-                }
-            ))
-            parser.ondata.subscribe({
-                onCloseArray: () => {
-                    //
-                },
-                onCloseObject: () => {
-                    //
-                },
-                onWhitespace: () => {
-                    //
-                },
-                onString: () => {
-                    //
-                },
-                onOpenTaggedUnion: () => {
-                    //
-                },
-                onOpenObject: () => {
-                    //
-                },
-                onOpenArray: () => {
-                    //
-                },
-                onNewLine: () => {
-                    //
-                },
-                onEnd: () => {
-                    onResult(dataset)
-                },
-                onLineComment: () => {
-                    //
-                },
-                onBlockComment: () => {
-                    //
-                },
-                onComma: () => {
-                    //
-                },
-                onColon: () => {
-                    //
-                },
-            })
-        }
-
-        let compact = false
-
-        let foundSchemaSpecification = false
-        let foundSchemaErrors = false
-        let internalSchemaAndSideEffects: SchemaAndSideEffects | null = null
-        function onSchemaError(message: string, range: bc.Range) {
-            onError("schema error", message, range)
-            foundSchemaErrors = true
-        }
-
-        parser.onschemadata.subscribe(bc.createStackedDataSubscriber(
-            {
-                valueHandler: {
-                    array: openData => {
-                        onSchemaError("unexpected array as schema", openData.range)
-                        return bc.createDummyArrayHandler()
-                    },
-                    object: md.createMetaDataDeserializer(
-                        (errorMessage, range) => {
-                            onSchemaError(errorMessage, range)
-                        },
-                        md2 => {
-                            if (md2 !== null) {
-                                internalSchemaAndSideEffects = {
-                                    schema: md2,
-                                    sideEffects: new NOPSideEffects(),
-                                }
-                            }
-                        }
-                    ),
-                    simpleValue: (schemaReference, svData) => {
-                        svData.pauser.pause()
-                        schemaReferenceResolver(schemaReference).handleUnsafePromise(
-                            errorMessage => {
-                                onSchemaError(errorMessage, svData.range)
-                                svData.pauser.continue()
-                            },
-                            dataset => {
-                                internalSchemaAndSideEffects = dataset
-                                svData.pauser.continue()
-                            },
-                        )
-                    },
-                    taggedUnion: tuData => {
-                        onSchemaError("unexpected typed union as schema", tuData.range)
-                        return {
-                            option: () => bc.createDummyRequiredValueHandler(),
-                            missingOption: () => {
-                                //
-                            },
-                        }
-                    },
-                },
-                onMissing: () => {
-                    //
-                },
-            },
+        return bc.createStackedDataSubscriber(
+            createDatasetDeserializer(
+                context,
+                dataset.sync,
+                isCompact,
+                sideEffectsHandlers.map(h => h.node),
+                (message, range) => onError("deserializer", message, range),
+            ),
             error => {
-                onSchemaError(error.rangeLessMessage, error.range)
+                onError("X", error.rangeLessMessage, error.range)
             },
             () => {
-                //ignore end commends
+                sideEffectsHandlers.forEach(h => {
+                    h.onEnd()
+                })
+                return p.success(dataset)
             }
-        ))
-        parser.onheaderdata.subscribe({
+        )
+    }
+
+    const parser = bc.createParser<IDataset, string>(
+        (message, range) => {
+            onError("parser", message, range)
+        },
+        {
             onHeaderStart: () => {
                 foundSchemaSpecification = true
+                return bc.createStackedDataSubscriber(
+                    {
+                        valueHandler: {
+                            array: range => {
+                                onSchemaError("unexpected array as schema", range)
+                                return bc.createDummyArrayHandler()
+                            },
+                            object: md.createMetaDataDeserializer(
+                                (errorMessage, range) => {
+                                    onSchemaError(errorMessage, range)
+                                },
+                                md2 => {
+                                    if (md2 !== null) {
+                                        internalSchemaAndSideEffects = {
+                                            schema: md2,
+                                            createSideEffects: () => new NOPSideEffects(),
+                                        }
+                                    }
+                                }
+                            ),
+                            simpleValue: (range, data) => {
+                                return schemaReferenceResolver(data.value).reworkAndCatch(
+                                    errorMessage => {
+                                        onSchemaError(errorMessage, range)
+                                        return p.result(false)
+                                    },
+                                    schemaAndSideEffects => {
+                                        internalSchemaAndSideEffects = schemaAndSideEffects
+                                        return p.result(false)
+
+                                    },
+                                )
+                            },
+                            taggedUnion: range => {
+                                onSchemaError("unexpected typed union as schema", range)
+                                return {
+                                    option: () => bc.createDummyRequiredValueHandler(),
+                                    missingOption: () => {
+                                        //
+                                    },
+                                }
+                            },
+                        },
+                        onMissing: () => {
+                            //
+                        },
+                    },
+                    error => {
+                        onSchemaError(error.rangeLessMessage, error.range)
+                    },
+                    () => {
+                        //ignore end commends
+                        if (foundSchemaErrors) {
+                            return p.error(null)
+                        }
+                        return p.success(null)
+                    }
+                )
             },
             onCompact: () => {
                 compact = true
             },
-            onHeaderEnd: () => {
+            onHeaderEnd: (): bc.ParserEventConsumer<IDataset, string> => {
                 if (foundSchemaSpecification && internalSchemaAndSideEffects === null && !foundSchemaErrors) {
-                    throw new Error("Unexpected: no schema errors and no schema")
+                    console.log("NO SCHEMA AND NO ERROR")
+                    //throw new Error("Unexpected: no schema errors and no schema")
                 }
                 const dataset = onInternalSchemaResolved(internalSchemaAndSideEffects)
-                dataset.handleUnsafePromise(
-                    () => {
-                        onPromiseFail("no valid schema")
-                    },
-                    dset => {
-                        if (foundSchemaSpecification) {
-                            if (internalSchemaAndSideEffects === null) {
-                                onWarning(
-                                    "structure",
-                                    "ignoring invalid internal schema",
-                                    null
-                                )
 
-                            }
-                        }
-                        attach(dset, compact)
+                if (dataset === null) {
+                    return {
+                        onData: () => {
+                            //
+                            return p.result(false)
+                        },
+                        onEnd: () => {
+                            return p.error("no valid schema")
+                        },
                     }
-                )
+                }
+                if (foundSchemaSpecification) {
+                    if (internalSchemaAndSideEffects === null) {
+                        onWarning(
+                            "structure",
+                            "ignoring invalid internal schema",
+                            null
+                        )
+
+                    }
+                }
+                return createDSD(dataset, compact)
             },
-        })
-        bc.tokenizeString(
-            parser,
-            (message, range) => {
-                onError("tokenizer", message, range)
-            },
-            serializedDataset,
-        )
-    })
+        }
+    )
+    let compact = false
+
+    let foundSchemaSpecification = false
+    let foundSchemaErrors = false
+    let internalSchemaAndSideEffects: SchemaAndSideEffects | null = null
+    function onSchemaError(message: string, range: bc.Range) {
+        onError("schema error", message, range)
+        foundSchemaErrors = true
+    }
+
+    console.log("DATASET DESER")
+
+    const st = bc.createStreamTokenizer(
+        parser,
+        (message, range) => {
+            onError("tokenizer", message, range)
+        },
+    )
+
+    return p20.createArray([serializedDataset]).streamify().toUnsafeValue(
+        null,
+        data => st.onData(data),
+        (aborted, endData) => st.onEnd(aborted, endData)
+    )
 }

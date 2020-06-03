@@ -1,8 +1,8 @@
 import * as bc from "bass-clarinet"
 import * as t from "./types"
-import * as ds from "../../../syncAPI"
+import * as syncAPI from "../../../syncAPI"
 import * as sideEffects from "../../../SideEffectsAPI"
-import { StringData } from "bass-clarinet"
+import * as md from "../../../metaDataSchema"
 import { DiagnosticSeverity } from "../../../loadDocument"
 
 export * from "./types"
@@ -137,8 +137,14 @@ class Node implements sideEffects.Node {
     onUnexpectedState() {
         //
     }
-    onValue(name: string, data: StringData, value: ds.Value) {
-        const prop = this.definition.properties.getUnsafe(name)
+    onValue(
+        propertyName: string,
+        value: syncAPI.Value,
+        range: bc.Range,
+        data: bc.SimpleValueData,
+        _definition: md.Value
+    ) {
+        const prop = this.definition.properties.getUnsafe(propertyName)
         if (prop.type[0] !== "value") {
             throw new Error("unexpected")
         }
@@ -148,28 +154,28 @@ class Node implements sideEffects.Node {
         switch ($.type[0]) {
             case "boolean": {
                 if (data.quote !== null) {
-                    this.onError(`expected a boolean, found a quoted string`, data.range, DiagnosticSeverity.error)
+                    this.onError(`expected a boolean, found a quoted string`, range, DiagnosticSeverity.error)
                 } else {
                     if (val !== "true" && val !== "false") {
-                        this.onError(`value '${val}' is not a boolean`, data.range, DiagnosticSeverity.error)
+                        this.onError(`value '${val}' is not a boolean`, range, DiagnosticSeverity.error)
                     }
                 }
                 break
             }
             case "number": {
                 if (data.quote !== null) {
-                    this.onError(`expected a number, found a quoted string`, data.range, DiagnosticSeverity.error)
+                    this.onError(`expected a number, found a quoted string`, range, DiagnosticSeverity.error)
                 } else {
                     //eslint-disable-next-line no-new-wrappers
                     if (isNaN(new Number(val).valueOf())) {
-                        this.onError(`value '${val}' is not a number`, data.range, DiagnosticSeverity.error)
+                        this.onError(`value '${val}' is not a number`, range, DiagnosticSeverity.error)
                     }
                 }
                 break
             }
             case "string": {
                 if (data.quote === null) {
-                    this.onError(`expected a quoted string`, data.range, DiagnosticSeverity.error)
+                    this.onError(`expected a quoted string`, range, DiagnosticSeverity.error)
                 }
                 break
             }

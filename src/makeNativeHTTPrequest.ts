@@ -1,31 +1,30 @@
 import * as http from "http"
-import * as p from "pareto-20"
+import * as p20 from "pareto-20"
+import * as p from "pareto"
 import { HTTPOptions } from "./makeHTTPrequest"
 
 
-export function makeNativeHTTPrequest(options: HTTPOptions): p.IUnsafePromise<p.IStream<string>, string> {
-    return p.wrapUnsafeFunction((onError, onSucces) => {
+export function makeNativeHTTPrequest(
+    options: HTTPOptions
+): p.IUnsafeValue<p.IStream<string, null>, string> {
+    return p20.wrapUnsafeFunction((onError, onSucces) => {
 
         const request = http.request(options, res => {
             if (res.statusCode !== 200) {
                 onError(`'${options.path}' not found`)
+                return
             }
-            const stream: p.IInStream<string> = {
-                processStream: (_limiter, onData, onEnd) => {
-                    res.on(
-                        'data',
-                        chunk => {
-                            onData(chunk.toString(), () => { //eslint-disable-line
-                                //
-                            })
-                        }
-                    )
-                    res.on('end', () => {
-                        onEnd(false)
-                    })
-                },
-            }
-            onSucces(p.wrap.Stream(stream))
+            onSucces(p20.createStream((_limiter, consumer) => {
+                res.on(
+                    'data',
+                    chunk => {
+                        consumer.onData(chunk.toString())
+                    }
+                )
+                res.on('end', () => {
+                    consumer.onEnd(false, null)
+                })
+            }))
         })
         request.on('timeout', () => {
             console.error("timeout")

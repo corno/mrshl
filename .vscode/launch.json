@@ -7,13 +7,23 @@
         {
             "type": "node",
             "request": "launch",
+            "name": "Launch Program2",
+            "program": "${workspaceFolder}/test/temp.ts",
+            "preLaunchTask": "tsc: build - tsconfig.json",
+            "outFiles": [
+                "${workspaceFolder}/dist/**/*.js"
+            ]
+        },
+        {
+            "type": "node",
+            "request": "launch",
             "name": "Launch Program",
             "skipFiles": [
                 "<node_internals>/**"
             ],
-            "program": "${workspaceFolder}\\dist\\test\\index.js",
+            "program": "${workspaceFolder}/dist/test/temp.js",
             "outFiles": [
-                "${workspaceFolder}/**/*.js"
+                "${workspaceFolder}//*.js"
             ]
         },
         {
@@ -27,7 +37,7 @@
                 "--timeout",
                 "999999",
                 "--colors",
-                "${workspaceFolder}/test/index.ts"
+                "${workspaceFolder}/dist/test"
             ],
             "internalConsoleOptions": "openOnSessionStart",
             "skipFiles": [

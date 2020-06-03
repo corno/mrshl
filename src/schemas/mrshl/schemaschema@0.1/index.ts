@@ -1,3 +1,3 @@
-export * from "./attachSchemaDeserializer"
+export * from "./createSchemaAndSideEffects"
 
 export * from "./types"

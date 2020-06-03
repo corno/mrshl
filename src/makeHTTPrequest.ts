@@ -1,4 +1,4 @@
-import * as p from "pareto-20"
+import * as p from "pareto"
 
 export type HTTPOptions = {
     host: string
@@ -6,4 +6,4 @@ export type HTTPOptions = {
     timeout: number
 }
 
-export type MakeHTTPrequest = (options: HTTPOptions) => p.IUnsafePromise<p.IStream<string>, string>
+export type MakeHTTPrequest = (options: HTTPOptions) => p.IUnsafeValue<p.IStream<string, null>, string>

@@ -1,8 +1,11 @@
 #! /usr/bin/env node
 
 import * as fs from "fs"
+import * as bc from "bass-clarinet-typed"
 import * as schemaschema01 from "../src/schemas/mrshl/schemaschema@0.1"
 import * as astn from "../src"
+import * as p from "pareto"
+import * as p20 from "pareto-20"
 //import * as pc from "pareto-compiler"
 
 function assertUnreachable(_x: never) {
@@ -30,12 +33,6 @@ if (serializedSchema === null) {
     console.error(`schema not found @ ${path}`)
     process.exit(1)
 }
-
-const parser = new astn.Parser(
-    (message, range) => {
-        console.error(message, astn.printRange(range))
-    }
-)
 
 function generateCode(node: schemaschema01.Node) {
     node.properties.forEach((p, _key) => {
@@ -95,12 +92,46 @@ function generateCode(node: schemaschema01.Node) {
     })
 }
 
-schemaschema01.attachSchemaDeserializer2(
-    parser,
+const parser = astn.createParser(
     (message, range) => {
         console.error(message, astn.printRange(range))
     },
-).handleUnsafePromise(
+    {
+        onHeaderStart: () => {
+            return {
+                onData: () => {
+                    return p.result(false)
+                },
+                onEnd: () => {
+                    return p.success(null)
+                },
+            }
+        },
+        onHeaderEnd: () => {
+            return schemaschema01.createInternalSchemaBuilder(
+                (message, range) => {
+                    console.error(message, astn.printRange(range))
+                }
+            )
+        },
+        onCompact: () => {
+            //
+        },
+    }
+)
+
+const st = bc.createStreamTokenizer(
+    parser,
+    (message, range) => {
+        console.error(message, range)
+    },
+)
+
+p20.createArray([serializedSchema]).streamify().toUnsafeValue(
+    null,
+    data => st.onData(data),
+    (aborted, endData) => st.onEnd(aborted, endData)
+).handle(
     () => {
         console.error("schema was not parsed properly")
     },
@@ -111,12 +142,4 @@ schemaschema01.attachSchemaDeserializer2(
         })
         console.error("GREAT SUCCESS")
     }
-)
-
-astn.tokenizeString(
-    parser,
-    (message, range) => {
-        console.error(message, range)
-    },
-    serializedSchema,
 )

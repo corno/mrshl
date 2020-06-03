@@ -1,6 +1,6 @@
 //export * from "../builderAPI"
 export * from "./createSchemaDeserializer"
 export * from "./createFromURLSchemaDeserializer"
-export * from "./deserializeSchemaFromString"
+export * from "./deserializeSchemaFromStream"
 export * from "./deserializeDataset"
 //export * from "./dummyBuilders"
