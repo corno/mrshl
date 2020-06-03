@@ -26,9 +26,7 @@
     "dist/*"
   ],
   "dependencies": {
-    "@types/chai-as-promised": "^7.1.2",
     "bass-clarinet-typed": "^0.82.0",
-    "chai-as-promised": "^7.1.1",
     "fountain-pen": "^3.0.1"
   },
   "devDependencies": {
