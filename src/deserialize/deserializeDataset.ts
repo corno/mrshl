@@ -263,7 +263,7 @@ export function deserializeDataset(
             },
             onHeaderEnd: (): bc.ParserEventConsumer<IDataset, string> => {
                 if (foundSchemaSpecification && internalSchemaAndSideEffects === null && !foundSchemaErrors) {
-                    console.log("NO SCHEMA AND NO ERROR")
+                    console.error("NO SCHEMA AND NO ERROR")
                     //throw new Error("Unexpected: no schema errors and no schema")
                 }
                 const dataset = onInternalSchemaResolved(internalSchemaAndSideEffects)
