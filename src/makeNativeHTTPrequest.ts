@@ -20,20 +20,37 @@ export function makeNativeHTTPrequest(
                     onError(`'${options.path}' not found`)
                     return
                 }
+                //below code is streaming but unstable
+                // onSucces(p20.createStream((_limiter, consumer) => {
+                //     res.on('data', chunk => {
+                //         res.pause()
+                //         consumer.onData(chunk.toString()).handle(
+                //             _abortRequested => {
+                //                 res.resume()
+                //             }
+                //         )
+                //     })
+                //     res.on('end', () => {
+                //         consumer.onEnd(false, null)
+                //     })
+                // }))
+
+                let complete = ""
                 onSucces(p20.createStream((_limiter, consumer) => {
                     res.on(
                         'data',
                         chunk => {
-                            res.pause()
-                            consumer.onData(chunk.toString()).handle(
-                                _abortRequested => {
-                                    res.resume()
-                                }
-                            )
+                            complete += chunk.toString()
                         }
                     )
                     res.on('end', () => {
-                        consumer.onEnd(false, null)
+
+                        consumer.onData(complete).handle(
+                            _abortRequested => {
+                                //
+                                consumer.onEnd(false, null)
+                            }
+                        )
                     })
                 }))
             }
