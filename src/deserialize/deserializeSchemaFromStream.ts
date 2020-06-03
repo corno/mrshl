@@ -14,8 +14,7 @@ export function deserializeSchemaFromStream(
 
     return schemaStream.toUnsafeValue(
         null,
-        data => schemaDeserializer.onData(data),
-        (aborted, endData) => schemaDeserializer.onEnd(aborted, endData)
+        schemaDeserializer,
     ).mapError(
         () => {
             return p.result("missing schema")

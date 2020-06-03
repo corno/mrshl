@@ -129,8 +129,7 @@ const st = bc.createStreamTokenizer(
 
 p20.createArray([serializedSchema]).streamify().toUnsafeValue(
     null,
-    data => st.onData(data),
-    (aborted, endData) => st.onEnd(aborted, endData)
+    st
 ).handle(
     () => {
         console.error("schema was not parsed properly")

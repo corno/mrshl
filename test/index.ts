@@ -314,11 +314,7 @@ describe("main", () => {
             }).try(stream => {
                 return stream.toUnsafeValue<null, null>(
                     null,
-                    data => {
-                        //console.log(data)
-                        return st.onData(data)
-                    },
-                    (aborted, endData) => st.onEnd(aborted, endData)
+                    st,
                 ).mapError(() => {
                     return p.result("hmm")
                 })

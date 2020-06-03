@@ -314,7 +314,6 @@ export function deserializeDataset(
 
     return p20.createArray([serializedDataset]).streamify().toUnsafeValue(
         null,
-        data => st.onData(data),
-        (aborted, endData) => st.onEnd(aborted, endData)
+        st,
     )
 }

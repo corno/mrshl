@@ -40,12 +40,7 @@ export function createFromURLSchemaDeserializer(
 
                 return stream.toUnsafeValue(
                     null,
-                    chunk => {
-                        return schemaTok.onData(chunk)
-                    },
-                    () => {
-                        return schemaTok.onEnd(false, null)
-                    },
+                    schemaTok,
                 ).mapError(
                     () => {
                         return p.result(`errors in schema '${host}${url.resolve(pathStart, encodeURI(reference))}'`)
