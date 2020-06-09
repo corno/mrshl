@@ -1,4 +1,4 @@
-! FIXME_SCHEMA (
+! 'mrshl/schemaschema@0.1' (
 	'component types': {
 		'node': (
 			'node': (
@@ -8,11 +8,6 @@
 							'node': (
 								'properties': {
 									'name': (
-										'type': | 'value' (
-											'default value': ""
-											'type': | 'text' (
-											)
-										)
 									)
 									'type': (
 										'type': | 'state group' (
@@ -36,18 +31,12 @@
 																					'key property': (
 																						'type': | 'value' (
 																							'default value': "name"
-																							'type': | 'text' (
-																							)
 																						)
 																					)
 																				}
 																			)
 																		)
 																		'list': (
-																			'node': (
-																				'properties': {
-																				}
-																			)
 																		)
 																	}
 																)
@@ -59,11 +48,6 @@
 													'node': (
 														'properties': {
 															'type': (
-																'type': | 'value' (
-																	'default value': ""
-																	'type': | 'text' (
-																	)
-																)
 															)
 														}
 													)
@@ -76,11 +60,6 @@
 																	'node': (
 																		'properties': {
 																			'name': (
-																				'type': | 'value' (
-																					'default value': ""
-																					'type': | 'text' (
-																					)
-																				)
 																			)
 																			'node': (
 																				'type': | 'component' (
@@ -90,16 +69,10 @@
 																		}
 																	)
 																	'type': | 'dictionary' (
-																		'key property': "name"
 																	)
 																)
 															)
 															'default state': (
-																'type': | 'value' (
-																	'default value': ""
-																	'type': | 'text' (
-																	)
-																)
 															)
 														}
 													)
@@ -108,27 +81,14 @@
 													'node': (
 														'properties': {
 															'default value': (
-																'type': | 'value' (
-																	'default value': ""
-																	'type': | 'text' (
-																	)
-																)
 															)
 															'type': (
 																'type': | 'state group' (
 																	'default state': "text"
 																	'states': {
 																		'number': (
-																			'node': (
-																				'properties': {
-																				}
-																			)
 																		)
 																		'text': (
-																			'node': (
-																				'properties': {
-																				}
-																			)
 																		)
 																	}
 																)
@@ -142,7 +102,6 @@
 								}
 							)
 							'type': | 'dictionary' (
-								'key property': "name"
 							)
 						)
 					)
@@ -157,11 +116,6 @@
 							'node': (
 								'properties': {
 									'name': (
-										'type': | 'value' (
-											'default value': ""
-											'type': | 'text' (
-											)
-										)
 									)
 									'node': (
 										'type': | 'component' (
@@ -171,20 +125,16 @@
 								}
 							)
 							'type': | 'dictionary' (
-								'key property': "name"
 							)
 						)
 					)
 					'root type': (
 						'type': | 'value' (
 							'default value': "root"
-							'type': | 'text' (
-							)
 						)
 					)
 				}
 			)
 		)
 	}
-	'root type': "root"
 )

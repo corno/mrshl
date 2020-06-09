@@ -1,11 +1,12 @@
 import * as path from "path"
-import * as md from "./metaDataSchema"
+import * as md from "./types"
 import { createFromURLSchemaDeserializer, deserializeDataset, deserializeSchemaFromStream } from "./deserialize"
 import * as sideEffects from "./SideEffectsAPI"
 import * as bc from "bass-clarinet-typed"
 import * as p from "pareto"
 import { IDataset } from "./dataset"
 import { MakeHTTPrequest } from "./makeHTTPrequest"
+import { InternalSchemaSpecificationType, InternalSchemaSpecification } from "./syncAPI"
 
 export enum DiagnosticSeverity {
 	warning,
@@ -27,7 +28,11 @@ function validateDocumentAfterExternalSchemaResolution(
 	makeHTTPrequest: MakeHTTPrequest,
 	diagnosticCallback: DiagnosticCallback,
 	sideEffectHandlers: sideEffects.Root[],
-	createDataset: (schema: md.Schema) => IDataset,
+	createDataset: (
+		schema: md.Schema,
+		internalSchemaSpecification: InternalSchemaSpecification,
+		compact: boolean,
+	) => IDataset,
 ): p.IUnsafeValue<IDataset, string> {
 	const schemaReferenceResolver = createFromURLSchemaDeserializer(
 		'www.astn.io',
@@ -49,10 +54,10 @@ function validateDocumentAfterExternalSchemaResolution(
 
 	return deserializeDataset(
 		documentText,
-		(internalSchemaAndSideEffectHandlers): IDataset | null => {
+		(internalSchema, compact): IDataset | null => {
 			if (externalSchema === null) {
-				if (internalSchemaAndSideEffectHandlers !== null) {
-					allSideEffects.push(internalSchemaAndSideEffectHandlers.createSideEffects((
+				if (internalSchema !== null) {
+					allSideEffects.push(internalSchema.schemaAndSideEffects.createSideEffects((
 						message,
 						range,
 						severity,
@@ -65,7 +70,7 @@ function validateDocumentAfterExternalSchemaResolution(
 							range,
 						)
 					}))
-					return createDataset(internalSchemaAndSideEffectHandlers.schema)
+					return createDataset(internalSchema.schemaAndSideEffects.schema, internalSchema.specification, compact)
 
 				}
 				addDiagnostic(
@@ -77,7 +82,7 @@ function validateDocumentAfterExternalSchemaResolution(
 				)
 				return null
 			}
-			if (internalSchemaAndSideEffectHandlers !== null) {
+			if (internalSchema !== null) {
 				addDiagnostic(
 					diagnosticCallback,
 					"schema retrieval",
@@ -85,8 +90,10 @@ function validateDocumentAfterExternalSchemaResolution(
 					DiagnosticSeverity.warning,
 					null,
 				)
+				return createDataset(externalSchema, internalSchema.specification, compact)
+			} else {
+				return createDataset(externalSchema, [InternalSchemaSpecificationType.None], compact)
 			}
-			return createDataset(externalSchema)
 		},
 		schemaReferenceResolver,
 		(source, errorMessage, range) => {
@@ -140,7 +147,11 @@ export function loadDocument(
 	readSchemaFile: (dir: string, schemaFileName: string) => p.IUnsafeValue<p.IStream<string, null>, FileError>,
 	diagnosticCallback: DiagnosticCallback,
 	sideEffectHandlers: sideEffects.Root[],
-	createInitialDataset: (schema: md.Schema) => IDataset,
+	createInitialDataset: (
+		schema: md.Schema,
+		internalSchemaSpecification: InternalSchemaSpecification,
+		compact: boolean,
+	) => IDataset,
 ): p.IUnsafeValue<IDataset, null> {
 	let diagnosticFound = false
 	const dc: DiagnosticCallback = (

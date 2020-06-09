@@ -1,6 +1,6 @@
 import * as p from "pareto"
 import * as bc from "bass-clarinet-typed"
-import * as md from "../metaDataSchema"
+import * as md from "../types"
 import * as ds from "../syncAPI"
 import * as sideEffects from "../SideEffectsAPI"
 

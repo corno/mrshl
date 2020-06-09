@@ -9,11 +9,11 @@ export type CollectionType =
     | ["list", List]
 
 export type Component = {
-    readonly type: g.IReference<ComponentType>
+    readonly "type": g.IReference<ComponentType>
 }
 
 export type ComponentType = {
-    readonly node: Node
+    readonly "node": Node
 }
 
 export type Dictionary = {
@@ -26,11 +26,11 @@ export type List = {
 }
 
 export type Node = {
-    readonly properties: g.IReadonlyDictionary<Property>
+    readonly "properties": g.IReadonlyDictionary<Property>
 }
 
 export type Property = {
-    readonly type: PropertyType
+    readonly "type": PropertyType
 }
 
 export type PropertyType =
@@ -45,11 +45,11 @@ export type Schema = {
 }
 
 export type State = {
-    readonly node: Node
+    readonly "node": Node
 }
 
 export type StateGroup = {
-    readonly states: g.IReadonlyDictionary<State>
+    readonly "states": g.IReadonlyDictionary<State>
     readonly "default state": g.IReference<State>
 }
 

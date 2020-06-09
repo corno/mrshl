@@ -2,7 +2,7 @@
  "@typescript-eslint/no-empty-interface": off
 */
 
-import * as md from "./metaDataSchema"
+import * as md from "./types"
 
 export interface Comments {
     setComments(comments: string[]): void
@@ -23,10 +23,12 @@ export interface Property {
 export interface Dictionary {
     forEachEntry(callback: (entry: Entry, key: string) => void): void
     createEntry(): Entry
+    isEmpty(): boolean
 }
 export interface List {
     forEachEntry(callback: (entry: Entry) => void): void
     createEntry(): Entry
+    isEmpty(): boolean
 }
 
 export interface Component {
@@ -48,12 +50,25 @@ export interface Node {
     forEachProperty(callback: (entry: Property, key: string) => void): void
 }
 
+export enum InternalSchemaSpecificationType {
+    Reference,
+    None,
+    Embedded
+}
+
+export type InternalSchemaSpecification =
+    | [InternalSchemaSpecificationType.Embedded]
+    | [InternalSchemaSpecificationType.Reference, { name: string }]
+    | [InternalSchemaSpecificationType.None]
+
 export interface IDataset {
+    readonly internalSchemaSpecification: InternalSchemaSpecification
     readonly schema: md.Schema
     readonly root: Node
 }
 
 export interface StateGroup {
+    readonly definition: md.StateGroup
     setState(stateName: string, onError: (message: string) => void): State
     readonly comments: Comments
     getCurrentState(): State
@@ -67,6 +82,7 @@ export interface State {
 }
 
 export interface Value {
+    readonly definition: md.Value
     readonly isQuoted: boolean
     setValue(value: string, onError: (message: string) => void): void
     readonly comments: Comments

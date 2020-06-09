@@ -40,7 +40,7 @@ export interface ValueSerializer {
 
 export interface RootSerializer {
     root: ValueSerializer
-    serializeSchema(dataset: syncAPI.IDataset): void
+    serializeHeader(dataset: syncAPI.IDataset, compact: boolean): void
     serializeSchemaReference(schemaReference: string): void
 }
 
@@ -59,12 +59,12 @@ export class ArraySerializer {
 
 export class DictionarySerializer {
     private isFirst = true
-    private readonly onAdd: (key: string, isKeyProperty: boolean, isFirst: boolean) => ValueSerializer
+    private readonly onAdd: (key: string, isFirst: boolean) => ValueSerializer
     constructor(onAdd: (key: string, isFirst: boolean) => ValueSerializer) {
         this.onAdd = onAdd
     }
-    public add(key: string, isKeyProperty: boolean, callback: (vb: ValueSerializer) => void): void {
-        callback(this.onAdd(key, this.isFirst, isKeyProperty))
+    public addEntry(key: string, callback: (vb: ValueSerializer) => void): void {
+        callback(this.onAdd(key, this.isFirst))
         this.isFirst = false
     }
 }
@@ -74,7 +74,7 @@ export class TypeSerializer {
     constructor(onAdd: (key: string, isFirst: boolean, isKeyProperty: boolean) => ValueSerializer) {
         this.onAdd = onAdd
     }
-    public add(key: string, isKeyProperty: boolean, callback: (vb: ValueSerializer) => void): void {
+    public addProperty(key: string, isKeyProperty: boolean, callback: (vb: ValueSerializer) => void): void {
         callback(this.onAdd(key, this.isFirst, isKeyProperty))
         this.isFirst = false
     }

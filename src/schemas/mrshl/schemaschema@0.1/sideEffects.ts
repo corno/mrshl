@@ -2,7 +2,7 @@ import * as bc from "bass-clarinet"
 import * as t from "./types"
 import * as syncAPI from "../../../syncAPI"
 import * as sideEffects from "../../../SideEffectsAPI"
-import * as md from "../../../metaDataSchema"
+import * as md from "../../../types"
 import { DiagnosticSeverity } from "../../../loadDocument"
 
 export * from "./types"

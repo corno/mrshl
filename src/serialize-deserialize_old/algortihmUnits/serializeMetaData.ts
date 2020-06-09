@@ -1,4 +1,4 @@
-import * as d from "../../definition"
+import * as d from "../../types"
 import * as syncAPI from "../../syncAPI"
 import * as t from "../types"
 
@@ -141,7 +141,7 @@ function buildMetaData(definition: d.Node, rootNode: syncAPI.Node) {
     return usedSchema
 }
 
-export function serializeMetaData(definition: d.Node, rootNode: syncAPI.Node) {
+export function serializeMetaData(definition: d.Node, rootNode: syncAPI.Node): string {
     const schema = buildMetaData(definition, rootNode)
     return JSON.stringify(schema)
 }

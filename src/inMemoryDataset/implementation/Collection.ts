@@ -3,7 +3,7 @@
 */
 
 import * as g from "../../generics"
-import * as d from "../../definition"
+import * as d from "../../types"
 import { FlexibleErrorsAggregator, IParentErrorsAggregator, ErrorManager } from "./ErrorManager"
 import { Node } from "./Node"
 import { Comments } from "./Comments"
@@ -142,7 +142,7 @@ export class Collection {
     }
 }
 
-export function addEntry(collection: Collection, entryPlaceholder: EntryPlaceholder) {
+export function addEntry(collection: Collection, entryPlaceholder: EntryPlaceholder): void {
     entryPlaceholder.entry.errorsAggregator.attach(entryPlaceholder.parent.errorsAggregator)
     entryPlaceholder.entry.subentriesErrorsAggregator.attach(entryPlaceholder.parent.errorsAggregator)
     collection.entries.addEntry(entryPlaceholder)

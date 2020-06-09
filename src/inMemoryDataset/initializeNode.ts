@@ -1,4 +1,4 @@
-import * as d from "../definition"
+import * as d from "../types"
 import * as cc from "./changeControl"
 import { Collection, Dictionary, Node } from "./implementation"
 import { Component } from "./implementation/Component"

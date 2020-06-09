@@ -1,6 +1,6 @@
 import * as g from "../../generics"
 import * as asyncAPI from "../../asyncAPI"
-import * as d from "../../definition"
+import * as d from "../../types"
 import { FlexibleErrorsAggregator, IParentErrorsAggregator, ErrorManager } from "./ErrorManager"
 import { Node } from "./Node"
 import { Comments } from "./Comments"
@@ -84,7 +84,7 @@ export class StateGroup {
     }
 }
 
-export function setState(stateGroup: StateGroup, state: State) {
+export function setState(stateGroup: StateGroup, state: State): void {
     stateGroup.currentState.update(state)
     stateGroup.currentStateKey.update(state.key)
 }

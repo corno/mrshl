@@ -1,5 +1,4 @@
-! FIXME_SCHEMA (
-	'a1': ""
+(
 	'b': "X"
 	'c': "C"
 )

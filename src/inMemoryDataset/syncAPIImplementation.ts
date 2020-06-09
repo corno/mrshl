@@ -4,7 +4,7 @@
 
 import * as syncAPI from "../syncAPI"
 import * as imp from "./implementation"
-import * as d from "../definition"
+import * as d from "../types"
 import { Global } from "./Global"
 import { initializeNode } from "./initializeNode"
 
@@ -190,7 +190,7 @@ export class StateGroup implements syncAPI.StateGroup {
     private readonly imp: imp.StateGroup
     public readonly comments: imp.Comments
     private readonly global: Global
-    private readonly definition: d.StateGroup
+    public readonly definition: d.StateGroup
     constructor(stateGroup: imp.StateGroup, definition: d.StateGroup, global: Global) {
         this.imp = stateGroup
         this.global = global
@@ -281,6 +281,9 @@ export class Dictionary implements syncAPI.Dictionary {
         this.definition = definition
         this.global = global
     }
+    public isEmpty(): boolean {
+        return this.imp.entries.isEmpty()
+    }
     public createEntry(): Entry {
         const entryImp = new imp.Entry(
             this.imp.nodeDefinition,
@@ -321,6 +324,9 @@ export class List implements syncAPI.List {
         this.imp = collectionImp
         this.global = global
     }
+    public isEmpty(): boolean {
+        return this.imp.entries.isEmpty()
+    }
     public createEntry(): Entry {
         const entryImp = new imp.Entry(this.imp.nodeDefinition, this.global.errorManager, this.imp.dictionary)
 
@@ -346,7 +352,7 @@ export class Value implements syncAPI.Value {
     public comments: imp.Comments
     private readonly imp: imp.Value
     readonly isQuoted: boolean
-    private readonly definition: d.Value
+    public readonly definition: d.Value
     constructor(valueImp: imp.Value, definition: d.Value) {
         this.imp = valueImp
         this.comments = valueImp.comments

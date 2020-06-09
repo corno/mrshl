@@ -1,17 +1,20 @@
-import * as d from "../definition"
+import * as d from "../types"
 import { RootErrorsAggregator } from "./implementation/ErrorManager"
 import { Global } from "./Global"
 import { Node } from "./implementation/Node"
 import { initializeNode } from "./initializeNode"
+import * as syncAPI from "../syncAPI"
+
 
 export class RootImp {
     public readonly errorsAggregator = new RootErrorsAggregator()
     public readonly global = new Global()
     public readonly schema: d.Schema
     public readonly rootNode: Node
-    public readonly schemaPath: string
-    constructor(schemaPath: string, schema: d.Schema) {
-        this.schemaPath = schemaPath
+    public readonly internalSchemaSpecification: syncAPI.InternalSchemaSpecification
+
+    constructor(internalSchemaSpecification: syncAPI.InternalSchemaSpecification, schema: d.Schema) {
+        this.internalSchemaSpecification = internalSchemaSpecification
         this.rootNode = new Node(
             null,
             node => {

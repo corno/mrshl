@@ -1,8 +1,12 @@
 import * as http from "http"
 import * as p20 from "pareto-20"
 import * as p from "pareto"
-import { HTTPOptions } from "./makeHTTPrequest"
 
+export type HTTPOptions = {
+    host: string
+    path: string
+    timeout: number
+}
 
 export function makeNativeHTTPrequest(
     options: HTTPOptions

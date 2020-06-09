@@ -1,6 +1,6 @@
 import * as bc from "bass-clarinet"
 import * as ds from "./syncAPI"
-import * as md from "./metaDataSchema"
+import * as md from "./types"
 
 export interface Root {
     node: Node

@@ -1,5 +1,5 @@
 // import * as g from "../generics"
-// import { Node, Schema } from "./definitions"
+// import { Node, Schema } from "./types"
 
 // function serializeNode(node: Node) {
 //     const obj: any = {

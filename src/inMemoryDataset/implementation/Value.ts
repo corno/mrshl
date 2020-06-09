@@ -1,6 +1,6 @@
 import * as g from "../../generics"
 import * as asyncAPI from "../../asyncAPI"
-import * as d from "../../definition"
+import * as d from "../../types"
 import { IParentErrorsAggregator, PotentialError, ErrorManager } from "./ErrorManager"
 import { Comments } from "./Comments"
 
@@ -77,7 +77,7 @@ export class Value {
     // }
 }
 
-export function setValue(valueProperty: Value, previousValue: string, newValue: string) {
+export function setValue(valueProperty: Value, previousValue: string, newValue: string): void {
 
     valueProperty.value.update(newValue)
     valueProperty.changeSubscribers.forEach(cs => cs(previousValue, newValue))

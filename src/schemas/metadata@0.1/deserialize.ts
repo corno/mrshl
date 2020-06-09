@@ -6,7 +6,7 @@ import * as p from "pareto"
 import * as bc from "bass-clarinet-typed"
 import * as g from "../../generics"
 import * as t from "../../types"
-import * as md from "../../metaDataSchema"
+import * as md from "../../types"
 
 /**
  * this function is only calls back if the value is not null

@@ -56,7 +56,7 @@ function deepEqual(
     try {
         chai.assert.deepEqual(actual, parseExpected(expectedAsString))
     } catch (e) {
-        const actualPath = path.join(".", testDirPath, `${name}.expected.${extension}`)
+        const actualPath = path.join(".", testDirPath, `${name}.actual.${extension}`)
         fs.writeFileSync(actualPath, actualAsString)
         throw e
     }
@@ -137,8 +137,9 @@ export function directoryTests(): void {
             )
 
             const actualIssues: Issues = []
-
+            const actualEvents: Event[] = []
             const actualSnippets: Snipppets = {}
+            const out: string[] = []
 
             // const schemaReferenceResolver = (reference: string) => {
             //     const schemasDir = "./test/schemas"
@@ -201,36 +202,19 @@ export function directoryTests(): void {
                             //
                         },
                     )],
-                    schema => {
-                        return astn.createInMemoryDataset(schema)
+                    (schema, internalSchemaSpecification, compact) => {
+                        return astn.createInMemoryDataset(schema, internalSchemaSpecification, compact)
                     }
                 ).mapResultRaw(dataset => {
-                    const out: string[] = []
                     astn.serialize(
-                        "FIXME SCHEMAPATH",
-                        {
-                            schema: dataset.sync.schema,
-                            root: dataset.sync.root,
-                        },
+                        dataset.sync,
                         astn.createASTNSerializer(
                             new astn.StringStream(out, 0),
                         ),
                         false,
                     )
-                    deepEqual(
-                        testDirPath,
-                        "output",
-                        "astn.test",
-                        str => str,
-                        out.join(""),
-                        out.join(""),
-                    )
 
-                    deepEqualJSON(testDirPath, "snippets", actualSnippets)
-
-                    const actualEvents: Event[] = []
                     subscribeToNode(dataset.async.rootNode, actualEvents)
-                    deepEqualJSON(testDirPath, "events", actualEvents)
 
 
                 }).catch(
@@ -244,6 +228,16 @@ export function directoryTests(): void {
             it(dir, async () => {
                 return myFunc().convertToNativePromise(
                 ).then(() => {
+                    deepEqual(
+                        testDirPath,
+                        "output",
+                        "astn.test",
+                        str => str,
+                        out.join(""),
+                        out.join(""),
+                    )
+                    deepEqualJSON(testDirPath, "snippets", actualSnippets)
+                    deepEqualJSON(testDirPath, "events", actualEvents)
                     chai.assert.deepEqual(actualIssues, expectedIssues)
                 })
             })

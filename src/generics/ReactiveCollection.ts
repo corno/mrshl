@@ -95,4 +95,7 @@ export class ReactiveArray<T> implements ISubscribableArray<T> {
         this.inForeachLoop = false
         return newArray
     }
+    public isEmpty(): boolean {
+        return this.entries.length === 0
+    }
 }

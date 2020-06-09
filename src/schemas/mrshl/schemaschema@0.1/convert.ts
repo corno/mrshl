@@ -1,4 +1,4 @@
-import * as md from "../../../metaDataSchema"
+import * as md from "../../../types"
 import * as g from "../../../generics"
 import { Schema, Node, Property } from "./types"
 
@@ -28,7 +28,7 @@ function convertNode(node: Node, componentTypes: g.IReadonlyLookup<md.ComponentT
                                         return ["dictionary", {
                                             "node": targetNode,
                                             "key property": g.createReference($$["key property"].name, targetNode.properties, resolveRegistry, keys => {
-                                                throw new Error(`UNEXPECTED: KEY Property not found: ${$$["key property"].name}, available keys: ${keys}`);
+                                                throw new Error(`UNEXPECTED: KEY Property not found: ${$$["key property"].name}, available keys: ${keys.join()}`);
                                             }),
                                         }]
                                     }
@@ -62,7 +62,7 @@ function convertNode(node: Node, componentTypes: g.IReadonlyLookup<md.ComponentT
                         return ["state group", {
                             "states": states,
                             "default state": g.createReference($["default state"].name, states, resolveRegistry, keys => {
-                                throw new Error(`UNEXPECTED: KEY state not found: ${$["default state"].name}, available keys: ${keys}`);
+                                throw new Error(`UNEXPECTED: KEY state not found: ${$["default state"].name}, available keys: ${keys.join()}`);
                             }),
                         }]
                     }

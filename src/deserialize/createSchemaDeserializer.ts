@@ -70,7 +70,7 @@ export function createSchemaDeserializer(
         },
         onHeaderEnd: (range: bc.Range): ParserEventConsumer<SchemaAndSideEffects, null> => {
             if (!schemaDefinitionFound) {
-                //console.error("missing schema schema definition")
+                //console.error("missing schema schema types")
                 onSchemaError(`missing schema schema definition`, range)
                 return {
                     onData: () => {

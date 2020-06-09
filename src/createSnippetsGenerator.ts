@@ -2,7 +2,7 @@ import * as sideEffects from "./SideEffectsAPI"
 import * as syncAPI from "./syncAPI"
 import * as bc from "bass-clarinet"
 import * as fp from "fountain-pen"
-import * as md from "./metaDataSchema"
+import * as md from "./types"
 
 function assertUnreachable<RT>(_x: never): RT {
     throw new Error("Unreachable")

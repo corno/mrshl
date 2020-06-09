@@ -1,7 +1,7 @@
 import * as bc from "bass-clarinet-typed"
 import * as mrshlschemaschema01 from "./schemas/mrshl/schemaschema@0.1"
 import * as metadata01 from "./schemas/metadata@0.1"
-import * as md from "./metaDataSchema"
+import * as md from "./types"
 import * as sideEffects from "./SideEffectsAPI"
 import { DiagnosticSeverity } from "./loadDocument"
 

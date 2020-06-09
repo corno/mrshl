@@ -1,5 +1,5 @@
 import * as g from "../../generics"
-import * as d from "../../definition"
+import * as d from "../../types"
 import { Collection } from "./Collection"
 import { Component } from "./Component"
 import { StateGroup } from "./StateGroup"

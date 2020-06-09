@@ -1,11 +1,13 @@
 import * as bc from "bass-clarinet-typed"
-import * as md from "../metaDataSchema"
 import * as sideEffects from "../SideEffectsAPI"
 import { createDatasetDeserializer } from "./createDatasetDeserializer"
 import * as p20 from "pareto-20"
 import * as p from "pareto"
 import { SchemaAndSideEffects } from "../schemas"
 import { IDataset } from "../dataset"
+import { InternalSchemaSpecification, InternalSchemaSpecificationType } from "../syncAPI"
+import { createDeserializer as createMetaDataDeserializer } from "../schemas/metadata@0.1/deserialize"
+
 
 function createNoOperationPropertyHandler(
     _key: string,
@@ -145,12 +147,17 @@ export function createNOPSideEffects(): sideEffects.Root {
     return new NOPSideEffects()
 }
 
+type InternalSchema = {
+    specification: InternalSchemaSpecification
+    schemaAndSideEffects: SchemaAndSideEffects
+}
+
 /**
  * this function returns a promise to a dataset and the promise is resolved when the validation has been completed
  */
 export function deserializeDataset(
     serializedDataset: string,
-    onInternalSchemaResolved: (schemaAndSideEffects: SchemaAndSideEffects | null) => IDataset | null,
+    onInternalSchemaResolved: (internalSchema: InternalSchema | null, compact: boolean) => IDataset | null,
     schemaReferenceResolver: (
         reference: string,
     ) => p.IUnsafeValue<SchemaAndSideEffects, string>,
@@ -192,6 +199,11 @@ export function deserializeDataset(
         )
     }
 
+    let compact = false
+
+    let foundSchemaSpecification = false
+    let foundSchemaErrors = false
+    let internalSchema: InternalSchema | null = null
     const parser = bc.createParser<IDataset, string>(
         (message, range) => {
             onError("parser", message, range)
@@ -206,15 +218,18 @@ export function deserializeDataset(
                                 onSchemaError("unexpected array as schema", range)
                                 return bc.createDummyArrayHandler()
                             },
-                            object: md.createMetaDataDeserializer(
+                            object: createMetaDataDeserializer(
                                 (errorMessage, range) => {
                                     onSchemaError(errorMessage, range)
                                 },
-                                md2 => {
-                                    if (md2 !== null) {
-                                        internalSchemaAndSideEffects = {
-                                            schema: md2,
-                                            createSideEffects: () => new NOPSideEffects(),
+                                schema => {
+                                    if (schema !== null) {
+                                        internalSchema = {
+                                            schemaAndSideEffects: {
+                                                schema: schema,
+                                                createSideEffects: () => new NOPSideEffects(),
+                                            },
+                                            specification: [InternalSchemaSpecificationType.Embedded],
                                         }
                                     }
                                 }
@@ -226,7 +241,10 @@ export function deserializeDataset(
                                         return p.result(false)
                                     },
                                     schemaAndSideEffects => {
-                                        internalSchemaAndSideEffects = schemaAndSideEffects
+                                        internalSchema = {
+                                            schemaAndSideEffects: schemaAndSideEffects,
+                                            specification: [InternalSchemaSpecificationType.Reference, { name: data.value }],
+                                        }
                                         return p.result(false)
 
                                     },
@@ -262,11 +280,11 @@ export function deserializeDataset(
                 compact = true
             },
             onHeaderEnd: (): bc.ParserEventConsumer<IDataset, string> => {
-                if (foundSchemaSpecification && internalSchemaAndSideEffects === null && !foundSchemaErrors) {
+                if (foundSchemaSpecification && internalSchema === null && !foundSchemaErrors) {
                     console.error("NO SCHEMA AND NO ERROR")
                     //throw new Error("Unexpected: no schema errors and no schema")
                 }
-                const dataset = onInternalSchemaResolved(internalSchemaAndSideEffects)
+                const dataset = onInternalSchemaResolved(internalSchema, compact)
 
                 if (dataset === null) {
                     return {
@@ -280,7 +298,7 @@ export function deserializeDataset(
                     }
                 }
                 if (foundSchemaSpecification) {
-                    if (internalSchemaAndSideEffects === null) {
+                    if (internalSchema === null) {
                         onWarning(
                             "structure",
                             "ignoring invalid internal schema",
@@ -293,11 +311,6 @@ export function deserializeDataset(
             },
         }
     )
-    let compact = false
-
-    let foundSchemaSpecification = false
-    let foundSchemaErrors = false
-    let internalSchemaAndSideEffects: SchemaAndSideEffects | null = null
     function onSchemaError(message: string, range: bc.Range) {
         onError("schema error", message, range)
         foundSchemaErrors = true

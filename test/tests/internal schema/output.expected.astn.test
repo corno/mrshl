@@ -1,5 +1,4 @@
-! FIXME_SCHEMA (
-	'a1': ""
+! ( FIXME_EMBEDDED_SCHEMA ) (
 	'b': "X"
 	'c': C
 )

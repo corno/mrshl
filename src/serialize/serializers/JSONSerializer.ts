@@ -122,7 +122,7 @@ class JSONSerializer implements serializers.RootSerializer {
         //this.out = out
         this.root = new JSONValueSerializer(out)
     }
-    public serializeSchema() {
+    public serializeHeader() {
         //JSON does not know about schemas, output nothing
     }
     public serializeSchemaReference() {
