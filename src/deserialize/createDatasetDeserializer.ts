@@ -30,12 +30,12 @@ function createPropertyDeserializer(
                     let hasEntries = false
                     let dictionarySideEffects: null | sideEffects.Dictionary[] = null
                     return context.expectValue(context.expectDictionary(
-                        (key, range, preData) => {
+                        (key, range, contextData) => {
                             hasEntries = true
                             const entry = collBuilder.createEntry()
                             //const entry = collBuilder.createEntry(errorMessage => onError(errorMessage, propertyData.keyRange))
                             entry.node.getValue($$["key property"].name).setValue(key, errorMessage => onError(errorMessage, range))
-                            entry.comments.setComments(preData.comments.map(c => c.text))
+                            entry.comments.setComments(contextData.commentsBefore.map(c => c.text))
 
                             if (dictionarySideEffects === null) {
                                 throw new Error("UNEXPECTED")
@@ -168,9 +168,9 @@ function createPropertyDeserializer(
                             )
                         })
                         const stateGroup = nodeBuilder.getStateGroup(propKey)
-                        stateGroup.comments.setComments(tuPreData.comments.map(c => c.text))
+                        stateGroup.comments.setComments(tuPreData.commentsBefore.map(c => c.text))
                         const state = stateGroup.setState(stateName, errorMessage => onError(errorMessage, optionRange))
-                        state.comments.setComments(optionPreData.comments.map(c => c.text))
+                        state.comments.setComments(optionPreData.commentsBefore.map(c => c.text))
                         if ($["default state"].get() !== stateDef) {
                             flagIsDirty()
                         }
@@ -203,7 +203,7 @@ function createPropertyDeserializer(
         }
         case "value": {
             const $ = propDefinition.type[1]
-            return context.expectValue(context.expectSimpleValue((range, data, preData) => {
+            return context.expectValue(context.expectSimpleValue((range, data, contextData) => {
                 const valueBuilder = nodeBuilder.getValue(propKey)
                 if (data.value !== $["default value"]) {
                     flagIsDirty()
@@ -220,7 +220,7 @@ function createPropertyDeserializer(
 
                 }
                 //valueBuilder.setValue(value, svData.quote !== null, svData.range, comments)
-                valueBuilder.comments.setComments(preData.comments.map(c => c.text))
+                valueBuilder.comments.setComments(contextData.commentsBefore.map(c => c.text))
 
                 sideEffectsAPIs.forEach(s => {
                     s.onValue(propKey, valueBuilder, range, data, $)
@@ -416,15 +416,16 @@ function createNodeDeserializer(
                     s.onTypeClose(endRange)
                 })
             },
-            (key, metaData, preData) => {
+            (key, metaData, contextData) => {
                 sideEffectsAPI.forEach(s => {
                     s.onUnexpectedProperty(
                         key,
                         metaData,
-                        preData,
+                        contextData,
                         Object.keys(expectedProperties),
                     )
                 })
+                return bc.createDummyRequiredValueHandler()
             },
         )
     }

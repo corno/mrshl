@@ -97,7 +97,7 @@ const parser = astn.createParser(
         console.error(message, astn.printRange(range))
     },
     {
-        onHeaderStart: () => {
+        onSchemaDataStart: () => {
             return {
                 onData: () => {
                     return p.result(false)
@@ -107,15 +107,12 @@ const parser = astn.createParser(
                 },
             }
         },
-        onHeaderEnd: () => {
+        onInstanceDataStart: () => {
             return schemaschema01.createInternalSchemaBuilder(
                 (message, range) => {
                     console.error(message, astn.printRange(range))
                 }
             )
-        },
-        onCompact: () => {
-            //
         },
     }
 )

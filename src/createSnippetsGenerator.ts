@@ -138,7 +138,7 @@ class SnippetGenerator implements sideEffects.Node, sideEffects.Dictionary, side
                         return line
                     }
                     return line
-                    //return preData.indentation + line
+                    //return contextData.indentation + line
                 }).join("\n")]
             }
         )
@@ -189,7 +189,7 @@ class SnippetGenerator implements sideEffects.Node, sideEffects.Dictionary, side
                         return line
                     }
                     return line
-                    //return preData.indentation + line
+                    //return contextData.indentation + line
                 }).join("\n")]
             },
         )
@@ -197,7 +197,7 @@ class SnippetGenerator implements sideEffects.Node, sideEffects.Dictionary, side
     onUnexpectedProperty(
         _key: string,
         range: bc.Range,
-        _preData: bc.PreData,
+        _preData: bc.ContextData,
         expectedProperties: string[]
     ) {
         this.onToken(
@@ -238,7 +238,7 @@ class SnippetGenerator implements sideEffects.Node, sideEffects.Dictionary, side
                             return line
                         }
                         return line
-                        //return preData.indentation + line
+                        //return contextData.indentation + line
                     }).join("\n"),
                 ]
             },
@@ -250,9 +250,9 @@ class SnippetGenerator implements sideEffects.Node, sideEffects.Dictionary, side
     onUnexpectedState(
         _stateName: string,
         _tuRange: bc.Range,
-        _tuPreData: bc.PreData,
+        _tuPreData: bc.ContextData,
         optionRange: bc.Range,
-        _optionPreData: bc.PreData,
+        _optionPreData: bc.ContextData,
         stateGroupDefinition: md.StateGroup
     ) {
         this.onToken(

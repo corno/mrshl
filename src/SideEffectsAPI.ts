@@ -76,23 +76,23 @@ export interface Node {
     onUnexpectedProperty(
         key: string,
         range: bc.Range,
-        preData: bc.PreData,
+        contextData: bc.ContextData,
         expectedProperties: string[]
     ): void
     onState(
         stateGroupName: string,
         stateName: string,
         tuRange: bc.Range,
-        beginPreData: bc.PreData,
+        beginPreData: bc.ContextData,
         optionRange: bc.Range,
-        optionPreData: bc.PreData
+        optionPreData: bc.ContextData
     ): Node
     onUnexpectedState(
         stateName: string,
         tuRange: bc.Range,
-        beginPreData: bc.PreData,
+        beginPreData: bc.ContextData,
         optionRange: bc.Range,
-        optionPreData: bc.PreData,
+        optionPreData: bc.ContextData,
         stateGroupDefinition: md.StateGroup
     ): void
     onComponent(name: string): Node

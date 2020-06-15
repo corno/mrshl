@@ -26,21 +26,21 @@
     "dist/*"
   ],
   "dependencies": {
-    "bass-clarinet-typed": "^0.82.0",
+    "bass-clarinet-typed": "^0.85.0",
     "fountain-pen": "^3.0.1"
   },
   "devDependencies": {
     "@types/chai": "^4.2.11",
     "@types/mocha": "^7.0.2",
-    "@types/node": "^14.0.9",
-    "@typescript-eslint/eslint-plugin": "^3.1.0",
-    "@typescript-eslint/eslint-plugin-tslint": "^3.1.0",
-    "@typescript-eslint/parser": "^3.1.0",
+    "@types/node": "^14.0.13",
+    "@typescript-eslint/eslint-plugin": "^3.2.0",
+    "@typescript-eslint/eslint-plugin-tslint": "^3.2.0",
+    "@typescript-eslint/parser": "^3.2.0",
     "chai": "^4.2.0",
-    "eslint": "^7.1.0",
-    "mocha": "^7.2.0",
+    "eslint": "^7.2.0",
+    "mocha": "^8.0.1",
     "tslint": "^6.1.2",
-    "typescript": "^3.9.3"
+    "typescript": "^3.9.5"
   },
   "bin": {
     "generateSchemaCode": "dist/bin/generateSchemaCode.js"

@@ -12,7 +12,7 @@ import { createDeserializer as createMetaDataDeserializer } from "../schemas/met
 function createNoOperationPropertyHandler(
     _key: string,
     //propertyData: bc.PropertyData,
-    _preData: bc.PreData,
+    _preData: bc.ContextData,
     //registerSnippetGenerators: RegisterSnippetsGenerators,
 ): bc.ValueHandler {
     //registerSnippetGenerators.register(propertyData.keyRange, null, null)
@@ -172,9 +172,7 @@ export function deserializeDataset(
         const context = new bc.ExpectContext(
             (message, range) => onError("expect", message, range),
             (message, range) => onWarning("expect", message, range),
-            range => createNoOperationArrayHandler(range),
-            range => createNoOperationObjectHandler(range),
-            (_range, key, preData) => createNoOperationPropertyHandler(key, preData),
+            (_range, key, contextData) => createNoOperationPropertyHandler(key, contextData),
             () => createNoOperationValueHandler(),
             bc.Severity.warning,
             bc.OnDuplicateEntry.ignore
@@ -199,8 +197,6 @@ export function deserializeDataset(
         )
     }
 
-    let compact = false
-
     let foundSchemaSpecification = false
     let foundSchemaErrors = false
     let internalSchema: InternalSchema | null = null
@@ -209,7 +205,7 @@ export function deserializeDataset(
             onError("parser", message, range)
         },
         {
-            onHeaderStart: () => {
+            onSchemaDataStart: () => {
                 foundSchemaSpecification = true
                 return bc.createStackedDataSubscriber(
                     {
@@ -276,15 +272,12 @@ export function deserializeDataset(
                     }
                 )
             },
-            onCompact: () => {
-                compact = true
-            },
-            onHeaderEnd: (): bc.ParserEventConsumer<IDataset, string> => {
+            onInstanceDataStart: (compact: bc.Range | null): bc.ParserEventConsumer<IDataset, string> => {
                 if (foundSchemaSpecification && internalSchema === null && !foundSchemaErrors) {
                     console.error("NO SCHEMA AND NO ERROR")
                     //throw new Error("Unexpected: no schema errors and no schema")
                 }
-                const dataset = onInternalSchemaResolved(internalSchema, compact)
+                const dataset = onInternalSchemaResolved(internalSchema, compact !== null)
 
                 if (dataset === null) {
                     return {
@@ -307,7 +300,7 @@ export function deserializeDataset(
 
                     }
                 }
-                return createDSD(dataset, compact)
+                return createDSD(dataset, compact !== null)
             },
         }
     )

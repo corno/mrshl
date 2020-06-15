@@ -19,7 +19,7 @@ export function createSchemaDeserializer(
         (message, range) => {
             onSchemaError(`${message}`, range)
         }, {
-        onHeaderStart: () => {
+        onSchemaDataStart: () => {
             schemaDefinitionFound = true
             return bc.createStackedDataSubscriber(
                 {
@@ -65,13 +65,13 @@ export function createSchemaDeserializer(
                 }
             )
         },
-        onCompact: () => {
-            //compact = true
-        },
-        onHeaderEnd: (range: bc.Range): ParserEventConsumer<SchemaAndSideEffects, null> => {
+        onInstanceDataStart: (_compact: bc.Range | null, location: bc.Location): ParserEventConsumer<SchemaAndSideEffects, null> => {
             if (!schemaDefinitionFound) {
                 //console.error("missing schema schema types")
-                onSchemaError(`missing schema schema definition`, range)
+                onSchemaError(`missing schema schema definition`, {
+                    start: location,
+                    end: location,
+                })
                 return {
                     onData: () => {
                         //

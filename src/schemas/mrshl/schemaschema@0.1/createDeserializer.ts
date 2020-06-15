@@ -367,8 +367,6 @@ export function createDeserializer(onError: (message: string, range: bc.Range) =
         _warningMessage => {
             //ignore
         },
-        () => bc.createDummyArrayHandler(),
-        () => bc.createDummyObjectHandler(),
         () => bc.createDummyValueHandler(),
         () => bc.createDummyValueHandler(),
         bc.Severity.warning,

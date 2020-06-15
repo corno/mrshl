@@ -254,7 +254,7 @@ describe("main", () => {
                     console.log(err)
                 },
                 {
-                    onHeaderStart: () => {
+                    onSchemaDataStart: () => {
                         return {
                             onData: () => {
                                 return p.result(false)
@@ -264,10 +264,7 @@ describe("main", () => {
                             },
                         }
                     },
-                    onCompact: () => {
-                        //
-                    },
-                    onHeaderEnd: () => {
+                    onInstanceDataStart: () => {
                         return {
                             onData: () => {
                                 return p.result(false)
