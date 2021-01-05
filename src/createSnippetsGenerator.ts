@@ -10,7 +10,7 @@ function assertUnreachable<RT>(_x: never): RT {
 
 type GetSnippets = () => string[]
 
-function createPropertySnippet(prop: md.Property): fp.InlinePart {
+function createPropertySnippet(prop: md.Property): fp.InlineSegment {
     switch (prop.type[0]) {
         case "collection": {
             const $ = prop.type[1]
@@ -51,8 +51,8 @@ function createPropertySnippet(prop: md.Property): fp.InlinePart {
     }
 }
 
-function createPropertiesSnippet(node: md.Node, keyProperty: md.Property | null): fp.IParagraph {
-    const x: fp.ParagraphPart[] = []
+function createPropertiesSnippet(node: md.Node, keyProperty: md.Property | null): fp.Block {
+    const x: fp.Block[] = []
     node.properties.mapUnsorted((prop, propKey) => {
         if (prop === keyProperty) {
             return
@@ -65,7 +65,7 @@ function createPropertiesSnippet(node: md.Node, keyProperty: md.Property | null)
     return x
 }
 
-function createNodeSnippet(node: md.Node, keyProperty: md.Property | null): fp.InlinePart {
+function createNodeSnippet(node: md.Node, keyProperty: md.Property | null): fp.InlineSegment {
     return [
         '(',
         () => {

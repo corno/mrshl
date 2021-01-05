@@ -1,0 +1,17 @@
+! "mrshl/schemaschema@0.1" (
+	'component types': {
+		'x': (
+			'node': (
+				'properties': {
+					'y': (
+						'type': | 'value' (
+							'type': | 'number' (
+							)
+						)
+					)
+				}
+			)
+		)
+	}
+	'root type': 'x'
+)

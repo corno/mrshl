@@ -1,0 +1,20 @@
+{
+	"2:1-2": {
+		"inToken": null,
+		"afterToken": [
+			"\n    'y':\n"
+		]
+	},
+	"5:5-8": {
+		"inToken": null,
+		"afterToken": [
+			""
+		]
+	},
+	"5:33-34": {
+		"inToken": [
+			""
+		],
+		"afterToken": null
+	}
+}

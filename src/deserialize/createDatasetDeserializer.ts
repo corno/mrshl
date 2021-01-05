@@ -11,11 +11,30 @@ function assertUnreachable<RT>(_x: never): RT {
 type OnError = (message: string, range: bc.Range) => void
 
 function doComments(contextData: bc.ContextData, target: syncAPI.Comments) {
+    //console.log(JSON.stringify(contextData.indentation))
+    if (contextData.commentsBefore.length > 0) {
+        //console.log("HIERO EEE")
+    }
     contextData.commentsBefore.map(c => {
-        console.log("HIER AC")
+        //console.log("!!!!!")
         target.addComment(c.text)
     })
 
+}
+
+function expectValue(
+    context: bc.ExpectContext,
+    targetComments: syncAPI.Comments,
+    onValue: bc.OnValue,
+    onMissing?: () => void
+) {
+    return context.expectValue(
+        contextData => {
+            doComments(contextData, targetComments)
+            return onValue(contextData)
+        },
+        onMissing
+    )
 }
 
 function createPropertyDeserializer(
@@ -39,8 +58,7 @@ function createPropertyDeserializer(
                     let dictionarySideEffects: null | sideEffects.Dictionary[] = null
 
 
-                    return context.expectValue(contextData => {
-                        doComments(contextData, dictionary.beginComments)
+                    return expectValue(context, dictionary.beginComments, () => {
                         return context.expectDictionary(
                             (key, range, entryContextData) => {
                                 hasEntries = true
@@ -61,7 +79,7 @@ function createPropertyDeserializer(
                                         entry
                                     )
                                 })
-                                return context.expectValue(createNodeDeserializer(
+                                return expectValue(context, entry.comments, createNodeDeserializer(
                                     context,
                                     $$.node,
                                     $$["key property"].get(),
@@ -102,8 +120,7 @@ function createPropertyDeserializer(
                     let listSideEffects: null | sideEffects.List[] = null
 
                     let hasEntries = false
-                    return context.expectValue(contextData => {
-                        doComments(contextData, list.beginComments)
+                    return expectValue(context, list.beginComments, () => {
                         return context.expectList(
                             () => {
                                 hasEntries = true
@@ -160,7 +177,7 @@ function createPropertyDeserializer(
         case "component": {
             const $ = propDefinition.type[1]
             const componentBuilder = nodeBuilder.getComponent(propKey)
-            return context.expectValue(createNodeDeserializer(
+            return expectValue(context, componentBuilder.comments, createNodeDeserializer(
                 context,
                 $.type.get().node,
                 null,
@@ -172,18 +189,16 @@ function createPropertyDeserializer(
                 }),
                 onError,
                 flagIsDirty,
-            )
-            )
+            ))
         }
         case "state group": {
             const $ = propDefinition.type[1]
             const stateGroup = nodeBuilder.getStateGroup(propKey)
 
-            return context.expectValue(contextData => {
-                doComments(contextData, stateGroup.comments)
+            return expectValue(context, stateGroup.comments, contextData => {
                 return context.expectTaggedUnion(
                     $.states.mapUnsorted((stateDef, stateName) => {
-                        return (tuRange, optionRange, optionPreData) => {
+                        return (tuRange, optionRange, optionContextData) => {
                             const stateSideEffects = sideEffectsAPIs.map(s => {
                                 return s.onState(
                                     propKey,
@@ -191,18 +206,18 @@ function createPropertyDeserializer(
                                     tuRange,
                                     contextData,
                                     optionRange,
-                                    optionPreData
+                                    optionContextData
                                 )
                             })
 
                             const state = stateGroup.setState(stateName, errorMessage => onError(errorMessage, optionRange))
-                            doComments(optionPreData, state.comments)
+                            doComments(optionContextData, state.comments)
 
 
                             if ($["default state"].get() !== stateDef) {
                                 flagIsDirty()
                             }
-                            return context.expectValue(createNodeDeserializer(
+                            return expectValue(context, state.comments, createNodeDeserializer(
                                 context,
                                 stateDef.node,
                                 null,
@@ -234,8 +249,7 @@ function createPropertyDeserializer(
             const $ = propDefinition.type[1]
             const valueBuilder = nodeBuilder.getValue(propKey)
 
-            return context.expectValue(contextData => {
-                doComments(contextData, valueBuilder.comments)
+            return expectValue(context, valueBuilder.comments, () => {
                 return context.expectSimpleValue(
                     (range, data) => {
                         if (data.value !== $["default value"]) {
@@ -341,6 +355,7 @@ function createNodeDeserializer(
 
     return contextData => {
         doComments(contextData, nodeBuilder.beginComments)
+
         if (isCompact) {
             flagIsDirty()
             const expectedElements: bc.ExpectedElements = []
@@ -360,7 +375,6 @@ function createNodeDeserializer(
                     )
                 })
             })
-            doComments(contextData, nodeBuilder.beginComments)
             return context.expectArrayType(
                 expectedElements,
                 (startRange, startData) => {
@@ -428,11 +442,10 @@ function createNodeDeserializer(
                     },
                 }
             })
-            doComments(contextData, nodeBuilder.beginComments)
 
             return context.expectType(
                 expectedProperties,
-                range => {
+                (range, _openData) => {
                     sideEffectsAPI.forEach(s => {
                         s.onTypeOpen(
                             range,
@@ -442,8 +455,9 @@ function createNodeDeserializer(
                         )
                     })
                 },
-                (_hasErrors, endRange) => {
+                (_hasErrors, endRange, _closeData, endContextData) => {
                     let hasDirtyProperties = false
+                    doComments(endContextData, nodeBuilder.endComments)
                     nodeDefinition.properties.forEach((_prop, propKey) => {
                         const processedProperty = processedProperties[propKey]
                         if (processedProperty !== undefined) {
@@ -485,7 +499,7 @@ export function createDatasetDeserializer(
     sideEffectsHandlers: sideEffects.Node[],
     onError: OnError,
 ): bc.RequiredValueHandler {
-    return context.expectValue(createNodeDeserializer(
+    return expectValue(context, dataset.root.beginComments, createNodeDeserializer(
         context,
         dataset.schema["root type"].get().node,
         null,

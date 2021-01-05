@@ -72,7 +72,7 @@ export function createSchemaDeserializer(
                 return {
                     onData: () => {
                         //
-                        return p.result(true)
+                        return p.result(false) //FIXME should be 'true', to abort
                     },
                     onEnd: () => {
                         return p.error(null)
@@ -108,7 +108,7 @@ export function createSchemaDeserializer(
     )
     //console.log("SCHEMA DESER")
     const schemaTok = bc.createStreamPreTokenizer(
-        schemaParser,
+        bc.createTokenizer(schemaParser),
         (message, range) => {
             onSchemaError(message, range)
         }

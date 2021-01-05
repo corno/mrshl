@@ -120,7 +120,7 @@ const parser = astn.createParser(
 )
 
 const st = bc.createStreamPreTokenizer(
-    parser,
+    bc.createTokenizer(parser),
     (message, range) => {
         console.error(message, range)
     },

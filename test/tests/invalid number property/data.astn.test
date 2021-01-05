@@ -1,4 +1,4 @@
-//a comment
-( 
+//a comment before the data
+( //a comment within the data
     "y": /*should be a number*/ true
 )

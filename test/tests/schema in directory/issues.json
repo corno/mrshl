@@ -1,5 +1,5 @@
 [
     [ "expect", "warning", "expected '(' but found '{'", 1, 1, 1, 2],
-    [ "expect", "error", "unexpected property: 'a'", 2, 5, 2, 8],
-    [ "expect", "warning", "expected ')' but found '}'", 5, 1, 5, 2]
+    [ "expect", "error", "unexpected property: 'a'", 5, 5, 5, 8],
+    [ "expect", "warning", "expected ')' but found '}'", 8, 1, 8, 2]
 ]

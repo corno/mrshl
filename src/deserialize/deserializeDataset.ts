@@ -67,7 +67,7 @@ function createNoOperationObjectHandler(_beginRange: bc.Range): bc.ObjectHandler
     return {
         property: (_key, _keyData) => {
             //registerSnippetGenerators.register(keyData.keyRange, null, null)
-            return createNoOperationRequiredValueHandler()
+            return p.result(createNoOperationRequiredValueHandler())
         },
         end: _endData => {
             //registerSnippetGenerators.register(endData.range, null, null)
@@ -316,7 +316,7 @@ function onSchemaError(message: string, range: bc.Range) {
 //console.log("DATASET DESER")
 
 const st = bc.createStreamPreTokenizer(
-    parser,
+    bc.createTokenizer(parser),
     (message, range) => {
         onError("tokenizer", message, range)
     },

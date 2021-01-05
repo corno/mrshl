@@ -151,7 +151,7 @@ export function directoryTests(): void {
             //     )
             // }
 
-            function myFunc(): p.IValue<void> {
+            function myFunc(): p.IValue<null> {
 
                 const serializedDataset = fs.readFileSync(serializedDatasetPath, { encoding: "utf-8" })
                 return astn.loadDocument(
@@ -216,12 +216,13 @@ export function directoryTests(): void {
 
                     subscribeToNode(dataset.async.rootNode, actualEvents)
 
-
+                    return null
                 }).catch(
                     _e => {
                         if (actualIssues.length === 0) {
                             throw new Error("ERROR FOUND, BUT NOTHING WAS REPORTED")
                         }
+                        return p.result(null)
                     }
                 )
             }
@@ -280,7 +281,7 @@ describe("main", () => {
 
             console.log("SIMPLE TEST")
             return bc.createStreamPreTokenizer(
-                parser,
+                bc.createTokenizer(parser),
                 (message, _location) => {
                     console.error("error found", message)
                     //actualEvents.push(["tokenizererror", message])
