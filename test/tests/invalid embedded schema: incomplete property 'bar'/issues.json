@@ -10,6 +10,5 @@
     [ "parser", "error", "unexpected end of document, still in object", 21, 1, 21, 1],
     [ "parser", "error", "unexpected end of document, still in object", 21, 1, 21, 1],
     [ "parser", "error", "unexpected end of document, still in object", 21, 1, 21, 1],
-    [ "parser", "error", "unexpected end of document, still in object", 21, 1, 21, 1],
-    [ "parser", "error", "expected hash or rootvalue", 21, 1, 21, 1]
+    [ "parser", "error", "unexpected end of document, still in object", 21, 1, 21, 1]
 ]

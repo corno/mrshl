@@ -8,13 +8,12 @@ export function deserializeSchemaFromStream(
     onError: (message: string, range: bc.Range) => void,
 ): p.IUnsafeValue<SchemaAndSideEffects, string> {
     //console.log("FROM STRING")
-    const schemaDeserializer = createSchemaDeserializer(
-        onError,
-    )
 
     return schemaStream.toUnsafeValue(
         null,
-        schemaDeserializer,
+        createSchemaDeserializer(
+            onError,
+        ),
     ).mapError(
         () => {
             return p.result("missing schema")

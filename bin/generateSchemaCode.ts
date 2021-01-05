@@ -93,31 +93,33 @@ function generateCode(node: schemaschema01.Node) {
 }
 
 const parser = astn.createParser(
+    () => {
+        return {
+            onData: () => {
+                return p.result(false)
+            },
+            onEnd: () => {
+                return p.success(null)
+            },
+        }
+    },
+    () => {
+        return schemaschema01.createInternalSchemaBuilder(
+            (message, range) => {
+                console.error(message, astn.printRange(range))
+            }
+        )
+    },
+
     (message, range) => {
         console.error(message, astn.printRange(range))
     },
-    {
-        onSchemaDataStart: () => {
-            return {
-                onData: () => {
-                    return p.result(false)
-                },
-                onEnd: () => {
-                    return p.success(null)
-                },
-            }
-        },
-        onInstanceDataStart: () => {
-            return schemaschema01.createInternalSchemaBuilder(
-                (message, range) => {
-                    console.error(message, astn.printRange(range))
-                }
-            )
-        },
+    () => {
+        return p.result(false)
     }
 )
 
-const st = bc.createStreamTokenizer(
+const st = bc.createStreamPreTokenizer(
     parser,
     (message, range) => {
         console.error(message, range)

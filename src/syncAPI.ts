@@ -4,8 +4,13 @@
 
 import * as md from "./types"
 
+export interface Comment {
+    value: string
+}
+
 export interface Comments {
-    setComments(comments: string[]): void
+    addComment(comment: string): void
+    getComments(): Comment[]
 }
 
 export type PropertyType =
@@ -21,11 +26,16 @@ export interface Property {
 }
 
 export interface Dictionary {
+    readonly beginComments: Comments
+    readonly endComments: Comments
+
     forEachEntry(callback: (entry: Entry, key: string) => void): void
     createEntry(): Entry
     isEmpty(): boolean
 }
 export interface List {
+    readonly beginComments: Comments
+    readonly endComments: Comments
     forEachEntry(callback: (entry: Entry) => void): void
     createEntry(): Entry
     isEmpty(): boolean
@@ -42,6 +52,8 @@ export interface Entry {
 }
 
 export interface Node {
+    readonly beginComments: Comments
+    readonly endComments: Comments
     getDictionary(name: string): Dictionary
     getList(name: string): List
     getComponent(name: string): Component

@@ -16,41 +16,41 @@ export function createSchemaDeserializer(
     }
 
     const schemaParser = bc.createParser<SchemaAndSideEffects, null>(
-        (message, range) => {
-            onSchemaError(`${message}`, range)
-        }, {
-        onSchemaDataStart: () => {
+        () => {
             schemaDefinitionFound = true
             return bc.createStackedDataSubscriber(
                 {
-                    valueHandler: {
-                        array: range => {
-                            onSchemaError("unexpected array as schema schema", range)
-                            return bc.createDummyArrayHandler()
-                        },
-                        object: range => {
-                            onSchemaError("unexpected object as schema schema", range)
-                            return bc.createDummyObjectHandler()
-                        },
-                        simpleValue: (range, svData) => {
-                            const createSchemaFunc = schemas[svData.value]
-                            if (createSchemaFunc === undefined) {
-                                console.error(`unknown schema schema '${svData.value},`)
-                                onSchemaError(`unknown schema schema ${svData.value}`, range)
-                            } else {
-                                schemaProcessor = createSchemaFunc
-                            }
-                            return p.result(false)
-                        },
-                        taggedUnion: tuRange => {
-                            onSchemaError("unexpected typed union as schema schema", tuRange)
-                            return {
-                                option: () => bc.createDummyRequiredValueHandler(),
-                                missingOption: () => {
-                                    //
-                                },
-                            }
-                        },
+                    onValue: () => {
+
+                        return {
+                            array: range => {
+                                onSchemaError("unexpected array as schema schema", range)
+                                return bc.createDummyArrayHandler()
+                            },
+                            object: range => {
+                                onSchemaError("unexpected object as schema schema", range)
+                                return bc.createDummyObjectHandler()
+                            },
+                            simpleValue: (range, svData) => {
+                                const createSchemaFunc = schemas[svData.value]
+                                if (createSchemaFunc === undefined) {
+                                    console.error(`unknown schema schema '${svData.value},`)
+                                    onSchemaError(`unknown schema schema ${svData.value}`, range)
+                                } else {
+                                    schemaProcessor = createSchemaFunc
+                                }
+                                return p.result(false)
+                            },
+                            taggedUnion: tuRange => {
+                                onSchemaError("unexpected typed union as schema schema", tuRange)
+                                return {
+                                    option: () => bc.createDummyRequiredValueHandler(),
+                                    missingOption: () => {
+                                        //
+                                    },
+                                }
+                            },
+                        }
                     },
                     onMissing: () => {
                         //
@@ -65,13 +65,10 @@ export function createSchemaDeserializer(
                 }
             )
         },
-        onInstanceDataStart: (_compact: bc.Range | null, location: bc.Location): ParserEventConsumer<SchemaAndSideEffects, null> => {
+        (_compact: bc.Range | null, location: bc.Location): ParserEventConsumer<SchemaAndSideEffects, null> => {
             if (!schemaDefinitionFound) {
                 //console.error("missing schema schema types")
-                onSchemaError(`missing schema schema definition`, {
-                    start: location,
-                    end: location,
-                })
+                onSchemaError(`missing schema schema definition`, bc.createRangeFromSingleLocation(location))
                 return {
                     onData: () => {
                         //
@@ -102,9 +99,15 @@ export function createSchemaDeserializer(
                 }
             }
         },
-    })
+        (message, range) => {
+            onSchemaError(`${message}`, range)
+        },
+        () => {
+            return p.result(false)
+        }
+    )
     //console.log("SCHEMA DESER")
-    const schemaTok = bc.createStreamTokenizer(
+    const schemaTok = bc.createStreamPreTokenizer(
         schemaParser,
         (message, range) => {
             onSchemaError(message, range)

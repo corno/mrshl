@@ -194,6 +194,7 @@ export function loadDocument(
 			createInitialDataset,
 		).mapError(validateThatErrorsAreFound)
 	}
+	console.log(dir, "//", schemaFileName)
 	return readSchemaFile(
 		dir,
 		schemaFileName,

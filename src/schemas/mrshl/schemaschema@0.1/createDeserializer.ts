@@ -34,22 +34,22 @@ function createExpectedNodeHandler(
     return {
         onExists: () => {
             const properties = new g.Dictionary<t.Property>({})
-            return context.expectValue(context.expectType(
+            return context.expectValue(() => context.expectType(
                 {
                     "properties": {
-                        onExists: () => context.expectValue(context.expectDictionary(
+                        onExists: () => context.expectValue(() => context.expectDictionary(
                             key => {
                                 let targetPropertyType: t.PropertyType | null = null
-                                return context.expectValue(context.expectType(
+                                return context.expectValue(() => context.expectType(
                                     {
                                         "type": {
-                                            onExists: () => context.expectValue(context.expectTaggedUnion(
+                                            onExists: () => context.expectValue(() => context.expectTaggedUnion(
                                                 {
                                                     "collection": () => {
                                                         let targetCollectionType: t.CollectionType | null = null
                                                         let targetNode: t.Node | null = null
 
-                                                        return context.expectValue(context.expectType(
+                                                        return context.expectValue(() => context.expectType(
                                                             {
                                                                 "node": createExpectedNodeHandler(
                                                                     context,
@@ -60,14 +60,14 @@ function createExpectedNodeHandler(
                                                                     resolveRegistry,
                                                                 ),
                                                                 "type": {
-                                                                    onExists: () => context.expectValue(context.expectTaggedUnion(
+                                                                    onExists: () => context.expectValue(() => context.expectTaggedUnion(
                                                                         {
                                                                             "dictionary": () => {
                                                                                 let targetKeyProperty: StringAndRange | null = null
-                                                                                return context.expectValue(context.expectType(
+                                                                                return context.expectValue(() => context.expectType(
                                                                                     {
                                                                                         "key property": {
-                                                                                            onExists: () => context.expectValue(context.expectSimpleValue((range, data) => {
+                                                                                            onExists: () => context.expectValue(() => context.expectSimpleValue((range, data) => {
                                                                                                 targetKeyProperty = {
                                                                                                     value: data.value,
                                                                                                     range: range,
@@ -109,7 +109,7 @@ function createExpectedNodeHandler(
                                                                             "list": () => {
                                                                                 targetCollectionType = ["list", {
                                                                                 }]
-                                                                                return context.expectValue(context.expectType())
+                                                                                return context.expectValue(() => context.expectType())
                                                                             },
                                                                         },
                                                                         () => {
@@ -139,10 +139,10 @@ function createExpectedNodeHandler(
                                                     },
                                                     "component": () => {
                                                         let targetComponentTypeName: StringAndRange | null = null
-                                                        return context.expectValue(context.expectType(
+                                                        return context.expectValue(() => context.expectType(
                                                             {
                                                                 "type": {
-                                                                    onExists: () => context.expectValue(context.expectSimpleValue((range, data) => {
+                                                                    onExists: () => context.expectValue(() => context.expectSimpleValue((range, data) => {
                                                                         targetComponentTypeName = {
                                                                             value: data.value,
                                                                             range: range,
@@ -181,13 +181,13 @@ function createExpectedNodeHandler(
                                                     "state group": () => {
                                                         const states = new g.Dictionary<t.State>({})
                                                         let targetDefaultState: null | StringAndRange = null
-                                                        return context.expectValue(context.expectType(
+                                                        return context.expectValue(() => context.expectType(
                                                             {
                                                                 "states": {
-                                                                    onExists: () => context.expectValue(context.expectDictionary(
+                                                                    onExists: () => context.expectValue(() => context.expectDictionary(
                                                                         stateKey => {
                                                                             let targetNode: t.Node | null = null
-                                                                            return context.expectValue(context.expectType(
+                                                                            return context.expectValue(() => context.expectType(
                                                                                 {
                                                                                     "node": createExpectedNodeHandler(
                                                                                         context,
@@ -215,7 +215,7 @@ function createExpectedNodeHandler(
                                                                     },
                                                                 },
                                                                 "default state": {
-                                                                    onExists: () => context.expectValue(context.expectSimpleValue((range, data) => {
+                                                                    onExists: () => context.expectValue(() => context.expectSimpleValue((range, data) => {
                                                                         targetDefaultState = {
                                                                             value: data.value,
                                                                             range: range,
@@ -256,18 +256,18 @@ function createExpectedNodeHandler(
                                                     "value": () => {
                                                         let targetValueType: t.ValueType | null = null
                                                         let defaultValue: string | null = null
-                                                        return context.expectValue(context.expectType(
+                                                        return context.expectValue(() => context.expectType(
                                                             {
                                                                 "type": {
-                                                                    onExists: () => context.expectValue(context.expectTaggedUnion(
+                                                                    onExists: () => context.expectValue(() => context.expectTaggedUnion(
                                                                         {
                                                                             "number": () => {
                                                                                 targetValueType = ["number", {}]
-                                                                                return context.expectValue(context.expectType())
+                                                                                return context.expectValue(() => context.expectType())
                                                                             },
                                                                             "text": () => {
                                                                                 targetValueType = ["string", {}]
-                                                                                return context.expectValue(context.expectType())
+                                                                                return context.expectValue(() => context.expectType())
                                                                             },
                                                                         },
                                                                         () => {
@@ -282,7 +282,7 @@ function createExpectedNodeHandler(
                                                                     },
                                                                 },
                                                                 "default value": {
-                                                                    onExists: () => context.expectValue(context.expectSimpleValue((_range, data) => {
+                                                                    onExists: () => context.expectValue(() => context.expectSimpleValue((_range, data) => {
                                                                         defaultValue = data.value
                                                                         return p.result(false)
                                                                     })),
@@ -377,10 +377,10 @@ export function createDeserializer(onError: (message: string, range: bc.Range) =
     return context.createTypeHandler(
         {
             "component types": {
-                onExists: (): bc.RequiredValueHandler => context.expectValue(context.expectDictionary(
+                onExists: (): bc.RequiredValueHandler => context.expectValue(() => context.expectDictionary(
                     key => {
                         let targetNode: t.Node | null = null
-                        return context.expectValue(context.expectType(
+                        return context.expectValue(() => context.expectType(
                             {
                                 "node": createExpectedNodeHandler(
                                     context,
@@ -408,7 +408,7 @@ export function createDeserializer(onError: (message: string, range: bc.Range) =
                 },
             },
             "root type": {
-                onExists: (): bc.RequiredValueHandler => context.expectValue(context.expectSimpleValue((range, svData) => {
+                onExists: (): bc.RequiredValueHandler => context.expectValue(() => context.expectSimpleValue((range, svData) => {
                     rootName = {
                         value: svData.value,
                         range: range,

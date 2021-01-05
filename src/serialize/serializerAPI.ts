@@ -30,6 +30,8 @@ export class StringStream {
 }
 
 export interface ValueSerializer {
+    blockComment(value: string): void
+    lineComment(value: string): void
     simpleValue(value: string, quoted: boolean): void
     type(callback: (os: TypeSerializer) => void): void
     dictionary(callback: (os: DictionarySerializer) => void): void

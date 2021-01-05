@@ -12,7 +12,7 @@ export function createSchemaAndSideEffects(
 ): bc.ParserEventConsumer<SchemaAndSideEffects, null> {
     const isb = createInternalSchemaBuilder(onSchemaError)
     return {
-        onData: (data: bc.ParserEvent): p.IValue<boolean> => {
+        onData: (data: bc.BodyEvent): p.IValue<boolean> => {
             return isb.onData(data)
         },
         onEnd: (aborted: boolean, location: bc.Location): p.IUnsafeValue<SchemaAndSideEffects, null> => {
@@ -40,32 +40,34 @@ export function createInternalSchemaBuilder(
 
     return bc.createStackedDataSubscriber(
         {
-            valueHandler: {
-                array: (range: bc.Range): bc.ArrayHandler => {
-                    onSchemaSchemaError("unexpected array as schema", range)
-                    return bc.createDummyArrayHandler()
-                },
-                object: createDeserializer(
-                    (errorMessage, range) => {
-                        onSchemaSchemaError(errorMessage, range)
+            onValue: () => {
+                return {
+                    array: (range: bc.Range): bc.ArrayHandler => {
+                        onSchemaSchemaError("unexpected array as schema", range)
+                        return bc.createDummyArrayHandler()
                     },
-                    md2 => {
-                        metaData = md2
-                    }
-                ),
-                simpleValue: (range: bc.Range): p.IValue<boolean> => {
-                    onSchemaSchemaError("unexpected string as schema", range)
-                    return p.result(false)
-                },
-                taggedUnion: (range: bc.Range): bc.TaggedUnionHandler => {
-                    onSchemaSchemaError("unexpected typed union as schema", range)
-                    return {
-                        option: (): bc.RequiredValueHandler => bc.createDummyRequiredValueHandler(),
-                        missingOption: (): void => {
-                            //
+                    object: createDeserializer(
+                        (errorMessage, range) => {
+                            onSchemaSchemaError(errorMessage, range)
                         },
-                    }
-                },
+                        md2 => {
+                            metaData = md2
+                        }
+                    ),
+                    simpleValue: (range: bc.Range): p.IValue<boolean> => {
+                        onSchemaSchemaError("unexpected string as schema", range)
+                        return p.result(false)
+                    },
+                    taggedUnion: (range: bc.Range): bc.TaggedUnionHandler => {
+                        onSchemaSchemaError("unexpected typed union as schema", range)
+                        return {
+                            option: (): bc.RequiredValueHandler => bc.createDummyRequiredValueHandler(),
+                            missingOption: (): void => {
+                                //
+                            },
+                        }
+                    },
+                }
             },
             onMissing: () => {
                 //

@@ -10,6 +10,12 @@ function assertUnreachable<RT>(_x: never): RT {
 }
 
 class DummySerializer implements serializers.ValueSerializer {
+    public blockComment() {
+        //
+    }
+    public lineComment() {
+        //
+    }
     public simpleValue() {
         //
     }
@@ -34,6 +40,12 @@ class ASTNValueSerializer implements serializers.ValueSerializer {
     private readonly out: serializers.StringStream
     constructor(out: serializers.StringStream) {
         this.out = out
+    }
+    public blockComment(value: string) {
+        this.out.add(`/*${value}*/`)
+    }
+    public lineComment(value: string) {
+        this.out.add(`//${value}`)
     }
     public simpleValue(value: string, quoted: boolean) {
         const stringified = JSON.stringify(value)

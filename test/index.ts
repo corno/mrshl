@@ -161,15 +161,15 @@ export function directoryTests(): void {
                     readFileFromFileSystem,
                     diagnostic => {
                         if (diagnostic.range !== null) {
-
+                            const end = bc.getEndLocationFromRange(diagnostic.range)
                             actualIssues.push([
                                 diagnostic.source,
                                 diagnostic.severity === astn.DiagnosticSeverity.error ? "error" : "warning",
                                 diagnostic.message,
                                 diagnostic.range.start.line,
                                 diagnostic.range.start.column,
-                                diagnostic.range.end.line,
-                                diagnostic.range.end.column,
+                                end.line,
+                                end.column,
                             ])
                         } else {
 
@@ -250,35 +250,36 @@ describe("main", () => {
         function createDummyParser() {
 
             const parser = bc.createParser<null, null>(
+                () => {
+                    return {
+                        onData: () => {
+                            return p.result(false)
+                        },
+                        onEnd: () => {
+                            return p.success<null, null>(null)
+                        },
+                    }
+                },
+                () => {
+                    return {
+                        onData: () => {
+                            return p.result(false)
+                        },
+                        onEnd: () => {
+                            return p.success(null)
+                        },
+                    }
+                },
                 err => {
                     console.log(err)
                 },
-                {
-                    onSchemaDataStart: () => {
-                        return {
-                            onData: () => {
-                                return p.result(false)
-                            },
-                            onEnd: () => {
-                                return p.success<null, null>(null)
-                            },
-                        }
-                    },
-                    onInstanceDataStart: () => {
-                        return {
-                            onData: () => {
-                                return p.result(false)
-                            },
-                            onEnd: () => {
-                                return p.success(null)
-                            },
-                        }
-                    },
+                () => {
+                    return p.result(false)
                 }
             )
 
             console.log("SIMPLE TEST")
-            return bc.createStreamTokenizer(
+            return bc.createStreamPreTokenizer(
                 parser,
                 (message, _location) => {
                     console.error("error found", message)
@@ -300,7 +301,7 @@ describe("main", () => {
             const st = createDummyParser()
             return makeNativeHTTPrequest({
                 host: "www.astn.io",
-                path:   '/dev/schemas/mrshl/schemaschema@0.1',
+                path: '/dev/schemas/mrshl/schemaschema@0.1',
                 timeout: 7000,
             }).try(stream => {
                 return stream.toUnsafeValue<null, null>(

@@ -1,5 +1,6 @@
-import * as astn from "."
+import * as bc from "bass-clarinet"
 import { Root } from "./SideEffectsAPI"
+import { createSnippetsGenerator } from "./createSnippetsGenerator"
 
 export function createSnippetFinder(
     completionPositionLine: number,
@@ -21,7 +22,7 @@ export function createSnippetFinder(
 
     }
 
-    return astn.createSnippetsGenerator(
+    return createSnippetsGenerator(
         (tokenRange, intra, after) => {
             //console.log("LOCATION", range.start.line, range.start.column, range.end.line, range.end.column)
 
@@ -34,7 +35,8 @@ export function createSnippetFinder(
                 positionAlreadyFound = true
                 return
             }
-            if (completionPositionLine < tokenRange.end.line || (completionPositionLine === tokenRange.end.line && completionPositionCharacter < tokenRange.end.column)) {
+            const end = bc.getEndLocationFromRange(tokenRange)
+            if (completionPositionLine < end.line || (completionPositionLine === end.line && completionPositionCharacter < end.column)) {
                 //console.log("INTRA", intra)
                 generate(intra)
                 positionAlreadyFound = true

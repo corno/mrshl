@@ -5,27 +5,43 @@ function assertUnreachable<RT>(_x: never): RT {
     throw new Error("unreachable")
 }
 
+function serializeComments(
+    elementSerializer: ValueSerializer,
+    comments: syncAPI.Comments
+) {
+    comments.getComments().forEach(comment => {
+        console.log("HIER2")
+        console.log("FIX BLOCK OR INLINE")
+        elementSerializer.lineComment(comment.value)
+    })
+}
+
 function serializeProperty(
     elementSerializer: ValueSerializer,
     property: syncAPI.Property,
     compact: boolean,
-) {
+): void {
     switch (property.type[0]) {
         case "component": {
             const $ = property.type[1]
-            return serializeNode(
+            serializeNode(
                 $.node,
                 elementSerializer,
                 compact,
             )
+            break
         }
 
         case "dictionary": {
             const $ = property.type[1]
-            return elementSerializer.dictionary(dict => {
+            serializeComments(elementSerializer, $.beginComments)
+
+            elementSerializer.dictionary(dict => {
                 $.forEachEntry((entry, keyValue) => {
+                    serializeComments(elementSerializer, entry.comments)
+
                     dict.addEntry(keyValue, entryBuilder => {
-                        return serializeNode(
+                        serializeNode(
                             entry.node,
                             entryBuilder,
                             compact,
@@ -33,13 +49,17 @@ function serializeProperty(
                     })
                 })
             })
+            serializeComments(elementSerializer, $.endComments)
+
+            break
         }
         case "list": {
             const $ = property.type[1]
-            return elementSerializer.list(list => {
+            serializeComments(elementSerializer, $.beginComments)
+            elementSerializer.list(list => {
                 $.forEachEntry(entry => {
                     list.add(entryBuilder => {
-                        return serializeNode(
+                        serializeNode(
                             entry.node,
                             entryBuilder,
                             compact,
@@ -47,23 +67,32 @@ function serializeProperty(
                     })
                 })
             })
+            serializeComments(elementSerializer, $.endComments)
+
+            break
         }
         case "state group": {
             const $ = property.type[1]
-            return elementSerializer.taggedUnion($.getCurrentState().getStateKey(), stateDataBuilder => {
-                return serializeNode(
+
+            serializeComments(elementSerializer, $.comments)
+            elementSerializer.taggedUnion($.getCurrentState().getStateKey(), stateDataBuilder => {
+                serializeNode(
                     $.getCurrentState().node,
                     stateDataBuilder,
                     compact,
                 )
             })
+            break
         }
         case "value": {
             const $ = property.type[1]
-            return elementSerializer.simpleValue($.getValue(), $.isQuoted)
+            elementSerializer.simpleValue($.getValue(), $.isQuoted)
+            serializeComments(elementSerializer, $.comments)
+
+            break
         }
         default:
-            return assertUnreachable(property.type[0])
+            assertUnreachable(property.type[0])
     }
 }
 
@@ -112,6 +141,8 @@ function serializeNode(
     valueSerializer: ValueSerializer,
     compact: boolean
 ) {
+    serializeComments(valueSerializer, node.beginComments)
+
     if (compact) {
         valueSerializer.arrayType(arraySerializer => {
             node.forEachProperty(property => {
@@ -131,6 +162,8 @@ function serializeNode(
             })
         })
     }
+    serializeComments(valueSerializer, node.endComments)
+
 }
 
 export function serialize(

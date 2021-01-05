@@ -36,29 +36,29 @@ function createNodeHandler(
         onExists: () => {
 
             const properties = new g.Dictionary<t.Property>({})
-            return context.expectValue(context.expectType(
+            return context.expectValue(() => context.expectType(
                 {
                     "properties": {
-                        onExists: () => context.expectValue(context.expectDictionary(
+                        onExists: () => context.expectValue(() => context.expectDictionary(
                             key => {
                                 let targetPropertyType: t.PropertyType | null = null
-                                return context.expectValue(context.expectType(
+                                return context.expectValue(() => context.expectType(
                                     {
                                         "type": {
-                                            onExists: () => context.expectValue(
+                                            onExists: () => context.expectValue(() =>
                                                 context.expectTaggedUnion(
                                                     {
                                                         "collection": () => {
                                                             let targetCollectionType: t.CollectionType | null = null
-                                                            return context.expectValue(context.expectType(
+                                                            return context.expectValue(() => context.expectType(
                                                                 {
                                                                     "type": {
-                                                                        onExists: () => context.expectValue(context.expectTaggedUnion(
+                                                                        onExists: () => context.expectValue(() => context.expectTaggedUnion(
                                                                             {
                                                                                 "dictionary": () => {
                                                                                     let targetNode: t.Node | null = null
                                                                                     let keyPropertyName: StringAndRange | null = null
-                                                                                    return context.expectValue(context.expectType(
+                                                                                    return context.expectValue(() => context.expectType(
                                                                                         {
                                                                                             "node": createNodeHandler(
                                                                                                 context,
@@ -67,7 +67,7 @@ function createNodeHandler(
                                                                                                 resolveRegistry,
                                                                                             ),
                                                                                             "key property": {
-                                                                                                onExists: () => context.expectValue(
+                                                                                                onExists: () => context.expectValue(() =>
                                                                                                     context.expectSimpleValue((range, data) => {
                                                                                                         keyPropertyName = {
                                                                                                             value: data.value,
@@ -113,7 +113,7 @@ function createNodeHandler(
                                                                                 },
                                                                                 "list": () => {
                                                                                     let targetNode: t.Node | null = null
-                                                                                    return context.expectValue(context.expectType(
+                                                                                    return context.expectValue(() => context.expectType(
                                                                                         {
                                                                                             "node": createNodeHandler(
                                                                                                 context,
@@ -167,10 +167,10 @@ function createNodeHandler(
                                                         },
                                                         "component": () => {
                                                             let targetComponentTypeName: StringAndRange | null = null
-                                                            return context.expectValue(context.expectType(
+                                                            return context.expectValue(() => context.expectType(
                                                                 {
                                                                     "type": {
-                                                                        onExists: () => context.expectValue(context.expectSimpleValue((range, data) => {
+                                                                        onExists: () => context.expectValue(() => context.expectSimpleValue((range, data) => {
                                                                             targetComponentTypeName = {
                                                                                 value: data.value,
                                                                                 range: range,
@@ -210,13 +210,13 @@ function createNodeHandler(
                                                         "state group": () => {
                                                             const states = new g.Dictionary<t.State>({})
                                                             let defaultStateName: null | StringAndRange = null
-                                                            return context.expectValue(context.expectType(
+                                                            return context.expectValue(() => context.expectType(
                                                                 {
                                                                     "states": {
-                                                                        onExists: () => context.expectValue(context.expectDictionary(
+                                                                        onExists: () => context.expectValue(() => context.expectDictionary(
                                                                             stateKey => {
                                                                                 let targetNode: t.Node | null = null
-                                                                                return context.expectValue(context.expectType(
+                                                                                return context.expectValue(() => context.expectType(
                                                                                     {
                                                                                         "node": createNodeHandler(
                                                                                             context,
@@ -247,7 +247,7 @@ function createNodeHandler(
                                                                         },
                                                                     },
                                                                     "default state": {
-                                                                        onExists: () => context.expectValue(context.expectSimpleValue((range, data) => {
+                                                                        onExists: () => context.expectValue(() => context.expectSimpleValue((range, data) => {
                                                                             defaultStateName = {
                                                                                 value: data.value,
                                                                                 range: range,
@@ -289,11 +289,11 @@ function createNodeHandler(
                                                         "value": () => {
                                                             let quoted: null | boolean = null
                                                             let defaultValue: null | string = null
-                                                            return context.expectValue(
+                                                            return context.expectValue(() =>
                                                                 context.expectType(
                                                                     {
                                                                         "quoted": {
-                                                                            onExists: () => context.expectValue(context.expectBoolean(value => {
+                                                                            onExists: () => context.expectValue(() => context.expectBoolean(value => {
                                                                                 quoted = value
                                                                                 return p.result(false)
 
@@ -303,7 +303,7 @@ function createNodeHandler(
                                                                             },
                                                                         },
                                                                         "default value": {
-                                                                            onExists: () => context.expectValue(context.expectSimpleValue((_range, data) => {
+                                                                            onExists: () => context.expectValue(() => context.expectSimpleValue((_range, data) => {
                                                                                 defaultValue = data.value
                                                                                 return p.result(false)
 
@@ -416,10 +416,10 @@ export function createDeserializer(onError: (message: string, range: bc.Range) =
     return context.createTypeHandler(
         {
             "component types": {
-                onExists: (): bc.RequiredValueHandler => context.expectValue(context.expectDictionary(
+                onExists: (): bc.RequiredValueHandler => context.expectValue(() => context.expectDictionary(
                     key => {
                         let targetNode: t.Node | null = null
-                        return context.expectValue(context.expectType(
+                        return context.expectValue(() => context.expectType(
                             {
                                 "node": createNodeHandler(
                                     context,
@@ -450,7 +450,7 @@ export function createDeserializer(onError: (message: string, range: bc.Range) =
                 },
             },
             "root type": {
-                onExists: (): bc.RequiredValueHandler => context.expectValue(context.expectSimpleValue((range, data) => {
+                onExists: (): bc.RequiredValueHandler => context.expectValue(() => context.expectSimpleValue((range, data) => {
                     rootName = data.value
                     rootNameRange = range
                     return p.result(false)

@@ -49,13 +49,13 @@ function createNoOperationRequiredValueHandler(): bc.RequiredValueHandler {
         onMissing: () => {
             //
         },
-        valueHandler: createNoOperationValueHandler(),
+        onValue: () => createNoOperationValueHandler(),
     }
 }
 
 function createNoOperationArrayHandler(_beginRange: bc.Range): bc.ArrayHandler {
     return {
-        element: () => createNoOperationValueHandler(),
+        element: () => () => createNoOperationValueHandler(),
         end: _endData => {
             //registerSnippetGenerators.register(endData.range, null, null)
         },
@@ -172,8 +172,8 @@ export function deserializeDataset(
         const context = new bc.ExpectContext(
             (message, range) => onError("expect", message, range),
             (message, range) => onWarning("expect", message, range),
-            (_range, key, contextData) => createNoOperationPropertyHandler(key, contextData),
-            () => createNoOperationValueHandler(),
+            (_range, key, contextData) => () => createNoOperationPropertyHandler(key, contextData),
+            () => () => createNoOperationValueHandler(),
             bc.Severity.warning,
             bc.OnDuplicateEntry.ignore
         )
@@ -201,15 +201,12 @@ export function deserializeDataset(
     let foundSchemaErrors = false
     let internalSchema: InternalSchema | null = null
     const parser = bc.createParser<IDataset, string>(
-        (message, range) => {
-            onError("parser", message, range)
-        },
-        {
-            onSchemaDataStart: () => {
-                foundSchemaSpecification = true
-                return bc.createStackedDataSubscriber(
-                    {
-                        valueHandler: {
+        () => {
+            foundSchemaSpecification = true
+            return bc.createStackedDataSubscriber(
+                {
+                    onValue: () => {
+                        return {
                             array: range => {
                                 onSchemaError("unexpected array as schema", range)
                                 return bc.createDummyArrayHandler()
@@ -255,71 +252,78 @@ export function deserializeDataset(
                                     },
                                 }
                             },
-                        },
-                        onMissing: () => {
-                            //
-                        },
-                    },
-                    error => {
-                        onSchemaError(error.rangeLessMessage, error.range)
-                    },
-                    () => {
-                        //ignore end commends
-                        if (foundSchemaErrors) {
-                            return p.error(null)
                         }
-                        return p.success(null)
+                    },
+                    onMissing: () => {
+                        //
+                    },
+                },
+                error => {
+                    onSchemaError(error.rangeLessMessage, error.range)
+                },
+                () => {
+                    //ignore end commends
+                    if (foundSchemaErrors) {
+                        return p.error(null)
                     }
-                )
-            },
-            onInstanceDataStart: (compact: bc.Range | null): bc.ParserEventConsumer<IDataset, string> => {
-                if (foundSchemaSpecification && internalSchema === null && !foundSchemaErrors) {
-                    console.error("NO SCHEMA AND NO ERROR")
-                    //throw new Error("Unexpected: no schema errors and no schema")
+                    return p.success(null)
                 }
-                const dataset = onInternalSchemaResolved(internalSchema, compact !== null)
+            )
+        },
+        (compact: bc.Range | null): bc.ParserEventConsumer<IDataset, string> => {
+            if (foundSchemaSpecification && internalSchema === null && !foundSchemaErrors) {
+                console.error("NO SCHEMA AND NO ERROR")
+                //throw new Error("Unexpected: no schema errors and no schema")
+            }
+            const dataset = onInternalSchemaResolved(internalSchema, compact !== null)
 
-                if (dataset === null) {
-                    return {
-                        onData: () => {
-                            //
-                            return p.result(false)
-                        },
-                        onEnd: () => {
-                            return p.error("no valid schema")
-                        },
-                    }
+            if (dataset === null) {
+                return {
+                    onData: () => {
+                        //
+                        return p.result(false)
+                    },
+                    onEnd: () => {
+                        return p.error("no valid schema")
+                    },
                 }
-                if (foundSchemaSpecification) {
-                    if (internalSchema === null) {
-                        onWarning(
-                            "structure",
-                            "ignoring invalid internal schema",
-                            null
-                        )
+            }
+            if (foundSchemaSpecification) {
+                if (internalSchema === null) {
+                    onWarning(
+                        "structure",
+                        "ignoring invalid internal schema",
+                        null
+                    )
 
-                    }
                 }
-                return createDSD(dataset, compact !== null)
-            },
+            }
+            return createDSD(dataset, compact !== null)
+        },
+
+        (message, range) => {
+            onError("parser", message, range)
+        },
+        () => {
+            return p.result(false)
         }
     )
-    function onSchemaError(message: string, range: bc.Range) {
-        onError("schema error", message, range)
-        foundSchemaErrors = true
-    }
+function onSchemaError(message: string, range: bc.Range) {
+    onError("schema error", message, range)
+    foundSchemaErrors = true
+}
 
-    //console.log("DATASET DESER")
+//console.log("DATASET DESER")
 
-    const st = bc.createStreamTokenizer(
-        parser,
-        (message, range) => {
-            onError("tokenizer", message, range)
-        },
-    )
+const st = bc.createStreamPreTokenizer(
+    parser,
+    (message, range) => {
+        onError("tokenizer", message, range)
+    },
+)
 
-    return p20.createArray([serializedDataset]).streamify().toUnsafeValue(
-        null,
-        st,
-    )
+return p20.createArray([serializedDataset]).streamify().toUnsafeValue(
+    null,
+    st,
+)
 }

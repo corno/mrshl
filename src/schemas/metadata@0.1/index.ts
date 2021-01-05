@@ -16,37 +16,39 @@ export function createSchemaAndSideEffects(
 
     return bc.createStackedDataSubscriber(
         {
-            valueHandler: {
-                array: (range: bc.Range): bc.ArrayHandler => {
-                    onSchemaSchemaError("unexpected array as schema", range)
-                    return bc.createDummyArrayHandler()
-                },
-                object: createDeserializer(
-                    (errorMessage, range) => {
-                        onSchemaSchemaError(errorMessage, range)
+            onValue: () => {
+                return {
+                    array: (range: bc.Range): bc.ArrayHandler => {
+                        onSchemaSchemaError("unexpected array as schema", range)
+                        return bc.createDummyArrayHandler()
                     },
-                    md2 => {
-                        metadata = md2 === null
-                            ? null
-                            : {
-                                schema: md2,
-                                createSideEffects: () => createNOPSideEffects(),
-                            }
-                    }
-                ),
-                simpleValue: (range: bc.Range, _data: bc.SimpleValueData): p.IValue<boolean> => {
-                    onSchemaSchemaError("unexpected simple value as schema", range)
-                    return p.result(false)
-                },
-                taggedUnion: (range: bc.Range): bc.TaggedUnionHandler => {
-                    onSchemaSchemaError("unexpected typed union as schema", range)
-                    return {
-                        option: (): bc.RequiredValueHandler => bc.createDummyRequiredValueHandler(),
-                        missingOption: (): void => {
-                            //
+                    object: createDeserializer(
+                        (errorMessage, range) => {
+                            onSchemaSchemaError(errorMessage, range)
                         },
-                    }
-                },
+                        md2 => {
+                            metadata = md2 === null
+                                ? null
+                                : {
+                                    schema: md2,
+                                    createSideEffects: () => createNOPSideEffects(),
+                                }
+                        }
+                    ),
+                    simpleValue: (range: bc.Range, _data: bc.SimpleValueData): p.IValue<boolean> => {
+                        onSchemaSchemaError("unexpected simple value as schema", range)
+                        return p.result(false)
+                    },
+                    taggedUnion: (range: bc.Range): bc.TaggedUnionHandler => {
+                        onSchemaSchemaError("unexpected typed union as schema", range)
+                        return {
+                            option: (): bc.RequiredValueHandler => bc.createDummyRequiredValueHandler(),
+                            missingOption: (): void => {
+                                //
+                            },
+                        }
+                    },
+                }
             },
             onMissing: () => {
                 //

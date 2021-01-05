@@ -118,6 +118,8 @@ export class Collection {
     public readonly entries = new g.ReactiveArray<EntryPlaceholder>()
     public readonly nodeDefinition: d.Node
     public readonly dictionary: Dictionary | null
+    public readonly beginComments = new Comments()
+    public readonly endComments = new Comments()
     constructor(
         definition: d.Collection,
         errorsAggregator: IParentErrorsAggregator,

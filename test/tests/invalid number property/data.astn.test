@@ -1,3 +1,4 @@
-(
-    "y": true
+//a comment
+( 
+    "y": /*should be a number*/ true
 )

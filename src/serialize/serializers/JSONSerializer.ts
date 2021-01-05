@@ -4,6 +4,12 @@
 import * as serializers from "../serializerAPI"
 
 class DummySerializer implements serializers.ValueSerializer {
+    public blockComment() {
+        //
+    }
+    public lineComment() {
+        //
+    }
     public simpleValue() {
         //
     }
@@ -31,6 +37,12 @@ class JSONValueSerializer implements serializers.ValueSerializer {
     }
     public simpleValue(value: string) {
         this.out.add(JSON.stringify(value))
+    }
+    public blockComment() {
+        //ignore, JSON does not support comments
+    }
+    public lineComment() {
+        //ignore, JSON does not support comments
     }
     public type(callback: (os: serializers.TypeSerializer) => void) {
         this.out.add(`{`)
