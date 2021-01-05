@@ -10,7 +10,7 @@ function serializeComments(
     comments: syncAPI.Comments
 ) {
     comments.getComments().forEach(comment => {
-        console.log("FIX BLOCK OR INLINE")
+        console.error("FIX BLOCK OR INLINE")
         elementSerializer.lineComment(comment.value)
     })
 }

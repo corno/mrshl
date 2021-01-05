@@ -157,7 +157,7 @@ type InternalSchema = {
  */
 export function deserializeDataset(
     serializedDataset: string,
-    onInternalSchemaResolved: (internalSchema: InternalSchema | null, compact: boolean) => IDataset | null,
+    onInternalSchemaResolved: (optionalInternalSchema: InternalSchema | null, compact: boolean) => IDataset | null,
     schemaReferenceResolver: (
         reference: string,
     ) => p.IUnsafeValue<SchemaAndSideEffects, string>,
