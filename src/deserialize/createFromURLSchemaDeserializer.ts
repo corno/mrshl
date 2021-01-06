@@ -18,10 +18,13 @@ export function createFromURLSchemaDeserializer(
         if (reference === "") {
             return p.error(`schema cannot be an empty string`)
         }
-        const myUrl = new URL(encodeURI(reference), pathStart)
         const options = {
             host: host,
-            path: myUrl.href,
+            /*
+            the next line feels a bit smelly. I don't want to include a depencency on the 'url' or the 'path' package as they don't
+            exist in the browser, but I guess there would be a better way than this.
+             */
+            path: `${pathStart}/${encodeURI(reference)}`.replace(/\/\//g, "/"),
             timeout: timeout,
         }
         return makeHTTPrequest(
