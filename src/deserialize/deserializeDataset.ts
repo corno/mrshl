@@ -152,22 +152,50 @@ type InternalSchema = {
     schemaAndSideEffects: SchemaAndSideEffects
 }
 
+
 /**
- * this function returns a promise to a dataset and the promise is resolved when the validation has been completed
+ * this type has information about how the dataset was serialized in regards to compactness and schema specification
+ */
+export type IDeserializedDataset = {
+    internalSchemaSpecification: InternalSchemaSpecification
+    compact: boolean
+    dataset: IDataset
+}
+
+/**
+ * this function returns a promise to a deserialized dataset and the promise is resolved when the validation has been completed
+ * @param serializedDataset
+ * @param schemaReferenceResolver if the document contains a reference to a schema, this callback resolves the schema
+ * @param onInternalSchema if the document contains a schema (either reference or embedded), this callback is used to create the dataset
+ * @param onNoInternalSchema if the document does not contain a schema, this callback is used to create the dataset
+ * @param onError
+ * @param onWarning
+ * @param sideEffectsHandlers these handlers will be called during the deserialization.
+ * Can be used to create additional errors and warnings about the serialized document. For example missing properties or invalid formatting
  */
 export function deserializeDataset(
     serializedDataset: string,
-    onInternalSchemaResolved: (optionalInternalSchema: InternalSchema | null, compact: boolean) => IDataset | null,
     schemaReferenceResolver: (
         reference: string,
     ) => p.IUnsafeValue<SchemaAndSideEffects, string>,
+    onInternalSchema: (
+        specification: InternalSchemaSpecification,
+        schemaAndSideEffects: SchemaAndSideEffects,
+        compact: boolean
+    ) => IDeserializedDataset,
+    onNoInternalSchema: () => IDataset | null,
     onError: (source: string, message: string, range: bc.Range | null) => void,
     onWarning: (source: string, message: string, range: bc.Range | null) => void,
     sideEffectsHandlers: sideEffects.Root[],
-): p.IUnsafeValue<IDataset, string> {
+): p.IUnsafeValue<IDeserializedDataset, string> {
 
+    /*
+    CSCH: I think it is better to not have the 2 callbacks: onInternalSchema and onNoInternalSchema,
+    both their behaviour depends on the external schema.
+    just add a 'externalSchema' parameter and then handle the logic in this function.
+    */
 
-    function createDSD(dataset: IDataset, isCompact: boolean): bc.ParserEventConsumer<IDataset, string> {
+    function createDSD(dataset: IDeserializedDataset, isCompact: boolean): bc.ParserEventConsumer<IDeserializedDataset, string> {
 
         const context = new bc.ExpectContext(
             (message, range) => onError("expect", message, range),
@@ -180,7 +208,7 @@ export function deserializeDataset(
         return bc.createStackedDataSubscriber(
             createDatasetDeserializer(
                 context,
-                dataset.sync,
+                dataset.dataset.sync,
                 isCompact,
                 sideEffectsHandlers.map(h => h.node),
                 (message, range) => onError("deserializer", message, range),
@@ -200,7 +228,7 @@ export function deserializeDataset(
     let foundSchemaSpecification = false
     let foundSchemaErrors = false
     let internalSchema: InternalSchema | null = null
-    const parser = bc.createParser<IDataset, string>(
+    const parser = bc.createParser<IDeserializedDataset, string>(
         () => {
             foundSchemaSpecification = true
             return bc.createStackedDataSubscriber(
@@ -270,12 +298,23 @@ export function deserializeDataset(
                 }
             )
         },
-        (compact: bc.Range | null): bc.ParserEventConsumer<IDataset, string> => {
+        (compact: bc.Range | null): bc.ParserEventConsumer<IDeserializedDataset, string> => {
             if (foundSchemaSpecification && internalSchema === null && !foundSchemaErrors) {
                 console.error("NO SCHEMA AND NO ERROR")
                 //throw new Error("Unexpected: no schema errors and no schema")
             }
-            const dataset = onInternalSchemaResolved(internalSchema, compact !== null)
+            const dataset: IDeserializedDataset | null = (internalSchema === null)
+                ? ((): IDeserializedDataset | null => {
+                    const ds = onNoInternalSchema()
+                    if (ds === null) {
+                        return null
+                    }
+                    return {
+                        dataset: ds,
+                        internalSchemaSpecification: [InternalSchemaSpecificationType.None],
+                        compact: compact !== null,
+                    }
+                })() : onInternalSchema(internalSchema.specification, internalSchema.schemaAndSideEffects, compact !== null)
 
             if (dataset === null) {
                 return {
@@ -308,22 +347,22 @@ export function deserializeDataset(
             return p.result(false)
         }
     )
-function onSchemaError(message: string, range: bc.Range) {
-    onError("schema error", message, range)
-    foundSchemaErrors = true
-}
+    function onSchemaError(message: string, range: bc.Range) {
+        onError("schema error", message, range)
+        foundSchemaErrors = true
+    }
 
-//console.log("DATASET DESER")
+    //console.log("DATASET DESER")
 
-const st = bc.createStreamPreTokenizer(
-    bc.createTokenizer(parser),
-    (message, range) => {
-        onError("tokenizer", message, range)
-    },
-)
+    const st = bc.createStreamPreTokenizer(
+        bc.createTokenizer(parser),
+        (message, range) => {
+            onError("tokenizer", message, range)
+        },
+    )
 
-return p20.createArray([serializedDataset]).streamify().toUnsafeValue(
-    null,
-    st,
-)
+    return p20.createArray([serializedDataset]).streamify().toUnsafeValue(
+        null,
+        st,
+    )
 }

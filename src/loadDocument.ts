@@ -1,12 +1,11 @@
 import * as path from "path"
 import * as md from "./types"
-import { createFromURLSchemaDeserializer, deserializeDataset, deserializeSchemaFromStream } from "./deserialize"
+import { createFromURLSchemaDeserializer, deserializeDataset, deserializeSchemaFromStream, IDeserializedDataset } from "./deserialize"
 import * as sideEffects from "./SideEffectsAPI"
 import * as bc from "bass-clarinet-typed"
 import * as p from "pareto"
 import { IDataset } from "./dataset"
 import { MakeHTTPrequest } from "./makeHTTPrequest"
-import { InternalSchemaSpecificationType, InternalSchemaSpecification } from "./syncAPI"
 
 export enum DiagnosticSeverity {
 	warning,
@@ -30,10 +29,8 @@ function validateDocumentAfterExternalSchemaResolution(
 	sideEffectHandlers: sideEffects.Root[],
 	createDataset: (
 		schema: md.Schema,
-		internalSchemaSpecification: InternalSchemaSpecification,
-		compact: boolean,
 	) => IDataset,
-): p.IUnsafeValue<IDataset, string> {
+): p.IUnsafeValue<IDeserializedDataset, string> {
 	const schemaReferenceResolver = createFromURLSchemaDeserializer(
 		'www.astn.io',
 		'/dev/schemas/',
@@ -54,25 +51,49 @@ function validateDocumentAfterExternalSchemaResolution(
 
 	return deserializeDataset(
 		documentText,
-		(internalSchema, compact): IDataset | null => {
-			if (externalSchema === null) {
-				if (internalSchema !== null) {
-					allSideEffects.push(internalSchema.schemaAndSideEffects.createSideEffects((
-						message,
-						range,
-						severity,
-					) => {
-						addDiagnostic(
-							diagnosticCallback,
-							"validation",
-							message,
-							severity,
-							range,
-						)
-					}))
-					return createDataset(internalSchema.schemaAndSideEffects.schema, internalSchema.specification, compact)
+		schemaReferenceResolver,
+		(internalSchemaSpecification, schemaAndSideEffects, compact): IDeserializedDataset => {
 
+			function createDeserializedDataset(
+				schema: md.Schema,
+				compact: boolean,
+			): IDeserializedDataset {
+				return {
+					dataset: createDataset(schema),
+					internalSchemaSpecification: internalSchemaSpecification,
+					compact: compact,
 				}
+			}
+			if (externalSchema === null) {
+
+
+				allSideEffects.push(schemaAndSideEffects.createSideEffects((
+					message,
+					range,
+					severity,
+				) => {
+					addDiagnostic(
+						diagnosticCallback,
+						"validation",
+						message,
+						severity,
+						range,
+					)
+				}))
+				return createDeserializedDataset(schemaAndSideEffects.schema, compact)
+			}
+
+			addDiagnostic(
+				diagnosticCallback,
+				"schema retrieval",
+				"found both external and internal schema. ignoring internal schema",
+				DiagnosticSeverity.warning,
+				null,
+			)
+			return createDeserializedDataset(externalSchema, compact)
+		},
+		(): IDataset | null => {
+			if (externalSchema === null) {
 				addDiagnostic(
 					diagnosticCallback,
 					"structure",
@@ -82,20 +103,9 @@ function validateDocumentAfterExternalSchemaResolution(
 				)
 				return null
 			}
-			if (internalSchema !== null) {
-				addDiagnostic(
-					diagnosticCallback,
-					"schema retrieval",
-					"found both external and internal schema. ignoring internal schema",
-					DiagnosticSeverity.warning,
-					null,
-				)
-				return createDataset(externalSchema, internalSchema.specification, compact)
-			} else {
-				return createDataset(externalSchema, [InternalSchemaSpecificationType.None], compact)
-			}
+			return createDataset(externalSchema)
+
 		},
-		schemaReferenceResolver,
 		(source, errorMessage, range) => {
 			addDiagnostic(
 				diagnosticCallback,
@@ -149,10 +159,8 @@ export function loadDocument(
 	sideEffectHandlers: sideEffects.Root[],
 	createInitialDataset: (
 		schema: md.Schema,
-		internalSchemaSpecification: InternalSchemaSpecification,
-		compact: boolean,
 	) => IDataset,
-): p.IUnsafeValue<IDataset, null> {
+): p.IUnsafeValue<IDeserializedDataset, null> {
 	let diagnosticFound = false
 	const dc: DiagnosticCallback = (
 		diagnostic: Diagnostic

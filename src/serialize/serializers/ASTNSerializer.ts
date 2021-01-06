@@ -124,15 +124,15 @@ class ASTNSerializer implements serializers.RootSerializer {
         this.out = out
         this.root = new ASTNValueSerializer(out)
     }
-    public serializeHeader(dataset: syncAPI.IDataset, compact: boolean) {
-        switch (dataset.internalSchemaSpecification[0]) {
+    public serializeHeader(internalSchemaSpecification: syncAPI.InternalSchemaSpecification, compact: boolean) {
+        switch (internalSchemaSpecification[0]) {
             case syncAPI.InternalSchemaSpecificationType.Embedded: {
                 //const $ = dataset.internalSchemaSpecification[1]
                 this.out.add(`! ( FIXME_EMBEDDED_SCHEMA ) `)
                 break
             }
             case syncAPI.InternalSchemaSpecificationType.Reference: {
-                const $ = dataset.internalSchemaSpecification[1]
+                const $ = internalSchemaSpecification[1]
                 this.out.add(`! '${$.name}' `)
                 break
             }
@@ -141,7 +141,7 @@ class ASTNSerializer implements serializers.RootSerializer {
                 break
             }
             default:
-                assertUnreachable(dataset.internalSchemaSpecification[0])
+                assertUnreachable(internalSchemaSpecification[0])
         }
         if (compact) {
             this.out.add(`# `)

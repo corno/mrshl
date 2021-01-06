@@ -202,19 +202,20 @@ export function directoryTests(): void {
                             //
                         },
                     )],
-                    (schema, internalSchemaSpecification, compact) => {
-                        return astn.createInMemoryDataset(schema, internalSchemaSpecification, compact)
+                    schema => {
+                        return astn.createInMemoryDataset(schema)
                     }
                 ).mapResultRaw(dataset => {
                     astn.serialize(
-                        dataset.sync,
                         astn.createASTNSerializer(
                             new astn.StringStream(out, 0),
                         ),
+                        dataset.dataset.sync,
+                        dataset.internalSchemaSpecification,
                         false,
                     )
 
-                    subscribeToNode(dataset.async.rootNode, actualEvents)
+                    subscribeToNode(dataset.dataset.async.rootNode, actualEvents)
 
                     return null
                 }).catch(

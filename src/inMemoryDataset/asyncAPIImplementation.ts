@@ -128,14 +128,12 @@ export class Dataset implements asyncAPI.Dataset {
 
     private readonly imp: RootImp
     private readonly syncDataset: syncAPI.IDataset
-    private readonly compact: boolean
 
     //public readonly rootNode: Node
     constructor(
         rootImp: RootImp,
         global: Global,
         syncDataset: syncAPI.IDataset,
-        compact: boolean
     ) {
         this.imp = rootImp
         this.syncDataset = syncDataset
@@ -145,7 +143,6 @@ export class Dataset implements asyncAPI.Dataset {
         this.hasRedoActions = rootImp.global.changeController.revertedChanges.hasChanges
         this.errorAmount = rootImp.errorsAggregator.errorCount
         this.errorManager = rootImp.global.errorManager
-        this.compact = compact
 
         this.hasUnserializedChanges = new g.DerivedReactiveValue(rootImp.global.changeController.amountOfChangesSinceLastSerialization, position => {
             if (position === null) {
@@ -155,15 +152,20 @@ export class Dataset implements asyncAPI.Dataset {
             }
         })
     }
-    public serialize(callback: (data: string) => void): void {
+    public serialize(
+        internalSchemaSpecification: syncAPI.InternalSchemaSpecification,
+        compact: boolean,
+        callback: (data: string) => void,
+    ): void {
         const out: string[] = []
 
         s.serialize(
-            this.syncDataset,
             createASTNSerializer(
                 new s.StringStream(out, 0),
             ),
-            this.compact,
+            this.syncDataset,
+            internalSchemaSpecification,
+            compact,
         )
         callback(out.join(""))
         this.imp.global.changeController.resetSerializationPosition()

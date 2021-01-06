@@ -42,7 +42,10 @@ export interface ValueSerializer {
 
 export interface RootSerializer {
     root: ValueSerializer
-    serializeHeader(dataset: syncAPI.IDataset, compact: boolean): void
+    serializeHeader(
+        internalSchemaSpecification: syncAPI.InternalSchemaSpecification,
+        compact: boolean,
+    ): void
     serializeSchemaReference(schemaReference: string): void
 }
 

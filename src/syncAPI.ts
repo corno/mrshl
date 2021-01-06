@@ -74,7 +74,6 @@ export type InternalSchemaSpecification =
     | [InternalSchemaSpecificationType.None]
 
 export interface IDataset {
-    readonly internalSchemaSpecification: InternalSchemaSpecification
     readonly schema: md.Schema
     readonly root: Node
 }

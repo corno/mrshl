@@ -166,10 +166,11 @@ function serializeNode(
 }
 
 export function serialize(
-    dataset: syncAPI.IDataset,
     serializer: RootSerializer,
+    dataset: syncAPI.IDataset,
+    internalSchemaSpecification: syncAPI.InternalSchemaSpecification,
     compact: boolean,
 ): void {
-    serializer.serializeHeader(dataset, compact)
+    serializer.serializeHeader(internalSchemaSpecification, compact)
     serializeNode(dataset.root, serializer.root, compact)
 }
