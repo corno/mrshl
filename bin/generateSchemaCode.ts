@@ -126,7 +126,7 @@ const st = bc.createStreamPreTokenizer(
     },
 )
 
-p20.createArray([serializedSchema]).streamify().toUnsafeValue(
+p20.createArray([serializedSchema]).streamify().consume(
     null,
     st
 ).handle(

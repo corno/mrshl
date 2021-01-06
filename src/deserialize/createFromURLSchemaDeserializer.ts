@@ -1,4 +1,3 @@
-import * as url from "url"
 import { createSchemaDeserializer } from "./createSchemaDeserializer"
 import * as p from "pareto"
 import { SchemaAndSideEffects } from "../schemas"
@@ -19,9 +18,10 @@ export function createFromURLSchemaDeserializer(
         if (reference === "") {
             return p.error(`schema cannot be an empty string`)
         }
+        const myUrl = new URL(encodeURI(reference), pathStart)
         const options = {
             host: host,
-            path: url.resolve(pathStart, encodeURI(reference)),
+            path: myUrl.href,
             timeout: timeout,
         }
         return makeHTTPrequest(
@@ -38,12 +38,13 @@ export function createFromURLSchemaDeserializer(
                     },
                 )
 
-                return stream.toUnsafeValue(
+                return stream.consume(
                     null,
                     schemaTok,
                 ).mapError(
                     () => {
-                        return p.result(`errors in schema '${host}${url.resolve(pathStart, encodeURI(reference))}'`)
+                        const myUrl = new URL(encodeURI(reference), pathStart)
+                        return p.result(`errors in schema '${host}${myUrl.href}'`)
                     },
                 )
             },

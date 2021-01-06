@@ -12,9 +12,34 @@ import { describe } from "mocha"
 import * as astn from "../src"
 import * as bc from "bass-clarinet-typed"
 import * as async from "../src/asyncAPI"
-import { readFileFromFileSystem } from "../src/readFileFromFileSystem"
-import { makeNativeHTTPrequest } from "../src/makeNativeHTTPrequest"
+import { makeNativeHTTPrequest } from "./makeNativeHTTPrequest"
 //import { deserializeSchemaFromString } from "../src"
+import * as p20 from "pareto-20"
+import { FileError } from "../src/loadDocument"
+
+function readFileFromFileSystem(
+	dir: string,
+	schemaFileName: string,
+): p.IUnsafeValue<p.IStream<string, null>, FileError> {
+	return p20.wrapUnsafeFunction((onError, onSuccess) => {
+		fs.readFile(
+			path.join(dir, schemaFileName),
+			{ encoding: "utf-8" },
+			(err, data) => {
+				if (err === null) {
+					onSuccess(p20.createArray([data]).streamify())
+				} else {
+					if (err.code === "ENOENT") {
+						//there is no schema file
+						onError(FileError.FileNotFound)
+					} else {
+						onError(FileError.UnknownError)
+					}
+				}
+			}
+		)
+	})
+}
 
 function assertUnreachable<RT>(_x: never): RT {
     throw new Error("unreachable")
@@ -306,7 +331,7 @@ describe("main", () => {
                 path: '/dev/schemas/mrshl/schemaschema@0.1',
                 timeout: 7000,
             }).try(stream => {
-                return stream.toUnsafeValue<null, null>(
+                return stream.consume<null, null>(
                     null,
                     st,
                 ).mapError(() => {

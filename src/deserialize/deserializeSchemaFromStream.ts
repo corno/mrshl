@@ -9,7 +9,7 @@ export function deserializeSchemaFromStream(
 ): p.IUnsafeValue<SchemaAndSideEffects, string> {
     //console.log("FROM STRING")
 
-    return schemaStream.toUnsafeValue(
+    return schemaStream.consume(
         null,
         createSchemaDeserializer(
             onError,

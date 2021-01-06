@@ -361,7 +361,7 @@ export function deserializeDataset(
         },
     )
 
-    return p20.createArray([serializedDataset]).streamify().toUnsafeValue(
+    return p20.createArray([serializedDataset]).streamify().consume(
         null,
         st,
     )
