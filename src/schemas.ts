@@ -5,6 +5,11 @@ import * as md from "./types"
 import * as sideEffects from "./SideEffectsAPI"
 import { DiagnosticSeverity } from "./loadDocument"
 
+/**
+ * a Document needs a schema to be validated. Besides the basic schema structure we want to be able to report additional
+ * validation errors.
+ * All built-in schemas create a combination of these 2
+ */
 export type SchemaAndSideEffects = {
     schema: md.Schema
     createSideEffects: (
