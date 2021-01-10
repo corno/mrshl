@@ -16,6 +16,9 @@ type Diagnostic = {
 	source: string
 	severity: DiagnosticSeverity
 	message: string
+	/**
+	 * the range can be null if a diagnostic is not related to the content but to the context of a document. Mostly because of external schema validation
+	 */
 	range: bc.Range | null
 }
 
