@@ -9,6 +9,17 @@ import { InternalSchemaSpecification, InternalSchemaSpecificationType } from "..
 import { createDeserializer as createMetaDataDeserializer } from "../schemas/metadata@0.1/deserialize"
 
 
+export type DiagnosticSource =
+| "schema retrieval"
+| "validation"
+| "structure"
+| "expect"
+| "deserializer"
+| "X"
+| "parser"
+| "schema error"
+| "tokenizer"
+
 function createNoOperationPropertyHandler(
     _key: string,
     //propertyData: bc.PropertyData,
@@ -184,8 +195,8 @@ export function deserializeDataset(
         compact: boolean
     ) => IDeserializedDataset,
     onNoInternalSchema: () => IDataset | null,
-    onError: (source: string, message: string, range: bc.Range | null) => void,
-    onWarning: (source: string, message: string, range: bc.Range | null) => void,
+    onError: (source: DiagnosticSource, message: string, range: bc.Range | null) => void,
+    onWarning: (source: DiagnosticSource, message: string, range: bc.Range | null) => void,
     sideEffectsHandlers: sideEffects.Root[],
 ): p.IUnsafeValue<IDeserializedDataset, string> {
 

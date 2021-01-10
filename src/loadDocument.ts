@@ -1,6 +1,12 @@
 import * as path from "path"
 import * as md from "./types"
-import { createFromURLSchemaDeserializer, deserializeDataset, deserializeSchemaFromStream, IDeserializedDataset } from "./deserialize"
+import {
+	createFromURLSchemaDeserializer,
+	deserializeDataset,
+	deserializeSchemaFromStream,
+	DiagnosticSource,
+	IDeserializedDataset,
+} from "./deserialize"
 import * as sideEffects from "./SideEffectsAPI"
 import * as bc from "bass-clarinet-typed"
 import * as p from "pareto"
@@ -13,7 +19,7 @@ export enum DiagnosticSeverity {
 }
 
 type Diagnostic = {
-	source: string
+	source: DiagnosticSource
 	severity: DiagnosticSeverity
 	message: string
 	/**
@@ -133,7 +139,7 @@ function validateDocumentAfterExternalSchemaResolution(
 
 function addDiagnostic(
 	callback: DiagnosticCallback,
-	source: string,
+	source: DiagnosticSource,
 	message: string,
 	severity: DiagnosticSeverity,
 	range: bc.Range | null,
