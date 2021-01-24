@@ -7,18 +7,23 @@ import { SchemaAndSideEffects } from "../schemas"
 import { IDataset } from "../dataset"
 import { InternalSchemaSpecification, InternalSchemaSpecificationType } from "../syncAPI"
 import { createDeserializer as createMetaDataDeserializer } from "../schemas/metadata@0.1/deserialize"
+import { SchemaError } from "./deserializeSchemaFromStream"
 
 
-export type DiagnosticSource =
-| "schema retrieval"
-| "validation"
-| "structure"
-| "expect"
-| "deserializer"
-| "X"
-| "parser"
-| "schema error"
-| "tokenizer"
+export type DeserializeDiagnosticType =
+    | "structure"
+    | "expect"
+    | "deserializer"
+    | "X"
+    | "parser"
+    | "schema error"
+    | "tokenizer"
+
+export type DeserializeDiagnostic = {
+    type: DeserializeDiagnosticType
+    range: bc.Range
+    message: string
+}
 
 function createNoOperationPropertyHandler(
     _key: string,
@@ -195,10 +200,10 @@ export function deserializeDataset(
         compact: boolean
     ) => IDeserializedDataset,
     onNoInternalSchema: () => IDataset | null,
-    onError: (source: DiagnosticSource, message: string, range: bc.Range | null) => void,
-    onWarning: (source: DiagnosticSource, message: string, range: bc.Range | null) => void,
+    onError: (diagnostic: DeserializeDiagnostic) => void,
+    onWarning: (diagnostic: DeserializeDiagnostic) => void,
     sideEffectsHandlers: sideEffects.Root[],
-): p.IUnsafeValue<IDeserializedDataset, string> {
+): p.IUnsafeValue<IDeserializedDataset, SchemaError> {
 
     /*
     CSCH: I think it is better to not have the 2 callbacks: onInternalSchema and onNoInternalSchema,
@@ -206,11 +211,19 @@ export function deserializeDataset(
     just add a 'externalSchema' parameter and then handle the logic in this function.
     */
 
-    function createDSD(dataset: IDeserializedDataset, isCompact: boolean): bc.ParserEventConsumer<IDeserializedDataset, string> {
+    function createDiagnostic(type: DeserializeDiagnosticType, message: string, range: bc.Range): DeserializeDiagnostic {
+        return {
+            type: type,
+            message: message,
+            range:range,
+        }
+    }
+
+    function createDSD(dataset: IDeserializedDataset, isCompact: boolean): bc.ParserEventConsumer<IDeserializedDataset, SchemaError> {
 
         const context = new bc.ExpectContext(
-            (message, range) => onError("expect", message, range),
-            (message, range) => onWarning("expect", message, range),
+            (message, range) => onError(createDiagnostic("expect", message, range)),
+            (message, range) => onWarning(createDiagnostic("expect", message, range)),
             (_range, key, contextData) => () => createNoOperationPropertyHandler(key, contextData),
             () => () => createNoOperationValueHandler(),
             bc.Severity.warning,
@@ -222,10 +235,10 @@ export function deserializeDataset(
                 dataset.dataset.sync,
                 isCompact,
                 sideEffectsHandlers.map(h => h.node),
-                (message, range) => onError("deserializer", message, range),
+                (message, range) => onError(createDiagnostic("deserializer", message, range)),
             ),
             error => {
-                onError("X", error.rangeLessMessage, error.range)
+                onError(createDiagnostic("X", error.rangeLessMessage, error.range))
             },
             () => {
                 sideEffectsHandlers.forEach(h => {
@@ -236,12 +249,12 @@ export function deserializeDataset(
         )
     }
 
-    let foundSchemaSpecification = false
+    let internalSchemaSpecificationStart: null | bc.Range = null
     let foundSchemaErrors = false
     let internalSchema: InternalSchema | null = null
-    const parser = bc.createParser<IDeserializedDataset, string>(
-        () => {
-            foundSchemaSpecification = true
+    const parser = bc.createParser<IDeserializedDataset, SchemaError>(
+        schemaStart => {
+            internalSchemaSpecificationStart = schemaStart
             return bc.createStackedDataSubscriber(
                 {
                     onValue: () => {
@@ -309,8 +322,8 @@ export function deserializeDataset(
                 }
             )
         },
-        (compact: bc.Range | null): bc.ParserEventConsumer<IDeserializedDataset, string> => {
-            if (foundSchemaSpecification && internalSchema === null && !foundSchemaErrors) {
+        (compact: bc.Range | null): bc.ParserEventConsumer<IDeserializedDataset, SchemaError> => {
+            if (internalSchemaSpecificationStart && internalSchema === null && !foundSchemaErrors) {
                 console.error("NO SCHEMA AND NO ERROR")
                 //throw new Error("Unexpected: no schema errors and no schema")
             }
@@ -334,32 +347,33 @@ export function deserializeDataset(
                         return p.result(false)
                     },
                     onEnd: () => {
-                        return p.error("no valid schema")
+                        return p.error({
+                            problem: "no valid schema",
+                        })
                     },
                 }
             }
-            if (foundSchemaSpecification) {
+            if (internalSchemaSpecificationStart) {
                 if (internalSchema === null) {
-                    onWarning(
+                    onWarning(createDiagnostic(
                         "structure",
                         "ignoring invalid internal schema",
-                        null
-                    )
-
+                        internalSchemaSpecificationStart,
+                    ))
                 }
             }
             return createDSD(dataset, compact !== null)
         },
 
         (message, range) => {
-            onError("parser", message, range)
+            onError(createDiagnostic("parser", message, range))
         },
         () => {
             return p.result(false)
         }
     )
     function onSchemaError(message: string, range: bc.Range) {
-        onError("schema error", message, range)
+        onError(createDiagnostic("schema error", message, range))
         foundSchemaErrors = true
     }
 
@@ -368,7 +382,7 @@ export function deserializeDataset(
     const st = bc.createStreamPreTokenizer(
         bc.createTokenizer(parser),
         (message, range) => {
-            onError("tokenizer", message, range)
+            onError(createDiagnostic("tokenizer", message, range))
         },
     )
 

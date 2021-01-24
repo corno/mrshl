@@ -4,8 +4,9 @@ import {
 	createFromURLSchemaDeserializer,
 	deserializeDataset,
 	deserializeSchemaFromStream,
-	DiagnosticSource,
 	IDeserializedDataset,
+	DeserializeDiagnostic,
+	SchemaError,
 } from "./deserialize"
 import * as sideEffects from "./SideEffectsAPI"
 import * as bc from "bass-clarinet-typed"
@@ -18,17 +19,33 @@ export enum DiagnosticSeverity {
 	error
 }
 
-type Diagnostic = {
-	source: DiagnosticSource
+type LoadDocumentDiagnosticType =
+	| ["schema retrieval", {
+		issue:
+		| ["unknown file system error"]
+		| ["valdating schema file against internal schema"]
+		| ["found both external and internal schema. ignoring internal schema"]
+		| ["error in external schema", {
+			message: string
+		}]
+		| ["no valid schema"]
+		| ["missing schema"]
+	}]
+	| ["validation", {
+		range: bc.Range
+		message: string
+	}]
+	| ["structure", {
+		message: "missing (valid) schema"
+	}]
+	| ["deserialization", DeserializeDiagnostic]
+
+type LoadDocumentDiagnostic = {
+	type: LoadDocumentDiagnosticType
 	severity: DiagnosticSeverity
-	message: string
-	/**
-	 * the range can be null if a diagnostic is not related to the content but to the context of a document. Mostly because of external schema validation
-	 */
-	range: bc.Range | null
 }
 
-type DiagnosticCallback = (diagnostic: Diagnostic) => void
+type DiagnosticCallback = (diagnostic: LoadDocumentDiagnostic) => void
 
 function validateDocumentAfterExternalSchemaResolution(
 	documentText: string,
@@ -39,7 +56,7 @@ function validateDocumentAfterExternalSchemaResolution(
 	createDataset: (
 		schema: md.Schema,
 	) => IDataset,
-): p.IUnsafeValue<IDeserializedDataset, string> {
+): p.IUnsafeValue<IDeserializedDataset, SchemaError> {
 	const schemaReferenceResolver = createFromURLSchemaDeserializer(
 		'www.astn.io',
 		'/dev/schemas/',
@@ -83,10 +100,8 @@ function validateDocumentAfterExternalSchemaResolution(
 				) => {
 					addDiagnostic(
 						diagnosticCallback,
-						"validation",
-						message,
+						["validation", { range: range, message: message }],
 						severity,
-						range,
 					)
 				}))
 				return createDeserializedDataset(schemaAndSideEffects.schema, compact)
@@ -94,10 +109,10 @@ function validateDocumentAfterExternalSchemaResolution(
 
 			addDiagnostic(
 				diagnosticCallback,
-				"schema retrieval",
-				"found both external and internal schema. ignoring internal schema",
+				["schema retrieval", {
+					issue: ["found both external and internal schema. ignoring internal schema"],
+				}],
 				DiagnosticSeverity.warning,
-				null,
 			)
 			return createDeserializedDataset(externalSchema, compact)
 		},
@@ -105,32 +120,28 @@ function validateDocumentAfterExternalSchemaResolution(
 			if (externalSchema === null) {
 				addDiagnostic(
 					diagnosticCallback,
-					"structure",
-					"missing (valid) schema",
+					["structure", {
+						message: "missing (valid) schema",
+					}],
 					DiagnosticSeverity.error,
-					null,
 				)
 				return null
 			}
 			return createDataset(externalSchema)
 
 		},
-		(source, errorMessage, range) => {
+		errorDiagnostic => {
 			addDiagnostic(
 				diagnosticCallback,
-				source,
-				errorMessage,
+				["deserialization", errorDiagnostic],
 				DiagnosticSeverity.error,
-				range,
 			)
 		},
-		(source, warningMessage, range) => {
+		warningDiagnostic => {
 			addDiagnostic(
 				diagnosticCallback,
-				source,
-				warningMessage,
+				["deserialization", warningDiagnostic],
 				DiagnosticSeverity.warning,
-				range
 			)
 		},
 		allSideEffects,
@@ -139,16 +150,12 @@ function validateDocumentAfterExternalSchemaResolution(
 
 function addDiagnostic(
 	callback: DiagnosticCallback,
-	source: DiagnosticSource,
-	message: string,
+	type: LoadDocumentDiagnosticType,
 	severity: DiagnosticSeverity,
-	range: bc.Range | null,
 ) {
 	callback({
-		source: source,
+		type: type,
 		severity: severity,
-		message: message,
-		range: range,
 	})
 }
 
@@ -172,20 +179,20 @@ export function loadDocument(
 ): p.IUnsafeValue<IDeserializedDataset, null> {
 	let diagnosticFound = false
 	const dc: DiagnosticCallback = (
-		diagnostic: Diagnostic
+		diagnostic: LoadDocumentDiagnostic
 	) => {
 		diagnosticFound = true
 		return diagnosticCallback(diagnostic)
 	}
 
-	function validateThatErrorsAreFound(errorMessage: string) {
+	function validateThatErrorsAreFound(error: SchemaError) {
 		if (!diagnosticFound) {
 			addDiagnostic(
 				dc,
-				'schema retrieval',
-				errorMessage,
+				['schema retrieval', {
+					issue: [error.problem],
+				}],
 				DiagnosticSeverity.error,
-				null
 			)
 		}
 		return p.result(null)
@@ -196,10 +203,10 @@ export function loadDocument(
 	if (basename === schemaFileName) {
 		//don't validate the schema against itself
 		dc({
-			source: "schema retrieval",
+			type: ["schema retrieval", {
+				issue: ["valdating schema file against internal schema"],
+			}],
 			severity: DiagnosticSeverity.warning,
-			message: "valdating schema file against internal schema",
-			range: null,
 		})
 
 		return validateDocumentAfterExternalSchemaResolution(
@@ -230,10 +237,10 @@ export function loadDocument(
 				//something else went wrong
 				addDiagnostic(
 					dc,
-					'schema retrieval',
-					'unknown file system error',
+					['schema retrieval', {
+						issue: ['unknown file system error'],
+					}],
 					DiagnosticSeverity.error,
-					null
 				)
 				return p.result(null)
 			}
@@ -244,9 +251,11 @@ export function loadDocument(
 				schemaStream,
 				(message, _range) => {
 					dc({
-						source: "schema retrieval",
-						message: `error in external schema: ${message}`,
-						range: null,
+						type: ["schema retrieval", {
+							issue: [`error in external schema`, {
+								message: message,
+							}],
+						}],
 						severity: DiagnosticSeverity.error,
 					})
 				},
@@ -266,10 +275,11 @@ export function loadDocument(
 							) => {
 								addDiagnostic(
 									dc,
-									"validation",
-									message,
+									["validation", {
+										range: range,
+										message: message,
+									}],
 									severity,
-									range
 								)
 							}
 						)]),

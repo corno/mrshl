@@ -185,28 +185,73 @@ export function directoryTests(): void {
                     makeNativeHTTPrequest,
                     readFileFromFileSystem,
                     diagnostic => {
-                        if (diagnostic.range !== null) {
-                            const end = bc.getEndLocationFromRange(diagnostic.range)
-                            actualIssues.push([
-                                diagnostic.source,
-                                diagnostic.severity === astn.DiagnosticSeverity.error ? "error" : "warning",
-                                diagnostic.message,
-                                diagnostic.range.start.line,
-                                diagnostic.range.start.column,
-                                end.line,
-                                end.column,
-                            ])
-                        } else {
+                        const diagSev = diagnostic.severity === astn.DiagnosticSeverity.error ? "error" : "warning"
+                        switch (diagnostic.type[0]) {
+                            case "deserialization": {
+                                const $ = diagnostic.type[1]
+                                const end = bc.getEndLocationFromRange($.range)
 
-                            actualIssues.push([
-                                diagnostic.source,
-                                diagnostic.severity === astn.DiagnosticSeverity.error ? "error" : "warning",
-                                diagnostic.message,
-                                null,
-                                null,
-                                null,
-                                null,
-                            ])
+                                actualIssues.push([
+                                    $.type,
+                                    diagSev,
+                                    $.message,
+                                    $.range.start.line,
+                                    $.range.start.column,
+                                    end.line,
+                                    end.column,
+                                ])
+                                break
+                            }
+                            case "schema retrieval": {
+                                const $ = diagnostic.type[1]
+
+                                actualIssues.push([
+                                    "schema retrieval",
+                                    diagSev,
+                                    (() => {
+                                        if ($.issue[0] === "error in external schema") {
+                                            return `${$.issue[0]}: ${$.issue[1].message}`
+                                        }
+                                        return $.issue[0]
+                                    })(),
+                                    null,
+                                    null,
+                                    null,
+                                    null,
+                                ])
+                                break
+                            }
+                            case "structure": {
+                                const $ = diagnostic.type[1]
+
+                                actualIssues.push([
+                                    "structure",
+                                    diagSev,
+                                    $.message,
+                                    null,
+                                    null,
+                                    null,
+                                    null,
+                                ])
+                                break
+                            }
+                            case "validation": {
+                                const $ = diagnostic.type[1]
+                                const end = bc.getEndLocationFromRange($.range)
+
+                                actualIssues.push([
+                                    "validation",
+                                    diagSev,
+                                    $.message,
+                                    $.range.start.line,
+                                    $.range.start.column,
+                                    end.line,
+                                    end.column,
+                                ])
+                                break
+                            }
+                            default:
+                                assertUnreachable(diagnostic.type[0])
                         }
 
                     },
