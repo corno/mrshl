@@ -11,18 +11,31 @@ import { SchemaError } from "./deserializeSchemaFromStream"
 
 
 export type DeserializeDiagnosticType =
-    | "structure"
-    | "expect"
-    | "deserializer"
-    | "X"
-    | "parser"
-    | "schema error"
-    | "tokenizer"
+    | ["structure", {
+        message: "ignoring invalid internal schema"
+    }]
+    | ["expect", {
+        message: string
+    }]
+    | ["deserializer", {
+        message: string
+    }]
+    | ["X", {
+        message: string
+    }]
+    | ["parser", {
+        message: string
+    }]
+    | ["schema error", {
+        message: string
+    }]
+    | ["tokenizer", {
+        message: string
+    }]
 
 export type DeserializeDiagnostic = {
     type: DeserializeDiagnosticType
     range: bc.Range
-    message: string
 }
 
 function createNoOperationPropertyHandler(
@@ -211,19 +224,18 @@ export function deserializeDataset(
     just add a 'externalSchema' parameter and then handle the logic in this function.
     */
 
-    function createDiagnostic(type: DeserializeDiagnosticType, message: string, range: bc.Range): DeserializeDiagnostic {
+    function createDiagnostic(type: DeserializeDiagnosticType, range: bc.Range): DeserializeDiagnostic {
         return {
             type: type,
-            message: message,
-            range:range,
+            range: range,
         }
     }
 
     function createDSD(dataset: IDeserializedDataset, isCompact: boolean): bc.ParserEventConsumer<IDeserializedDataset, SchemaError> {
 
         const context = new bc.ExpectContext(
-            (message, range) => onError(createDiagnostic("expect", message, range)),
-            (message, range) => onWarning(createDiagnostic("expect", message, range)),
+            (message, range) => onError(createDiagnostic(["expect", { message: message }], range)),
+            (message, range) => onWarning(createDiagnostic(["expect", { message: message }], range)),
             (_range, key, contextData) => () => createNoOperationPropertyHandler(key, contextData),
             () => () => createNoOperationValueHandler(),
             bc.Severity.warning,
@@ -235,10 +247,10 @@ export function deserializeDataset(
                 dataset.dataset.sync,
                 isCompact,
                 sideEffectsHandlers.map(h => h.node),
-                (message, range) => onError(createDiagnostic("deserializer", message, range)),
+                (message, range) => onError(createDiagnostic(["deserializer", { message: message }], range)),
             ),
             error => {
-                onError(createDiagnostic("X", error.rangeLessMessage, error.range))
+                onError(createDiagnostic(["X", { message: error.rangeLessMessage }], error.range))
             },
             () => {
                 sideEffectsHandlers.forEach(h => {
@@ -356,8 +368,9 @@ export function deserializeDataset(
             if (internalSchemaSpecificationStart) {
                 if (internalSchema === null) {
                     onWarning(createDiagnostic(
-                        "structure",
-                        "ignoring invalid internal schema",
+                        ["structure", {
+                            message: "ignoring invalid internal schema",
+                        }],
                         internalSchemaSpecificationStart,
                     ))
                 }
@@ -366,14 +379,14 @@ export function deserializeDataset(
         },
 
         (message, range) => {
-            onError(createDiagnostic("parser", message, range))
+            onError(createDiagnostic(["parser", { message: message }], range))
         },
         () => {
             return p.result(false)
         }
     )
     function onSchemaError(message: string, range: bc.Range) {
-        onError(createDiagnostic("schema error", message, range))
+        onError(createDiagnostic(["schema error", { message: message }], range))
         foundSchemaErrors = true
     }
 
@@ -382,7 +395,7 @@ export function deserializeDataset(
     const st = bc.createStreamPreTokenizer(
         bc.createTokenizer(parser),
         (message, range) => {
-            onError(createDiagnostic("tokenizer", message, range))
+            onError(createDiagnostic(["tokenizer", { message: message }], range))
         },
     )
 

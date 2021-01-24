@@ -191,10 +191,44 @@ export function directoryTests(): void {
                                 const $ = diagnostic.type[1]
                                 const end = bc.getEndLocationFromRange($.range)
 
+
                                 actualIssues.push([
-                                    $.type,
+                                    $.type[0],
                                     diagSev,
-                                    $.message,
+                                    ((): string => {
+                                        switch ($.type[0]) {
+                                            case "X": {
+                                                const $$ = $.type[1]
+                                                return $$.message
+                                            }
+                                            case "deserializer": {
+                                                const $$ = $.type[1]
+                                                return $$.message
+                                            }
+                                            case "expect": {
+                                                const $$ = $.type[1]
+                                                return $$.message
+                                            }
+                                            case "parser": {
+                                                const $$ = $.type[1]
+                                                return $$.message
+                                            }
+                                            case "schema error": {
+                                                const $$ = $.type[1]
+                                                return $$.message
+                                            }
+                                            case "structure": {
+                                                const $$ = $.type[1]
+                                                return $$.message
+                                            }
+                                            case "tokenizer": {
+                                                const $$ = $.type[1]
+                                                return $$.message
+                                            }
+                                            default:
+                                                return assertUnreachable($.type[0])
+                                        }
+                                    })(),
                                     $.range.start.line,
                                     $.range.start.column,
                                     end.line,
