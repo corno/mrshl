@@ -1,6 +1,6 @@
 [
     [ "schema retrieval", "warning", "found both external and internal schema. ignoring internal schema", null, null, null, null],
-    [ "expect", "warning", "expected '(' but found '{'", 18, 1, 18, 2],
-    [ "expect", "error", "unexpected property: 'a'", 19, 5, 19, 8],
-    [ "expect", "warning", "expected ')' but found '}'", 22, 1, 22, 2]
+    [ "deserialization", "warning", "expected '(' but found '{'", 18, 1, 18, 2],
+    [ "deserialization", "error", "unexpected property: 'a'", 19, 5, 19, 8],
+    [ "deserialization", "warning", "expected ')' but found '}'", 22, 1, 22, 2]
 ]

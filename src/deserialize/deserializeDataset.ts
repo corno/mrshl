@@ -3,39 +3,63 @@ import * as sideEffects from "../SideEffectsAPI"
 import { createDatasetDeserializer } from "./createDatasetDeserializer"
 import * as p20 from "pareto-20"
 import * as p from "pareto"
-import { SchemaAndSideEffects } from "../schemas"
+import { SchemaAndSideEffects, SchemaReferenceResolvingError, InternalSchemaDeserializationError, printInternalSchemaDeserializationError } from "../schemas"
 import { IDataset } from "../dataset"
 import { InternalSchemaSpecification, InternalSchemaSpecificationType } from "../syncAPI"
 import { createDeserializer as createMetaDataDeserializer } from "../schemas/metadata@0.1/deserialize"
-import { SchemaError } from "./deserializeSchemaFromStream"
+import { ExternalSchemaDeserializationError } from "./deserializeSchemaFromStream"
+import { createInternalSchemaHandler } from "../createInternalSchemaHandler"
 
+function assertUnreachable<RT>(_x: never): RT {
+    throw new Error("unreachable")
+}
 
 export type DeserializeDiagnosticType =
     | ["structure", {
         message: "ignoring invalid internal schema"
     }]
-    | ["expect", {
-        message: string
-    }]
+    | ["expect", bc.ExpectError]
     | ["deserializer", {
         message: string
     }]
-    | ["X", {
-        message: string
-    }]
-    | ["parser", {
-        message: string
-    }]
-    | ["schema error", {
-        message: string
-    }]
-    | ["tokenizer", {
-        message: string
-    }]
+    | ["stacked", bc.StackedDataError]
+    | ["parsing", bc.ParsingError]
+    | ["schema error", InternalSchemaDeserializationError]
 
 export type DeserializeDiagnostic = {
     type: DeserializeDiagnosticType
     range: bc.Range
+}
+
+export function printDeserializeDiagnostic($: DeserializeDiagnostic): string {
+    switch ($.type[0]) {
+        case "stacked": {
+            const $$ = $.type[1]
+            return $$[0]
+        }
+        case "deserializer": {
+            const $$ = $.type[1]
+            return $$.message
+        }
+        case "expect": {
+            const $$ = $.type[1]
+            return bc.printExpectError($$)
+        }
+        case "parsing": {
+            const $$ = $.type[1]
+            return bc.printParsingError($$)
+        }
+        case "schema error": {
+            const $$ = $.type[1]
+            return printInternalSchemaDeserializationError($$)
+        }
+        case "structure": {
+            const $$ = $.type[1]
+            return $$.message
+        }
+        default:
+            return assertUnreachable($.type[0])
+    }
 }
 
 function createNoOperationPropertyHandler(
@@ -206,7 +230,7 @@ export function deserializeDataset(
     serializedDataset: string,
     schemaReferenceResolver: (
         reference: string,
-    ) => p.IUnsafeValue<SchemaAndSideEffects, string>,
+    ) => p.IUnsafeValue<SchemaAndSideEffects, SchemaReferenceResolvingError>,
     onInternalSchema: (
         specification: InternalSchemaSpecification,
         schemaAndSideEffects: SchemaAndSideEffects,
@@ -216,7 +240,7 @@ export function deserializeDataset(
     onError: (diagnostic: DeserializeDiagnostic) => void,
     onWarning: (diagnostic: DeserializeDiagnostic) => void,
     sideEffectsHandlers: sideEffects.Root[],
-): p.IUnsafeValue<IDeserializedDataset, SchemaError> {
+): p.IUnsafeValue<IDeserializedDataset, ExternalSchemaDeserializationError> {
 
     /*
     CSCH: I think it is better to not have the 2 callbacks: onInternalSchema and onNoInternalSchema,
@@ -231,11 +255,11 @@ export function deserializeDataset(
         }
     }
 
-    function createDSD(dataset: IDeserializedDataset, isCompact: boolean): bc.ParserEventConsumer<IDeserializedDataset, SchemaError> {
+    function createDSD(dataset: IDeserializedDataset, isCompact: boolean): bc.ParserEventConsumer<IDeserializedDataset, ExternalSchemaDeserializationError> {
 
         const context = new bc.ExpectContext(
-            (message, range) => onError(createDiagnostic(["expect", { message: message }], range)),
-            (message, range) => onWarning(createDiagnostic(["expect", { message: message }], range)),
+            (issue, range) => onError(createDiagnostic(["expect", issue], range)),
+            (issue, range) => onWarning(createDiagnostic(["expect", issue], range)),
             (_range, key, contextData) => () => createNoOperationPropertyHandler(key, contextData),
             () => () => createNoOperationValueHandler(),
             bc.Severity.warning,
@@ -249,8 +273,8 @@ export function deserializeDataset(
                 sideEffectsHandlers.map(h => h.node),
                 (message, range) => onError(createDiagnostic(["deserializer", { message: message }], range)),
             ),
-            error => {
-                onError(createDiagnostic(["X", { message: error.rangeLessMessage }], error.range))
+            (error, range) => {
+                onError(createDiagnostic(["stacked", error], range))
             },
             () => {
                 sideEffectsHandlers.forEach(h => {
@@ -264,66 +288,47 @@ export function deserializeDataset(
     let internalSchemaSpecificationStart: null | bc.Range = null
     let foundSchemaErrors = false
     let internalSchema: InternalSchema | null = null
-    const parser = bc.createParser<IDeserializedDataset, SchemaError>(
+    const parserStack = bc.createParserStack<IDeserializedDataset, ExternalSchemaDeserializationError>(
         schemaStart => {
             internalSchemaSpecificationStart = schemaStart
-            return bc.createStackedDataSubscriber(
-                {
-                    onValue: () => {
-                        return {
-                            array: range => {
-                                onSchemaError("unexpected array as schema", range)
-                                return bc.createDummyArrayHandler()
-                            },
-                            object: createMetaDataDeserializer(
-                                (errorMessage, range) => {
-                                    onSchemaError(errorMessage, range)
-                                },
-                                schema => {
-                                    if (schema !== null) {
-                                        internalSchema = {
-                                            schemaAndSideEffects: {
-                                                schema: schema,
-                                                createSideEffects: () => new NOPSideEffects(),
-                                            },
-                                            specification: [InternalSchemaSpecificationType.Embedded],
-                                        }
-                                    }
-                                }
-                            ),
-                            simpleValue: (range, data) => {
-                                return schemaReferenceResolver(data.value).reworkAndCatch(
-                                    errorMessage => {
-                                        onSchemaError(errorMessage, range)
-                                        return p.result(false)
-                                    },
-                                    schemaAndSideEffects => {
-                                        internalSchema = {
-                                            schemaAndSideEffects: schemaAndSideEffects,
-                                            specification: [InternalSchemaSpecificationType.Reference, { name: data.value }],
-                                        }
-                                        return p.result(false)
-
-                                    },
-                                )
-                            },
-                            taggedUnion: range => {
-                                onSchemaError("unexpected typed union as schema", range)
-                                return {
-                                    option: () => bc.createDummyRequiredValueHandler(),
-                                    missingOption: () => {
-                                        //
-                                    },
-                                }
-                            },
-                        }
-                    },
-                    onMissing: () => {
-                        //
-                    },
+            return createInternalSchemaHandler(
+                (error, range) => {
+                    onSchemaError(["internal schema", error], range)
                 },
-                error => {
-                    onSchemaError(error.rangeLessMessage, error.range)
+                createMetaDataDeserializer(
+                    (error, range) => {
+                        onSchemaError(["expect", error], range)
+                    },
+                    (errorMessage, range) => {
+                        onSchemaError(["validation", { message: errorMessage }], range)
+                    },
+                    schema => {
+                        if (schema !== null) {
+                            internalSchema = {
+                                schemaAndSideEffects: {
+                                    schema: schema,
+                                    createSideEffects: () => new NOPSideEffects(),
+                                },
+                                specification: [InternalSchemaSpecificationType.Embedded],
+                            }
+                        }
+                    }
+                ),
+                (range, data) => {
+                    return schemaReferenceResolver(data.value).reworkAndCatch(
+                        error => {
+                            onSchemaError(["schema reference resolving", error], range)
+                            return p.result(false)
+                        },
+                        schemaAndSideEffects => {
+                            internalSchema = {
+                                schemaAndSideEffects: schemaAndSideEffects,
+                                specification: [InternalSchemaSpecificationType.Reference, { name: data.value }],
+                            }
+                            return p.result(false)
+
+                        },
+                    )
                 },
                 () => {
                     //ignore end commends
@@ -334,7 +339,7 @@ export function deserializeDataset(
                 }
             )
         },
-        (compact: bc.Range | null): bc.ParserEventConsumer<IDeserializedDataset, SchemaError> => {
+        (compact: bc.Range | null): bc.ParserEventConsumer<IDeserializedDataset, ExternalSchemaDeserializationError> => {
             if (internalSchemaSpecificationStart && internalSchema === null && !foundSchemaErrors) {
                 console.error("NO SCHEMA AND NO ERROR")
                 //throw new Error("Unexpected: no schema errors and no schema")
@@ -378,29 +383,23 @@ export function deserializeDataset(
             return createDSD(dataset, compact !== null)
         },
 
-        (message, range) => {
-            onError(createDiagnostic(["parser", { message: message }], range))
+        (error, range) => {
+            onError(createDiagnostic(["parsing", error], range))
         },
         () => {
             return p.result(false)
         }
     )
-    function onSchemaError(message: string, range: bc.Range) {
-        onError(createDiagnostic(["schema error", { message: message }], range))
+    function onSchemaError(error: InternalSchemaDeserializationError, range: bc.Range) {
+        onError(createDiagnostic(["schema error", error], range))
         foundSchemaErrors = true
     }
 
     //console.log("DATASET DESER")
 
-    const st = bc.createStreamPreTokenizer(
-        bc.createTokenizer(parser),
-        (message, range) => {
-            onError(createDiagnostic(["tokenizer", { message: message }], range))
-        },
-    )
 
     return p20.createArray([serializedDataset]).streamify().consume(
         null,
-        st,
+        parserStack,
     )
 }

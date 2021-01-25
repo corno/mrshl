@@ -2,13 +2,14 @@ import * as bc from "bass-clarinet"
 import { createDeserializer } from "./createDeserializer"
 import * as t from "./types"
 import { convert } from "./convert"
-import { SchemaAndSideEffects } from "../../../schemas"
+import { SchemaAndSideEffects, InternalSchemaDeserializationError } from "../../../schemas"
 import * as p from "pareto-20"
 import { DiagnosticSeverity } from "../../../loadDocument"
 import * as sideEffects from "./sideEffects"
+import { createInternalSchemaHandler } from "../../../createInternalSchemaHandler"
 
 export function createSchemaAndSideEffects(
-    onSchemaError: (message: string, range: bc.Range) => void,
+    onSchemaError: (error: InternalSchemaDeserializationError, range: bc.Range) => void,
 ): bc.ParserEventConsumer<SchemaAndSideEffects, null> {
     const isb = createInternalSchemaBuilder(onSchemaError)
     return {
@@ -29,53 +30,33 @@ export function createSchemaAndSideEffects(
 }
 
 export function createInternalSchemaBuilder(
-    onSchemaError: (message: string, range: bc.Range) => void,
+    onSchemaError: (error: InternalSchemaDeserializationError, range: bc.Range) => void,
 ): bc.ParserEventConsumer<t.Schema, null> {
     let foundError = false
-    function onSchemaSchemaError(message: string, range: bc.Range) {
-        onSchemaError(message, range)
-        foundError = true
-    }
     let metaData: null | t.Schema = null
 
-    return bc.createStackedDataSubscriber(
-        {
-            onValue: () => {
-                return {
-                    array: (range: bc.Range): bc.ArrayHandler => {
-                        onSchemaSchemaError("unexpected array as schema", range)
-                        return bc.createDummyArrayHandler()
-                    },
-                    object: createDeserializer(
-                        (errorMessage, range) => {
-                            onSchemaSchemaError(errorMessage, range)
-                        },
-                        md2 => {
-                            metaData = md2
-                        }
-                    ),
-                    simpleValue: (range: bc.Range): p.IValue<boolean> => {
-                        onSchemaSchemaError("unexpected string as schema", range)
-                        return p.result(false)
-                    },
-                    taggedUnion: (range: bc.Range): bc.TaggedUnionHandler => {
-                        onSchemaSchemaError("unexpected typed union as schema", range)
-                        return {
-                            option: (): bc.RequiredValueHandler => bc.createDummyRequiredValueHandler(),
-                            missingOption: (): void => {
-                                //
-                            },
-                        }
-                    },
-                }
-            },
-            onMissing: () => {
-                //
-            },
+    function onSchemaSchemaError(error: InternalSchemaDeserializationError, range: bc.Range) {
+        onSchemaError(error, range)
+        foundError = true
+    }
+
+    return createInternalSchemaHandler(
+        (error, range) => {
+            onSchemaError(["internal schema", error], range)
+            foundError = true
         },
-        error => {
-            onSchemaSchemaError(error.rangeLessMessage, error.range)
-        },
+        createDeserializer(
+            (errorMessage, range) => {
+                onSchemaSchemaError(["expect", errorMessage], range)
+            },
+            (message, range) => {
+                onSchemaSchemaError(["validation", { message: message}], range)
+            },
+            md2 => {
+                metaData = md2
+            }
+        ),
+        null,
         (): p.IUnsafeValue<t.Schema, null> => {
             if (metaData === null) {
                 if (!foundError) {

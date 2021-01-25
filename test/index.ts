@@ -1,6 +1,7 @@
 /* eslint
     max-classes-per-file: "off",
     no-console: "off",
+    complexity: "off",
 */
 
 import * as chai from "chai"
@@ -16,29 +17,30 @@ import { makeNativeHTTPrequest } from "./makeNativeHTTPrequest"
 //import { deserializeSchemaFromString } from "../src"
 import * as p20 from "pareto-20"
 import { FileError } from "../src/loadDocument"
+import { printDeserializeDiagnostic, printSchemaSchemaError } from "../src"
 
 function readFileFromFileSystem(
-	dir: string,
-	schemaFileName: string,
+    dir: string,
+    schemaFileName: string,
 ): p.IUnsafeValue<p.IStream<string, null>, FileError> {
-	return p20.wrapUnsafeFunction((onError, onSuccess) => {
-		fs.readFile(
-			path.join(dir, schemaFileName),
-			{ encoding: "utf-8" },
-			(err, data) => {
-				if (err === null) {
-					onSuccess(p20.createArray([data]).streamify())
-				} else {
-					if (err.code === "ENOENT") {
-						//there is no schema file
-						onError(FileError.FileNotFound)
-					} else {
-						onError(FileError.UnknownError)
-					}
-				}
-			}
-		)
-	})
+    return p20.wrapUnsafeFunction((onError, onSuccess) => {
+        fs.readFile(
+            path.join(dir, schemaFileName),
+            { encoding: "utf-8" },
+            (err, data) => {
+                if (err === null) {
+                    onSuccess(p20.createArray([data]).streamify())
+                } else {
+                    if (err.code === "ENOENT") {
+                        //there is no schema file
+                        onError(FileError.FileNotFound)
+                    } else {
+                        onError(FileError.UnknownError)
+                    }
+                }
+            }
+        )
+    })
 }
 
 function assertUnreachable<RT>(_x: never): RT {
@@ -191,44 +193,10 @@ export function directoryTests(): void {
                                 const $ = diagnostic.type[1]
                                 const end = bc.getEndLocationFromRange($.range)
 
-
                                 actualIssues.push([
-                                    $.type[0],
+                                    "deserialization",
                                     diagSev,
-                                    ((): string => {
-                                        switch ($.type[0]) {
-                                            case "X": {
-                                                const $$ = $.type[1]
-                                                return $$.message
-                                            }
-                                            case "deserializer": {
-                                                const $$ = $.type[1]
-                                                return $$.message
-                                            }
-                                            case "expect": {
-                                                const $$ = $.type[1]
-                                                return $$.message
-                                            }
-                                            case "parser": {
-                                                const $$ = $.type[1]
-                                                return $$.message
-                                            }
-                                            case "schema error": {
-                                                const $$ = $.type[1]
-                                                return $$.message
-                                            }
-                                            case "structure": {
-                                                const $$ = $.type[1]
-                                                return $$.message
-                                            }
-                                            case "tokenizer": {
-                                                const $$ = $.type[1]
-                                                return $$.message
-                                            }
-                                            default:
-                                                return assertUnreachable($.type[0])
-                                        }
-                                    })(),
+                                    printDeserializeDiagnostic($),
                                     $.range.start.line,
                                     $.range.start.column,
                                     end.line,
@@ -244,7 +212,8 @@ export function directoryTests(): void {
                                     diagSev,
                                     (() => {
                                         if ($.issue[0] === "error in external schema") {
-                                            return `${$.issue[0]}: ${$.issue[1].message}`
+                                            const $$ = $.issue[1]
+                                            return `${$.issue[0]}: ${printSchemaSchemaError($$)}`
                                         }
                                         return $.issue[0]
                                     })(),

@@ -27,6 +27,7 @@ type StringAndRange = {
 
 function createExpectedNodeHandler(
     context: bc.ExpectContext,
+    raiseValidationError: (message: string, range: bc.Range) => void,
     componentTypes: g.IReadonlyDictionary<t.ComponentType>,
     callback: (node: t.Node) => void,
     resolveRegistry: g.ResolveRegistry,
@@ -53,6 +54,7 @@ function createExpectedNodeHandler(
                                                             {
                                                                 "node": createExpectedNodeHandler(
                                                                     context,
+                                                                    raiseValidationError,
                                                                     componentTypes,
                                                                     node => {
                                                                         targetNode = node
@@ -95,7 +97,7 @@ function createExpectedNodeHandler(
                                                                                                 assertedTargetNode.properties,
                                                                                                 resolveRegistry,
                                                                                                 () => {
-                                                                                                    context.raiseError(
+                                                                                                    raiseValidationError(
                                                                                                         `key property '${assertedTargetKeyProperty.value}' not found `,
                                                                                                         assertedTargetKeyProperty.range,
                                                                                                     )
@@ -168,7 +170,7 @@ function createExpectedNodeHandler(
                                                                         componentTypes,
                                                                         resolveRegistry,
                                                                         () => {
-                                                                            context.raiseError(
+                                                                            raiseValidationError(
                                                                                 `component type '${assertedTargetComponentTypeName.value}' not found`,
                                                                                 assertedTargetComponentTypeName.range,
                                                                             )
@@ -191,6 +193,7 @@ function createExpectedNodeHandler(
                                                                                 {
                                                                                     "node": createExpectedNodeHandler(
                                                                                         context,
+                                                                                        raiseValidationError,
                                                                                         componentTypes,
                                                                                         node => {
                                                                                             targetNode = node
@@ -242,7 +245,7 @@ function createExpectedNodeHandler(
                                                                         states,
                                                                         resolveRegistry,
                                                                         () => {
-                                                                            context.raiseError(
+                                                                            raiseValidationError(
                                                                                 `key property '${assertedTargetDefaultState.value}' not found `,
                                                                                 assertedTargetDefaultState.range,
                                                                             )
@@ -356,13 +359,17 @@ function createExpectedNodeHandler(
     }
 }
 
-export function createDeserializer(onError: (message: string, range: bc.Range) => void, callback: (metaData: null | t.Schema) => void): bc.OnObject {
+export function createDeserializer(
+    onExpectError: (error: bc.ExpectError, range: bc.Range) => void,
+    onValidationError: (message: string, range: bc.Range) => void,
+    callback: (metaData: null | t.Schema) => void
+): bc.OnObject {
     const componentTypes = new g.Dictionary<t.ComponentType>({})
     let rootName: StringAndRange | null = null
 
     const context = new bc.ExpectContext(
         (_errorMessage, _range) => {
-            onError(_errorMessage, _range)
+            onExpectError(_errorMessage, _range)
         },
         _warningMessage => {
             //ignore
@@ -384,6 +391,7 @@ export function createDeserializer(onError: (message: string, range: bc.Range) =
                             {
                                 "node": createExpectedNodeHandler(
                                     context,
+                                    onValidationError,
                                     componentTypes,
                                     node => {
                                         targetNode = node
@@ -437,7 +445,7 @@ export function createDeserializer(onError: (message: string, range: bc.Range) =
                     componentTypes,
                     resolveRegistry,
                     () => {
-                        context.raiseError(`component type '${assertedRootName.value}' not found`, assertedRootName.range)
+                        onValidationError(`component type '${assertedRootName.value}' not found`, assertedRootName.range)
                     }
                 ),
             }

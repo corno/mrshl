@@ -1,4 +1,4 @@
 [
-    [ "schema error", "error", "component type 'root' not found", 1, 3, 1, 4],
+    [ "deserialization", "error", "component type 'root' not found", 1, 3, 1, 4],
     [ "structure", "error", "missing (valid) schema", null, null, null, null]
 ]

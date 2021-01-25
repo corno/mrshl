@@ -1,63 +1,80 @@
 import * as bc from "bass-clarinet"
 import * as p from "pareto"
-import { schemas, CreateSchemaAndSideEffectsBuilderFunction, SchemaAndSideEffects } from "../schemas"
-import { ParserEventConsumer } from "bass-clarinet"
+import { schemas, CreateSchemaAndSideEffectsBuilderFunction, SchemaAndSideEffects, InternalSchemaDeserializationError, printInternalSchemaDeserializationError } from "../schemas"
+import { createInternalSchemaHandler, printInternalSchemaError, InternalSchemaError } from "../createInternalSchemaHandler"
+
+function assertUnreachable<RT>(_x: never): RT {
+    throw new Error("unreachable")
+}
+
+export type SchemaSchemaError =
+    | ["internal schema", InternalSchemaError]
+    | ["unknown schema schema", {
+        name: string
+    }]
+    | [`missing schema schema definition`]
+    | [`parsing`, bc.ParsingError]
+    | [`schema processing`, InternalSchemaDeserializationError]
+
+
+export function printSchemaSchemaError($$: SchemaSchemaError): string {
+    switch ($$[0]) {
+        case "missing schema schema definition": {
+            //const $$$ = $$[1]
+            return `missing schema schema definition`
+        }
+        case "parsing": {
+            const $$$ = $$[1]
+            return bc.printParsingError($$$)
+        }
+        case "schema processing": {
+            const $$$ = $$[1]
+            return printInternalSchemaDeserializationError($$$)
+        }
+        case "internal schema": {
+            const $$$ = $$[1]
+            return printInternalSchemaError($$$)
+        }
+        case "unknown schema schema": {
+            //const $$$ = $$[1]
+            return `unknown schema schema`
+        }
+        default:
+            return assertUnreachable($$[0])
+    }
+}
 
 export function createSchemaDeserializer(
-    onError: (message: string, range: bc.Range) => void,
+    onError: (error: SchemaSchemaError, range: bc.Range) => void,
 ): p.IStreamConsumer<string, null, SchemaAndSideEffects, null> {
     let foundError = false
 
     let schemaDefinitionFound = false
     let schemaProcessor: null | CreateSchemaAndSideEffectsBuilderFunction = null
-    function onSchemaError(message: string, range: bc.Range) {
-        onError(message, range)
+    function onSchemaError(error: SchemaSchemaError, range: bc.Range) {
+        onError(error, range)
         foundError = true
     }
 
-    const schemaParser = bc.createParser<SchemaAndSideEffects, null>(
+    //console.log("SCHEMA DESER")
+    const schemaTok = bc.createParserStack(
+
         () => {
             schemaDefinitionFound = true
-            return bc.createStackedDataSubscriber(
-                {
-                    onValue: () => {
-
-                        return {
-                            array: range => {
-                                onSchemaError("unexpected array as schema schema", range)
-                                return bc.createDummyArrayHandler()
-                            },
-                            object: range => {
-                                onSchemaError("unexpected object as schema schema", range)
-                                return bc.createDummyObjectHandler()
-                            },
-                            simpleValue: (range, svData) => {
-                                const createSchemaFunc = schemas[svData.value]
-                                if (createSchemaFunc === undefined) {
-                                    console.error(`unknown schema schema '${svData.value},`)
-                                    onSchemaError(`unknown schema schema ${svData.value}`, range)
-                                } else {
-                                    schemaProcessor = createSchemaFunc
-                                }
-                                return p.result(false)
-                            },
-                            taggedUnion: tuRange => {
-                                onSchemaError("unexpected typed union as schema schema", tuRange)
-                                return {
-                                    option: () => bc.createDummyRequiredValueHandler(),
-                                    missingOption: () => {
-                                        //
-                                    },
-                                }
-                            },
-                        }
-                    },
-                    onMissing: () => {
-                        //
-                    },
+            return createInternalSchemaHandler(
+                (error, range) => {
+                    onSchemaError(["internal schema", error], range)
                 },
-                error => {
-                    onSchemaError(error.rangeLessMessage, error.range)
+                null,
+                (range, svData) => {
+                    const createSchemaFunc = schemas[svData.value]
+                    if (createSchemaFunc === undefined) {
+                        console.error(`unknown schema schema '${svData.value},`)
+                        onSchemaError(["unknown schema schema", { name: svData.value }], range)
+                    } else {
+                        schemaProcessor = createSchemaFunc
+                    }
+                    return p.result(false)
                 },
                 () => {
                     //ignore end commends
@@ -65,10 +82,10 @@ export function createSchemaDeserializer(
                 }
             )
         },
-        (_compact: bc.Range | null, location: bc.Location): ParserEventConsumer<SchemaAndSideEffects, null> => {
+        (_compact: bc.Range | null, location: bc.Location): bc.ParserEventConsumer<SchemaAndSideEffects, null> => {
             if (!schemaDefinitionFound) {
                 //console.error("missing schema schema types")
-                onSchemaError(`missing schema schema definition`, bc.createRangeFromSingleLocation(location))
+                onSchemaError([`missing schema schema definition`], bc.createRangeFromSingleLocation(location))
                 return {
                     onData: () => {
                         //
@@ -94,23 +111,15 @@ export function createSchemaDeserializer(
                     }
                 } else {
                     return schemaProcessor(
-                        onError,
+                        (error, range) => {
+                            onError(["schema processing", error], range)
+                        }
                     )
                 }
             }
         },
-        (message, range) => {
-            onSchemaError(`${message}`, range)
-        },
-        () => {
-            return p.result(false)
-        }
-    )
-    //console.log("SCHEMA DESER")
-    const schemaTok = bc.createStreamPreTokenizer(
-        bc.createTokenizer(schemaParser),
-        (message, range) => {
-            onSchemaError(message, range)
+        (error, range) => {
+            onSchemaError(["parsing", error], range)
         }
     )
 

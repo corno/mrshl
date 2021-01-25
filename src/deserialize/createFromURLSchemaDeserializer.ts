@@ -1,6 +1,6 @@
 import { createSchemaDeserializer } from "./createSchemaDeserializer"
 import * as p from "pareto"
-import { SchemaAndSideEffects } from "../schemas"
+import { SchemaAndSideEffects, SchemaReferenceResolvingError } from "../schemas"
 import { HTTPOptions } from "../makeHTTPrequest"
 
 export function createFromURLSchemaDeserializer(
@@ -9,14 +9,14 @@ export function createFromURLSchemaDeserializer(
     timeout: number,
     makeHTTPrequest: (options: HTTPOptions) => p.IUnsafeValue<p.IStream<string, null>, string>,
 ) {
-    return (reference: string): p.IUnsafeValue<SchemaAndSideEffects, string> => {
+    return (reference: string): p.IUnsafeValue<SchemaAndSideEffects, SchemaReferenceResolvingError> => {
 
         // //const errors: string[] = []
         // function onSchemaError(_message: string, _range: bc.Range) {
         //     //errors.push(message)
         // }
         if (reference === "") {
-            return p.error(`schema cannot be an empty string`)
+            return p.error(["schema cannot be an empty string"])
         }
         const options = {
             host: host,
@@ -29,8 +29,8 @@ export function createFromURLSchemaDeserializer(
         }
         return makeHTTPrequest(
             options
-        ).mapError(errorMessage => {
-            return p.result(errorMessage)
+        ).mapError<SchemaReferenceResolvingError>(errorMessage => {
+            return p.result(["loading", { message: errorMessage }])
         }).try(
             stream => {
                 //console.log("FROM URL")
@@ -46,8 +46,8 @@ export function createFromURLSchemaDeserializer(
                     schemaTok,
                 ).mapError(
                     () => {
-                        const myUrl = new URL(encodeURI(reference), pathStart)
-                        return p.result(`errors in schema '${host}${myUrl.href}'`)
+                        //const myUrl = new URL(encodeURI(reference), pathStart)
+                        return p.result(["errors in schema"])
                     },
                 )
             },

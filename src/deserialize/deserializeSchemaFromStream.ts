@@ -1,9 +1,9 @@
 import * as bc from "bass-clarinet"
-import { createSchemaDeserializer } from "./createSchemaDeserializer"
+import { createSchemaDeserializer, SchemaSchemaError } from "./createSchemaDeserializer"
 import * as p from "pareto"
 import { SchemaAndSideEffects } from "../schemas"
 
-export type SchemaError = {
+export type ExternalSchemaDeserializationError = {
     problem:
         | "no valid schema"
         | "missing schema"
@@ -11,8 +11,8 @@ export type SchemaError = {
 
 export function deserializeSchemaFromStream(
     schemaStream: p.IStream<string, null>,
-    onError: (message: string, range: bc.Range) => void,
-): p.IUnsafeValue<SchemaAndSideEffects, SchemaError> {
+    onError: (error: SchemaSchemaError, range: bc.Range) => void,
+): p.IUnsafeValue<SchemaAndSideEffects, ExternalSchemaDeserializationError> {
     //console.log("FROM STRING")
 
     return schemaStream.consume(

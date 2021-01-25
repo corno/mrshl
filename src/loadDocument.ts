@@ -6,7 +6,8 @@ import {
 	deserializeSchemaFromStream,
 	IDeserializedDataset,
 	DeserializeDiagnostic,
-	SchemaError,
+	ExternalSchemaDeserializationError,
+	SchemaSchemaError,
 } from "./deserialize"
 import * as sideEffects from "./SideEffectsAPI"
 import * as bc from "bass-clarinet-typed"
@@ -25,9 +26,7 @@ type LoadDocumentDiagnosticType =
 		| ["unknown file system error"]
 		| ["valdating schema file against internal schema"]
 		| ["found both external and internal schema. ignoring internal schema"]
-		| ["error in external schema", {
-			message: string
-		}]
+		| ["error in external schema", SchemaSchemaError]
 		| ["no valid schema"]
 		| ["missing schema"]
 	}]
@@ -56,7 +55,7 @@ function validateDocumentAfterExternalSchemaResolution(
 	createDataset: (
 		schema: md.Schema,
 	) => IDataset,
-): p.IUnsafeValue<IDeserializedDataset, SchemaError> {
+): p.IUnsafeValue<IDeserializedDataset, ExternalSchemaDeserializationError> {
 	const schemaReferenceResolver = createFromURLSchemaDeserializer(
 		'www.astn.io',
 		'/dev/schemas/',
@@ -185,7 +184,7 @@ export function loadDocument(
 		return diagnosticCallback(diagnostic)
 	}
 
-	function validateThatErrorsAreFound(error: SchemaError) {
+	function validateThatErrorsAreFound(error: ExternalSchemaDeserializationError) {
 		if (!diagnosticFound) {
 			addDiagnostic(
 				dc,
@@ -249,12 +248,10 @@ export function loadDocument(
 
 			return deserializeSchemaFromStream(
 				schemaStream,
-				(message, _range) => {
+				(error, _range) => {
 					dc({
 						type: ["schema retrieval", {
-							issue: [`error in external schema`, {
-								message: message,
-							}],
+							issue: [`error in external schema`, error],
 						}],
 						severity: DiagnosticSeverity.error,
 					})

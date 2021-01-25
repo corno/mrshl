@@ -1,14 +1,14 @@
 [
-    [ "parser", "error", "not in an object", 11, 21, 11, 22],
-    [ "schema error", "error", "missing tagged union value", 11, 21, 11, 22],
-    [ "parser", "error", "not in an object", 12, 17, 12, 18],
-    [ "parser", "error", "not in an object", 13, 13, 13, 14],
-    [ "parser", "error", "not in an object", 14, 9, 14, 10],
-    [ "parser", "error", "not in an object", 15, 5, 15, 6],
-    [ "parser", "error", "missing property value", 17, 1, 17, 2],
-    [ "parser", "error", "unexpected end of document, still in object", 21, 1, 21, 1],
-    [ "parser", "error", "unexpected end of document, still in object", 21, 1, 21, 1],
-    [ "parser", "error", "unexpected end of document, still in object", 21, 1, 21, 1],
-    [ "parser", "error", "unexpected end of document, still in object", 21, 1, 21, 1],
-    [ "parser", "error", "unexpected end of document, still in object", 21, 1, 21, 1]
+    [ "deserialization", "error", "not in an object", 11, 21, 11, 22],
+    [ "deserialization", "error", "missing tagged union value", 11, 21, 11, 22],
+    [ "deserialization", "error", "not in an object", 12, 17, 12, 18],
+    [ "deserialization", "error", "not in an object", 13, 13, 13, 14],
+    [ "deserialization", "error", "not in an object", 14, 9, 14, 10],
+    [ "deserialization", "error", "not in an object", 15, 5, 15, 6],
+    [ "deserialization", "error", "missing property value", 17, 1, 17, 2],
+    [ "deserialization", "error", "unexpected end of document, still in object", 21, 1, 21, 1],
+    [ "deserialization", "error", "unexpected end of document, still in object", 21, 1, 21, 1],
+    [ "deserialization", "error", "unexpected end of document, still in object", 21, 1, 21, 1],
+    [ "deserialization", "error", "unexpected end of document, still in object", 21, 1, 21, 1],
+    [ "deserialization", "error", "unexpected end of document, still in object", 21, 1, 21, 1]
 ]

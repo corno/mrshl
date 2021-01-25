@@ -28,6 +28,7 @@ type StringAndRange = {
 
 function createNodeHandler(
     context: bc.ExpectContext,
+    raiseValidationError: (message: string, range: bc.Range) => void,
     componentTypes: g.IReadonlyDictionary<t.ComponentType>,
     callback: (node: t.Node) => void,
     resolveRegistry: g.ResolveRegistry
@@ -62,6 +63,7 @@ function createNodeHandler(
                                                                                         {
                                                                                             "node": createNodeHandler(
                                                                                                 context,
+                                                                                                raiseValidationError,
                                                                                                 componentTypes,
                                                                                                 node => targetNode = node,
                                                                                                 resolveRegistry,
@@ -100,7 +102,7 @@ function createNodeHandler(
                                                                                                     assertedTargetNode.properties,
                                                                                                     resolveRegistry,
                                                                                                     () => {
-                                                                                                        context.raiseError(
+                                                                                                        raiseValidationError(
                                                                                                             `property '${assertedKeyPropertyName.value}' not found`,
                                                                                                             assertedKeyPropertyName.range,
                                                                                                         )
@@ -117,6 +119,7 @@ function createNodeHandler(
                                                                                         {
                                                                                             "node": createNodeHandler(
                                                                                                 context,
+                                                                                                raiseValidationError,
                                                                                                 componentTypes,
                                                                                                 node => targetNode = node,
                                                                                                 resolveRegistry
@@ -197,7 +200,7 @@ function createNodeHandler(
                                                                             componentTypes,
                                                                             resolveRegistry,
                                                                             () => {
-                                                                                context.raiseError(
+                                                                                raiseValidationError(
                                                                                     `component type '${assertedTargetComponentTypeName.value}' not found`,
                                                                                     assertedTargetComponentTypeName.range,
                                                                                 )
@@ -220,6 +223,7 @@ function createNodeHandler(
                                                                                     {
                                                                                         "node": createNodeHandler(
                                                                                             context,
+                                                                                            raiseValidationError,
                                                                                             componentTypes,
                                                                                             node => {
                                                                                                 targetNode = node
@@ -276,7 +280,7 @@ function createNodeHandler(
                                                                             states,
                                                                             resolveRegistry,
                                                                             () => {
-                                                                                context.raiseError(
+                                                                                raiseValidationError(
                                                                                     `state '${assertedDefaultStateName.value}' not found`,
                                                                                     assertedDefaultStateName.range,
                                                                                 )
@@ -394,14 +398,18 @@ function createNodeHandler(
 }
 
 
-export function createDeserializer(onError: (message: string, range: bc.Range) => void, callback: (metaData: md.Schema | null) => void): bc.OnObject {
+export function createDeserializer(
+    onExpectError: (error: bc.ExpectError, range: bc.Range) => void,
+    onValidationError: (message: string, range: bc.Range) => void,
+    callback: (metaData: md.Schema | null) => void
+): bc.OnObject {
     const componentTypes = new g.Dictionary<t.ComponentType>({})
     let rootName: string | null = null
     let rootNameRange: bc.Range | null = null
 
     const context = new bc.ExpectContext(
         (_errorMessage, _range) => {
-            onError(_errorMessage, _range)
+            onExpectError(_errorMessage, _range)
         },
         _warningMessage => {
             //ignore
@@ -423,6 +431,7 @@ export function createDeserializer(onError: (message: string, range: bc.Range) =
                             {
                                 "node": createNodeHandler(
                                     context,
+                                    onValidationError,
                                     componentTypes,
                                     node => {
                                         targetNode = node
@@ -476,7 +485,7 @@ export function createDeserializer(onError: (message: string, range: bc.Range) =
                     componentTypes,
                     resolveRegistry,
                     () => {
-                        context.raiseError(`component type '${assertedRootName}' not found`, assertedRange)
+                        onValidationError(`component type '${assertedRootName}' not found`, assertedRange)
                     }
                 ),
             }
