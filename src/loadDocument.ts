@@ -8,12 +8,18 @@ import {
 	DeserializeDiagnostic,
 	ExternalSchemaDeserializationError,
 	SchemaSchemaError,
+	printDeserializeDiagnostic,
+	printSchemaSchemaError,
 } from "./deserialize"
 import * as sideEffects from "./SideEffectsAPI"
 import * as bc from "bass-clarinet-typed"
 import * as p from "pareto"
 import { IDataset } from "./dataset"
 import { MakeHTTPrequest } from "./makeHTTPrequest"
+
+function assertUnreachable<RT>(_x: never): RT {
+	throw new Error("unreachable")
+}
 
 export enum DiagnosticSeverity {
 	warning,
@@ -45,6 +51,51 @@ type LoadDocumentDiagnosticType =
 type LoadDocumentDiagnostic = {
 	type: LoadDocumentDiagnosticType
 	severity: DiagnosticSeverity
+}
+
+export function printLoadDocumentDiagnostic(loadDiagnostic: LoadDocumentDiagnostic): string {
+	switch (loadDiagnostic.type[0]) {
+		case "deserialization": {
+			const $ = loadDiagnostic.type[1]
+			return `${printDeserializeDiagnostic($.data)} @ ${bc.printRange($.range)}`
+		}
+		case "schema retrieval": {
+			const $ = loadDiagnostic.type[1]
+			switch ($.issue[0]) {
+				case "error in external schema": {
+					const $$ = $.issue[1]
+					return `error in external schema: ${printSchemaSchemaError($$)}`
+				}
+				case "found both external and internal schema. ignoring internal schema": {
+					return `found both external and internal schema. ignoring internal schema`
+				}
+				case "missing schema": {
+					return `missing schema`
+				}
+				case "no valid schema": {
+					return `no valid schema`
+				}
+				case "unknown file system error": {
+					return `unknown file system error`
+				}
+				case "valdating schema file against internal schema": {
+					return `valdating schema file against internal schema`
+				}
+				default:
+					return assertUnreachable($.issue[0])
+			}
+		}
+		case "structure": {
+			const $ = loadDiagnostic.type[1]
+			return $.message
+		}
+		case "validation": {
+			const $ = loadDiagnostic.type[1]
+			return `${$.message} @ ${bc.printRange($.range)}`
+		}
+		default:
+			return assertUnreachable(loadDiagnostic.type[0])
+	}
 }
 
 type DiagnosticCallback = (diagnostic: LoadDocumentDiagnostic) => void
