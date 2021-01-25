@@ -263,7 +263,7 @@ export function loadDocument(
 		//don't validate the schema against itself
 		dc({
 			type: ["schema retrieval", {
-				issue: ["valdating schema file against internal schema"],
+				issue: ["validating schema file against internal schema"],
 			}],
 			severity: DiagnosticSeverity.warning,
 		})
