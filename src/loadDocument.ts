@@ -30,7 +30,7 @@ type LoadDocumentDiagnosticType =
 	| ["schema retrieval", {
 		issue:
 		| ["unknown file system error"]
-		| ["valdating schema file against internal schema"]
+		| ["validating schema file against internal schema"]
 		| ["found both external and internal schema. ignoring internal schema"]
 		| ["error in external schema", SchemaSchemaError]
 		| ["no valid schema"]
@@ -78,8 +78,8 @@ export function printLoadDocumentDiagnostic(loadDiagnostic: LoadDocumentDiagnost
 				case "unknown file system error": {
 					return `unknown file system error`
 				}
-				case "valdating schema file against internal schema": {
-					return `valdating schema file against internal schema`
+				case "validating schema file against internal schema": {
+					return `this is the directory's schema file. It is validated against its own internal schema`
 				}
 				default:
 					return assertUnreachable($.issue[0])
