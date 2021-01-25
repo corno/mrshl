@@ -37,7 +37,10 @@ type LoadDocumentDiagnosticType =
 	| ["structure", {
 		message: "missing (valid) schema"
 	}]
-	| ["deserialization", DeserializeDiagnostic]
+	| ["deserialization", {
+		data: DeserializeDiagnostic
+		range: bc.Range
+	}]
 
 type LoadDocumentDiagnostic = {
 	type: LoadDocumentDiagnosticType
@@ -129,17 +132,23 @@ function validateDocumentAfterExternalSchemaResolution(
 			return createDataset(externalSchema)
 
 		},
-		errorDiagnostic => {
+		(errorDiagnostic, range) => {
 			addDiagnostic(
 				diagnosticCallback,
-				["deserialization", errorDiagnostic],
+				["deserialization", {
+					data: errorDiagnostic,
+					range: range,
+				}],
 				DiagnosticSeverity.error,
 			)
 		},
-		warningDiagnostic => {
+		(warningDiagnostic, range) => {
 			addDiagnostic(
 				diagnosticCallback,
-				["deserialization", warningDiagnostic],
+				["deserialization", {
+					data: warningDiagnostic,
+					range: range,
+				}],
 				DiagnosticSeverity.warning,
 			)
 		},

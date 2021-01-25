@@ -196,7 +196,7 @@ export function directoryTests(): void {
                                 actualIssues.push([
                                     "deserialization",
                                     diagSev,
-                                    printDeserializeDiagnostic($),
+                                    printDeserializeDiagnostic($.data),
                                     $.range.start.line,
                                     $.range.start.column,
                                     end.line,

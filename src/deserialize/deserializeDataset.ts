@@ -28,7 +28,6 @@ export type DeserializeDiagnosticType =
 
 export type DeserializeDiagnostic = {
     type: DeserializeDiagnosticType
-    range: bc.Range
 }
 
 export function printDeserializeDiagnostic($: DeserializeDiagnostic): string {
@@ -237,8 +236,8 @@ export function deserializeDataset(
         compact: boolean
     ) => IDeserializedDataset,
     onNoInternalSchema: () => IDataset | null,
-    onError: (diagnostic: DeserializeDiagnostic) => void,
-    onWarning: (diagnostic: DeserializeDiagnostic) => void,
+    onError: (diagnostic: DeserializeDiagnostic, range: bc.Range) => void,
+    onWarning: (diagnostic: DeserializeDiagnostic, range: bc.Range) => void,
     sideEffectsHandlers: sideEffects.Root[],
 ): p.IUnsafeValue<IDeserializedDataset, ExternalSchemaDeserializationError> {
 
@@ -248,18 +247,17 @@ export function deserializeDataset(
     just add a 'externalSchema' parameter and then handle the logic in this function.
     */
 
-    function createDiagnostic(type: DeserializeDiagnosticType, range: bc.Range): DeserializeDiagnostic {
+    function createDiagnostic(type: DeserializeDiagnosticType): DeserializeDiagnostic {
         return {
             type: type,
-            range: range,
         }
     }
 
     function createDSD(dataset: IDeserializedDataset, isCompact: boolean): bc.ParserEventConsumer<IDeserializedDataset, ExternalSchemaDeserializationError> {
 
         const context = new bc.ExpectContext(
-            (issue, range) => onError(createDiagnostic(["expect", issue], range)),
-            (issue, range) => onWarning(createDiagnostic(["expect", issue], range)),
+            (issue, range) => onError(createDiagnostic(["expect", issue]), range),
+            (issue, range) => onWarning(createDiagnostic(["expect", issue]), range),
             (_range, key, contextData) => () => createNoOperationPropertyHandler(key, contextData),
             () => () => createNoOperationValueHandler(),
             bc.Severity.warning,
@@ -271,10 +269,10 @@ export function deserializeDataset(
                 dataset.dataset.sync,
                 isCompact,
                 sideEffectsHandlers.map(h => h.node),
-                (message, range) => onError(createDiagnostic(["deserializer", { message: message }], range)),
+                (message, range) => onError(createDiagnostic(["deserializer", { message: message }]), range),
             ),
             (error, range) => {
-                onError(createDiagnostic(["stacked", error], range))
+                onError(createDiagnostic(["stacked", error]), range)
             },
             () => {
                 sideEffectsHandlers.forEach(h => {
@@ -372,26 +370,28 @@ export function deserializeDataset(
             }
             if (internalSchemaSpecificationStart) {
                 if (internalSchema === null) {
-                    onWarning(createDiagnostic(
-                        ["structure", {
-                            message: "ignoring invalid internal schema",
-                        }],
+                    onWarning(
+                        createDiagnostic(
+                            ["structure", {
+                                message: "ignoring invalid internal schema",
+                            }],
+                        ),
                         internalSchemaSpecificationStart,
-                    ))
+                    )
                 }
             }
             return createDSD(dataset, compact !== null)
         },
 
         (error, range) => {
-            onError(createDiagnostic(["parsing", error], range))
+            onError(createDiagnostic(["parsing", error]), range)
         },
         () => {
             return p.result(false)
         }
     )
     function onSchemaError(error: InternalSchemaDeserializationError, range: bc.Range) {
-        onError(createDiagnostic(["schema error", error], range))
+        onError(createDiagnostic(["schema error", error]), range)
         foundSchemaErrors = true
     }
 
