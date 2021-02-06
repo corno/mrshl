@@ -379,7 +379,7 @@ describe("main", () => {
                 path: '/dev/schemas/mrshl/schemaschema@0.1',
                 timeout: 7000,
             }).try(stream => {
-                return stream.consume<null, null>(
+                return stream.tryToConsume<null, null>(
                     null,
                     st,
                 ).mapError(() => {

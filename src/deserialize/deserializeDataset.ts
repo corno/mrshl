@@ -61,23 +61,26 @@ export function printDeserializeDiagnostic($: DeserializeDiagnostic): string {
     }
 }
 
-function createNoOperationPropertyHandler(
-    _key: string,
-    //propertyData: bc.PropertyData,
-    _preData: bc.ContextData,
-    //registerSnippetGenerators: RegisterSnippetsGenerators,
-): bc.ValueHandler {
-    //registerSnippetGenerators.register(propertyData.keyRange, null, null)
-    return createNoOperationValueHandler()
-}
-
 function createNoOperationValueHandler(): bc.ValueHandler {
     return {
-        array: range => {
-            return createNoOperationArrayHandler(range)
+        array: _range => {
+            return {
+                element: () => () => createNoOperationValueHandler(),
+                end: _endData => {
+                    //registerSnippetGenerators.register(endData.range, null, null)
+                },
+            }
         },
-        object: range => {
-            return createNoOperationObjectHandler(range)
+        object: _range => {
+            return {
+                property: (_key, _keyData) => {
+                    //registerSnippetGenerators.register(keyData.keyRange, null, null)
+                    return p.result(createNoOperationRequiredValueHandler())
+                },
+                end: _endData => {
+                    //registerSnippetGenerators.register(endData.range, null, null)
+                },
+            }
         },
         simpleValue: (_value, _stringData) => {
             //registerSnippetGenerators.register(stringData.range, null, null)
@@ -91,6 +94,9 @@ function createNoOperationValueHandler(): bc.ValueHandler {
                 missingOption: () => {
                     //
                 },
+                end: () => {
+                    //
+                },
             }
         },
     }
@@ -102,28 +108,6 @@ function createNoOperationRequiredValueHandler(): bc.RequiredValueHandler {
             //
         },
         onValue: () => createNoOperationValueHandler(),
-    }
-}
-
-function createNoOperationArrayHandler(_beginRange: bc.Range): bc.ArrayHandler {
-    return {
-        element: () => () => createNoOperationValueHandler(),
-        end: _endData => {
-            //registerSnippetGenerators.register(endData.range, null, null)
-        },
-    }
-}
-
-function createNoOperationObjectHandler(_beginRange: bc.Range): bc.ObjectHandler {
-    //registerSnippetGenerators.register(beginRange, null, null)
-    return {
-        property: (_key, _keyData) => {
-            //registerSnippetGenerators.register(keyData.keyRange, null, null)
-            return p.result(createNoOperationRequiredValueHandler())
-        },
-        end: _endData => {
-            //registerSnippetGenerators.register(endData.range, null, null)
-        },
     }
 }
 
@@ -258,7 +242,7 @@ export function deserializeDataset(
         const context = new bc.ExpectContext(
             (issue, range) => onError(createDiagnostic(["expect", issue]), range),
             (issue, range) => onWarning(createDiagnostic(["expect", issue]), range),
-            (_range, key, contextData) => () => createNoOperationPropertyHandler(key, contextData),
+            (_range, _key, _contextData) => () => createNoOperationValueHandler(),
             () => () => createNoOperationValueHandler(),
             bc.Severity.warning,
             bc.OnDuplicateEntry.ignore
@@ -398,7 +382,7 @@ export function deserializeDataset(
     //console.log("DATASET DESER")
 
 
-    return p20.createArray([serializedDataset]).streamify().consume(
+    return p20.createArray([serializedDataset]).streamify().tryToConsume(
         null,
         parserStack,
     )

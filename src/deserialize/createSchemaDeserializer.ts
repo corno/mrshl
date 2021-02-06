@@ -46,7 +46,7 @@ export function printSchemaSchemaError($$: SchemaSchemaError): string {
 
 export function createSchemaDeserializer(
     onError: (error: SchemaSchemaError, range: bc.Range) => void,
-): p.IStreamConsumer<string, null, SchemaAndSideEffects, null> {
+): p.IUnsafeStreamConsumer<string, null, SchemaAndSideEffects, null> {
     let foundError = false
 
     let schemaDefinitionFound = false

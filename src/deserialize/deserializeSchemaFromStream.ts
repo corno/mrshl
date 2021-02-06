@@ -15,7 +15,7 @@ export function deserializeSchemaFromStream(
 ): p.IUnsafeValue<SchemaAndSideEffects, ExternalSchemaDeserializationError> {
     //console.log("FROM STRING")
 
-    return schemaStream.consume(
+    return schemaStream.tryToConsume<SchemaAndSideEffects, null>(
         null,
         createSchemaDeserializer(
             onError,

@@ -51,7 +51,7 @@ export function createInternalSchemaHandler<Result>(
     onSchemaError: (error: InternalSchemaError, range: bc.Range) => void,
     onObject: bc.OnObject | null,
     onSimpleValue: bc.OnSimpleValue | null,
-    onEnd: (contextData: bc.ContextData) => p.IUnsafeValue<Result, null>
+    onEnd: () => p.IUnsafeValue<Result, null>
 ): bc.ParserEventConsumer<Result, null> {
 
     return bc.createStackedDataSubscriber(
@@ -79,6 +79,9 @@ export function createInternalSchemaHandler<Result>(
                         return {
                             option: (): bc.RequiredValueHandler => bc.createDummyRequiredValueHandler(),
                             missingOption: (): void => {
+                                //
+                            },
+                            end: () => {
                                 //
                             },
                         }

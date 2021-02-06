@@ -12,10 +12,10 @@ type OnError = (message: string, range: bc.Range) => void
 
 function doComments(contextData: bc.ContextData, target: syncAPI.Comments) {
     //console.log(JSON.stringify(contextData.indentation))
-    if (contextData.commentsBefore.length > 0) {
+    if (contextData.before.comments.length > 0) {
         //console.log("HIERO EEE")
     }
-    contextData.commentsBefore.map(c => {
+    contextData.before.comments.map(c => {
         //console.log("!!!!!")
         target.addComment(c.text)
     })

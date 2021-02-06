@@ -41,7 +41,7 @@ export function createFromURLSchemaDeserializer(
                     },
                 )
 
-                return stream.consume(
+                return stream.tryToConsume<SchemaAndSideEffects, null>(
                     null,
                     schemaTok,
                 ).mapError(

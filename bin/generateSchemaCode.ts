@@ -126,14 +126,13 @@ const st = bc.createStreamPreTokenizer(
     },
 )
 
-p20.createArray([serializedSchema]).streamify().consume(
+p20.createArray([serializedSchema]).streamify().tryToConsume(
     null,
     st
 ).handle(
     () => {
         console.error("schema was not parsed properly")
     },
-
     schema => {
         schema["component types"].forEach(ct => {
             generateCode(ct.node)
