@@ -1,14 +1,26 @@
-/*a newline block comment at the beginning*/
-//a newline line comment at the beginning
-! //a newline line comment after the exclamation mark
-/*a newline block comment after the exclamation mark*/
-/*a newline block comment before schema open paren, should be ignored*/ ( //a same line comment after schema open paren, should be ignored
+/*1: a newline block comment at the beginning*/
+//2: a newline line comment at the beginning
+! //3: a newline line comment after the exclamation mark
+/*4: a newline block comment after the exclamation mark*/
+/*5: a newline block comment before schema open paren*/ ( //X: a same line comment after schema open paren, should be ignored
     'component types': {
         'root': (
-            /*a block comment in the schema, should be ignored*/
+            /*X: a block comment in the schema, should be ignored*/
             'node': (
                 'properties': {
                     'c': (
+                        'type': | 'value' (
+                            'quoted': false
+                            'default value': ""
+                        )
+                    )
+                    'd': (
+                        'type': | 'value' (
+                            'quoted': false
+                            'default value': ""
+                        )
+                    )
+                    'e': (
                         'type': | 'value' (
                             'quoted': false
                             'default value': ""
@@ -19,14 +31,20 @@
         )
     }
     'root type': 'root'
-) //a same line line comment after the schema close paren
+) //6: a same line line comment after the schema close paren
 
-
-(
-    /*a newline block comment before the first entry*/
-    'c': C
-    /*a newline block comment before an unknown prpperty, should be ignored*/
+/*7: a newline block comment before the instance data open paren*/
+( //11: a same line line comment after the instance data open paren
+    /*12: a newline block comment before the first entry*/
+    'c': C //13: a same line line comment after a simple value
+    /*X: a newline block comment before an unknown property, should be ignored*/
     'b': 42
-) //a same line line comment after the instance data close paren
+    /*14: a newline block comment before a non first property, should be ignored*/
+    'd' /*15:a same line block comment before colon*/ :  /*16: a same line block comment after colon*/ D
+    'e' //17:a same line line comment before colon
+    :  //18: a same line line comment after colon
+    E
+) //8: a same line line comment after the instance data close paren
+//9: a newline line comment after the instance data close paren
 
-/*a newline block comment at the end*/
+/*10: a newline block comment at the end*/

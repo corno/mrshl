@@ -99,14 +99,38 @@ function propertyIsDefault(property: syncAPI.Property): boolean {
     }
 }
 
-function transformProperty(prop: syncAPI.Property, compact: boolean): bc.SerializableValue {
+function getPropertyComments(prop: syncAPI.Property): syncAPI.Comments {
     switch (prop.type[0]) {
         case "component": {
             const $ = prop.type[1]
-            return {
-                commentData: transformCommentData($.comments),
-                type: transformNodeToValueType($.node, compact),
-            }
+            return $.comments
+        }
+        case "dictionary": {
+            const $ = prop.type[1]
+            return $.comments
+        }
+        case "list": {
+            const $ = prop.type[1]
+            return $.comments
+        }
+        case "state group": {
+            const $ = prop.type[1]
+            return $.comments
+        }
+        case "value": {
+            const $ = prop.type[1]
+            return $.comments
+        }
+        default:
+            return assertUnreachable(prop.type[0])
+    }
+}
+
+function transformProperty(prop: syncAPI.Property, compact: boolean): bc.SerializableValueType {
+    switch (prop.type[0]) {
+        case "component": {
+            const $ = prop.type[1]
+            return transformNodeToValueType($.node, compact)
         }
         case "dictionary": {
             const $ = prop.type[1]
@@ -120,15 +144,12 @@ function transformProperty(prop: syncAPI.Property, compact: boolean): bc.Seriali
                     value: serializeNode(entry.node, compact),
                 }
             })
-            return {
-                commentData: transformCommentData($.comments),
-                type: ["object", {
-                    properties: new InDictionary(entries),
-                    openCharacter: "{",
-                    closeCharacter: "}",
-                    commentData: createEmptyCommentData(),
-                }],
-            }
+            return ["object", {
+                properties: new InDictionary(entries),
+                openCharacter: "{",
+                closeCharacter: "}",
+                commentData: createEmptyCommentData(),
+            }]
         }
         case "list": {
             const $ = prop.type[1]
@@ -139,38 +160,29 @@ function transformProperty(prop: syncAPI.Property, compact: boolean): bc.Seriali
                     type: transformNodeToValueType(entry.node, compact),
                 })
             })
-            return {
-                commentData: transformCommentData($.comments),
-                type: ["array", {
-                    elements: new InArray(elements),
-                    openCharacter: "[",
-                    closeCharacter: "]",
-                    commentData: createEmptyCommentData(),
-                }],
-            }
+            return ["array", {
+                elements: new InArray(elements),
+                openCharacter: "[",
+                closeCharacter: "]",
+                commentData: createEmptyCommentData(),
+            }]
         }
         case "state group": {
             const $ = prop.type[1]
             const currentState = $.getCurrentState()
-            return {
-                commentData: transformCommentData($.comments),
-                type: ["tagged union", {
-                    commentData: createEmptyCommentData(),
-                    quote: "'",
-                    option: currentState.getStateKey(),
-                    data: serializeNode(currentState.node, compact),
-                }],
-            }
+            return ["tagged union", {
+                commentData: createEmptyCommentData(),
+                quote: "'",
+                option: currentState.getStateKey(),
+                data: serializeNode(currentState.node, compact),
+            }]
         }
         case "value": {
             const $ = prop.type[1]
-            return {
-                commentData: transformCommentData($.comments),
-                type: ["simple value", {
-                    quote: $.definition.quoted ? "\"" : null,
-                    value: $.getValue(),
-                }],
-            }
+            return ["simple value", {
+                quote: $.definition.quoted ? "\"" : null,
+                value: $.getValue(),
+            }]
         }
         default:
             return assertUnreachable(prop.type[0])
@@ -181,7 +193,10 @@ function transformNodeToValueType(node: syncAPI.Node, compact: boolean): bc.Seri
     if (compact) {
         const elements: bc.SerializableValue[] = []
         node.forEachProperty((prop, _key) => {
-            elements.push(transformProperty(prop, compact))
+            elements.push({
+                commentData: transformCommentData(getPropertyComments(prop)),
+                type: transformProperty(prop, compact),
+            })
         })
         return ["array", {
             commentData: createEmptyCommentData(),
@@ -196,9 +211,12 @@ function transformNodeToValueType(node: syncAPI.Node, compact: boolean): bc.Seri
 
                 if (!prop.isKeyProperty) {
                     properties[key] = {
-                        commentData: createEmptyCommentData(),
+                        commentData: transformCommentData(getPropertyComments(prop)),
                         quote: "'",
-                        value: transformProperty(prop, compact),
+                        value: {
+                            commentData: createEmptyCommentData(),
+                            type: transformProperty(prop, compact),
+                        },
                     }
                 }
             }

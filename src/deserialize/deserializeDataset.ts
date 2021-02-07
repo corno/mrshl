@@ -237,7 +237,10 @@ export function deserializeDataset(
         }
     }
 
-    function createDSD(dataset: IDeserializedDataset, isCompact: boolean): bc.ParserEventConsumer<IDeserializedDataset, ExternalSchemaDeserializationError> {
+    function createDSD(
+        dataset: IDeserializedDataset,
+        isCompact: boolean
+    ): bc.ParserEventConsumer<IDeserializedDataset, ExternalSchemaDeserializationError> {
 
         const context = new bc.ExpectContext(
             (issue, range) => onError(createDiagnostic(["expect", issue]), range),
@@ -402,7 +405,7 @@ export function deserializeDataset(
         parserStack,
     ).mapResult(res => {
         overheadComments.forEach(ohc => {
-            res.dataset.sync.comments.addComment(ohc.comment, ohc.type === "block" ? ["block"] : ["line"])
+            res.dataset.sync.documentComments.addComment(ohc.comment, ohc.type === "block" ? ["block"] : ["line"])
         })
         return p.value(res)
     })

@@ -26,12 +26,14 @@ export function serialize(
     internalSchemaSpecification: syncAPI.InternalSchemaSpecification,
     compact: boolean,
 ): p.IStream<string, null> {
+    const rootComments = dataset.rootComments.getComments()
+    const allComments = dataset.documentComments.getComments().concat(rootComments)
     return bc.serializeDocument(
         {
             schema: serializeMetaData(internalSchemaSpecification, dataset.schema),
             root: serializeNode(dataset.root, compact),
             compact: compact,
-            documentComments: new InArray(dataset.comments.getComments().map(c => {
+            documentComments: new InArray(allComments.map(c => {
                 return {
                     text: c.value,
                 }

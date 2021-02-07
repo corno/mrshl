@@ -9,7 +9,8 @@ import { Comments } from "./implementation"
 class SyncDataset implements syncAPI.IDataset {
     public readonly schema: md.Schema
     public readonly root: sync.Node
-    public readonly comments = new Comments()
+    public readonly documentComments = new Comments()
+    public readonly rootComments = new Comments()
     constructor(rootImp: RootImp) {
         this.schema = rootImp.schema
         this.root = new sync.Node(

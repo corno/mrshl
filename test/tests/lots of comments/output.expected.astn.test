@@ -1,11 +1,14 @@
-/*a newline block comment at the beginning*/
-/*a newline line comment at the beginning*/
-/*a newline line comment after the exclamation mark*/
-/*a newline block comment after the exclamation mark*/
-/*a newline block comment before schema open paren, should be ignored*/
-/*a same line line comment after the schema close paren*/
-/*a same line line comment after the instance data close paren*/
-/*a newline block comment at the end*/
+/*1: a newline block comment at the beginning*/
+/*2: a newline line comment at the beginning*/
+/*3: a newline line comment after the exclamation mark*/
+/*4: a newline block comment after the exclamation mark*/
+/*5: a newline block comment before schema open paren*/
+/*6: a same line line comment after the schema close paren*/
+/*7: a newline block comment before the instance data open paren*/
+/*8: a same line line comment after the instance data close paren*/
+/*9: a newline line comment after the instance data close paren*/
+/*10: a newline block comment at the end*/
+/*11: a same line line comment after the instance data open paren*/
 ! (
     'component types': {
         "root": (
@@ -16,10 +19,30 @@
                             'quoted': false
                         )
                     )
+                    "d": (
+                        'type': | 'value' (
+                            'quoted': false
+                        )
+                    )
+                    "e": (
+                        'type': | 'value' (
+                            'quoted': false
+                        )
+                    )
                 }
             )
         )
     }
-) (
+)
+(
+    /*12: a newline block comment before the first entry*/
+    /*13: a same line line comment after a simple value*/
     'c': C
+    /*14: a newline block comment before a non first property, should be ignored*/
+    /*15:a same line block comment before colon*/
+    /*16: a same line block comment after colon*/
+    'd': D
+    /*17:a same line line comment before colon*/
+    /*18: a same line line comment after colon*/
+    'e': E
 )

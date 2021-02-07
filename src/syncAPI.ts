@@ -80,7 +80,8 @@ export type InternalSchemaSpecification =
 export interface IDataset {
     readonly schema: md.Schema
     readonly root: Node
-    readonly comments: Comments
+    readonly documentComments: Comments
+    readonly rootComments: Comments
 }
 
 export interface StateGroup {
