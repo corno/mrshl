@@ -19,14 +19,14 @@ export interface Dictionary {
     ): void
     onDictionaryClose(
         range: bc.Range,
-        closeData: bc.CloseData,
+        closeData: bc.ObjectCloseData,
     ): void
 }
 
 export interface List {
     onListClose(
         range: bc.Range,
-        closeData: bc.CloseData
+        closeData: bc.ArrayCloseData
     ): void
     onListEntry(): Node
     onUnexpectedListEntry(): void
@@ -44,21 +44,21 @@ export interface Node {
     ): void
     onArrayTypeOpen(
         openRange: bc.Range,
-        openData: bc.OpenData,
+        openData: bc.ArrayOpenData,
     ): void
     onArrayTypeClose(
         range: bc.Range,
-        closeData: bc.CloseData
+        closeData: bc.ArrayCloseData
     ): void
     onDictionaryOpen(
         dictionaryName: string,
         range: bc.Range,
-        openData: bc.OpenData
+        openData: bc.ObjectOpenData
     ): Dictionary
     onListOpen(
         name: string,
         range: bc.Range,
-        openData: bc.OpenData
+        openData: bc.ArrayOpenData
     ): List
     onValue(
         valueName: string,

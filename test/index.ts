@@ -278,19 +278,25 @@ export function directoryTests(): void {
                     schema => {
                         return astn.createInMemoryDataset(schema)
                     }
-                ).mapResultRaw(dataset => {
-                    astn.serialize(
-                        astn.createASTNSerializer(
-                            new astn.StringStream(out, 0),
-                        ),
+                ).mapResult<null>(dataset => {
+                    return astn.serialize(
                         dataset.dataset.sync,
                         dataset.internalSchemaSpecification,
                         false,
+                    ).consume<null>(
+                        null,
+                        {
+                            onData: data => {
+                                out.push(data)
+                                return p.value(false)
+                            },
+                            onEnd: () => {
+                                subscribeToNode(dataset.dataset.async.rootNode, actualEvents)
+
+                                return p.value(null)
+                            },
+                        }
                     )
-
-                    subscribeToNode(dataset.dataset.async.rootNode, actualEvents)
-
-                    return null
                 }).catch(
                     _e => {
                         if (actualIssues.length === 0) {

@@ -12,7 +12,6 @@ export class State {
     public readonly subentriesErrorsAggregator = new FlexibleErrorsAggregator()
     public readonly node: Node
     public readonly isCurrentState = new g.ReactiveValue<boolean>(true)
-    public readonly comments = new Comments()
     constructor(
         key: string,
         initializeStateNode: (

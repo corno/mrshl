@@ -1,94 +1,324 @@
 /* eslint
     no-shadow: "off",
 */
-import { ValueSerializer } from "./serializerAPI"
-import * as t from "../types"
+import * as bc from "bass-clarinet"
+import * as syncAPI from "../syncAPI"
+import * as md from "../types"
+import * as g from "../generics"
+import { InternalSchemaSpecification } from "../syncAPI"
 
 function assertUnreachable<RT>(_x: never): RT {
     throw new Error("unreachable")
 }
 
-function serializeNode(node: t.Node, serializer: ValueSerializer) {
-    return serializer.type(t$ => {
-        t$.addProperty("properties", false, v$ => v$.dictionary(propertiesBuilder => {
-            node.properties.forEach((prop, propKey) => {
-                propertiesBuilder.addEntry(propKey, v$ => v$.type(t$ => {
-                    t$.addProperty("name", true, v$ => v$.simpleValue(propKey, true))
-                    t$.addProperty("type", false, v$ => {
-                        switch (prop.type[0]) {
-                            case "collection": {
-                                const $ = prop.type[1]
-                                return v$.taggedUnion("collection", t$ => t$.type(t$ => {
-                                    t$.addProperty("type", false, v$ => {
-                                        switch ($.type[0]) {
-                                            case "dictionary": {
-                                                const $$ = $.type[1]
-                                                return v$.taggedUnion("dictionary", v$ => v$.type(t$ => {
-
-                                                    t$.addProperty("key property", false, t$ => t$.simpleValue("name", true))
-                                                    t$.addProperty("node", false, t$ => serializeNode($$.node, t$))
-                                                }))
-                                            }
-                                            case "list": {
-                                                const $$ = $.type[1]
-                                                return v$.taggedUnion("list", v$ => v$.type(t$ => {
-                                                    t$.addProperty("node", false, v$ => serializeNode($$.node, v$))
-
-                                                }))
-                                            }
-                                            default:
-                                                return assertUnreachable($.type[0])
-                                        }
-                                    })
-                                }))
-                            }
-                            case "component": {
-                                const $ = prop.type[1]
-                                return v$.taggedUnion("component", v$ => v$.type(t$ => {
-                                    t$.addProperty("type", false, v$ => v$.simpleValue($.type.name, true))
-
-                                }))
-                            }
-                            case "state group": {
-                                const $ = prop.type[1]
-
-                                return v$.taggedUnion("state group", v$ => v$.type(t$ => {
-                                    t$.addProperty("states", false, v$ => v$.dictionary(d$ => {
-                                        $.states.forEach((state, stateName) => {
-                                            d$.addEntry(stateName, v$ => v$.type(t$ => {
-                                                t$.addProperty("name", true, v$ => v$.simpleValue(stateName, true))
-                                                t$.addProperty("node", false, v$ => serializeNode(state.node, v$))
-                                            }))
-                                        })
-                                    }))
-                                }))
-                            }
-                            case "value": {
-                                const $ = prop.type[1]
-                                return v$.taggedUnion("value", v$ => v$.type(t$ => {
-                                    t$.addProperty("default value", false, t$ => t$.simpleValue($["default value"], true))
-                                    t$.addProperty("quoted", false, t$ => t$.simpleValue($.quoted ? "true" : "false", false))
-                                }))
-                            }
-                            default:
-                                return assertUnreachable(prop.type[0])
-                        }
-                    })
-                }))
-            })
-        }))
-    })
+class InDictionary<T> implements bc.IInDictionary<T> {
+    private readonly properties: { [key: string]: T }
+    constructor(properties: { [key: string]: T }) {
+        this.properties = properties
+    }
+    isEmpty() {
+        return Object.keys(this.properties).length === 0
+    }
+    map<R>(callback: (property: T, name: string) => R) {
+        const keys = Object.keys(this.properties)
+        const orderedKeys = keys.sort()
+        return new InArray(orderedKeys.map(e => callback(this.properties[e], e)))
+    }
 }
 
-export function serializeMetaData(metaData: t.Schema, serializer: ValueSerializer): void {
-    serializer.type(t$ => {
-        t$.addProperty("component types", false, ctsBuilder => ctsBuilder.dictionary(ctBuilder => {
-            metaData["component types"].forEach((ct, ctName) => {
-                ctBuilder.addEntry(ctName, $ => $.type($$ => {
-                    $$.addProperty("node", false, $$$ => serializeNode(ct.node, $$$))
-                }))
-            })
-        }))
-        t$.addProperty("root type", false, $ => $.simpleValue(metaData["root type"].name, true))
+class InArray<T> implements bc.IInArray<T> {
+    private readonly elements: T[]
+    constructor(elements: T[]) {
+        this.elements = elements
+    }
+    isEmpty() {
+        return this.elements.length === 0
+    }
+    map<R>(callback: (element: T) => R) {
+        return new InArray(this.elements.map(e => callback(e)))
+    }
+
+    forEach(callback: (element: T) => void) {
+        this.elements.forEach(e => callback(e))
+    }
+}
+
+function createEmptyCommentData(): bc.SerializableCommentData {
+    return {
+        before: {
+            comments: new InArray([]),
+        },
+        lineCommentAfter: null,
+    }
+}
+
+function createType(propertyValues: { [Key: string]: [boolean, bc.SerializableValue] }): bc.SerializableValue {
+    const properties: { [Key: string]: bc.SerializableProperty } = {}
+    Object.keys(propertyValues).sort().forEach(propertyName => {
+        const isDefault = propertyValues[propertyName][0]
+        if (!isDefault) {
+            properties[propertyName] = {
+                commentData: createEmptyCommentData(),
+                quote: "'",
+                value: propertyValues[propertyName][1],
+            }
+        }
     })
+    return {
+        commentData: createEmptyCommentData(),
+        type: ["object", {
+            openCharacter: "(",
+            closeCharacter: ")",
+            commentData: createEmptyCommentData(),
+            properties: new InDictionary(properties),
+        }],
+    }
+}
+function createDictionary<T>(entries: g.IReadonlyDictionary<T>, entryMapper: (entry: T) => bc.SerializableValue): bc.SerializableValue {
+    return {
+        commentData: createEmptyCommentData(),
+        type: ["object", {
+            openCharacter: "{",
+            closeCharacter: "}",
+            commentData: createEmptyCommentData(),
+            properties: new InDictionary(entries.mapSorted(entry => {
+                return {
+                    commentData: createEmptyCommentData(),
+                    quote: "\"",
+                    value: entryMapper(entry),
+                }
+            })),
+        }],
+    }
+}
+
+function createReference<T>(reference: g.IReference<T>): bc.SerializableValue {
+    return {
+        commentData: createEmptyCommentData(),
+        type: ["simple value", {
+            quote: "'",
+            value: reference.name,
+        }],
+    }
+}
+function createTaggedUnion(option: string, data: bc.SerializableValue): bc.SerializableValue {
+    return {
+        commentData: createEmptyCommentData(),
+        type: ["tagged union", {
+            quote: "'",
+            option: option,
+            commentData: createEmptyCommentData(),
+            data: data,
+        }],
+    }
+}
+
+function createTextProperty(value: string, quoted = true): bc.SerializableValue {
+    return {
+        commentData: createEmptyCommentData(),
+        type: ["simple value", {
+            quote: quoted ? "\"" : null,
+            value: value,
+        }],
+    }
+}
+
+function schemaPropertyIsDefault(prop: md.Property): boolean {
+    let isDefault = true
+    switch (prop.type[0]) {
+        case "collection": {
+            const $ = prop.type[1]
+            switch ($.type[0]) {
+                case "dictionary": {
+                    isDefault = false
+
+                    break
+                }
+                case "list": {
+                    const $$ = $.type[1]
+                    if (!schemaNodeIsDefault($$.node)) {
+                        isDefault = false
+                    }
+                    break
+                }
+                default:
+                    assertUnreachable($.type[0])
+            }
+            break
+        }
+        case "component": {
+            const $ = prop.type[1]
+            if (!schemaNodeIsDefault($.type.get().node)) {
+                isDefault = false
+            }
+            break
+        }
+        case "state group": {
+            const $ = prop.type[1]
+            if ($["default state"].name !== "yes") {
+                isDefault = false
+            }
+            if (!$.states.isEmpty()) {
+                isDefault = false
+            }
+            break
+        }
+        case "value": {
+            const $ = prop.type[1]
+
+            if (!$.quoted) {
+                isDefault = false
+            }
+            if ($["default value"] !== "") {
+                isDefault = false
+            }
+            break
+        }
+        default:
+            assertUnreachable(prop.type[0])
+    }
+    return isDefault
+}
+
+function schemaNodeIsDefault(node: md.Node): boolean {
+    return node.properties.isEmpty()
+}
+
+function createSerializableValueFromSchemaNode(schemaNode: md.Node): bc.SerializableValue {
+    const properties: { [key: string]: bc.SerializableProperty } = schemaNode.properties.mapSorted((entry, _key) => {
+        return {
+            commentData: createEmptyCommentData(),
+            quote: "\"",
+            value: createType({
+                type: [schemaPropertyIsDefault(entry), ((): bc.SerializableValue => {
+                    switch (entry.type[0]) {
+                        case "collection": {
+                            const $ = entry.type[1]
+
+                            return createTaggedUnion("collection", createType({
+                                type: [$.type[0] === "list" && schemaNodeIsDefault($.type[1].node), ((): bc.SerializableValue => {
+                                    switch ($.type[0]) {
+                                        case "dictionary": {
+                                            const $$ = $.type[1]
+                                            return createTaggedUnion("dictionary", createType({
+                                                "key property": [$$["key property"].name === "name", createReference($$["key property"])],
+                                                "node": [schemaNodeIsDefault($$.node), createSerializableValueFromSchemaNode($$.node)],
+                                            }))
+                                        }
+                                        case "list": {
+                                            const $$ = $.type[1]
+                                            return createTaggedUnion("list", createType({
+                                                node: [schemaNodeIsDefault($$.node), createSerializableValueFromSchemaNode($$.node)],
+                                            }))
+                                        }
+                                        default:
+                                            return assertUnreachable($.type[0])
+                                    }
+                                })()],
+                            }))
+                        }
+                        case "component": {
+                            const $ = entry.type[1]
+                            return createTaggedUnion("component", createType({
+                                type: [$.type.name === "", createReference($.type)],
+                            }))
+                        }
+                        case "state group": {
+                            const $ = entry.type[1]
+
+                            return createTaggedUnion("state group", createType({
+                                "default state": [$["default state"].name === "yes", createReference($["default state"])],
+                                "states": [$.states.isEmpty(), createDictionary($.states, state => {
+                                    return createType({
+                                        node: [schemaNodeIsDefault(state.node), createSerializableValueFromSchemaNode(state.node)],
+                                    })
+                                })],
+                            }))
+                        }
+                        case "value": {
+                            const $ = entry.type[1]
+                            return createTaggedUnion("value", createType({
+                                "quoted": [$.quoted, createTextProperty($.quoted ? "true" : "false", false)],
+                                "default value": [$["default value"] === "", createTextProperty($["default value"])],
+                            }))
+                        }
+                        default:
+                            return assertUnreachable(entry.type[0])
+                    }
+                })()],
+            }),
+        }
+    })
+    return {
+        commentData: createEmptyCommentData(),
+        type: ["object", {
+            commentData: {
+                before: {
+                    comments: new InArray([]),
+                },
+                lineCommentAfter: null,
+            },
+            properties: new InDictionary({
+                properties: {
+                    commentData: createEmptyCommentData(),
+                    quote: "'",
+                    value: {
+                        commentData: createEmptyCommentData(),
+                        type: ["object", {
+                            commentData: {
+                                before: {
+                                    comments: new InArray([]),
+                                },
+                                lineCommentAfter: null,
+                            },
+                            properties: new InDictionary(properties),
+                            openCharacter: `{`,
+                            closeCharacter: `}`,
+
+                        }],
+                    },
+                },
+            }),
+            openCharacter: `(`,
+            closeCharacter: `)`,
+
+        }],
+    }
+}
+
+export function serializeMetaData(
+    internalSchemaSpecification: InternalSchemaSpecification,
+    schema: md.Schema
+): bc.SerializableValue | null {
+    switch (internalSchemaSpecification[0]) {
+        case syncAPI.InternalSchemaSpecificationType.Embedded: {
+
+            return createType({
+                "component types": [schema["component types"].isEmpty(), createDictionary(
+                    schema["component types"],
+                    componentType => {
+                        return createType({
+                            node: [schemaNodeIsDefault(componentType.node), createSerializableValueFromSchemaNode(componentType.node)],
+                        })
+                    }
+                )],
+                "root type": [schema["root type"].name === "root", createReference(schema["root type"])],
+            })
+        }
+        case syncAPI.InternalSchemaSpecificationType.None: {
+            return null
+        }
+        case syncAPI.InternalSchemaSpecificationType.Reference: {
+            const $ = internalSchemaSpecification[1]
+            return {
+                commentData: createEmptyCommentData(),
+                type: ["simple value", {
+                    quote: `"`,
+                    value: $.name,
+                }],
+            }
+        }
+        default:
+            return assertUnreachable(internalSchemaSpecification[0])
+    }
 }

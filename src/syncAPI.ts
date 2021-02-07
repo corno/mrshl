@@ -4,12 +4,20 @@
 
 import * as md from "./types"
 
+
+export type CommentType =
+    | ["block"]
+    | ["line"]
+
 export interface Comment {
     value: string
+    type:
+    | ["block"]
+    | ["line"]
 }
 
 export interface Comments {
-    addComment(comment: string): void
+    addComment(comment: string, type: CommentType): void
     getComments(): Comment[]
 }
 
@@ -26,16 +34,14 @@ export interface Property {
 }
 
 export interface Dictionary {
-    readonly beginComments: Comments
-    readonly endComments: Comments
+    readonly comments: Comments
 
     forEachEntry(callback: (entry: Entry, key: string) => void): void
     createEntry(): Entry
     isEmpty(): boolean
 }
 export interface List {
-    readonly beginComments: Comments
-    readonly endComments: Comments
+    readonly comments: Comments
     forEachEntry(callback: (entry: Entry) => void): void
     createEntry(): Entry
     isEmpty(): boolean
@@ -52,8 +58,6 @@ export interface Entry {
 }
 
 export interface Node {
-    readonly beginComments: Comments
-    readonly endComments: Comments
     getDictionary(name: string): Dictionary
     getList(name: string): List
     getComponent(name: string): Component
@@ -76,6 +80,7 @@ export type InternalSchemaSpecification =
 export interface IDataset {
     readonly schema: md.Schema
     readonly root: Node
+    readonly comments: Comments
 }
 
 export interface StateGroup {
@@ -88,7 +93,6 @@ export interface StateGroup {
 
 export interface State {
     readonly node: Node
-    readonly comments: Comments
     getStateKey(): string
 }
 

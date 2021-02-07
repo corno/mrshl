@@ -3,6 +3,7 @@
 */
 
 import * as asyncAPI from "../asyncAPI"
+import * as p from "pareto"
 import * as cc from "./changeControl"
 import * as d from "../types"
 import * as g from "../generics"
@@ -15,7 +16,6 @@ import { Command, RootImp } from "./Root"
 import * as imp from "./implementation"
 import { IFocussable } from "./implementation/IFocussable"
 import { initializeNode } from "./initializeNode"
-import { createASTNSerializer } from "../serialize"
 
 function assertUnreachable<RT>(_x: never): RT {
     throw new Error("unreachable")
@@ -160,15 +160,23 @@ export class Dataset implements asyncAPI.Dataset {
         const out: string[] = []
 
         s.serialize(
-            createASTNSerializer(
-                new s.StringStream(out, 0),
-            ),
             this.syncDataset,
             internalSchemaSpecification,
             compact,
+        ).handle(
+            null,
+            {
+                onData: data => {
+                    out.push(data)
+                    return p.value(false)
+                },
+                onEnd: () => {
+                    //
+                    callback(out.join(""))
+                    this.imp.global.changeController.resetSerializationPosition()
+                },
+            }
         )
-        callback(out.join(""))
-        this.imp.global.changeController.resetSerializationPosition()
     }
     public undo(): void {
         this.imp.global.changeController.undo()

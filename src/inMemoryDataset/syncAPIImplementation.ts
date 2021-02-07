@@ -101,8 +101,6 @@ class Property implements syncAPI.Property {
 }
 
 export class Node implements syncAPI.Node {
-    readonly beginComments: imp.Comments
-    readonly endComments: imp.Comments
     private readonly imp: imp.Node
     private readonly definition: d.Node
     private readonly global: Global
@@ -117,8 +115,6 @@ export class Node implements syncAPI.Node {
         this.imp = node
         this.global = global
         this.keyProperty = keyProperty
-        this.beginComments = node.beginComments
-        this.endComments = node.endComments
     }
     public getDictionary(key: string): Dictionary {
         const propDef = this.definition.properties.getUnsafe(key)
@@ -231,12 +227,10 @@ export class StateGroup implements syncAPI.StateGroup {
 
 export class State implements syncAPI.State {
     public readonly node: Node
-    public readonly comments: imp.Comments
     private readonly imp: imp.State
     constructor(stateImp: imp.State, definition: d.State, global: Global) {
         this.node = new Node(stateImp.node, definition.node, global, null)
         this.imp = stateImp
-        this.comments = this.imp.comments
     }
     public getStateKey(): string {
         return this.imp.key
@@ -273,8 +267,7 @@ export class Entry implements syncAPI.Entry {
 }
 
 export class Dictionary implements syncAPI.Dictionary {
-    readonly beginComments: imp.Comments
-    readonly endComments: imp.Comments
+    readonly comments: imp.Comments
     public readonly imp: imp.Collection
     private readonly definition: d.Dictionary
     private readonly global: Global
@@ -286,8 +279,7 @@ export class Dictionary implements syncAPI.Dictionary {
         this.imp = collectionImp
         this.definition = definition
         this.global = global
-        this.beginComments = collectionImp.beginComments
-        this.endComments = collectionImp.endComments
+        this.comments = collectionImp.comments
     }
     public isEmpty(): boolean {
         return this.imp.entries.isEmpty()
@@ -322,8 +314,7 @@ export class Dictionary implements syncAPI.Dictionary {
 
 
 export class List implements syncAPI.List {
-    readonly beginComments: imp.Comments
-    readonly endComments: imp.Comments
+    readonly comments: imp.Comments
 
     private readonly imp: imp.Collection
     //private readonly definition: d.List
@@ -334,8 +325,7 @@ export class List implements syncAPI.List {
     ) {
         this.imp = collectionImp
         this.global = global
-        this.beginComments = collectionImp.beginComments
-        this.endComments = collectionImp.endComments
+        this.comments = collectionImp.comments
 
     }
     public isEmpty(): boolean {

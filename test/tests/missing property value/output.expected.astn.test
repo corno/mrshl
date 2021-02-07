@@ -1,2 +1,16 @@
-! ( FIXME_EMBEDDED_SCHEMA ) (
-)
+! (
+    'component types': {
+        "x": (
+            'node': (
+                'properties': {
+                    "y": (
+                        'type': | 'value' (
+                            'quoted': false
+                        )
+                    )
+                }
+            )
+        )
+    }
+    'root type': "x"
+) ( )

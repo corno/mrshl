@@ -4,10 +4,12 @@ import { RootImp } from "./Root"
 import { IDataset } from "../dataset"
 import * as syncAPI from "../syncAPI"
 import * as asyncAPIImp from "./asyncAPIImplementation"
+import { Comments } from "./implementation"
 
 class SyncDataset implements syncAPI.IDataset {
     public readonly schema: md.Schema
     public readonly root: sync.Node
+    public readonly comments = new Comments()
     constructor(rootImp: RootImp) {
         this.schema = rootImp.schema
         this.root = new sync.Node(

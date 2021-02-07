@@ -1,5 +1,1 @@
 export { serialize } from "./serialize"
-export { StringStream } from "./serializerAPI"
-export * from "./serializers/JSONSerializer"
-export * from "./serializers/ASTNSerializer"
-export * from "./serializeMetaData"
