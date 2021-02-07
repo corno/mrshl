@@ -11,14 +11,14 @@ function assertUnreachable<RT>(_x: never): RT {
 type OnError = (message: string, range: bc.Range) => void
 
 function addComments(target: syncAPI.Comments, contextData: bc.ContextData, temp: string) {
-    //console.log(JSON.stringify(contextData.indentation))
-    if (contextData.before.comments.length > 0) {
-        //console.log("HIERO EEE")
-    }
     contextData.before.comments.forEach(c => {
-        //console.log("!!!!!")
+        console.log(`*******************before: ${c.text}`)
         target.addComment(temp + c.text, c.type === "block" ? ["block"] : ["line"])
     })
+    if (contextData.lineCommentAfter !== null) {
+        console.log(`*******************lca: ${contextData.lineCommentAfter.text}`)
+        target.addComment(contextData.lineCommentAfter.text, contextData.lineCommentAfter.type === "block" ? ["block"] : ["line"])
+    }
 
 }
 

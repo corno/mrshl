@@ -156,12 +156,7 @@ export function directoryTests(): void {
             const testDirPath = path.join(testsDir, dir)
             const serializedDatasetPath = path.join(testDirPath, "data.astn.test")
             //const expectedOutputPath = path.join(testDirPath, "expected.astn.test")
-            const expectedIssues: Issues = JSON.parse( //eslint-disable-line @typescript-eslint/no-unsafe-assignment
-                fs.readFileSync(
-                    path.join(testDirPath, "issues.json"),
-                    { encoding: "utf-8" }
-                )
-            )
+
 
             const actualIssues: Issues = []
             const actualEvents: Event[] = []
@@ -319,7 +314,7 @@ export function directoryTests(): void {
                     )
                     deepEqualJSON(testDirPath, "snippets", actualSnippets)
                     deepEqualJSON(testDirPath, "events", actualEvents)
-                    chai.assert.deepEqual(actualIssues, expectedIssues)
+                    deepEqualJSON(testDirPath, "issues", actualIssues)
                 })
             })
         })

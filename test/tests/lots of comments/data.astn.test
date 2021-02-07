@@ -1,63 +1,32 @@
-! "mrshl/schemaschema@0.1" (
+/*a newline block comment at the beginning*/
+//a newline line comment at the beginning
+! //a newline line comment after the exclamation mark
+/*a newline block comment after the exclamation mark*/
+/*a newline block comment before schema open paren, should be ignored*/ ( //a same line comment after schema open paren, should be ignored
     'component types': {
         'root': (
-	
-	
-        'node': (
-                'properties':{
-                    'foo':(
-                        'type': | 'state group' (
-                            'default state':"bla" //a comment after a simple value
-                            'states': {
-                                "bla":()
-                            }
-                        )
-                    )
-		    /*
-		    a comment before
-		    */
-                    'skylanders': ( /*
-		    	a comment after open object
-		    	*/
-                        'type': | 'collection' (
-                            'node': /*a comment after a colon*/ (
-                                'properties' /*a comment before a colon*/ : {
-                                    'name': ( )
-                                    'aanval':(
-                                        'type': /*a block comment before the tagged union pipe */ | 'state group' (
-                                            'default state': "laser ogen"
-                                            'states': {
-                                                'laser ogen':()
-                                                'vinger pistool': ()
-                                            }
-                                        )
-                                    )
-                                    'element':(
-                                        'type': | 'state group' /*a block comment after an option*/ (
-                                            'states': {
-                                                'techniek':()
-                                                'water':()
-                                                'planten':()
-                                                'ondood':()
-                                                'aarde':()
-                                                'bergen':()
-                                                'lucht':()
-                                                'magie':()
-                                                'vuur':()
-                                            }
-                                            'default state': "techniek" /*a block comment after the last property*/
-                                        )
-                                    )
-                                }
-                            )
-                            'type': | 'dictionary' (
-                            )
+            /*a block comment in the schema, should be ignored*/
+            'node': (
+                'properties': {
+                    'c': (
+                        'type': | 'value' (
+                            'quoted': false
+                            'default value': ""
                         )
                     )
                 }
             )
         )
     }
-)
+    'root type': 'root'
+) //a same line line comment after the schema close paren
 
-/* THIS IS AN END COMMENT */
+
+(
+    /*a newline block comment before the first entry*/
+    'c': C
+    /*a newline block comment before an unknown prpperty, should be ignored*/
+    'b': 42
+) //a same line line comment after the instance data close paren
+
+/*a newline block comment at the end*/
