@@ -1,5 +1,5 @@
 //a comment before the data
-( //a comment within the data
+( //a line comment after the open paren
     /*a block comment before a property*/
     //a line comment before a property
     "y" /*comment before colon*/: /*should be a number*/ 5

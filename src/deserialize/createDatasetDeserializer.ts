@@ -10,14 +10,14 @@ function assertUnreachable<RT>(_x: never): RT {
 
 type OnError = (message: string, range: bc.Range) => void
 
-function addComments(target: syncAPI.Comments, contextData: bc.ContextData) {
+function addComments(target: syncAPI.Comments, contextData: bc.ContextData, temp: string) {
     //console.log(JSON.stringify(contextData.indentation))
     if (contextData.before.comments.length > 0) {
         //console.log("HIERO EEE")
     }
     contextData.before.comments.forEach(c => {
         //console.log("!!!!!")
-        target.addComment(c.text, c.type === "block" ? ["block"] : ["line"])
+        target.addComment(temp + c.text, c.type === "block" ? ["block"] : ["line"])
     })
 
 }
@@ -26,14 +26,14 @@ function expectValue(
     context: bc.ExpectContext,
     targetComments: syncAPI.Comments,
     onValue: bc.OnValue,
-    onMissing?: () => void
+    temp: string,
+    //onMissing?: () => void,
 ) {
     return context.expectValue(
         contextData => {
-            addComments(targetComments, contextData)
+            addComments(targetComments, contextData, "1" + temp)
             return onValue(contextData)
         },
-        onMissing
     )
 }
 
@@ -58,62 +58,72 @@ function createPropertyDeserializer(
                     let dictionarySideEffects: null | sideEffects.Dictionary[] = null
 
 
-                    return expectValue(context, dictionary.comments, () => {
-                        return context.expectDictionary(
-                            (key, range, entryContextData) => {
-                                hasEntries = true
-                                const entry = dictionary.createEntry()
-                                //const entry = collBuilder.createEntry(errorMessage => onError(errorMessage, propertyData.keyRange))
-                                entry.node.getValue($$["key property"].name).setValue(key, errorMessage => onError(errorMessage, range))
-                                addComments(entry.comments, entryContextData)
+                    return expectValue(
+                        context,
+                        dictionary.comments,
+                        () => {
+                            return context.expectDictionary(
+                                (key, range, entryContextData) => {
+                                    hasEntries = true
+                                    const entry = dictionary.createEntry()
+                                    //const entry = collBuilder.createEntry(errorMessage => onError(errorMessage, propertyData.keyRange))
+                                    entry.node.getValue($$["key property"].name).setValue(key, errorMessage => onError(errorMessage, range))
+                                    addComments(entry.comments, entryContextData, "2")
 
 
-                                if (dictionarySideEffects === null) {
-                                    throw new Error("UNEXPECTED")
-                                }
-                                const propertySideEffects = dictionarySideEffects.map(s => {
-                                    return s.onDictionaryEntry(
-                                        range,
-                                        $$.node,
-                                        $$["key property"].get(),
-                                        entry
+                                    if (dictionarySideEffects === null) {
+                                        throw new Error("UNEXPECTED")
+                                    }
+                                    const propertySideEffects = dictionarySideEffects.map(s => {
+                                        return s.onDictionaryEntry(
+                                            range,
+                                            $$.node,
+                                            $$["key property"].get(),
+                                            entry
+                                        )
+                                    })
+                                    return expectValue(
+                                        context,
+                                        entry.comments,
+                                        createNodeDeserializer(
+                                            context,
+                                            $$.node,
+                                            $$["key property"].get(),
+                                            entry.node,
+                                            isCompact,
+                                            $$["key property"].get(),
+                                            propertySideEffects,
+                                            onError,
+                                            () => {
+                                                //
+                                            },
+                                            entry.comments,
+                                        ),
+                                        "2",
                                     )
-                                })
-                                return expectValue(context, entry.comments, createNodeDeserializer(
-                                    context,
-                                    $$.node,
-                                    $$["key property"].get(),
-                                    entry.node,
-                                    isCompact,
-                                    $$["key property"].get(),
-                                    propertySideEffects,
-                                    onError,
-                                    () => {
-                                        //
-                                    },
-                                    entry.comments,
-                                ))
-                            },
-                            (range, beginData) => {
-                                dictionarySideEffects = sideEffectsAPIs.map(s => {
-                                    return s.onDictionaryOpen(propKey, range, beginData)
-                                })
-                            },
-                            (endRange, endData, endContextData) => {
-                                if (dictionarySideEffects === null) {
-                                    throw new Error("UNEXPECTED")
-                                }
-                                dictionarySideEffects.forEach(s => {
-                                    s.onDictionaryClose(endRange, endData)
-                                })
-                                if (hasEntries) {
-                                    flagIsDirty()
-                                }
-                                addComments(dictionary.comments, endContextData)
+                                },
+                                (range, beginData) => {
+                                    dictionarySideEffects = sideEffectsAPIs.map(s => {
+                                        return s.onDictionaryOpen(propKey, range, beginData)
+                                    })
+                                },
+                                (endRange, endData, endContextData) => {
+                                    if (dictionarySideEffects === null) {
+                                        throw new Error("UNEXPECTED")
+                                    }
+                                    dictionarySideEffects.forEach(s => {
+                                        s.onDictionaryClose(endRange, endData)
+                                    })
+                                    if (hasEntries) {
+                                        flagIsDirty()
+                                    }
+                                    addComments(dictionary.comments, endContextData, "3")
 
-                            },
-                        )
-                    })
+                                },
+                            )
+                        },
+                        "1",
+                    )
                 }
                 case "list": {
                     const $$ = $.type[1]
@@ -121,56 +131,61 @@ function createPropertyDeserializer(
                     let listSideEffects: null | sideEffects.List[] = null
 
                     let hasEntries = false
-                    return expectValue(context, list.comments, () => {
-                        return context.expectList(
-                            () => {
-                                hasEntries = true
-                                const entry = list.createEntry()
-                                // const entry = collBuilder.createEntry(_errorMessage => {
-                                //     //onError(errorMessage, svData.range)
-                                // })
-                                if (listSideEffects === null) {
-                                    throw new Error("UNEXPECTED")
-                                }
-                                const elementSideEffects = listSideEffects.map(s => {
-                                    return s.onListEntry()
-                                })
-                                return createNodeDeserializer(
-                                    context,
-                                    $$.node,
-                                    null,
-                                    entry.node,
-                                    isCompact,
-                                    null,
-                                    elementSideEffects,
-                                    onError,
-                                    () => {
-                                        //
-                                    },
-                                    entry.comments,
-                                )
-                            },
-                            (beginRange, beginData) => {
-                                listSideEffects = sideEffectsAPIs.map(s => {
-                                    return s.onListOpen(propKey, beginRange, beginData)
-                                })
+                    return expectValue(
+                        context,
+                        list.comments,
+                        () => {
+                            return context.expectList(
+                                () => {
+                                    hasEntries = true
+                                    const entry = list.createEntry()
+                                    // const entry = collBuilder.createEntry(_errorMessage => {
+                                    //     //onError(errorMessage, svData.range)
+                                    // })
+                                    if (listSideEffects === null) {
+                                        throw new Error("UNEXPECTED")
+                                    }
+                                    const elementSideEffects = listSideEffects.map(s => {
+                                        return s.onListEntry()
+                                    })
+                                    return createNodeDeserializer(
+                                        context,
+                                        $$.node,
+                                        null,
+                                        entry.node,
+                                        isCompact,
+                                        null,
+                                        elementSideEffects,
+                                        onError,
+                                        () => {
+                                            //
+                                        },
+                                        entry.comments,
+                                    )
+                                },
+                                (beginRange, beginData) => {
+                                    listSideEffects = sideEffectsAPIs.map(s => {
+                                        return s.onListOpen(propKey, beginRange, beginData)
+                                    })
 
-                            },
-                            (endRange, endData, endContextData) => {
-                                if (hasEntries) {
-                                    flagIsDirty()
-                                }
-                                if (listSideEffects === null) {
-                                    throw new Error("UNEXPECTED")
-                                }
-                                listSideEffects.forEach(s => {
-                                    s.onListClose(endRange, endData)
-                                })
-                                addComments(list.comments, endContextData)
+                                },
+                                (endRange, endData, endContextData) => {
+                                    if (hasEntries) {
+                                        flagIsDirty()
+                                    }
+                                    if (listSideEffects === null) {
+                                        throw new Error("UNEXPECTED")
+                                    }
+                                    listSideEffects.forEach(s => {
+                                        s.onListClose(endRange, endData)
+                                    })
+                                    addComments(list.comments, endContextData, "4")
 
-                            },
-                        )
-                    })
+                                },
+                            )
+                        },
+                        "3",
+                    )
                 }
                 default:
                     return assertUnreachable($.type[0])
@@ -179,110 +194,130 @@ function createPropertyDeserializer(
         case "component": {
             const $ = propDefinition.type[1]
             const componentBuilder = nodeBuilder.getComponent(propKey)
-            return expectValue(context, componentBuilder.comments, createNodeDeserializer(
+            return expectValue(
                 context,
-                $.type.get().node,
-                null,
-                componentBuilder.node,
-                isCompact,
-                null,
-                sideEffectsAPIs.map(s => {
-                    return s.onComponent(propKey)
-                }),
-                onError,
-                flagIsDirty,
                 componentBuilder.comments,
-            ))
+                createNodeDeserializer(
+                    context,
+                    $.type.get().node,
+                    null,
+                    componentBuilder.node,
+                    isCompact,
+                    null,
+                    sideEffectsAPIs.map(s => {
+                        return s.onComponent(propKey)
+                    }),
+                    onError,
+                    flagIsDirty,
+                    componentBuilder.comments,
+                ),
+                "4"
+            )
         }
         case "state group": {
             const $ = propDefinition.type[1]
             const stateGroup = nodeBuilder.getStateGroup(propKey)
 
-            return expectValue(context, stateGroup.comments, contextData => {
-                return context.expectTaggedUnion(
-                    $.states.mapUnsorted((stateDef, stateName) => {
-                        return (tuRange, optionRange, optionContextData) => {
-                            const stateSideEffects = sideEffectsAPIs.map(s => {
-                                return s.onState(
-                                    propKey,
-                                    stateName,
-                                    tuRange,
+            return expectValue(
+                context,
+                stateGroup.comments,
+                contextData => {
+                    return context.expectTaggedUnion(
+                        $.states.mapUnsorted((stateDef, stateName) => {
+                            return (tuRange, optionRange, optionContextData) => {
+                                const stateSideEffects = sideEffectsAPIs.map(s => {
+                                    return s.onState(
+                                        propKey,
+                                        stateName,
+                                        tuRange,
+                                        contextData,
+                                        optionRange,
+                                        optionContextData
+                                    )
+                                })
+
+                                const state = stateGroup.setState(stateName, errorMessage => onError(errorMessage, optionRange))
+                                addComments(stateGroup.comments, optionContextData, "5")
+
+
+                                if ($["default state"].get() !== stateDef) {
+                                    flagIsDirty()
+                                }
+                                return expectValue(
+                                    context,
+                                    stateGroup.comments,
+                                    createNodeDeserializer(
+                                        context,
+                                        stateDef.node,
+                                        null,
+                                        state.node,
+                                        isCompact,
+                                        null,
+                                        stateSideEffects,
+                                        onError,
+                                        flagIsDirty,
+                                        stateGroup.comments,
+                                    ),
+                                    "6",
+                                )
+                            }
+                        }),
+                        (option, tuData, optionData, optionPreData) => {
+                            sideEffectsAPIs.forEach(s => {
+                                s.onUnexpectedState(
+                                    option,
+                                    tuData,
                                     contextData,
-                                    optionRange,
-                                    optionContextData
+                                    optionData,
+                                    optionPreData,
+                                    $,
                                 )
                             })
-
-                            const state = stateGroup.setState(stateName, errorMessage => onError(errorMessage, optionRange))
-                            addComments(stateGroup.comments, optionContextData)
-
-
-                            if ($["default state"].get() !== stateDef) {
-                                flagIsDirty()
-                            }
-                            return expectValue(context, stateGroup.comments, createNodeDeserializer(
-                                context,
-                                stateDef.node,
-                                null,
-                                state.node,
-                                isCompact,
-                                null,
-                                stateSideEffects,
-                                onError,
-                                flagIsDirty,
-                                stateGroup.comments,
-                            ))
-                        }
-                    }),
-                    (option, tuData, optionData, optionPreData) => {
-                        sideEffectsAPIs.forEach(s => {
-                            s.onUnexpectedState(
-                                option,
-                                tuData,
-                                contextData,
-                                optionData,
-                                optionPreData,
-                                $,
-                            )
-                        })
-                    },
-                )
-            })
+                        },
+                    )
+                },
+                "5",
+            )
         }
         case "value": {
             const $ = propDefinition.type[1]
             const valueBuilder = nodeBuilder.getValue(propKey)
 
-            return expectValue(context, valueBuilder.comments, () => {
-                return context.expectSimpleValue(
-                    (range, data) => {
-                        if (data.value !== $["default value"]) {
-                            flagIsDirty()
-                        }
-                        valueBuilder.setValue(data.value, errorMessage => onError(errorMessage, range))
-                        if (data.quote !== null) {
-                            if (!$.quoted) {
-                                onError(`value '${data.value}' must be unquoted`, range)
+            return expectValue(
+                context,
+                valueBuilder.comments,
+                () => {
+                    return context.expectSimpleValue(
+                        (range, data) => {
+                            if (data.value !== $["default value"]) {
+                                flagIsDirty()
                             }
-                        } else {
-                            if ($.quoted) {
-                                onError(`value '${data.value}' must be quoted`, range)
+                            valueBuilder.setValue(data.value, errorMessage => onError(errorMessage, range))
+                            if (data.quote !== null) {
+                                if (!$.quoted) {
+                                    onError(`value '${data.value}' must be unquoted`, range)
+                                }
+                            } else {
+                                if ($.quoted) {
+                                    onError(`value '${data.value}' must be quoted`, range)
+                                }
+
                             }
+                            //valueBuilder.setValue(value, svData.quote !== null, svData.range, comments)
 
+
+                            sideEffectsAPIs.forEach(s => {
+                                s.onValue(propKey, valueBuilder, range, data, $)
+                            })
+                            return p.result(false)
+                        },
+                        () => {
+                            //
                         }
-                        //valueBuilder.setValue(value, svData.quote !== null, svData.range, comments)
-
-
-                        sideEffectsAPIs.forEach(s => {
-                            s.onValue(propKey, valueBuilder, range, data, $)
-                        })
-                        return p.result(false)
-                    },
-                    () => {
-                        //
-                    }
-                )
-            })
+                    )
+                },
+                "7",
+            )
         }
         default:
             return assertUnreachable(propDefinition.type[0])
@@ -359,7 +394,7 @@ function createNodeDeserializer(
 ): bc.OnValue {
 
     return contextData => {
-        addComments(targetComments, contextData)
+        addComments(targetComments, contextData, "6")
 
         if (isCompact) {
             flagIsDirty()
@@ -392,7 +427,7 @@ function createNodeDeserializer(
                     sideEffectsAPI.forEach(s => {
                         s.onArrayTypeClose(endRange, endData)
                     })
-                    addComments(targetComments, endContextData)
+                    addComments(targetComments, endContextData, "7")
 
                 }
             )
@@ -462,7 +497,7 @@ function createNodeDeserializer(
                 },
                 (_hasErrors, endRange, _closeData, endContextData) => {
                     let hasDirtyProperties = false
-                    addComments(targetComments, endContextData)
+                    addComments(targetComments, endContextData, "8")
                     nodeDefinition.properties.forEach((_prop, propKey) => {
                         const processedProperty = processedProperties[propKey]
                         if (processedProperty !== undefined) {
@@ -505,17 +540,22 @@ export function createDatasetDeserializer(
     onError: OnError,
 ): bc.RequiredValueHandler {
     //addComments(dataset.comments)
-    return expectValue(context, dataset.comments, createNodeDeserializer(
+    return expectValue(
         context,
-        dataset.schema["root type"].get().node,
-        null,
-        dataset.root, isCompact,
-        null,
-        sideEffectsHandlers,
-        onError,
-        () => {
-            //
-        },
-        dataset.comments
-    ))
+        dataset.comments,
+        createNodeDeserializer(
+            context,
+            dataset.schema["root type"].get().node,
+            null,
+            dataset.root, isCompact,
+            null,
+            sideEffectsHandlers,
+            onError,
+            () => {
+                //
+            },
+            dataset.comments
+        ),
+        "9",
+    )
 }
