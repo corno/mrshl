@@ -1,6 +1,6 @@
 import * as bc from "bass-clarinet"
 import * as syncAPI from "../syncAPI"
-import { serializeInstanceData } from "./serializeInstanceData"
+import { serializeNode } from "./serializeInstanceData"
 import { serializeMetaData } from "./serializeMetaData"
 
 class InArray<T> implements bc.IInArray<T> {
@@ -27,7 +27,7 @@ export function createSerializableDocument(
 ): bc.SerializableDocument {
     return {
         schema: serializeMetaData(internalSchemaSpecification, dataset.schema),
-        root: serializeInstanceData(dataset.root, compact),
+        root: serializeNode(dataset.root, compact),
         compact: compact,
         documentComments: new InArray(dataset.comments.getComments().map(c => {
             return {

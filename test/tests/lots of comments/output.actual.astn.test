@@ -1,0 +1,57 @@
+/* THIS IS AN END COMMENT */
+! "mrshl/schemaschema@0.1" (
+    'component types': {
+        "root": (
+            'node': (
+                'properties': {
+                    "foo": (
+                        'type': | 'state group' (
+                            'default state': "bla"
+                            'states': {
+                                "bla": ( )
+                            }
+                        )
+                    )
+                    /*
+		    a comment before
+		    */
+                    "skylanders": (
+                        'type': | 'collection' (
+                            'node': /*a comment after a colon*//*a comment after a colon*/(
+                                'properties': /*a comment before a colon*/{
+                                    "aanval": (
+                                        'type': /*a block comment before the tagged union pipe */| 'state group' (
+                                            'default state': "laser ogen"
+                                            'states': {
+                                                "laser ogen": ( )
+                                                "vinger pistool": ( )
+                                            }
+                                        )
+                                    )
+                                    "element": (
+                                        'type': /*a block comment after an option*//*a block comment after an option*//*a block comment after the last property*/| 'state group' (
+                                            'default state': "techniek"
+                                            'states': {
+                                                "aarde": ( )
+                                                "bergen": ( )
+                                                "lucht": ( )
+                                                "magie": ( )
+                                                "ondood": ( )
+                                                "planten": ( )
+                                                "techniek": ( )
+                                                "vuur": ( )
+                                                "water": ( )
+                                            }
+                                        )
+                                    )
+                                    "name": ( )
+                                }
+                            )
+                            'type': | 'dictionary' ( )
+                        )
+                    )
+                }
+            )
+        )
+    }
+)

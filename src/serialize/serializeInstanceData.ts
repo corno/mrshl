@@ -117,7 +117,7 @@ function transformProperty(prop: syncAPI.Property, compact: boolean): bc.Seriali
                 entries[key] = {
                     commentData: transformCommentData(entry.comments),
                     quote: "\"",
-                    value: serializeInstanceData(entry.node, compact),
+                    value: serializeNode(entry.node, compact),
                 }
             })
             return {
@@ -158,7 +158,7 @@ function transformProperty(prop: syncAPI.Property, compact: boolean): bc.Seriali
                     commentData: createEmptyCommentData(),
                     quote: "'",
                     option: currentState.getStateKey(),
-                    data: serializeInstanceData(currentState.node, compact),
+                    data: serializeNode(currentState.node, compact),
                 }],
             }
         }
@@ -184,12 +184,7 @@ function transformNodeToValueType(node: syncAPI.Node, compact: boolean): bc.Seri
             elements.push(transformProperty(prop, compact))
         })
         return ["array", {
-            commentData: {
-                before: {
-                    comments: new InArray([]),
-                },
-                lineCommentAfter: null,
-            },
+            commentData: createEmptyCommentData(),
             elements: new InArray(elements),
             openCharacter: `<`,
             closeCharacter: `>`,
@@ -201,12 +196,7 @@ function transformNodeToValueType(node: syncAPI.Node, compact: boolean): bc.Seri
 
                 if (!prop.isKeyProperty) {
                     properties[key] = {
-                        commentData: {
-                            before: {
-                                comments: new InArray([]),
-                            },
-                            lineCommentAfter: null,
-                        },
+                        commentData: createEmptyCommentData(),
                         quote: "'",
                         value: transformProperty(prop, compact),
                     }
@@ -214,12 +204,7 @@ function transformNodeToValueType(node: syncAPI.Node, compact: boolean): bc.Seri
             }
         })
         return ["object", {
-            commentData: {
-                before: {
-                    comments: new InArray([]),
-                },
-                lineCommentAfter: null,
-            },
+            commentData: createEmptyCommentData(),
             properties: new InDictionary(properties),
             openCharacter: `(`,
             closeCharacter: `)`,
@@ -227,14 +212,9 @@ function transformNodeToValueType(node: syncAPI.Node, compact: boolean): bc.Seri
     }
 }
 
-export function serializeInstanceData(node: syncAPI.Node, compact: boolean): bc.SerializableValue {
+export function serializeNode(node: syncAPI.Node, compact: boolean): bc.SerializableValue {
     return {
-        commentData: {
-            before: {
-                comments: new InArray([]),
-            },
-            lineCommentAfter: null,
-        },
+        commentData: createEmptyCommentData(),
         type: transformNodeToValueType(node, compact),
     }
 }

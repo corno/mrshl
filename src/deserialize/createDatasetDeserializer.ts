@@ -10,7 +10,7 @@ function assertUnreachable<RT>(_x: never): RT {
 
 type OnError = (message: string, range: bc.Range) => void
 
-function addComments(contextData: bc.ContextData, target: syncAPI.Comments) {
+function addComments(target: syncAPI.Comments, contextData: bc.ContextData) {
     //console.log(JSON.stringify(contextData.indentation))
     if (contextData.before.comments.length > 0) {
         //console.log("HIERO EEE")
@@ -30,7 +30,7 @@ function expectValue(
 ) {
     return context.expectValue(
         contextData => {
-            addComments(contextData, targetComments)
+            addComments(targetComments, contextData)
             return onValue(contextData)
         },
         onMissing
@@ -65,7 +65,7 @@ function createPropertyDeserializer(
                                 const entry = dictionary.createEntry()
                                 //const entry = collBuilder.createEntry(errorMessage => onError(errorMessage, propertyData.keyRange))
                                 entry.node.getValue($$["key property"].name).setValue(key, errorMessage => onError(errorMessage, range))
-                                addComments(entryContextData, entry.comments)
+                                addComments(entry.comments, entryContextData)
 
 
                                 if (dictionarySideEffects === null) {
@@ -109,7 +109,7 @@ function createPropertyDeserializer(
                                 if (hasEntries) {
                                     flagIsDirty()
                                 }
-                                addComments(endContextData, dictionary.comments)
+                                addComments(dictionary.comments, endContextData)
 
                             },
                         )
@@ -166,7 +166,7 @@ function createPropertyDeserializer(
                                 listSideEffects.forEach(s => {
                                     s.onListClose(endRange, endData)
                                 })
-                                addComments(endContextData, list.comments)
+                                addComments(list.comments, endContextData)
 
                             },
                         )
@@ -214,7 +214,7 @@ function createPropertyDeserializer(
                             })
 
                             const state = stateGroup.setState(stateName, errorMessage => onError(errorMessage, optionRange))
-                            addComments(optionContextData, stateGroup.comments)
+                            addComments(stateGroup.comments, optionContextData)
 
 
                             if ($["default state"].get() !== stateDef) {
@@ -359,7 +359,7 @@ function createNodeDeserializer(
 ): bc.OnValue {
 
     return contextData => {
-        addComments(contextData, targetComments)
+        addComments(targetComments, contextData)
 
         if (isCompact) {
             flagIsDirty()
@@ -392,7 +392,7 @@ function createNodeDeserializer(
                     sideEffectsAPI.forEach(s => {
                         s.onArrayTypeClose(endRange, endData)
                     })
-                    addComments(endContextData, targetComments)
+                    addComments(targetComments, endContextData)
 
                 }
             )
@@ -462,7 +462,7 @@ function createNodeDeserializer(
                 },
                 (_hasErrors, endRange, _closeData, endContextData) => {
                     let hasDirtyProperties = false
-                    addComments(endContextData, targetComments)
+                    addComments(targetComments, endContextData)
                     nodeDefinition.properties.forEach((_prop, propKey) => {
                         const processedProperty = processedProperties[propKey]
                         if (processedProperty !== undefined) {

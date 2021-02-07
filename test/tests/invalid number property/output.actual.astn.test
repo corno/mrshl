@@ -1,0 +1,4 @@
+/*a comment before the data*/
+(
+    'y': /*should be a number*/true
+)

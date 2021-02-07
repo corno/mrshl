@@ -270,6 +270,7 @@ export function deserializeDataset(
     let internalSchemaSpecificationStart: null | bc.Range = null
     let foundSchemaErrors = false
     let internalSchema: InternalSchema | null = null
+    const overheadComments: bc.CommentData[] = []
     const parserStack = bc.createParserStack<IDeserializedDataset, ExternalSchemaDeserializationError>(
         schemaStart => {
             internalSchemaSpecificationStart = schemaStart
@@ -366,11 +367,25 @@ export function deserializeDataset(
             }
             return createDSD(dataset, compact !== null)
         },
-
         (error, range) => {
             onError(createDiagnostic(["parsing", error]), range)
         },
-        () => {
+        overheadToken => {
+            switch (overheadToken.type[0]) {
+                case bc.OverheadTokenType.Comment: {
+                    const $ = overheadToken.type[1]
+                    overheadComments.push($)
+                    break
+                }
+                case bc.OverheadTokenType.NewLine: {
+                    break
+                }
+                case bc.OverheadTokenType.WhiteSpace: {
+                    break
+                }
+                default:
+                    assertUnreachable(overheadToken.type[0])
+            }
             return p.result(false)
         }
     )
@@ -385,5 +400,10 @@ export function deserializeDataset(
     return p20.createArray([serializedDataset]).streamify().tryToConsume(
         null,
         parserStack,
-    )
+    ).mapResult(res => {
+        overheadComments.forEach(ohc => {
+            res.dataset.sync.comments.addComment(ohc.comment, ohc.type === "block" ? ["block"] : ["line"])
+        })
+        return p.value(res)
+    })
 }
