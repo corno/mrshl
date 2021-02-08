@@ -1,9 +1,9 @@
 import * as bc from "bass-clarinet-typed"
 import * as p from "pareto-20"
 import { createDeserializer } from "./deserialize"
-import { SchemaAndSideEffects, InternalSchemaDeserializationError } from "../../schemas"
-import { createNOPSideEffects } from "../../deserialize"
-import { createInternalSchemaHandler } from "../../createInternalSchemaHandler"
+import { SchemaAndSideEffects, InternalSchemaDeserializationError } from "../../../schemas"
+import { createNOPSideEffects } from "../../../deserialize"
+import { createInternalSchemaHandler } from "../../../createInternalSchemaHandler"
 
 export function createSchemaAndSideEffects(
     onSchemaError: (error: InternalSchemaDeserializationError, range: bc.Range) => void,

@@ -6,7 +6,7 @@ import * as p from "pareto"
 import { SchemaAndSideEffects, SchemaReferenceResolvingError, InternalSchemaDeserializationError, printInternalSchemaDeserializationError } from "../schemas"
 import { IDataset } from "../dataset"
 import { InternalSchemaSpecification, InternalSchemaSpecificationType } from "../syncAPI"
-import { createDeserializer as createMetaDataDeserializer } from "../schemas/metadata@0.1/deserialize"
+import { createDeserializer as createMetaDataDeserializer } from "../schemas/mrshl/metadata@0.1/deserialize"
 import { ExternalSchemaDeserializationError } from "./deserializeSchemaFromStream"
 import { createInternalSchemaHandler } from "../createInternalSchemaHandler"
 
