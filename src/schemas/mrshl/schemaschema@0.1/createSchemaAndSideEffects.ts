@@ -18,7 +18,7 @@ export function createSchemaAndSideEffects(
         },
         onEnd: (aborted: boolean, location: bc.Location): p.IUnsafeValue<SchemaAndSideEffects, null> => {
             return isb.onEnd(aborted, location).mapResult(schema => {
-                return p.result({
+                return p.value({
                     schema: convert(schema),
                     createSideEffects: (
                         onValidationError: (message: string, range: bc.Range, severity: DiagnosticSeverity) => void,

@@ -74,7 +74,7 @@ export function createSchemaDeserializer(
                     } else {
                         schemaProcessor = createSchemaFunc
                     }
-                    return p.result(false)
+                    return p.value(false)
                 },
                 () => {
                     //ignore end commends
@@ -89,7 +89,7 @@ export function createSchemaDeserializer(
                 return {
                     onData: () => {
                         //
-                        return p.result(false) //FIXME should be 'true', to abort
+                        return p.value(false) //FIXME should be 'true', to abort
                     },
                     onEnd: () => {
                         return p.error(null)
@@ -103,7 +103,7 @@ export function createSchemaDeserializer(
                     return {
                         onData: () => {
                             //
-                            return p.result(true)
+                            return p.value(true)
                         },
                         onEnd: () => {
                             return p.error(null)

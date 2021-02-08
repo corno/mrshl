@@ -297,7 +297,7 @@ export function directoryTests(): void {
                         if (actualIssues.length === 0) {
                             throw new Error("ERROR FOUND, BUT NOTHING WAS REPORTED")
                         }
-                        return p.result(null)
+                        return p.value(null)
                     }
                 )
             }
@@ -329,7 +329,7 @@ describe("main", () => {
                 () => {
                     return {
                         onData: () => {
-                            return p.result(false)
+                            return p.value(false)
                         },
                         onEnd: () => {
                             return p.success<null, null>(null)
@@ -339,7 +339,7 @@ describe("main", () => {
                 () => {
                     return {
                         onData: () => {
-                            return p.result(false)
+                            return p.value(false)
                         },
                         onEnd: () => {
                             return p.success(null)
@@ -350,7 +350,7 @@ describe("main", () => {
                     console.log(err)
                 },
                 () => {
-                    return p.result(false)
+                    return p.value(false)
                 }
             )
 
@@ -384,7 +384,7 @@ describe("main", () => {
                     null,
                     st,
                 ).mapError(() => {
-                    return p.result("hmm")
+                    return p.value("hmm")
                 })
             }).convertToNativePromise(() => "error during parsing").then(() => {
                 //
@@ -398,7 +398,7 @@ describe("main", () => {
         //         },
         //     ).mapError(e => {
         //         console.log("!!!!!!", e)
-        //         return p.result(e)
+        //         return p.value(e)
         //     }).convertToNativePromise().then(
         //         () => {
         //             //

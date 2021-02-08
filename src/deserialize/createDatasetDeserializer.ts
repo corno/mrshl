@@ -277,7 +277,7 @@ function createPropertyDeserializer(
                             sideEffectsAPIs.forEach(s => {
                                 s.onValue(propKey, valueBuilder, range, data, $)
                             })
-                            return p.result(false)
+                            return p.value(false)
                         },
                         () => {
                             //

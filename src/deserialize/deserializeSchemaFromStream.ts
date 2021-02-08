@@ -22,14 +22,14 @@ export function deserializeSchemaFromStream(
         ),
     ).mapError(
         () => {
-            return p.result({ problem: "missing schema"})
+            return p.value({ problem: "missing schema"})
         }
     )
 
     // schemaDeserializer.onData(serializedSchema)
     // return schemaDeserializer.onEnd(false, null).mapError(
     //     () => {
-    //         return p.result("missing schema")
+    //         return p.value("missing schema")
     //     }
     // )
 

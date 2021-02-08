@@ -74,7 +74,7 @@ function createExpectedNodeHandler(
                                                                                                     value: data.value,
                                                                                                     range: range,
                                                                                                 }
-                                                                                                return p.result(false)
+                                                                                                return p.value(false)
                                                                                             })),
                                                                                             onNotExists: range => {
                                                                                                 targetKeyProperty = {
@@ -149,7 +149,7 @@ function createExpectedNodeHandler(
                                                                             value: data.value,
                                                                             range: range,
                                                                         }
-                                                                        return p.result(false)
+                                                                        return p.value(false)
                                                                     })),
                                                                     onNotExists: range => {
                                                                         targetComponentTypeName = {
@@ -223,7 +223,7 @@ function createExpectedNodeHandler(
                                                                             value: data.value,
                                                                             range: range,
                                                                         }
-                                                                        return p.result(false)
+                                                                        return p.value(false)
                                                                     })),
                                                                     onNotExists: range => {
                                                                         targetDefaultState = {
@@ -287,7 +287,7 @@ function createExpectedNodeHandler(
                                                                 "default value": {
                                                                     onExists: () => context.expectValue(() => context.expectSimpleValue((_range, data) => {
                                                                         defaultValue = data.value
-                                                                        return p.result(false)
+                                                                        return p.value(false)
                                                                     })),
                                                                     onNotExists: () => {
                                                                         defaultValue = ""
@@ -421,7 +421,7 @@ export function createDeserializer(
                         value: svData.value,
                         range: range,
                     }
-                    return p.result(false)
+                    return p.value(false)
 
                 })),
                 onNotExists: (range: bc.Range): void => {

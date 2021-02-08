@@ -96,7 +96,7 @@ const parser = astn.createParser(
     () => {
         return {
             onData: () => {
-                return p.result(false)
+                return p.value(false)
             },
             onEnd: () => {
                 return p.success(null)
@@ -115,7 +115,7 @@ const parser = astn.createParser(
         console.error(message, astn.printRange(range))
     },
     () => {
-        return p.result(false)
+        return p.value(false)
     }
 )
 

@@ -30,7 +30,7 @@ export function createFromURLSchemaDeserializer(
         return makeHTTPrequest(
             options
         ).mapError<SchemaReferenceResolvingError>(errorMessage => {
-            return p.result(["loading", { message: errorMessage }])
+            return p.value(["loading", { message: errorMessage }])
         }).try(
             stream => {
                 //console.log("FROM URL")
@@ -47,7 +47,7 @@ export function createFromURLSchemaDeserializer(
                 ).mapError(
                     () => {
                         //const myUrl = new URL(encodeURI(reference), pathStart)
-                        return p.result(["errors in schema"])
+                        return p.value(["errors in schema"])
                     },
                 )
             },

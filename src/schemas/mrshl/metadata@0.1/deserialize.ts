@@ -75,7 +75,7 @@ function createNodeHandler(
                                                                                                             value: data.value,
                                                                                                             range: range,
                                                                                                         }
-                                                                                                        return p.result(false)
+                                                                                                        return p.value(false)
                                                                                                     })
                                                                                                 ),
                                                                                                 onNotExists: range => {
@@ -178,7 +178,7 @@ function createNodeHandler(
                                                                                 value: data.value,
                                                                                 range: range,
                                                                             }
-                                                                            return p.result(false)
+                                                                            return p.value(false)
 
                                                                         })),
                                                                         onNotExists: range => {
@@ -256,7 +256,7 @@ function createNodeHandler(
                                                                                 value: data.value,
                                                                                 range: range,
                                                                             }
-                                                                            return p.result(false)
+                                                                            return p.value(false)
                                                                         })),
                                                                         onNotExists: range => {
                                                                             defaultStateName = {
@@ -299,7 +299,7 @@ function createNodeHandler(
                                                                         "quoted": {
                                                                             onExists: () => context.expectValue(() => context.expectBoolean(value => {
                                                                                 quoted = value
-                                                                                return p.result(false)
+                                                                                return p.value(false)
 
                                                                             })),
                                                                             onNotExists: () => {
@@ -309,7 +309,7 @@ function createNodeHandler(
                                                                         "default value": {
                                                                             onExists: () => context.expectValue(() => context.expectSimpleValue((_range, data) => {
                                                                                 defaultValue = data.value
-                                                                                return p.result(false)
+                                                                                return p.value(false)
 
                                                                             })),
                                                                             onNotExists: () => {
@@ -462,7 +462,7 @@ export function createDeserializer(
                 onExists: (): bc.RequiredValueHandler => context.expectValue(() => context.expectSimpleValue((range, data) => {
                     rootName = data.value
                     rootNameRange = range
-                    return p.result(false)
+                    return p.value(false)
 
                 })),
                 onNotExists: (range: bc.Range): void => {

@@ -254,7 +254,7 @@ export function loadDocument(
 				DiagnosticSeverity.error,
 			)
 		}
-		return p.result(null)
+		return p.value(null)
 	}
 
 	const basename = path.basename(filePath)
@@ -301,7 +301,7 @@ export function loadDocument(
 					}],
 					DiagnosticSeverity.error,
 				)
-				return p.result(null)
+				return p.value(null)
 			}
 		},
 		schemaStream => {

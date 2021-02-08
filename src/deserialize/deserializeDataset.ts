@@ -75,7 +75,7 @@ function createNoOperationValueHandler(): bc.ValueHandler {
             return {
                 property: (_key, _keyData) => {
                     //registerSnippetGenerators.register(keyData.keyRange, null, null)
-                    return p.result(createNoOperationRequiredValueHandler())
+                    return p.value(createNoOperationRequiredValueHandler())
                 },
                 end: _endData => {
                     //registerSnippetGenerators.register(endData.range, null, null)
@@ -84,7 +84,7 @@ function createNoOperationValueHandler(): bc.ValueHandler {
         },
         simpleValue: (_value, _stringData) => {
             //registerSnippetGenerators.register(stringData.range, null, null)
-            return p.result(false)
+            return p.value(false)
         },
         taggedUnion: () => {
             //registerSnippetGenerators.register(tuData.startRange, null, null)
@@ -271,14 +271,14 @@ export function deserializeDataset(
                     return schemaReferenceResolver(data.value).reworkAndCatch(
                         error => {
                             onSchemaError(["schema reference resolving", error], range)
-                            return p.result(false)
+                            return p.value(false)
                         },
                         schemaAndSideEffects => {
                             internalSchema = {
                                 schemaAndSideEffects: schemaAndSideEffects,
                                 specification: [InternalSchemaSpecificationType.Reference, { name: data.value }],
                             }
-                            return p.result(false)
+                            return p.value(false)
 
                         },
                     )
@@ -315,7 +315,7 @@ export function deserializeDataset(
                 return {
                     onData: () => {
                         //
-                        return p.result(false)
+                        return p.value(false)
                     },
                     onEnd: () => {
                         return p.error({
@@ -383,7 +383,7 @@ export function deserializeDataset(
                 default:
                     assertUnreachable(overheadToken.type[0])
             }
-            return p.result(false)
+            return p.value(false)
         }
     )
     function onSchemaError(error: InternalSchemaDeserializationError, range: bc.Range) {
