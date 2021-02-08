@@ -237,39 +237,6 @@ export function deserializeDataset(
         }
     }
 
-    function createDSD(
-        dataset: IDeserializedDataset,
-        isCompact: boolean
-    ): bc.ParserEventConsumer<IDeserializedDataset, ExternalSchemaDeserializationError> {
-
-        const context = new bc.ExpectContext(
-            (issue, range) => onError(createDiagnostic(["expect", issue]), range),
-            (issue, range) => onWarning(createDiagnostic(["expect", issue]), range),
-            (_range, _key, _contextData) => () => createNoOperationValueHandler(),
-            () => () => createNoOperationValueHandler(),
-            bc.Severity.warning,
-            bc.OnDuplicateEntry.ignore
-        )
-        return bc.createStackedDataSubscriber(
-            createDatasetDeserializer(
-                context,
-                dataset.dataset.sync,
-                isCompact,
-                sideEffectsHandlers.map(h => h.node),
-                (message, range) => onError(createDiagnostic(["deserializer", { message: message }]), range),
-            ),
-            (error, range) => {
-                onError(createDiagnostic(["stacked", error]), range)
-            },
-            () => {
-                sideEffectsHandlers.forEach(h => {
-                    h.onEnd()
-                })
-                return p.success(dataset)
-            }
-        )
-    }
-
     let internalSchemaSpecificationStart: null | bc.Range = null
     let foundSchemaErrors = false
     let internalSchema: InternalSchema | null = null
@@ -331,7 +298,7 @@ export function deserializeDataset(
                 //throw new Error("Unexpected: no schema errors and no schema")
             }
             const dataset: IDeserializedDataset | null = (internalSchema === null)
-                ? ((): IDeserializedDataset | null => {
+                ? ((): IDeserializedDataset | null => { //no internal schema
                     const ds = onNoInternalSchema()
                     if (ds === null) {
                         return null
@@ -341,7 +308,8 @@ export function deserializeDataset(
                         internalSchemaSpecification: [InternalSchemaSpecificationType.None],
                         compact: compact !== null,
                     }
-                })() : onInternalSchema(internalSchema.specification, internalSchema.schemaAndSideEffects, compact !== null)
+                })()
+                : onInternalSchema(internalSchema.specification, internalSchema.schemaAndSideEffects, compact !== null) //internal schema
 
             if (dataset === null) {
                 return {
@@ -368,7 +336,33 @@ export function deserializeDataset(
                     )
                 }
             }
-            return createDSD(dataset, compact !== null)
+
+            const context = new bc.ExpectContext(
+                (issue, range) => onError(createDiagnostic(["expect", issue]), range),
+                (issue, range) => onWarning(createDiagnostic(["expect", issue]), range),
+                (_range, _key, _contextData) => () => createNoOperationValueHandler(),
+                () => () => createNoOperationValueHandler(),
+                bc.Severity.warning,
+                bc.OnDuplicateEntry.ignore
+            )
+            return bc.createStackedDataSubscriber(
+                createDatasetDeserializer(
+                    context,
+                    dataset.dataset.sync,
+                    compact !== null,
+                    sideEffectsHandlers.map(h => h.node),
+                    (message, range) => onError(createDiagnostic(["deserializer", { message: message }]), range),
+                ),
+                (error, range) => {
+                    onError(createDiagnostic(["stacked", error]), range)
+                },
+                () => {
+                    sideEffectsHandlers.forEach(h => {
+                        h.onEnd()
+                    })
+                    return p.success(dataset)
+                }
+            )
         },
         (error, range) => {
             onError(createDiagnostic(["parsing", error]), range)
@@ -396,9 +390,6 @@ export function deserializeDataset(
         onError(createDiagnostic(["schema error", error]), range)
         foundSchemaErrors = true
     }
-
-    //console.log("DATASET DESER")
-
 
     return p20.createArray([serializedDataset]).streamify().tryToConsume(
         null,
