@@ -1,5 +1,5 @@
 import * as bc from "bass-clarinet"
-import { Root } from "./SideEffectsAPI"
+import { Root } from "./ParsingSideEffectsAPI"
 import { createSnippetsGenerator } from "./createSnippetsGenerator"
 
 export function createSnippetFinder(

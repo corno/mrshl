@@ -18,6 +18,7 @@ import { makeNativeHTTPrequest } from "./makeNativeHTTPrequest"
 import * as p20 from "pareto-20"
 import { FileError } from "../src/loadDocument"
 import { printDeserializeDiagnostic, printSchemaSchemaError } from "../src"
+import { schemaHost } from "./schemaHost"
 
 function readFileFromFileSystem(
     dir: string,
@@ -177,6 +178,7 @@ export function directoryTests(): void {
 
                 const serializedDataset = fs.readFileSync(serializedDatasetPath, { encoding: "utf-8" })
                 return astn.loadDocument(
+                    schemaHost,
                     serializedDataset,
                     serializedDatasetPath,
                     makeNativeHTTPrequest,
@@ -375,11 +377,11 @@ describe("main", () => {
         // })
         it("from http", () => {
             const st = createDummyParser()
-            return makeNativeHTTPrequest({
-                host: "www.astn.io",
-                path: '/dev/schemas/mrshl/schemaschema@0.1',
-                timeout: 7000,
-            }).try(stream => {
+            return makeNativeHTTPrequest(
+                schemaHost,
+                "mrshl/schemaschema@0.1",
+                7000
+            ).try(stream => {
                 return stream.tryToConsume<null, null>(
                     null,
                     st,

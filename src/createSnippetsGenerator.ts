@@ -1,4 +1,4 @@
-import * as sideEffects from "./SideEffectsAPI"
+import * as sideEffects from "./ParsingSideEffectsAPI"
 import * as syncAPI from "./syncAPI"
 import * as bc from "bass-clarinet"
 import * as fp from "fountain-pen"

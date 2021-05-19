@@ -1,27 +1,25 @@
 import * as http from "http"
 import * as p20 from "pareto-20"
 import * as p from "pareto"
-
-export type HTTPOptions = {
-    host: string
-    path: string
-    timeout: number
-}
+import { SchemaHost } from "../src"
 
 export function makeNativeHTTPrequest(
-    options: HTTPOptions
+    schemaHost: SchemaHost,
+    schema: string,
+    timeout: number,
 ): p.IUnsafeValue<p.IStream<string, null>, string> {
     return p20.wrapUnsafeFunction((onError, onSucces) => {
 
+        const path = `${schemaHost.pathStart}/${encodeURI(schema)}`.replace(/\/\//g, "/")
         const request = http.request(
             {
-                host: options.host,
-                path: options.path,
-                timeout: options.timeout,
+                host: schemaHost.host,
+                path: path,
+                timeout: timeout,
             },
             res => {
                 if (res.statusCode !== 200) {
-                    onError(`'${options.path}' not found`)
+                    onError(`'${path}' not found`)
                     return
                 }
                 //below code is streaming but unstable

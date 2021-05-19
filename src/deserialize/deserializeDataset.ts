@@ -1,5 +1,5 @@
 import * as bc from "bass-clarinet-typed"
-import * as sideEffects from "../SideEffectsAPI"
+import * as sideEffects from "../ParsingSideEffectsAPI"
 import { createDatasetDeserializer } from "./createDatasetDeserializer"
 import * as p20 from "pareto-20"
 import * as p from "pareto"

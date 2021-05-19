@@ -1,9 +1,8 @@
 import * as p from "pareto"
+import { SchemaHost } from "./deserialize"
 
-export type HTTPOptions = {
-    host: string
-    path: string
-    timeout: number
-}
-
-export type MakeHTTPrequest = (options: HTTPOptions) => p.IUnsafeValue<p.IStream<string, null>, string>
+export type MakeHTTPrequest = (
+    schemaHost: SchemaHost,
+    schema: string,
+    timeout: number,
+) => p.IUnsafeValue<p.IStream<string, null>, string>

@@ -1,13 +1,22 @@
 import { createSchemaDeserializer } from "./createSchemaDeserializer"
 import * as p from "pareto"
 import { SchemaAndSideEffects, SchemaReferenceResolvingError } from "../schemas"
-import { HTTPOptions } from "../makeHTTPrequest"
+
+
+export type SchemaHost = {
+	host: string
+	pathStart: string
+}
+
 
 export function createFromURLSchemaDeserializer(
-    host: string,
-    pathStart: string,
+    schemaHost: SchemaHost,
     timeout: number,
-    makeHTTPrequest: (options: HTTPOptions) => p.IUnsafeValue<p.IStream<string, null>, string>,
+    makeHTTPrequest: (
+        schemaHost: SchemaHost,
+        schema: string,
+        timeout: number,
+    ) => p.IUnsafeValue<p.IStream<string, null>, string>,
 ) {
     return (reference: string): p.IUnsafeValue<SchemaAndSideEffects, SchemaReferenceResolvingError> => {
 
@@ -18,17 +27,19 @@ export function createFromURLSchemaDeserializer(
         if (reference === "") {
             return p.error(["schema cannot be an empty string"])
         }
-        const options = {
-            host: host,
-            /*
-            the next line feels a bit smelly. I don't want to include a depencency on the 'url' or the 'path' package as they don't
-            exist in the browser, but I guess there would be a better way than this.
-             */
-            path: `${pathStart}/${encodeURI(reference)}`.replace(/\/\//g, "/"),
-            timeout: timeout,
-        }
+        // const options = {
+        //     host: schemaHost.host,
+        //     /*
+        //     the next line feels a bit smelly. I don't want to include a depencency on the 'url' or the 'path' package as they don't
+        //     exist in the browser, but I guess there would be a better way than this.
+        //      */
+        //     path: `${schemaHost.pathStart}/${encodeURI(reference)}`.replace(/\/\//g, "/"),
+        //     timeout: timeout,
+        // }
         return makeHTTPrequest(
-            options
+            schemaHost,
+            reference,
+            timeout
         ).mapError<SchemaReferenceResolvingError>(errorMessage => {
             return p.value(["loading", { message: errorMessage }])
         }).try(

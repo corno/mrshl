@@ -13,5 +13,5 @@ export const syncAPI = _syncAPI
 import * as _asyncAPI from "./asyncAPI"
 export const asyncAPI = _asyncAPI
 
-import * as _sideEffects from "./SideEffectsAPI"
+import * as _sideEffects from "./ParsingSideEffectsAPI"
 export const sideEffects = _sideEffects

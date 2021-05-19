@@ -2,7 +2,7 @@ import * as p from "pareto"
 import * as bc from "bass-clarinet-typed"
 import * as md from "../types"
 import * as syncAPI from "../syncAPI"
-import * as sideEffects from "../SideEffectsAPI"
+import * as sideEffects from "../ParsingSideEffectsAPI"
 
 function assertUnreachable<RT>(_x: never): RT {
     throw new Error("Unreachable")

@@ -10,8 +10,9 @@ import {
 	SchemaSchemaError,
 	printDeserializeDiagnostic,
 	printSchemaSchemaError,
+	SchemaHost,
 } from "./deserialize"
-import * as sideEffects from "./SideEffectsAPI"
+import * as sideEffects from "./ParsingSideEffectsAPI"
 import * as bc from "bass-clarinet-typed"
 import * as p from "pareto"
 import { IDataset } from "./dataset"
@@ -101,6 +102,7 @@ export function printLoadDocumentDiagnostic(loadDiagnostic: LoadDocumentDiagnost
 type DiagnosticCallback = (diagnostic: LoadDocumentDiagnostic) => void
 
 function validateDocumentAfterExternalSchemaResolution(
+	schemaHost: SchemaHost,
 	documentText: string,
 	externalSchema: md.Schema | null,
 	makeHTTPrequest: MakeHTTPrequest,
@@ -111,8 +113,7 @@ function validateDocumentAfterExternalSchemaResolution(
 	) => IDataset,
 ): p.IUnsafeValue<IDeserializedDataset, ExternalSchemaDeserializationError> {
 	const schemaReferenceResolver = createFromURLSchemaDeserializer(
-		'www.astn.io',
-		'/dev/schemas/',
+		schemaHost,
 		7000,
 		makeHTTPrequest,
 		// (instanceValidationErrorMessage, range) => {
@@ -226,6 +227,7 @@ export enum FileError {
 }
 
 export function loadDocument(
+	schemaHost: SchemaHost,
 	documentText: string,
 	filePath: string,
 	makeHTTPRequest: MakeHTTPrequest,
@@ -269,6 +271,7 @@ export function loadDocument(
 		})
 
 		return validateDocumentAfterExternalSchemaResolution(
+			schemaHost,
 			documentText,
 			null,
 			makeHTTPRequest,
@@ -285,6 +288,7 @@ export function loadDocument(
 			if (error === FileError.FileNotFound) {
 
 				return validateDocumentAfterExternalSchemaResolution(
+					schemaHost,
 					documentText,
 					null,
 					makeHTTPRequest,
@@ -320,6 +324,7 @@ export function loadDocument(
 				schemaAndSideEffects => {
 
 					return validateDocumentAfterExternalSchemaResolution(
+						schemaHost,
 						documentText,
 						schemaAndSideEffects.schema,
 						makeHTTPRequest,
