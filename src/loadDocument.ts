@@ -27,7 +27,7 @@ export enum DiagnosticSeverity {
 	error
 }
 
-type LoadDocumentDiagnosticType =
+export type LoadDocumentDiagnosticType =
 	| ["schema retrieval", {
 		issue:
 		| ["unknown file system error"]
@@ -49,7 +49,7 @@ type LoadDocumentDiagnosticType =
 		range: astn.Range
 	}]
 
-type LoadDocumentDiagnostic = {
+export type LoadDocumentDiagnostic = {
 	type: LoadDocumentDiagnosticType
 	severity: DiagnosticSeverity
 }
