@@ -1,6 +1,6 @@
 import * as sideEffects from "./ParsingSideEffectsAPI"
 import * as syncAPI from "./syncAPI"
-import * as bc from "bass-clarinet"
+import * as astn from "astn"
 import * as fp from "fountain-pen"
 import * as md from "./types"
 
@@ -76,7 +76,7 @@ function createNodeSnippet(node: md.Node, keyProperty: md.Property | null): fp.I
 }
 
 export type OnToken = (
-    range: bc.Range,
+    range: astn.Range,
     getSnippetsInToken: GetSnippets | null,
     getSnippetsAfterToken: GetSnippets | null
 ) => void
@@ -110,7 +110,7 @@ class SnippetGenerator implements sideEffects.Node, sideEffects.Dictionary, side
         //
     }
     onDictionaryEntry(
-        range: bc.Range,
+        range: astn.Range,
         nodeDefinition: md.Node,
         keyPropertyDefinition: md.Property,
     ) {
@@ -161,7 +161,7 @@ class SnippetGenerator implements sideEffects.Node, sideEffects.Dictionary, side
     }
     onProperty(
         _propKey: string,
-        propRange: bc.Range,
+        propRange: astn.Range,
         propDefinition: md.Property,
         _nodeBuilder: syncAPI.Node,
     ) {
@@ -196,8 +196,8 @@ class SnippetGenerator implements sideEffects.Node, sideEffects.Dictionary, side
     }
     onUnexpectedProperty(
         _key: string,
-        range: bc.Range,
-        _preData: bc.ContextData,
+        range: astn.Range,
+        _preData: astn.ContextData,
         expectedProperties: string[]
     ) {
         this.onToken(
@@ -211,7 +211,7 @@ class SnippetGenerator implements sideEffects.Node, sideEffects.Dictionary, side
     onState() {
         return this
     }
-    onTypeOpen(range: bc.Range, nodeDefinition: md.Node, keyPropertyDefinition: md.Property | null) {
+    onTypeOpen(range: astn.Range, nodeDefinition: md.Node, keyPropertyDefinition: md.Property | null) {
         this.onToken(
             range,
             null,
@@ -249,10 +249,10 @@ class SnippetGenerator implements sideEffects.Node, sideEffects.Dictionary, side
     }
     onUnexpectedState(
         _stateName: string,
-        _tuRange: bc.Range,
-        _tuPreData: bc.ContextData,
-        optionRange: bc.Range,
-        _optionPreData: bc.ContextData,
+        _tuRange: astn.Range,
+        _tuPreData: astn.ContextData,
+        optionRange: astn.Range,
+        _optionPreData: astn.ContextData,
         stateGroupDefinition: md.StateGroup
     ) {
         this.onToken(
@@ -266,8 +266,8 @@ class SnippetGenerator implements sideEffects.Node, sideEffects.Dictionary, side
     onValue(
         _valueName: string,
         syncValue: syncAPI.Value,
-        range: bc.Range,
-        _data: bc.SimpleValueData,
+        range: astn.Range,
+        _data: astn.SimpleValueData,
         definition: md.Value,
     ) {
         this.onToken(

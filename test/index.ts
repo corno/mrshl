@@ -11,7 +11,7 @@ import * as path from "path"
 import * as p from "pareto"
 import { describe } from "mocha"
 import * as db5 from "../src"
-import * as bc from "bass-clarinet-typed"
+import * as astn from "astn"
 import * as async from "../src/asyncAPI"
 import { makeNativeHTTPrequest } from "./makeNativeHTTPrequest"
 //import { deserializeSchemaFromString } from "../src"
@@ -188,7 +188,7 @@ export function directoryTests(): void {
                         switch (diagnostic.type[0]) {
                             case "deserialization": {
                                 const $ = diagnostic.type[1]
-                                const end = bc.getEndLocationFromRange($.range)
+                                const end = astn.getEndLocationFromRange($.range)
 
                                 actualIssues.push([
                                     "deserialization",
@@ -237,7 +237,7 @@ export function directoryTests(): void {
                             }
                             case "validation": {
                                 const $ = diagnostic.type[1]
-                                const end = bc.getEndLocationFromRange($.range)
+                                const end = astn.getEndLocationFromRange($.range)
 
                                 actualIssues.push([
                                     "validation",
@@ -327,7 +327,7 @@ describe("main", () => {
     describe('functions', () => {
         function createDummyParser() {
 
-            const parser = bc.createParser<null, null>(
+            const parser = astn.createParser<null, null>(
                 () => {
                     return {
                         onData: () => {
@@ -357,8 +357,8 @@ describe("main", () => {
             )
 
             console.log("SIMPLE TEST")
-            return bc.createStreamPreTokenizer(
-                bc.createTokenizer(parser),
+            return astn.createStreamPreTokenizer(
+                astn.createTokenizer(parser),
                 (message, _location) => {
                     console.error("error found", message)
                     //actualEvents.push(["tokenizererror", message])

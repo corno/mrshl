@@ -1,4 +1,4 @@
-import * as bc from "bass-clarinet-typed"
+import * as astn from "astn"
 import * as p from "pareto-20"
 import { createDeserializer } from "./deserialize"
 import { SchemaAndSideEffects, InternalSchemaDeserializationError } from "../../../schemas"
@@ -6,8 +6,8 @@ import { createNOPSideEffects } from "../../../deserialize"
 import { createInternalSchemaHandler } from "../../../createInternalSchemaHandler"
 
 export function createSchemaAndSideEffects(
-    onSchemaError: (error: InternalSchemaDeserializationError, range: bc.Range) => void,
-): bc.ParserEventConsumer<SchemaAndSideEffects, null> {
+    onSchemaError: (error: InternalSchemaDeserializationError, range: astn.Range) => void,
+): astn.ParserEventConsumer<SchemaAndSideEffects, null> {
     let foundError = false
     let metadata: null | SchemaAndSideEffects = null
     return createInternalSchemaHandler(

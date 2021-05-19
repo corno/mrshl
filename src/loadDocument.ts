@@ -13,7 +13,7 @@ import {
 	SchemaHost,
 } from "./deserialize"
 import * as sideEffects from "./ParsingSideEffectsAPI"
-import * as bc from "bass-clarinet-typed"
+import * as astn from "astn"
 import * as p from "pareto"
 import { IDataset } from "./dataset"
 import { MakeHTTPrequest } from "./makeHTTPrequest"
@@ -38,7 +38,7 @@ type LoadDocumentDiagnosticType =
 		| ["missing schema"]
 	}]
 	| ["validation", {
-		range: bc.Range
+		range: astn.Range
 		message: string
 	}]
 	| ["structure", {
@@ -46,7 +46,7 @@ type LoadDocumentDiagnosticType =
 	}]
 	| ["deserialization", {
 		data: DeserializeDiagnostic
-		range: bc.Range
+		range: astn.Range
 	}]
 
 type LoadDocumentDiagnostic = {
@@ -58,7 +58,7 @@ export function printLoadDocumentDiagnostic(loadDiagnostic: LoadDocumentDiagnost
 	switch (loadDiagnostic.type[0]) {
 		case "deserialization": {
 			const $ = loadDiagnostic.type[1]
-			return `${printDeserializeDiagnostic($.data)} @ ${bc.printRange($.range)}`
+			return `${printDeserializeDiagnostic($.data)} @ ${astn.printRange($.range)}`
 		}
 		case "schema retrieval": {
 			const $ = loadDiagnostic.type[1]
@@ -92,7 +92,7 @@ export function printLoadDocumentDiagnostic(loadDiagnostic: LoadDocumentDiagnost
 		}
 		case "validation": {
 			const $ = loadDiagnostic.type[1]
-			return `${$.message} @ ${bc.printRange($.range)}`
+			return `${$.message} @ ${astn.printRange($.range)}`
 		}
 		default:
 			return assertUnreachable(loadDiagnostic.type[0])

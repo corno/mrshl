@@ -1,11 +1,11 @@
-import * as bc from "bass-clarinet"
+import * as astn from "astn"
 import * as syncAPI from "../syncAPI"
 
 function assertUnreachable<RT>(_x: never): RT {
     throw new Error("unreachable")
 }
 
-class InDictionary<T> implements bc.IInDictionary<T> {
+class InDictionary<T> implements astn.IInDictionary<T> {
     private readonly properties: { [key: string]: T }
     constructor(properties: { [key: string]: T }) {
         this.properties = properties
@@ -20,7 +20,7 @@ class InDictionary<T> implements bc.IInDictionary<T> {
     }
 }
 
-class InArray<T> implements bc.IInArray<T> {
+class InArray<T> implements astn.IInArray<T> {
     private readonly elements: T[]
     constructor(elements: T[]) {
         this.elements = elements
@@ -37,7 +37,7 @@ class InArray<T> implements bc.IInArray<T> {
     }
 }
 
-function createEmptyCommentData(): bc.SerializableCommentData {
+function createEmptyCommentData(): astn.SerializableCommentData {
     return {
         before: {
             comments: new InArray([]),
@@ -46,7 +46,7 @@ function createEmptyCommentData(): bc.SerializableCommentData {
     }
 }
 
-function transformCommentData(comments: syncAPI.Comments): bc.SerializableCommentData {
+function transformCommentData(comments: syncAPI.Comments): astn.SerializableCommentData {
     return {
         before: {
             comments: new InArray(comments.getComments().map(c => {
@@ -126,7 +126,7 @@ function getPropertyComments(prop: syncAPI.Property): syncAPI.Comments {
     }
 }
 
-function transformProperty(prop: syncAPI.Property, compact: boolean): bc.SerializableValueType {
+function transformProperty(prop: syncAPI.Property, compact: boolean): astn.SerializableValueType {
     switch (prop.type[0]) {
         case "component": {
             const $ = prop.type[1]
@@ -135,7 +135,7 @@ function transformProperty(prop: syncAPI.Property, compact: boolean): bc.Seriali
         case "dictionary": {
             const $ = prop.type[1]
 
-            const entries: { [key: string]: bc.SerializableProperty } = {}
+            const entries: { [key: string]: astn.SerializableProperty } = {}
 
             $.forEachEntry((entry, key) => {
                 entries[key] = {
@@ -153,7 +153,7 @@ function transformProperty(prop: syncAPI.Property, compact: boolean): bc.Seriali
         }
         case "list": {
             const $ = prop.type[1]
-            const elements: bc.SerializableValue[] = []
+            const elements: astn.SerializableValue[] = []
             $.forEachEntry(entry => {
                 elements.push({
                     commentData: transformCommentData(entry.comments),
@@ -189,9 +189,9 @@ function transformProperty(prop: syncAPI.Property, compact: boolean): bc.Seriali
     }
 }
 
-function transformNodeToValueType(node: syncAPI.Node, compact: boolean): bc.SerializableValueType {
+function transformNodeToValueType(node: syncAPI.Node, compact: boolean): astn.SerializableValueType {
     if (compact) {
-        const elements: bc.SerializableValue[] = []
+        const elements: astn.SerializableValue[] = []
         node.forEachProperty((prop, _key) => {
             elements.push({
                 commentData: transformCommentData(getPropertyComments(prop)),
@@ -205,7 +205,7 @@ function transformNodeToValueType(node: syncAPI.Node, compact: boolean): bc.Seri
             closeCharacter: `>`,
         }]
     } else {
-        const properties: { [key: string]: bc.SerializableProperty } = {}
+        const properties: { [key: string]: astn.SerializableProperty } = {}
         node.forEachProperty((prop, key) => {
             if (!propertyIsDefault(prop)) {
 
@@ -230,7 +230,7 @@ function transformNodeToValueType(node: syncAPI.Node, compact: boolean): bc.Seri
     }
 }
 
-export function serializeNode(node: syncAPI.Node, compact: boolean): bc.SerializableValue {
+export function serializeNode(node: syncAPI.Node, compact: boolean): astn.SerializableValue {
     return {
         commentData: createEmptyCommentData(),
         type: transformNodeToValueType(node, compact),

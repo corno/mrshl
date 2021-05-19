@@ -1,4 +1,4 @@
-import * as bc from "bass-clarinet"
+import * as astn from "astn"
 import * as t from "./types"
 import * as syncAPI from "../../../syncAPI"
 import * as sideEffects from "../../../ParsingSideEffectsAPI"
@@ -14,11 +14,11 @@ function assertUnreachable(_x: never) {
 class Dictionary implements sideEffects.Dictionary {
     private readonly collectionDefinition: t.Collection
     //private readonly definition: t.Dictionary
-    private readonly onError: (message: string, range: bc.Range, severity: DiagnosticSeverity) => void
+    private readonly onError: (message: string, range: astn.Range, severity: DiagnosticSeverity) => void
     constructor(
         _definition: t.Dictionary,
         collectionDefinition: t.Collection,
-        onError: (message: string, range: bc.Range, severity: DiagnosticSeverity) => void,
+        onError: (message: string, range: astn.Range, severity: DiagnosticSeverity) => void,
     ) {
         //this.definition = definition
         this.collectionDefinition = collectionDefinition
@@ -38,12 +38,12 @@ class Dictionary implements sideEffects.Dictionary {
 class List implements sideEffects.List {
     private readonly collectionDefinition: t.Collection
     //private readonly definition: t.List
-    private readonly onError: (message: string, range: bc.Range, severity: DiagnosticSeverity) => void
+    private readonly onError: (message: string, range: astn.Range, severity: DiagnosticSeverity) => void
 
     constructor(
         _definition: t.List,
         collectionDefinition: t.Collection,
-        onError: (message: string, range: bc.Range, severity: DiagnosticSeverity) => void,
+        onError: (message: string, range: astn.Range, severity: DiagnosticSeverity) => void,
     ) {
         //this.definition = definition
         this.collectionDefinition = collectionDefinition
@@ -64,7 +64,7 @@ export class Root implements sideEffects.Root {
     public readonly node: Node
     constructor(
         schema: t.Schema,
-        onError: (message: string, range: bc.Range, severity: DiagnosticSeverity) => void
+        onError: (message: string, range: astn.Range, severity: DiagnosticSeverity) => void
     ) {
         this.node = new Node(schema["root type"].get().node, onError)
     }
@@ -75,11 +75,11 @@ export class Root implements sideEffects.Root {
 
 class Node implements sideEffects.Node {
     private readonly definition: t.Node
-    private readonly onError: (message: string, range: bc.Range, severity: DiagnosticSeverity) => void
+    private readonly onError: (message: string, range: astn.Range, severity: DiagnosticSeverity) => void
 
     constructor(
         definition: t.Node,
-        onError: (message: string, range: bc.Range, severity: DiagnosticSeverity) => void,
+        onError: (message: string, range: astn.Range, severity: DiagnosticSeverity) => void,
     ) {
         this.definition = definition
         this.onError = onError
@@ -140,8 +140,8 @@ class Node implements sideEffects.Node {
     onValue(
         propertyName: string,
         value: syncAPI.Value,
-        range: bc.Range,
-        data: bc.SimpleValueData,
+        range: astn.Range,
+        data: astn.SimpleValueData,
         _definition: md.Value
     ) {
         const prop = this.definition.properties.getUnsafe(propertyName)

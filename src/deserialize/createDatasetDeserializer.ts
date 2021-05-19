@@ -1,5 +1,5 @@
 import * as p from "pareto"
-import * as bc from "bass-clarinet-typed"
+import * as astn from "astn"
 import * as md from "../types"
 import * as syncAPI from "../syncAPI"
 import * as sideEffects from "../ParsingSideEffectsAPI"
@@ -8,9 +8,9 @@ function assertUnreachable<RT>(_x: never): RT {
     throw new Error("Unreachable")
 }
 
-type OnError = (message: string, range: bc.Range) => void
+type OnError = (message: string, range: astn.Range) => void
 
-function addComments(target: syncAPI.Comments, contextData: bc.ContextData) {
+function addComments(target: syncAPI.Comments, contextData: astn.ContextData) {
     contextData.before.comments.forEach(c => {
         target.addComment(c.text, c.type === "block" ? ["block"] : ["line"])
     })
@@ -20,7 +20,7 @@ function addComments(target: syncAPI.Comments, contextData: bc.ContextData) {
 }
 
 function createPropertyDeserializer(
-    context: bc.ExpectContext,
+    context: astn.ExpectContext,
     propDefinition: md.Property,
     propKey: string,
     nodeBuilder: syncAPI.Node,
@@ -28,7 +28,7 @@ function createPropertyDeserializer(
     sideEffectsAPIs: sideEffects.Node[],
     onError: OnError,
     flagIsDirty: () => void,
-): bc.RequiredValueHandler {
+): astn.RequiredValueHandler {
     switch (propDefinition.type[0]) {
         case "collection": {
             const $ = propDefinition.type[1]
@@ -294,7 +294,7 @@ function createPropertyDeserializer(
 function defaultInitializeNode(
     nodeDefinition: md.Node,
     nodeBuilder: syncAPI.Node,
-    range: bc.Range,
+    range: astn.Range,
     onError: OnError,
 ) {
     nodeDefinition.properties.forEach((propDef, propKey) => {
@@ -313,7 +313,7 @@ function defaultInitializeProperty(
     propDefinition: md.Property,
     propKey: string,
     nodeBuilder: syncAPI.Node,
-    range: bc.Range,
+    range: astn.Range,
     onError: OnError,
 ) {
 
@@ -377,7 +377,7 @@ function getPropertyComments(node: syncAPI.Node, propertyName: string, propertyD
 }
 
 function createNodeDeserializer(
-    context: bc.ExpectContext,
+    context: astn.ExpectContext,
     nodeDefinition: md.Node,
     keyPropertyDefinition: md.Property | null,
     nodeBuilder: syncAPI.Node,
@@ -387,14 +387,14 @@ function createNodeDeserializer(
     onError: OnError,
     flagIsDirty: () => void,
     targetComments: syncAPI.Comments,
-): bc.OnValue {
+): astn.OnValue {
 
     return contextData => {
         addComments(targetComments, contextData)
 
         if (isCompact) {
             flagIsDirty()
-            const expectedElements: bc.ExpectedElements = []
+            const expectedElements: astn.ExpectedElements = []
             nodeDefinition.properties.forEach((propDefinition, propKey) => {
                 expectedElements.push(() => {
                     return createPropertyDeserializer(
@@ -430,11 +430,11 @@ function createNodeDeserializer(
         } else {
             const processedProperties: {
                 [key: string]: {
-                    range: bc.Range
+                    range: astn.Range
                     isDirty: boolean
                 }
             } = {}
-            const expectedProperties: bc.ExpectedProperties = {}
+            const expectedProperties: astn.ExpectedProperties = {}
             nodeDefinition.properties.forEach((propDefinition, propKey) => {
                 if (keyProperty === propDefinition) {
                     return
@@ -521,7 +521,7 @@ function createNodeDeserializer(
                             Object.keys(expectedProperties),
                         )
                     })
-                    return bc.createDummyRequiredValueHandler()
+                    return astn.createDummyRequiredValueHandler()
                 },
             )
         }
@@ -530,12 +530,12 @@ function createNodeDeserializer(
 }
 
 export function createDatasetDeserializer(
-    context: bc.ExpectContext,
+    context: astn.ExpectContext,
     dataset: syncAPI.IDataset,
     isCompact: boolean,
     sideEffectsHandlers: sideEffects.Node[],
     onError: OnError,
-): bc.RequiredValueHandler {
+): astn.RequiredValueHandler {
     return context.expectValue(
         createNodeDeserializer(
             context,

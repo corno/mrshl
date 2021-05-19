@@ -1,4 +1,4 @@
-import * as bc from "bass-clarinet"
+import * as astn from "astn"
 import { createSchemaDeserializer, SchemaSchemaError } from "./createSchemaDeserializer"
 import * as p from "pareto"
 import { SchemaAndSideEffects } from "../schemas"
@@ -11,7 +11,7 @@ export type ExternalSchemaDeserializationError = {
 
 export function deserializeSchemaFromStream(
     schemaStream: p.IStream<string, null>,
-    onError: (error: SchemaSchemaError, range: bc.Range) => void,
+    onError: (error: SchemaSchemaError, range: astn.Range) => void,
 ): p.IUnsafeValue<SchemaAndSideEffects, ExternalSchemaDeserializationError> {
     //console.log("FROM STRING")
 

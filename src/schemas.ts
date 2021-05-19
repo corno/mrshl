@@ -1,4 +1,4 @@
-import * as bc from "bass-clarinet-typed"
+import * as astn from "astn"
 import * as mrshlschemaschema01 from "./schemas/mrshl/schemaschema@0.1"
 import * as metadata01 from "./schemas/mrshl/metadata@0.1"
 import * as md from "./types"
@@ -27,7 +27,7 @@ export type InternalSchemaDeserializationError =
     | ["validation", {
         "message": string
     }]
-    | ["expect", bc.ExpectError]
+    | ["expect", astn.ExpectError]
     | ["schema reference resolving", SchemaReferenceResolvingError]
     | ["internal schema", InternalSchemaError]
 
@@ -35,7 +35,7 @@ export function printInternalSchemaDeserializationError(error: InternalSchemaDes
     switch (error[0]) {
         case "expect": {
             const $$$ = error[1]
-            return bc.printExpectError($$$)
+            return astn.printExpectError($$$)
         }
         case "schema reference resolving": {
             const $$$ = error[1]
@@ -72,13 +72,13 @@ export function printInternalSchemaDeserializationError(error: InternalSchemaDes
 export type SchemaAndSideEffects = {
     schema: md.Schema
     createSideEffects: (
-        onValidationError: (message: string, range: bc.Range, severity: DiagnosticSeverity) => void,
+        onValidationError: (message: string, range: astn.Range, severity: DiagnosticSeverity) => void,
     ) => sideEffects.Root
 }
 
 export type CreateSchemaAndSideEffectsBuilderFunction = (
-    onSchemaError: (error: InternalSchemaDeserializationError, range: bc.Range) => void,
-) => bc.ParserEventConsumer<SchemaAndSideEffects, null>
+    onSchemaError: (error: InternalSchemaDeserializationError, range: astn.Range) => void,
+) => astn.ParserEventConsumer<SchemaAndSideEffects, null>
 
 export const schemas: {
     [key: string]: CreateSchemaAndSideEffectsBuilderFunction

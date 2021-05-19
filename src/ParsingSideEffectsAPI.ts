@@ -1,4 +1,4 @@
-import * as bc from "bass-clarinet"
+import * as astn from "astn"
 import * as ds from "./syncAPI"
 import * as md from "./types"
 
@@ -9,24 +9,24 @@ export interface Root {
 
 export interface Dictionary {
     onDictionaryEntry(
-        range: bc.Range,
+        range: astn.Range,
         nodeDefinition: md.Node,
         keyProperty: md.Property,
         entry: ds.Entry,
     ): Node
     onUnexpectedDictionaryEntry(
-        entryRange: bc.Range,
+        entryRange: astn.Range,
     ): void
     onDictionaryClose(
-        range: bc.Range,
-        closeData: bc.ObjectCloseData,
+        range: astn.Range,
+        closeData: astn.ObjectCloseData,
     ): void
 }
 
 export interface List {
     onListClose(
-        range: bc.Range,
-        closeData: bc.ArrayCloseData
+        range: astn.Range,
+        closeData: astn.ArrayCloseData
     ): void
     onListEntry(): Node
     onUnexpectedListEntry(): void
@@ -34,65 +34,65 @@ export interface List {
 
 export interface Node {
     onTypeOpen(
-        range: bc.Range,
+        range: astn.Range,
         nodeDefinition: md.Node,
         keyPropertyDefinition: md.Property | null,
         nodeBuilder: ds.Node
     ): void
     onTypeClose(
-        range: bc.Range
+        range: astn.Range
     ): void
     onArrayTypeOpen(
-        openRange: bc.Range,
-        openData: bc.ArrayOpenData,
+        openRange: astn.Range,
+        openData: astn.ArrayOpenData,
     ): void
     onArrayTypeClose(
-        range: bc.Range,
-        closeData: bc.ArrayCloseData
+        range: astn.Range,
+        closeData: astn.ArrayCloseData
     ): void
     onDictionaryOpen(
         dictionaryName: string,
-        range: bc.Range,
-        openData: bc.ObjectOpenData
+        range: astn.Range,
+        openData: astn.ObjectOpenData
     ): Dictionary
     onListOpen(
         name: string,
-        range: bc.Range,
-        openData: bc.ArrayOpenData
+        range: astn.Range,
+        openData: astn.ArrayOpenData
     ): List
     onValue(
         valueName: string,
         syncValue: ds.Value,
-        range: bc.Range,
-        data: bc.SimpleValueData,
+        range: astn.Range,
+        data: astn.SimpleValueData,
         definition: md.Value,
     ): void
     onProperty(
         propKey: string,
-        propRange: bc.Range,
+        propRange: astn.Range,
         propDefinition: md.Property,
         nodeBuilder: ds.Node,
     ): void
     onUnexpectedProperty(
         key: string,
-        range: bc.Range,
-        contextData: bc.ContextData,
+        range: astn.Range,
+        contextData: astn.ContextData,
         expectedProperties: string[]
     ): void
     onState(
         stateGroupName: string,
         stateName: string,
-        tuRange: bc.Range,
-        beginPreData: bc.ContextData,
-        optionRange: bc.Range,
-        optionPreData: bc.ContextData
+        tuRange: astn.Range,
+        beginPreData: astn.ContextData,
+        optionRange: astn.Range,
+        optionPreData: astn.ContextData
     ): Node
     onUnexpectedState(
         stateName: string,
-        tuRange: bc.Range,
-        beginPreData: bc.ContextData,
-        optionRange: bc.Range,
-        optionPreData: bc.ContextData,
+        tuRange: astn.Range,
+        beginPreData: astn.ContextData,
+        optionRange: astn.Range,
+        optionPreData: astn.ContextData,
         stateGroupDefinition: md.StateGroup
     ): void
     onComponent(name: string): Node

@@ -1,7 +1,7 @@
 #! /usr/bin/env node
 
 import * as fs from "fs"
-import * as bc from "bass-clarinet-typed"
+import * as astn from "astn"
 import * as schemaschema01 from "../src/schemas/mrshl/schemaschema@0.1"
 import * as db5 from "../src"
 import * as p from "pareto"
@@ -119,8 +119,8 @@ const parser = db5.createParser(
     }
 )
 
-const st = bc.createStreamPreTokenizer(
-    bc.createTokenizer(parser),
+const st = astn.createStreamPreTokenizer(
+    astn.createTokenizer(parser),
     (message, range) => {
         console.error(message, range)
     },

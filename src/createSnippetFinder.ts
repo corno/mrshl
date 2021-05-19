@@ -1,4 +1,4 @@
-import * as bc from "bass-clarinet"
+import * as astn from "astn"
 import { Root } from "./ParsingSideEffectsAPI"
 import { createSnippetsGenerator } from "./createSnippetsGenerator"
 
@@ -35,7 +35,7 @@ export function createSnippetFinder(
                 positionAlreadyFound = true
                 return
             }
-            const end = bc.getEndLocationFromRange(tokenRange)
+            const end = astn.getEndLocationFromRange(tokenRange)
             if (completionPositionLine < end.line || (completionPositionLine === end.line && completionPositionCharacter < end.column)) {
                 //console.log("INTRA", intra)
                 generate(intra)

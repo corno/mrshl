@@ -1,4 +1,4 @@
-export * from "bass-clarinet-typed"
+export * from "astn"
 export * from "./serialize"
 export * from "./deserialize"
 export * from "./inMemoryDataset"

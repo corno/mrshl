@@ -1,4 +1,4 @@
-import * as bc from "bass-clarinet"
+import * as astn from "astn"
 import { createDeserializer } from "./createDeserializer"
 import * as t from "./types"
 import { convert } from "./convert"
@@ -9,19 +9,19 @@ import * as sideEffects from "./sideEffects"
 import { createInternalSchemaHandler } from "../../../createInternalSchemaHandler"
 
 export function createSchemaAndSideEffects(
-    onSchemaError: (error: InternalSchemaDeserializationError, range: bc.Range) => void,
-): bc.ParserEventConsumer<SchemaAndSideEffects, null> {
+    onSchemaError: (error: InternalSchemaDeserializationError, range: astn.Range) => void,
+): astn.ParserEventConsumer<SchemaAndSideEffects, null> {
     const isb = createInternalSchemaBuilder(onSchemaError)
     return {
-        onData: (data: bc.BodyEvent): p.IValue<boolean> => {
+        onData: (data: astn.BodyEvent): p.IValue<boolean> => {
             return isb.onData(data)
         },
-        onEnd: (aborted: boolean, location: bc.Location): p.IUnsafeValue<SchemaAndSideEffects, null> => {
+        onEnd: (aborted: boolean, location: astn.Location): p.IUnsafeValue<SchemaAndSideEffects, null> => {
             return isb.onEnd(aborted, location).mapResult(schema => {
                 return p.value({
                     schema: convert(schema),
                     createSideEffects: (
-                        onValidationError: (message: string, range: bc.Range, severity: DiagnosticSeverity) => void,
+                        onValidationError: (message: string, range: astn.Range, severity: DiagnosticSeverity) => void,
                     ) => new sideEffects.Root(schema, onValidationError),
                 })
             })
@@ -30,12 +30,12 @@ export function createSchemaAndSideEffects(
 }
 
 export function createInternalSchemaBuilder(
-    onSchemaError: (error: InternalSchemaDeserializationError, range: bc.Range) => void,
-): bc.ParserEventConsumer<t.Schema, null> {
+    onSchemaError: (error: InternalSchemaDeserializationError, range: astn.Range) => void,
+): astn.ParserEventConsumer<t.Schema, null> {
     let foundError = false
     let metaData: null | t.Schema = null
 
-    function onSchemaSchemaError(error: InternalSchemaDeserializationError, range: bc.Range) {
+    function onSchemaSchemaError(error: InternalSchemaDeserializationError, range: astn.Range) {
         onSchemaError(error, range)
         foundError = true
     }

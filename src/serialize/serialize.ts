@@ -1,10 +1,10 @@
 import * as p from "pareto"
-import * as bc from "bass-clarinet-typed"
+import * as astn from "astn"
 import * as syncAPI from "../syncAPI"
 import { serializeNode } from "./serializeInstanceData"
 import { serializeMetaData } from "./serializeMetaData"
 
-class InArray<T> implements bc.IInArray<T> {
+class InArray<T> implements astn.IInArray<T> {
     private readonly elements: T[]
     constructor(elements: T[]) {
         this.elements = elements
@@ -28,7 +28,7 @@ export function serialize(
 ): p.IStream<string, null> {
     const rootComments = dataset.rootComments.getComments()
     const allComments = dataset.documentComments.getComments().concat(rootComments)
-    return bc.serializeDocument(
+    return astn.serializeDocument(
         {
             schema: serializeMetaData(internalSchemaSpecification, dataset.schema),
             root: serializeNode(dataset.root, compact),

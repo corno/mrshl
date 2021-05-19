@@ -1,4 +1,4 @@
-import * as bc from "bass-clarinet-typed"
+import * as astn from "astn"
 import * as sideEffects from "../ParsingSideEffectsAPI"
 import { createDatasetDeserializer } from "./createDatasetDeserializer"
 import * as p20 from "pareto-20"
@@ -18,12 +18,12 @@ export type DeserializeDiagnosticType =
     | ["structure", {
         message: "ignoring invalid internal schema"
     }]
-    | ["expect", bc.ExpectError]
+    | ["expect", astn.ExpectError]
     | ["deserializer", {
         message: string
     }]
-    | ["stacked", bc.StackedDataError]
-    | ["parsing", bc.ParsingError]
+    | ["stacked", astn.StackedDataError]
+    | ["parsing", astn.ParsingError]
     | ["schema error", InternalSchemaDeserializationError]
 
 export type DeserializeDiagnostic = {
@@ -42,11 +42,11 @@ export function printDeserializeDiagnostic($: DeserializeDiagnostic): string {
         }
         case "expect": {
             const $$ = $.type[1]
-            return bc.printExpectError($$)
+            return astn.printExpectError($$)
         }
         case "parsing": {
             const $$ = $.type[1]
-            return bc.printParsingError($$)
+            return astn.printParsingError($$)
         }
         case "schema error": {
             const $$ = $.type[1]
@@ -61,7 +61,7 @@ export function printDeserializeDiagnostic($: DeserializeDiagnostic): string {
     }
 }
 
-function createNoOperationValueHandler(): bc.ValueHandler {
+function createNoOperationValueHandler(): astn.ValueHandler {
     return {
         array: _range => {
             return {
@@ -102,7 +102,7 @@ function createNoOperationValueHandler(): bc.ValueHandler {
     }
 }
 
-function createNoOperationRequiredValueHandler(): bc.RequiredValueHandler {
+function createNoOperationRequiredValueHandler(): astn.RequiredValueHandler {
     return {
         onMissing: () => {
             //
@@ -220,8 +220,8 @@ export function deserializeDataset(
         compact: boolean
     ) => IDeserializedDataset,
     onNoInternalSchema: () => IDataset | null,
-    onError: (diagnostic: DeserializeDiagnostic, range: bc.Range) => void,
-    onWarning: (diagnostic: DeserializeDiagnostic, range: bc.Range) => void,
+    onError: (diagnostic: DeserializeDiagnostic, range: astn.Range) => void,
+    onWarning: (diagnostic: DeserializeDiagnostic, range: astn.Range) => void,
     sideEffectsHandlers: sideEffects.Root[],
 ): p.IUnsafeValue<IDeserializedDataset, ExternalSchemaDeserializationError> {
 
@@ -237,11 +237,11 @@ export function deserializeDataset(
         }
     }
 
-    let internalSchemaSpecificationStart: null | bc.Range = null
+    let internalSchemaSpecificationStart: null | astn.Range = null
     let foundSchemaErrors = false
     let internalSchema: InternalSchema | null = null
-    const overheadComments: bc.CommentData[] = []
-    const parserStack = bc.createParserStack<IDeserializedDataset, ExternalSchemaDeserializationError>(
+    const overheadComments: astn.CommentData[] = []
+    const parserStack = astn.createParserStack<IDeserializedDataset, ExternalSchemaDeserializationError>(
         schemaStart => {
             internalSchemaSpecificationStart = schemaStart
             return createInternalSchemaHandler(
@@ -292,7 +292,7 @@ export function deserializeDataset(
                 }
             )
         },
-        (compact: bc.Range | null): bc.ParserEventConsumer<IDeserializedDataset, ExternalSchemaDeserializationError> => {
+        (compact: astn.Range | null): astn.ParserEventConsumer<IDeserializedDataset, ExternalSchemaDeserializationError> => {
             if (internalSchemaSpecificationStart && internalSchema === null && !foundSchemaErrors) {
                 console.error("NO SCHEMA AND NO ERROR")
                 //throw new Error("Unexpected: no schema errors and no schema")
@@ -337,15 +337,15 @@ export function deserializeDataset(
                 }
             }
 
-            const context = new bc.ExpectContext(
+            const context = new astn.ExpectContext(
                 (issue, range) => onError(createDiagnostic(["expect", issue]), range),
                 (issue, range) => onWarning(createDiagnostic(["expect", issue]), range),
                 (_range, _key, _contextData) => () => createNoOperationValueHandler(),
                 () => () => createNoOperationValueHandler(),
-                bc.Severity.warning,
-                bc.OnDuplicateEntry.ignore
+                astn.Severity.warning,
+                astn.OnDuplicateEntry.ignore
             )
-            return bc.createStackedDataSubscriber(
+            return astn.createStackedDataSubscriber(
                 createDatasetDeserializer(
                     context,
                     dataset.dataset.sync,
@@ -369,15 +369,15 @@ export function deserializeDataset(
         },
         overheadToken => {
             switch (overheadToken.type[0]) {
-                case bc.OverheadTokenType.Comment: {
+                case astn.OverheadTokenType.Comment: {
                     const $ = overheadToken.type[1]
                     overheadComments.push($)
                     break
                 }
-                case bc.OverheadTokenType.NewLine: {
+                case astn.OverheadTokenType.NewLine: {
                     break
                 }
-                case bc.OverheadTokenType.WhiteSpace: {
+                case astn.OverheadTokenType.WhiteSpace: {
                     break
                 }
                 default:
@@ -386,7 +386,7 @@ export function deserializeDataset(
             return p.value(false)
         }
     )
-    function onSchemaError(error: InternalSchemaDeserializationError, range: bc.Range) {
+    function onSchemaError(error: InternalSchemaDeserializationError, range: astn.Range) {
         onError(createDiagnostic(["schema error", error]), range)
         foundSchemaErrors = true
     }

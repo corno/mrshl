@@ -1,4 +1,4 @@
-import * as bc from "bass-clarinet-typed"
+import * as astn from "astn"
 import * as p from "pareto-20"
 
 function assertUnreachable<RT>(_x: never): RT {
@@ -13,14 +13,14 @@ export type InternalSchemaError =
         | ["simple value"]
         | ["tagged union"]
     }]
-    | ["stacked", bc.StackedDataError]
+    | ["stacked", astn.StackedDataError]
 
 
 export function printInternalSchemaError(error: InternalSchemaError): string {
     switch (error[0]) {
         case "stacked": {
             const $$$ = error[1]
-            return bc.printStackedDataError($$$)
+            return astn.printStackedDataError($$$)
         }
         case "unexpected schema format": {
             const $$$ = error[1]
@@ -48,36 +48,36 @@ export function printInternalSchemaError(error: InternalSchemaError): string {
 }
 
 export function createInternalSchemaHandler<Result>(
-    onSchemaError: (error: InternalSchemaError, range: bc.Range) => void,
-    onObject: bc.OnObject | null,
-    onSimpleValue: bc.OnSimpleValue | null,
+    onSchemaError: (error: InternalSchemaError, range: astn.Range) => void,
+    onObject: astn.OnObject | null,
+    onSimpleValue: astn.OnSimpleValue | null,
     onEnd: () => p.IUnsafeValue<Result, null>
-): bc.ParserEventConsumer<Result, null> {
+): astn.ParserEventConsumer<Result, null> {
 
-    return bc.createStackedDataSubscriber(
+    return astn.createStackedDataSubscriber(
         {
             onValue: () => {
                 return {
-                    array: (range: bc.Range): bc.ArrayHandler => {
+                    array: (range: astn.Range): astn.ArrayHandler => {
                         onSchemaError(["unexpected schema format", { found: ["array"] }], range)
-                        return bc.createDummyArrayHandler()
+                        return astn.createDummyArrayHandler()
                     },
                     object: onObject !== null
                         ? onObject
-                        : (range: bc.Range): bc.ObjectHandler => {
+                        : (range: astn.Range): astn.ObjectHandler => {
                             onSchemaError(["unexpected schema format", { found: ["object"] }], range)
-                            return bc.createDummyObjectHandler()
+                            return astn.createDummyObjectHandler()
                         },
                     simpleValue: onSimpleValue !== null
                         ? onSimpleValue
-                        : (range: bc.Range, _data: bc.SimpleValueData): p.IValue<boolean> => {
+                        : (range: astn.Range, _data: astn.SimpleValueData): p.IValue<boolean> => {
                             onSchemaError(["unexpected schema format", { found: ["simple value"] }], range)
                             return p.value(false)
                         },
-                    taggedUnion: (range: bc.Range): bc.TaggedUnionHandler => {
+                    taggedUnion: (range: astn.Range): astn.TaggedUnionHandler => {
                         onSchemaError(["unexpected schema format", { found: ["tagged union"] }], range)
                         return {
-                            option: (): bc.RequiredValueHandler => bc.createDummyRequiredValueHandler(),
+                            option: (): astn.RequiredValueHandler => astn.createDummyRequiredValueHandler(),
                             missingOption: (): void => {
                                 //
                             },

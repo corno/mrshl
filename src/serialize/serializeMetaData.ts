@@ -1,7 +1,7 @@
 /* eslint
     no-shadow: "off",
 */
-import * as bc from "bass-clarinet"
+import * as astn from "astn"
 import * as syncAPI from "../syncAPI"
 import * as md from "../types"
 import * as g from "../generics"
@@ -11,7 +11,7 @@ function assertUnreachable<RT>(_x: never): RT {
     throw new Error("unreachable")
 }
 
-class InDictionary<T> implements bc.IInDictionary<T> {
+class InDictionary<T> implements astn.IInDictionary<T> {
     private readonly properties: { [key: string]: T }
     constructor(properties: { [key: string]: T }) {
         this.properties = properties
@@ -26,7 +26,7 @@ class InDictionary<T> implements bc.IInDictionary<T> {
     }
 }
 
-class InArray<T> implements bc.IInArray<T> {
+class InArray<T> implements astn.IInArray<T> {
     private readonly elements: T[]
     constructor(elements: T[]) {
         this.elements = elements
@@ -43,7 +43,7 @@ class InArray<T> implements bc.IInArray<T> {
     }
 }
 
-function createEmptyCommentData(): bc.SerializableCommentData {
+function createEmptyCommentData(): astn.SerializableCommentData {
     return {
         before: {
             comments: new InArray([]),
@@ -52,8 +52,8 @@ function createEmptyCommentData(): bc.SerializableCommentData {
     }
 }
 
-function createType(propertyValues: { [Key: string]: [boolean, bc.SerializableValue] }): bc.SerializableValue {
-    const properties: { [Key: string]: bc.SerializableProperty } = {}
+function createType(propertyValues: { [Key: string]: [boolean, astn.SerializableValue] }): astn.SerializableValue {
+    const properties: { [Key: string]: astn.SerializableProperty } = {}
     Object.keys(propertyValues).sort().forEach(propertyName => {
         const isDefault = propertyValues[propertyName][0]
         if (!isDefault) {
@@ -74,7 +74,7 @@ function createType(propertyValues: { [Key: string]: [boolean, bc.SerializableVa
         }],
     }
 }
-function createDictionary<T>(entries: g.IReadonlyDictionary<T>, entryMapper: (entry: T) => bc.SerializableValue): bc.SerializableValue {
+function createDictionary<T>(entries: g.IReadonlyDictionary<T>, entryMapper: (entry: T) => astn.SerializableValue): astn.SerializableValue {
     return {
         commentData: createEmptyCommentData(),
         type: ["object", {
@@ -92,7 +92,7 @@ function createDictionary<T>(entries: g.IReadonlyDictionary<T>, entryMapper: (en
     }
 }
 
-function createReference<T>(reference: g.IReference<T>): bc.SerializableValue {
+function createReference<T>(reference: g.IReference<T>): astn.SerializableValue {
     return {
         commentData: createEmptyCommentData(),
         type: ["simple value", {
@@ -101,7 +101,7 @@ function createReference<T>(reference: g.IReference<T>): bc.SerializableValue {
         }],
     }
 }
-function createTaggedUnion(option: string, data: bc.SerializableValue): bc.SerializableValue {
+function createTaggedUnion(option: string, data: astn.SerializableValue): astn.SerializableValue {
     return {
         commentData: createEmptyCommentData(),
         type: ["tagged union", {
@@ -113,7 +113,7 @@ function createTaggedUnion(option: string, data: bc.SerializableValue): bc.Seria
     }
 }
 
-function createTextProperty(value: string, quoted = true): bc.SerializableValue {
+function createTextProperty(value: string, quoted = true): astn.SerializableValue {
     return {
         commentData: createEmptyCommentData(),
         type: ["simple value", {
@@ -184,19 +184,19 @@ function schemaNodeIsDefault(node: md.Node): boolean {
     return node.properties.isEmpty()
 }
 
-function createSerializableValueFromSchemaNode(schemaNode: md.Node): bc.SerializableValue {
-    const properties: { [key: string]: bc.SerializableProperty } = schemaNode.properties.mapSorted((entry, _key) => {
+function createSerializableValueFromSchemaNode(schemaNode: md.Node): astn.SerializableValue {
+    const properties: { [key: string]: astn.SerializableProperty } = schemaNode.properties.mapSorted((entry, _key) => {
         return {
             commentData: createEmptyCommentData(),
             quote: "\"",
             value: createType({
-                type: [schemaPropertyIsDefault(entry), ((): bc.SerializableValue => {
+                type: [schemaPropertyIsDefault(entry), ((): astn.SerializableValue => {
                     switch (entry.type[0]) {
                         case "collection": {
                             const $ = entry.type[1]
 
                             return createTaggedUnion("collection", createType({
-                                type: [$.type[0] === "list" && schemaNodeIsDefault($.type[1].node), ((): bc.SerializableValue => {
+                                type: [$.type[0] === "list" && schemaNodeIsDefault($.type[1].node), ((): astn.SerializableValue => {
                                     switch ($.type[0]) {
                                         case "dictionary": {
                                             const $$ = $.type[1]
@@ -289,7 +289,7 @@ function createSerializableValueFromSchemaNode(schemaNode: md.Node): bc.Serializ
 export function serializeMetaData(
     internalSchemaSpecification: InternalSchemaSpecification,
     schema: md.Schema
-): bc.SerializableValue | null {
+): astn.SerializableValue | null {
     switch (internalSchemaSpecification[0]) {
         case syncAPI.InternalSchemaSpecificationType.Embedded: {
 

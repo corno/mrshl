@@ -1,4 +1,4 @@
-import * as bc from "bass-clarinet"
+import * as astn from "astn"
 import * as p from "pareto"
 import { schemas, CreateSchemaAndSideEffectsBuilderFunction, SchemaAndSideEffects, InternalSchemaDeserializationError, printInternalSchemaDeserializationError } from "../schemas"
 import { createInternalSchemaHandler, printInternalSchemaError, InternalSchemaError } from "../createInternalSchemaHandler"
@@ -13,7 +13,7 @@ export type SchemaSchemaError =
         name: string
     }]
     | [`missing schema schema definition`]
-    | [`parsing`, bc.ParsingError]
+    | [`parsing`, astn.ParsingError]
     | [`schema processing`, InternalSchemaDeserializationError]
 
 
@@ -25,7 +25,7 @@ export function printSchemaSchemaError($$: SchemaSchemaError): string {
         }
         case "parsing": {
             const $$$ = $$[1]
-            return bc.printParsingError($$$)
+            return astn.printParsingError($$$)
         }
         case "schema processing": {
             const $$$ = $$[1]
@@ -45,19 +45,19 @@ export function printSchemaSchemaError($$: SchemaSchemaError): string {
 }
 
 export function createSchemaDeserializer(
-    onError: (error: SchemaSchemaError, range: bc.Range) => void,
+    onError: (error: SchemaSchemaError, range: astn.Range) => void,
 ): p.IUnsafeStreamConsumer<string, null, SchemaAndSideEffects, null> {
     let foundError = false
 
     let schemaDefinitionFound = false
     let schemaProcessor: null | CreateSchemaAndSideEffectsBuilderFunction = null
-    function onSchemaError(error: SchemaSchemaError, range: bc.Range) {
+    function onSchemaError(error: SchemaSchemaError, range: astn.Range) {
         onError(error, range)
         foundError = true
     }
 
     //console.log("SCHEMA DESER")
-    const schemaTok = bc.createParserStack(
+    const schemaTok = astn.createParserStack(
 
         () => {
             schemaDefinitionFound = true
@@ -82,10 +82,10 @@ export function createSchemaDeserializer(
                 }
             )
         },
-        (_compact: bc.Range | null, location: bc.Location): bc.ParserEventConsumer<SchemaAndSideEffects, null> => {
+        (_compact: astn.Range | null, location: astn.Location): astn.ParserEventConsumer<SchemaAndSideEffects, null> => {
             if (!schemaDefinitionFound) {
                 //console.error("missing schema schema types")
-                onSchemaError([`missing schema schema definition`], bc.createRangeFromSingleLocation(location))
+                onSchemaError([`missing schema schema definition`], astn.createRangeFromSingleLocation(location))
                 return {
                     onData: () => {
                         //

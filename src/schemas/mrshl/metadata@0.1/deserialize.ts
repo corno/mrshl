@@ -3,7 +3,7 @@
 
 */
 import * as p from "pareto"
-import * as bc from "bass-clarinet-typed"
+import * as astn from "astn"
 import * as g from "../../../generics"
 import * as t from "../../../types"
 import * as md from "../../../types"
@@ -23,16 +23,16 @@ function assertNotNull<T>(value: T | null) {
 
 type StringAndRange = {
     value: string
-    range: bc.Range
+    range: astn.Range
 }
 
 function createNodeHandler(
-    context: bc.ExpectContext,
-    raiseValidationError: (message: string, range: bc.Range) => void,
+    context: astn.ExpectContext,
+    raiseValidationError: (message: string, range: astn.Range) => void,
     componentTypes: g.IReadonlyDictionary<t.ComponentType>,
     callback: (node: t.Node) => void,
     resolveRegistry: g.ResolveRegistry
-): bc.ExpectedProperty {
+): astn.ExpectedProperty {
     return {
         onExists: () => {
 
@@ -399,32 +399,32 @@ function createNodeHandler(
 
 
 export function createDeserializer(
-    onExpectError: (error: bc.ExpectError, range: bc.Range) => void,
-    onValidationError: (message: string, range: bc.Range) => void,
+    onExpectError: (error: astn.ExpectError, range: astn.Range) => void,
+    onValidationError: (message: string, range: astn.Range) => void,
     callback: (metaData: md.Schema | null) => void
-): bc.OnObject {
+): astn.OnObject {
     const componentTypes = new g.Dictionary<t.ComponentType>({})
     let rootName: string | null = null
-    let rootNameRange: bc.Range | null = null
+    let rootNameRange: astn.Range | null = null
 
-    const context = new bc.ExpectContext(
+    const context = new astn.ExpectContext(
         (_errorMessage, _range) => {
             onExpectError(_errorMessage, _range)
         },
         _warningMessage => {
             //ignore
         },
-        () => bc.createDummyValueHandler(),
-        () => bc.createDummyValueHandler(),
-        bc.Severity.warning,
-        bc.OnDuplicateEntry.ignore
+        () => astn.createDummyValueHandler(),
+        () => astn.createDummyValueHandler(),
+        astn.Severity.warning,
+        astn.OnDuplicateEntry.ignore
     )
     const resolveRegistry = new g.ResolveRegistry()
 
     return context.createTypeHandler(
         {
             "component types": {
-                onExists: (): bc.RequiredValueHandler => context.expectValue(() => context.expectDictionary(
+                onExists: (): astn.RequiredValueHandler => context.expectValue(() => context.expectDictionary(
                     key => {
                         let targetNode: t.Node | null = null
                         return context.expectValue(() => context.expectType(
@@ -459,13 +459,13 @@ export function createDeserializer(
                 },
             },
             "root type": {
-                onExists: (): bc.RequiredValueHandler => context.expectValue(() => context.expectSimpleValue((range, data) => {
+                onExists: (): astn.RequiredValueHandler => context.expectValue(() => context.expectSimpleValue((range, data) => {
                     rootName = data.value
                     rootNameRange = range
                     return p.value(false)
 
                 })),
-                onNotExists: (range: bc.Range): void => {
+                onNotExists: (range: astn.Range): void => {
                     rootName = "root"
                     rootNameRange = range
                 },

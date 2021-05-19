@@ -21,7 +21,7 @@ export function createFromURLSchemaDeserializer(
     return (reference: string): p.IUnsafeValue<SchemaAndSideEffects, SchemaReferenceResolvingError> => {
 
         // //const errors: string[] = []
-        // function onSchemaError(_message: string, _range: bc.Range) {
+        // function onSchemaError(_message: string, _range: astn.Range) {
         //     //errors.push(message)
         // }
         if (reference === "") {
