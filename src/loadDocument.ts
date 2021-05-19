@@ -315,7 +315,7 @@ export function loadDocument(
 				(error, _range) => {
 					dc({
 						type: ["schema retrieval", {
-							issue: [`error in external schema`, error],
+							issue: ["error in external schema", error],
 						}],
 						severity: DiagnosticSeverity.error,
 					})

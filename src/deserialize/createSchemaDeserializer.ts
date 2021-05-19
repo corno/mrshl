@@ -12,9 +12,9 @@ export type SchemaSchemaError =
     | ["unknown schema schema", {
         name: string
     }]
-    | [`missing schema schema definition`]
-    | [`parsing`, astn.ParsingError]
-    | [`schema processing`, InternalSchemaDeserializationError]
+    | ["missing schema schema definition"]
+    | ["parsing", astn.ParsingError]
+    | ["schema processing", InternalSchemaDeserializationError]
 
 
 export function printSchemaSchemaError($$: SchemaSchemaError): string {
@@ -85,7 +85,7 @@ export function createSchemaDeserializer(
         (_compact: astn.Range | null, location: astn.Location): astn.ParserEventConsumer<SchemaAndSideEffects, null> => {
             if (!schemaDefinitionFound) {
                 //console.error("missing schema schema types")
-                onSchemaError([`missing schema schema definition`], astn.createRangeFromSingleLocation(location))
+                onSchemaError(["missing schema schema definition"], astn.createRangeFromSingleLocation(location))
                 return {
                     onData: () => {
                         //
