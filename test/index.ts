@@ -10,7 +10,7 @@ import * as path from "path"
 //import * as p20 from "pareto-20"
 import * as p from "pareto"
 import { describe } from "mocha"
-import * as astn from "../src"
+import * as db5 from "../src"
 import * as bc from "bass-clarinet-typed"
 import * as async from "../src/asyncAPI"
 import { makeNativeHTTPrequest } from "./makeNativeHTTPrequest"
@@ -177,14 +177,14 @@ export function directoryTests(): void {
             function myFunc(): p.IValue<null> {
 
                 const serializedDataset = fs.readFileSync(serializedDatasetPath, { encoding: "utf-8" })
-                return astn.loadDocument(
+                return db5.loadDocument(
                     schemaHost,
                     serializedDataset,
                     serializedDatasetPath,
                     makeNativeHTTPrequest,
                     readFileFromFileSystem,
                     diagnostic => {
-                        const diagSev = diagnostic.severity === astn.DiagnosticSeverity.error ? "error" : "warning"
+                        const diagSev = diagnostic.severity === db5.DiagnosticSeverity.error ? "error" : "warning"
                         switch (diagnostic.type[0]) {
                             case "deserialization": {
                                 const $ = diagnostic.type[1]
@@ -261,9 +261,9 @@ export function directoryTests(): void {
                     // (warningMessage, range) => {
                     //     actualIssues.push([warningMessage, "warning", range.start.line, range.start.column, range.end.line, range.end.column])
                     // },
-                    [astn.createSnippetsGenerator(
+                    [db5.createSnippetsGenerator(
                         (range, getIntraSnippets, getSnippetsAfter) => {
-                            actualSnippets[astn.printRange(range)] = {
+                            actualSnippets[db5.printRange(range)] = {
                                 inToken: getIntraSnippets === null ? null : getIntraSnippets(),
                                 afterToken: getSnippetsAfter === null ? null : getSnippetsAfter(),
                             }
@@ -273,10 +273,10 @@ export function directoryTests(): void {
                         },
                     )],
                     schema => {
-                        return astn.createInMemoryDataset(schema)
+                        return db5.createInMemoryDataset(schema)
                     }
                 ).mapResult<null>(dataset => {
-                    return astn.serialize(
+                    return db5.serialize(
                         dataset.dataset.sync,
                         dataset.internalSchemaSpecification,
                         false,

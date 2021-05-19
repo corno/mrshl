@@ -1,7 +1,7 @@
 {
-  "name": "astn",
-  "version": "0.43.0",
-  "description": "utilities for ASTN (Abstract Syntax Tree Notation, pronounced 'Aston')",
+  "name": "db5",
+  "version": "0.5.0",
+  "description": "database engine for ASTN texts",
   "main": "dist/src/index.js",
   "scripts": {
     "build": "rm -rf ./dist && tsc",
@@ -20,7 +20,7 @@
   "prepublish": "tsc",
   "repository": {
     "type": "git",
-    "url": "https://github.com/corno/astn.git"
+    "url": "https://github.com/corno/db5.git"
   },
   "files": [
     "dist/*"

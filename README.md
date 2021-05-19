@@ -1,3 +1,3 @@
-# ASTN (Abstract Syntax Tree Notation)
+# DB5 is a library that provides an in memory database for ASTN texts
 
-ASTN is a notation language just like JSON is a notation language. As a matter of fact ASTN is a superset of JSON, meaning that every JSON document is a valid ASTN document.
+see www.astn.io
