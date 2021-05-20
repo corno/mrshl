@@ -511,7 +511,7 @@ function createNodeDeserializer(
         return context.expectTypeOrShorthandType(
             expectedProperties,
             expectedElements,
-            (range, _openData) => {
+            (range, _openData) => { //onTypeBegin
                 sideEffectsAPI.forEach(s => {
                     s.onTypeOpen(
                         range,
@@ -521,7 +521,7 @@ function createNodeDeserializer(
                     )
                 })
             },
-            (_hasErrors, endRange, _closeData, endContextData) => {
+            (_hasErrors, endRange, _closeData, endContextData) => { //onTypeEnd
                 let hadNonDefaultProperties = false
                 addComments(targetComments, endContextData)
                 nodeDefinition.properties.forEach((_prop, propKey) => {
@@ -541,7 +541,7 @@ function createNodeDeserializer(
                     s.onTypeClose(endRange)
                 })
             },
-            (key, metaData) => {
+            (key, metaData) => { //onUnexpectedProperty
                 sideEffectsAPI.forEach(s => {
                     s.onUnexpectedProperty(
                         key,

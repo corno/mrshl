@@ -256,38 +256,40 @@ class NodeSnippetGenerator implements sideEffects.Node {
     }
     onProperty(
         _propKey: string,
-        propRange: astn.Range,
+        propRange: astn.Range | null,
         propDefinition: md.Property,
         _nodeBuilder: syncAPI.Node,
     ) {
-        this.onToken(
-            propRange,
-            null,
-            () => {
-                const out: string[] = []
-                fp.serialize(
-                    [
-                        fp.line([
-                            " ",
-                            createPropertySnippet(propDefinition),
-                        ]),
-                    ],
-                    "    ",
-                    true,
-                    snippet => {
-                        out.push(snippet)
-                    }
-                )
-                return [out.map((line, index) => {
-                    //don't indent the first line
-                    if (index === 0) {
+        if (propRange !== null) {
+            this.onToken(
+                propRange,
+                null,
+                () => {
+                    const out: string[] = []
+                    fp.serialize(
+                        [
+                            fp.line([
+                                " ",
+                                createPropertySnippet(propDefinition),
+                            ]),
+                        ],
+                        "    ",
+                        true,
+                        snippet => {
+                            out.push(snippet)
+                        }
+                    )
+                    return [out.map((line, index) => {
+                        //don't indent the first line
+                        if (index === 0) {
+                            return line
+                        }
                         return line
-                    }
-                    return line
-                    //return contextData.indentation + line
-                }).join("\n")]
-            },
-        )
+                        //return contextData.indentation + line
+                    }).join("\n")]
+                },
+            )
+        }
         return new PropertySnippetGenerator(this.onToken)
     }
     onUnexpectedProperty(

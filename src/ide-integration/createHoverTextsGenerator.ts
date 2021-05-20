@@ -91,7 +91,7 @@ class HoverTextGenerator implements sideEffects.Root {
         onToken: OnTokenHoverText,
         onEnd: () => void,
     ) {
-        this.node = new NodeHoverTextGenerator(onToken)
+        this.node = new NodeHoverTextGenerator(null, onToken)
         this.onEndCallback = onEnd
     }
     onEnd() {
@@ -123,7 +123,7 @@ class StateGroupHoverTextGenerator implements sideEffects.StateGroup {
         this.onToken(optionRange, () => {
             return this.name
         })
-        return new NodeHoverTextGenerator(this.onToken)
+        return new NodeHoverTextGenerator(null, this.onToken)
     }
     onUnexpectedState(
         _stateName: string,
@@ -178,12 +178,11 @@ class PropertyHoverTextGenerator implements sideEffects.Property {
         })
     }
     onComponent() {
-        return new NodeHoverTextGenerator(this.onToken)
+        return new NodeHoverTextGenerator(this.name, this.onToken)
     }
 }
 
 class ListHoverTextGenerator implements sideEffects.List {
-    public readonly node: sideEffects.Node
     private readonly onToken: OnTokenHoverText
     private readonly name: string
     constructor(
@@ -192,7 +191,6 @@ class ListHoverTextGenerator implements sideEffects.List {
     ) {
         this.name = name
         this.onToken = onToken
-        this.node = new NodeHoverTextGenerator(onToken)
     }
     onClose(range: astn.Range) {
         this.onToken(range, () => {
@@ -200,7 +198,7 @@ class ListHoverTextGenerator implements sideEffects.List {
         })
     }
     onEntry() {
-        return new NodeHoverTextGenerator(this.onToken)
+        return new NodeHoverTextGenerator(null, this.onToken)
     }
     onUnexpectedEntry() {
         //
@@ -208,7 +206,6 @@ class ListHoverTextGenerator implements sideEffects.List {
 }
 
 class DictionaryHoverTextGenerator implements sideEffects.Dictionary {
-    public readonly node: sideEffects.Node
     private readonly onToken: OnTokenHoverText
     private readonly name: string
     constructor(
@@ -217,7 +214,6 @@ class DictionaryHoverTextGenerator implements sideEffects.Dictionary {
     ) {
         this.name = name
         this.onToken = onToken
-        this.node = new NodeHoverTextGenerator(onToken)
     }
     onClose(range: astn.Range) {
         this.onToken(range, () => {
@@ -233,26 +229,39 @@ class DictionaryHoverTextGenerator implements sideEffects.Dictionary {
         _nodeDefinition: md.Node,
         _keyPropertyDefinition: md.Property,
     ) {
-        return new NodeHoverTextGenerator(this.onToken)
+        return new NodeHoverTextGenerator(null, this.onToken)
     }
 }
 
 class NodeHoverTextGenerator implements sideEffects.Node {
     private readonly onToken: OnTokenHoverText
+    private readonly componentName: string | null
     constructor(
+        componentName: string | null,
         onToken: OnTokenHoverText,
     ) {
         this.onToken = onToken
+        this.componentName = componentName
     }
-    onShorthandTypeClose() {
+    private addOnToken(range: astn.Range) {
+
+        if (this.componentName !== null) {
+            const cn = this.componentName
+            this.onToken(range, () => {
+                return cn
+            })
+        }
         //
     }
-    onShorthandTypeOpen() {
-        //
+    onShorthandTypeClose(range: astn.Range) {
+        this.addOnToken(range)
+    }
+    onShorthandTypeOpen(range: astn.Range) {
+        this.addOnToken(range)
     }
     onProperty(
         propKey: string,
-        _propRange: astn.Range,
+        _propRange: astn.Range | null,
         _propDefinition: md.Property,
         _nodeBuilder: syncAPI.Node,
     ) {
@@ -267,14 +276,14 @@ class NodeHoverTextGenerator implements sideEffects.Node {
         //
     }
     onTypeOpen(
-        _range: astn.Range,
+        range: astn.Range,
         _nodeDefinition: md.Node,
         _keyPropertyDefinition: md.Property | null
     ) {
-        //
+        this.addOnToken(range)
     }
-    onTypeClose() {
-        //
+    onTypeClose(range: astn.Range) {
+        this.addOnToken(range)
     }
 }
 
