@@ -419,6 +419,9 @@ function createNodeDeserializer(
 
         const expectedElements: astn.ExpectedElements = []
         nodeDefinition.properties.forEach((propDefinition, propKey) => {
+            if (propDefinition === keyPropertyDefinition) {
+                return
+            }
             expectedElements.push({
                 name: propKey,
                 getHandler: () => {
