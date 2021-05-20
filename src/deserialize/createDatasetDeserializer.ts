@@ -419,35 +419,38 @@ function createNodeDeserializer(
 
         const expectedElements: astn.ExpectedElements = []
         nodeDefinition.properties.forEach((propDefinition, propKey) => {
-            expectedElements.push(() => {
-                return createPropertyDeserializer(
-                    context,
-                    propDefinition,
-                    propKey,
-                    nodeBuilder,
-                    sideEffectsAPI.map(s => {
-                        return s.onProperty(
-                            propKey,
-                            null,
-                            propDefinition,
-                            nodeBuilder,
-                        )
-                    }),
-                    onError,
-                    () => {
-                        //
-                    },
-                    range => { //null value
-                        defaultInitializeProperty(
-                            propDefinition,
-                            propKey,
-                            nodeBuilder,
-                            range,
-                            onError,
-                        )
-                        return p.value(false)
-                    },
-                )
+            expectedElements.push({
+                name: propKey,
+                getHandler: () => {
+                    return createPropertyDeserializer(
+                        context,
+                        propDefinition,
+                        propKey,
+                        nodeBuilder,
+                        sideEffectsAPI.map(s => {
+                            return s.onProperty(
+                                propKey,
+                                null,
+                                propDefinition,
+                                nodeBuilder,
+                            )
+                        }),
+                        onError,
+                        () => {
+                            //
+                        },
+                        range => { //null value
+                            defaultInitializeProperty(
+                                propDefinition,
+                                propKey,
+                                nodeBuilder,
+                                range,
+                                onError,
+                            )
+                            return p.value(false)
+                        },
+                    )
+                },
             })
         })
 
