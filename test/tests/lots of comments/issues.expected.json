@@ -2,7 +2,7 @@
 	[
 		"deserialization",
 		"error",
-		"unexpected property: 'b'",
+		"unexpected property: 'b'. Choose from c, d, e",
 		41,
 		5,
 		41,
