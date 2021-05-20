@@ -263,7 +263,7 @@ export function directoryTests(): void {
                     // },
                     [db5.createSnippetsGenerator(
                         (range, getIntraSnippets, getSnippetsAfter) => {
-                            actualSnippets[db5.printRange(range)] = {
+                            actualSnippets[astn.printRange(range)] = {
                                 inToken: getIntraSnippets === null ? null : getIntraSnippets(),
                                 afterToken: getSnippetsAfter === null ? null : getSnippetsAfter(),
                             }
@@ -279,7 +279,6 @@ export function directoryTests(): void {
                     return db5.serialize(
                         dataset.dataset.sync,
                         dataset.internalSchemaSpecification,
-                        false,
                     ).consume<null>(
                         null,
                         {

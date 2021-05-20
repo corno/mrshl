@@ -24,10 +24,10 @@ function createPropertyDeserializer(
     propDefinition: md.Property,
     propKey: string,
     nodeBuilder: syncAPI.Node,
-    isCompact: boolean,
-    sideEffectsAPIs: sideEffects.Node[],
+    sideEffectsAPIs: sideEffects.Property[],
     onError: OnError,
-    flagIsDirty: () => void,
+    flagNonDefaultPropertiesFound: () => void,
+    onNull: ((range: astn.Range, svData: astn.SimpleValueData) => p.IValue<boolean>) | null,
 ): astn.RequiredValueHandler {
     switch (propDefinition.type[0]) {
         case "collection": {
@@ -45,6 +45,11 @@ function createPropertyDeserializer(
                             addComments(dictionary.comments, valueContextData)
 
                             return context.expectDictionary(
+                                (range, beginData) => {
+                                    dictionarySideEffects = sideEffectsAPIs.map(s => {
+                                        return s.onDictionary(range, beginData)
+                                    })
+                                },
                                 (key, range, entryContextData) => {
                                     hasEntries = true
                                     const entry = dictionary.createEntry()
@@ -57,7 +62,7 @@ function createPropertyDeserializer(
                                         throw new Error("UNEXPECTED")
                                     }
                                     const propertySideEffects = dictionarySideEffects.map(s => {
-                                        return s.onDictionaryEntry(
+                                        return s.onEntry(
                                             range,
                                             $$.node,
                                             $$["key property"].get(),
@@ -70,7 +75,6 @@ function createPropertyDeserializer(
                                             $$.node,
                                             $$["key property"].get(),
                                             entry.node,
-                                            isCompact,
                                             $$["key property"].get(),
                                             propertySideEffects,
                                             onError,
@@ -81,23 +85,28 @@ function createPropertyDeserializer(
                                         ),
                                     )
                                 },
-                                (range, beginData) => {
-                                    dictionarySideEffects = sideEffectsAPIs.map(s => {
-                                        return s.onDictionaryOpen(propKey, range, beginData)
-                                    })
-                                },
                                 (endRange, endData, endContextData) => {
                                     if (dictionarySideEffects === null) {
                                         throw new Error("UNEXPECTED")
                                     }
                                     dictionarySideEffects.forEach(s => {
-                                        s.onDictionaryClose(endRange, endData)
+                                        s.onClose(endRange, endData)
                                     })
                                     if (hasEntries) {
-                                        flagIsDirty()
+                                        flagNonDefaultPropertiesFound()
                                     }
                                     addComments(dictionary.comments, endContextData)
 
+                                },
+                                null,
+                                (range, data) => {
+                                    // sideEffectsAPIs.map(s => {
+                                    //     return s.onDictionary(range, beginData)
+                                    // })
+                                    if (onNull !== null) {
+                                        return onNull(range, data)
+                                    }
+                                    return p.value(false)
                                 },
                             )
                         },
@@ -114,6 +123,12 @@ function createPropertyDeserializer(
                             addComments(list.comments, valueContextData)
 
                             return context.expectList(
+                                (beginRange, beginData) => {
+                                    listSideEffects = sideEffectsAPIs.map(s => {
+                                        return s.onList(beginRange, beginData)
+                                    })
+
+                                },
                                 () => {
                                     hasEntries = true
                                     const entry = list.createEntry()
@@ -124,14 +139,13 @@ function createPropertyDeserializer(
                                         throw new Error("UNEXPECTED")
                                     }
                                     const elementSideEffects = listSideEffects.map(s => {
-                                        return s.onListEntry()
+                                        return s.onEntry()
                                     })
                                     return createNodeDeserializer(
                                         context,
                                         $$.node,
                                         null,
                                         entry.node,
-                                        isCompact,
                                         null,
                                         elementSideEffects,
                                         onError,
@@ -141,24 +155,25 @@ function createPropertyDeserializer(
                                         entry.comments,
                                     )
                                 },
-                                (beginRange, beginData) => {
-                                    listSideEffects = sideEffectsAPIs.map(s => {
-                                        return s.onListOpen(propKey, beginRange, beginData)
-                                    })
-
-                                },
                                 (endRange, endData, endContextData) => {
                                     if (hasEntries) {
-                                        flagIsDirty()
+                                        flagNonDefaultPropertiesFound()
                                     }
                                     if (listSideEffects === null) {
                                         throw new Error("UNEXPECTED")
                                     }
                                     listSideEffects.forEach(s => {
-                                        s.onListClose(endRange, endData)
+                                        s.onClose(endRange, endData)
                                     })
                                     addComments(list.comments, endContextData)
 
+                                },
+                                undefined,
+                                range => { //onNull
+                                    sideEffectsAPIs.map(s => {
+                                        return s.onNull(range)
+                                    })
+                                    return p.value(false)
                                 },
                             )
                         },
@@ -177,13 +192,12 @@ function createPropertyDeserializer(
                     $.type.get().node,
                     null,
                     componentBuilder.node,
-                    isCompact,
                     null,
                     sideEffectsAPIs.map(s => {
-                        return s.onComponent(propKey)
+                        return s.onComponent()
                     }),
                     onError,
-                    flagIsDirty,
+                    flagNonDefaultPropertiesFound,
                     componentBuilder.comments,
                 ),
             )
@@ -198,8 +212,7 @@ function createPropertyDeserializer(
                         $.states.mapUnsorted((stateDef, stateName) => {
                             return (tuRange, optionRange, optionContextData) => {
                                 const stateSideEffects = sideEffectsAPIs.map(s => {
-                                    return s.onState(
-                                        propKey,
+                                    return s.onStateGroup().onState(
                                         stateName,
                                         tuRange,
                                         valueContextData,
@@ -213,7 +226,7 @@ function createPropertyDeserializer(
 
 
                                 if ($["default state"].get() !== stateDef) {
-                                    flagIsDirty()
+                                    flagNonDefaultPropertiesFound()
                                 }
                                 return context.expectValue(
                                     createNodeDeserializer(
@@ -221,11 +234,10 @@ function createPropertyDeserializer(
                                         stateDef.node,
                                         null,
                                         state.node,
-                                        isCompact,
                                         null,
                                         stateSideEffects,
                                         onError,
-                                        flagIsDirty,
+                                        flagNonDefaultPropertiesFound,
                                         stateGroup.comments,
                                     ),
                                 )
@@ -233,7 +245,7 @@ function createPropertyDeserializer(
                         }),
                         (option, tuData, optionData, optionPreData) => {
                             sideEffectsAPIs.forEach(s => {
-                                s.onUnexpectedState(
+                                s.onStateGroup().onUnexpectedState(
                                     option,
                                     tuData,
                                     valueContextData,
@@ -242,6 +254,14 @@ function createPropertyDeserializer(
                                     $,
                                 )
                             })
+                        },
+                        undefined, //onMissingOption
+                        undefined, // onInvalidType
+                        range => { //onNull
+                            sideEffectsAPIs.map(s => {
+                                return s.onNull(range)
+                            })
+                            return p.value(false)
                         },
                     )
                 },
@@ -258,7 +278,7 @@ function createPropertyDeserializer(
                     return context.expectSimpleValue(
                         (range, data) => {
                             if (data.value !== $["default value"]) {
-                                flagIsDirty()
+                                flagNonDefaultPropertiesFound()
                             }
                             valueBuilder.setValue(data.value, errorMessage => onError(errorMessage, range))
                             if (data.quote !== null) {
@@ -275,13 +295,19 @@ function createPropertyDeserializer(
 
 
                             sideEffectsAPIs.forEach(s => {
-                                s.onValue(propKey, valueBuilder, range, data, $)
+                                s.onValue(valueBuilder, range, data, $)
                             })
                             return p.value(false)
                         },
                         () => {
                             //
-                        }
+                        },
+                        range => { //onNull
+                            sideEffectsAPIs.map(s => {
+                                return s.onNull(range)
+                            })
+                            return p.value(false)
+                        },
                     )
                 },
             )
@@ -381,150 +407,166 @@ function createNodeDeserializer(
     nodeDefinition: md.Node,
     keyPropertyDefinition: md.Property | null,
     nodeBuilder: syncAPI.Node,
-    isCompact: boolean,
     keyProperty: md.Property | null,
     sideEffectsAPI: sideEffects.Node[],
     onError: OnError,
-    flagIsDirty: () => void,
+    flagNonDefaultPropertiesFound: () => void,
     targetComments: syncAPI.Comments,
 ): astn.OnValue {
 
     return contextData => {
         addComments(targetComments, contextData)
 
-        if (isCompact) {
-            flagIsDirty()
-            const expectedElements: astn.ExpectedElements = []
-            nodeDefinition.properties.forEach((propDefinition, propKey) => {
-                expectedElements.push(() => {
+        const expectedElements: astn.ExpectedElements = []
+        nodeDefinition.properties.forEach((propDefinition, propKey) => {
+            expectedElements.push(() => {
+                return createPropertyDeserializer(
+                    context,
+                    propDefinition,
+                    propKey,
+                    nodeBuilder,
+                    sideEffectsAPI.map(s => {
+                        return s.onProperty(
+                            propKey,
+                            null,
+                            propDefinition,
+                            nodeBuilder,
+                        )
+                    }),
+                    onError,
+                    () => {
+                        //
+                    },
+                    range => { //null value
+                        defaultInitializeProperty(
+                            propDefinition,
+                            propKey,
+                            nodeBuilder,
+                            range,
+                            onError,
+                        )
+                        return p.value(false)
+                    },
+                )
+            })
+        })
+
+        const processedProperties: {
+            [key: string]: {
+                range: astn.Range
+                isNonDefault: boolean
+            }
+        } = {}
+        const expectedProperties: astn.ExpectedProperties = {}
+        nodeDefinition.properties.forEach((propDefinition, propKey) => {
+            if (keyProperty === propDefinition) {
+                return
+            }
+            expectedProperties[propKey] = {
+                onExists: (range, propertyContextData) => {
+                    addComments(getPropertyComments(nodeBuilder, propKey, propDefinition), propertyContextData)
+                    const processedProperty = {
+                        range: range,
+                        isNonDefault: false,
+                    }
+                    processedProperties[propKey] = processedProperty
                     return createPropertyDeserializer(
                         context,
                         propDefinition,
                         propKey,
                         nodeBuilder,
-                        isCompact,
-                        sideEffectsAPI,
-                        onError,
-                        () => {
-                            //
-                        },
-                    )
-                })
-            })
-            return context.expectArrayType(
-                expectedElements,
-                (startRange, startData) => {
-                    sideEffectsAPI.forEach(s => {
-                        s.onArrayTypeOpen(startRange, startData)
-                    })
-
-                },
-                (endRange, endData, endContextData) => {
-                    sideEffectsAPI.forEach(s => {
-                        s.onArrayTypeClose(endRange, endData)
-                    })
-                    addComments(targetComments, endContextData)
-
-                }
-            )
-        } else {
-            const processedProperties: {
-                [key: string]: {
-                    range: astn.Range
-                    isDirty: boolean
-                }
-            } = {}
-            const expectedProperties: astn.ExpectedProperties = {}
-            nodeDefinition.properties.forEach((propDefinition, propKey) => {
-                if (keyProperty === propDefinition) {
-                    return
-                }
-                expectedProperties[propKey] = {
-                    onExists: (range, propertyContextData) => {
-                        addComments(getPropertyComments(nodeBuilder, propKey, propDefinition), propertyContextData)
-                        const processedProperty = {
-                            range: range,
-                            isDirty: false,
-                        }
-                        processedProperties[propKey] = processedProperty
-                        sideEffectsAPI.forEach(s => {
-                            s.onProperty(
+                        sideEffectsAPI.map(s => {
+                            return s.onProperty(
                                 propKey,
                                 range,
                                 propDefinition,
                                 nodeBuilder,
                             )
-                        })
-                        return createPropertyDeserializer(
-                            context,
-                            propDefinition,
-                            propKey,
-                            nodeBuilder,
-                            isCompact,
-                            sideEffectsAPI,
-                            onError,
-                            () => {
-                                processedProperty.isDirty = true
-                            }
-                        )
-                    },
-                    onNotExists: beginRange => {
-                        defaultInitializeProperty(
-                            propDefinition,
-                            propKey,
-                            nodeBuilder,
-                            beginRange,
-                            onError,
-                        )
-                    },
-                }
-            })
+                        }),
+                        onError,
+                        () => {
+                            processedProperty.isNonDefault = true
+                        },
+                        null,
+                    )
+                },
+                onNotExists: beginRange => {
+                    defaultInitializeProperty(
+                        propDefinition,
+                        propKey,
+                        nodeBuilder,
+                        beginRange,
+                        onError,
+                    )
+                },
+            }
+        })
 
-            return context.expectType(
-                expectedProperties,
-                (range, _openData) => {
-                    sideEffectsAPI.forEach(s => {
-                        s.onTypeOpen(
-                            range,
-                            nodeDefinition,
-                            keyPropertyDefinition,
-                            nodeBuilder,
-                        )
-                    })
-                },
-                (_hasErrors, endRange, _closeData, endContextData) => {
-                    let hasDirtyProperties = false
-                    addComments(targetComments, endContextData)
-                    nodeDefinition.properties.forEach((_prop, propKey) => {
-                        const processedProperty = processedProperties[propKey]
-                        if (processedProperty !== undefined) {
-                            if (!processedProperty.isDirty) {
-                                onError(`property '${propKey}' has default value, remove`, processedProperty.range)
-                            } else {
-                                hasDirtyProperties = true
-                            }
+        return context.expectTypeOrShorthandType(
+            expectedProperties,
+            expectedElements,
+            (range, _openData) => {
+                sideEffectsAPI.forEach(s => {
+                    s.onTypeOpen(
+                        range,
+                        nodeDefinition,
+                        keyPropertyDefinition,
+                        nodeBuilder,
+                    )
+                })
+            },
+            (_hasErrors, endRange, _closeData, endContextData) => {
+                let hadNonDefaultProperties = false
+                addComments(targetComments, endContextData)
+                nodeDefinition.properties.forEach((_prop, propKey) => {
+                    const processedProperty = processedProperties[propKey]
+                    if (processedProperty !== undefined) {
+                        if (!processedProperty.isNonDefault) {
+                            onError(`property '${propKey}' has default value, remove`, processedProperty.range)
+                        } else {
+                            hadNonDefaultProperties = true
                         }
-                    })
-                    if (hasDirtyProperties) {
-                        flagIsDirty()
                     }
-                    sideEffectsAPI.forEach(s => {
-                        s.onTypeClose(endRange)
-                    })
-                },
-                (key, metaData) => {
-                    sideEffectsAPI.forEach(s => {
-                        s.onUnexpectedProperty(
-                            key,
-                            metaData,
-                            contextData,
-                            Object.keys(expectedProperties),
-                        )
-                    })
-                    return astn.createDummyRequiredValueHandler()
-                },
-            )
-        }
+                })
+                if (hadNonDefaultProperties) {
+                    flagNonDefaultPropertiesFound()
+                }
+                sideEffectsAPI.forEach(s => {
+                    s.onTypeClose(endRange)
+                })
+            },
+            (key, metaData) => {
+                sideEffectsAPI.forEach(s => {
+                    s.onUnexpectedProperty(
+                        key,
+                        metaData,
+                        contextData,
+                        Object.keys(expectedProperties),
+                    )
+                })
+                return astn.createDummyRequiredValueHandler()
+            },
+            (startRange, _startData) => { //shorthand open
+                sideEffectsAPI.forEach(s => {
+                    s.onShorthandTypeOpen(
+                        startRange,
+                        nodeDefinition,
+                        keyPropertyDefinition,
+                        nodeBuilder,
+                    )
+                })
+
+            },
+            (endRange, endData, endContextData) => { //shorthand close
+                sideEffectsAPI.forEach(s => {
+                    s.onShorthandTypeClose(endRange, endData)
+                })
+                addComments(targetComments, endContextData)
+            },
+            () => { //onInvalidType
+
+            },
+        )
     }
 
 }
@@ -532,7 +574,6 @@ function createNodeDeserializer(
 export function createDatasetDeserializer(
     context: astn.ExpectContext,
     dataset: syncAPI.IDataset,
-    isCompact: boolean,
     sideEffectsHandlers: sideEffects.Node[],
     onError: OnError,
 ): astn.RequiredValueHandler {
@@ -541,7 +582,7 @@ export function createDatasetDeserializer(
             context,
             dataset.schema["root type"].get().node,
             null,
-            dataset.root, isCompact,
+            dataset.root,
             null,
             sideEffectsHandlers,
             onError,

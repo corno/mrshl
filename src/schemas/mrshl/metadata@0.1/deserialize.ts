@@ -41,6 +41,9 @@ function createNodeHandler(
                 {
                     "properties": {
                         onExists: () => context.expectValue(() => context.expectDictionary(
+                            _beginRange => {
+                                //registerSnippetGenerators(endRange, "properties end")
+                            },
                             key => {
                                 let targetPropertyType: t.PropertyType | null = null
                                 return context.expectValue(() => context.expectType(
@@ -217,6 +220,9 @@ function createNodeHandler(
                                                                 {
                                                                     "states": {
                                                                         onExists: () => context.expectValue(() => context.expectDictionary(
+                                                                            () => {
+                                                                                //registerSnippetGenerators(endRange, "properties end")
+                                                                            },
                                                                             stateKey => {
                                                                                 let targetNode: t.Node | null = null
                                                                                 return context.expectValue(() => context.expectType(
@@ -425,6 +431,9 @@ export function createDeserializer(
         {
             "component types": {
                 onExists: (): astn.RequiredValueHandler => context.expectValue(() => context.expectDictionary(
+                    () => {
+                        //registerSnippetGenerators(endRange, "properties end")
+                    },
                     key => {
                         let targetNode: t.Node | null = null
                         return context.expectValue(() => context.expectType(

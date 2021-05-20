@@ -39,6 +39,9 @@ function createExpectedNodeHandler(
                 {
                     "properties": {
                         onExists: () => context.expectValue(() => context.expectDictionary(
+                            () => {
+                                //
+                            },
                             key => {
                                 let targetPropertyType: t.PropertyType | null = null
                                 return context.expectValue(() => context.expectType(
@@ -187,6 +190,9 @@ function createExpectedNodeHandler(
                                                             {
                                                                 "states": {
                                                                     onExists: () => context.expectValue(() => context.expectDictionary(
+                                                                        () => {
+                                                                            //
+                                                                        },
                                                                         stateKey => {
                                                                             let targetNode: t.Node | null = null
                                                                             return context.expectValue(() => context.expectType(
@@ -211,6 +217,9 @@ function createExpectedNodeHandler(
                                                                                     })
                                                                                 },
                                                                             ))
+                                                                        },
+                                                                        () => {
+                                                                            //
                                                                         },
                                                                     )),
                                                                     onNotExists: () => {
@@ -385,6 +394,9 @@ export function createDeserializer(
         {
             "component types": {
                 onExists: (): astn.RequiredValueHandler => context.expectValue(() => context.expectDictionary(
+                    () => {
+                        //
+                    },
                     key => {
                         let targetNode: t.Node | null = null
                         return context.expectValue(() => context.expectType(
@@ -409,6 +421,9 @@ export function createDeserializer(
                                 })
                             },
                         ))
+                    },
+                    () => {
+                        //
                     },
                 )),
                 onNotExists: (): void => {

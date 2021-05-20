@@ -79,10 +79,10 @@ export class FlexibleErrorsAggregator implements IParentErrorsAggregator {
             })
         })
     }
-    public add(errorCount: number) {
+    public add(errorCount: number): void {
         this.errorCount.update(this.errorCount.get() + errorCount)
     }
-    public detach() {
+    public detach(): void {
         this.parent.get().map(
             p => {
                 p.add(-this.errorCount.get())
@@ -93,7 +93,7 @@ export class FlexibleErrorsAggregator implements IParentErrorsAggregator {
             }
         )
     }
-    public attach(parent: IParentErrorsAggregator) {
+    public attach(parent: IParentErrorsAggregator): void {
         this.parent.get().map(
             _p => {
                 throw new Error("already attached")
@@ -112,7 +112,7 @@ export class RootErrorsAggregator implements IParentErrorsAggregator {
     constructor() {
         this.errorCount = new g.ReactiveValue<number>(0)
     }
-    public add(errorCount: number) {
+    public add(errorCount: number):void {
         this.errorCount.update(this.errorCount.get() + errorCount)
     }
 }

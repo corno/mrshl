@@ -1,8 +1,12 @@
-import * as sideEffects from "./ParsingSideEffectsAPI"
-import * as syncAPI from "./syncAPI"
+/* eslint
+    "max-classes-per-file": off,
+*/
+
+import * as sideEffects from "../ParsingSideEffectsAPI"
+import * as syncAPI from "../syncAPI"
 import * as astn from "astn"
 import * as fp from "fountain-pen"
-import * as md from "./types"
+import * as md from "../types"
 
 function assertUnreachable<RT>(_x: never): RT {
     throw new Error("Unreachable")
@@ -81,35 +85,126 @@ export type OnToken = (
     getSnippetsAfterToken: GetSnippets | null
 ) => void
 
-class SnippetGenerator implements sideEffects.Node, sideEffects.Dictionary, sideEffects.Root {
-    public node: sideEffects.Node
-    private readonly onToken: OnToken
+class SnippetGenerator implements sideEffects.Root {
+    public readonly node: sideEffects.Node
     private readonly onEndCallback: () => void
     constructor(
         onToken: OnToken,
         onEnd: () => void,
     ) {
-        this.onToken = onToken
-        this.node = this
+        this.node = new NodeSnippetGenerator(onToken)
         this.onEndCallback = onEnd
     }
     onEnd() {
         this.onEndCallback()
     }
-    onArrayTypeClose() {
+}
+
+class StateGroupSnippetGenerator implements sideEffects.StateGroup {
+    private readonly onToken: OnToken
+    constructor(
+        onToken: OnToken,
+    ) {
+        this.onToken = onToken
+    }
+    onState() {
+        return new NodeSnippetGenerator(this.onToken)
+    }
+    onUnexpectedState(
+        _stateName: string,
+        _tuRange: astn.Range,
+        _tuPreData: astn.ContextData,
+        optionRange: astn.Range,
+        _optionPreData: astn.ContextData,
+        stateGroupDefinition: md.StateGroup
+    ) {
+        this.onToken(
+            optionRange,
+            () => {
+                return Object.keys(stateGroupDefinition.states.mapUnsorted(s => s))
+            },
+            null
+        )
+    }
+}
+
+class PropertySnippetGenerator implements sideEffects.Property {
+    private readonly onToken: OnToken
+    constructor(
+        onToken: OnToken,
+    ) {
+        this.onToken = onToken
+    }
+    onDictionary() {
+        return new DictionarySnippetGenerator(this.onToken)
+    }
+    onList() {
+        return new ListSnippetGenerator(this.onToken)
+    }
+    onStateGroup() {
+        return new StateGroupSnippetGenerator(this.onToken)
+    }
+    onNull() {
         //
     }
-    onArrayTypeOpen() {
+    onValue(
+        syncValue: syncAPI.Value,
+        range: astn.Range,
+        _data: astn.SimpleValueData,
+        definition: md.Value,
+    ) {
+        this.onToken(
+            range,
+            () => {
+                return syncValue.getSuggestions().map(sugg => {
+                    return definition.quoted ? `"${sugg}"` : sugg
+                })
+            },
+            null,
+        )
+    }
+    onComponent() {
+        return new NodeSnippetGenerator(this.onToken)
+    }
+}
+
+class ListSnippetGenerator implements sideEffects.List {
+    public readonly node: sideEffects.Node
+    private readonly onToken: OnToken
+    constructor(
+        onToken: OnToken,
+    ) {
+        this.onToken = onToken
+        this.node = new NodeSnippetGenerator(onToken)
+    }
+    onClose() {
         //
     }
-    onDictionaryClose() {
+    onEntry() {
+        return new NodeSnippetGenerator(this.onToken)
+    }
+    onUnexpectedEntry() {
         //
     }
-    onUnexpectedDictionaryEntry(
+}
+
+class DictionarySnippetGenerator implements sideEffects.Dictionary {
+    public readonly node: sideEffects.Node
+    private readonly onToken: OnToken
+    constructor(
+        onToken: OnToken,
+    ) {
+        this.onToken = onToken
+        this.node = new NodeSnippetGenerator(onToken)
+    }
+    onClose() {
+        //
+    }
+    onUnexpectedEntry(
     ) {
         //
     }
-    onDictionaryEntry(
+    onEntry(
         range: astn.Range,
         nodeDefinition: md.Node,
         keyPropertyDefinition: md.Property,
@@ -142,21 +237,21 @@ class SnippetGenerator implements sideEffects.Node, sideEffects.Dictionary, side
                 }).join("\n")]
             }
         )
-        return this
+        return new NodeSnippetGenerator(this.onToken)
     }
-    onDictionaryOpen() {
-        return this
+}
+
+class NodeSnippetGenerator implements sideEffects.Node {
+    private readonly onToken: OnToken
+    constructor(
+        onToken: OnToken,
+    ) {
+        this.onToken = onToken
     }
-    onListClose() {
+    onShorthandTypeClose() {
         //
     }
-    onListOpen() {
-        return this
-    }
-    onListEntry() {
-        return this
-    }
-    onUnexpectedListEntry() {
+    onShorthandTypeOpen() {
         //
     }
     onProperty(
@@ -193,6 +288,7 @@ class SnippetGenerator implements sideEffects.Node, sideEffects.Dictionary, side
                 }).join("\n")]
             },
         )
+        return new PropertySnippetGenerator(this.onToken)
     }
     onUnexpectedProperty(
         _key: string,
@@ -207,9 +303,6 @@ class SnippetGenerator implements sideEffects.Node, sideEffects.Dictionary, side
             },
             null
         )
-    }
-    onState() {
-        return this
     }
     onTypeOpen(range: astn.Range, nodeDefinition: md.Node, keyPropertyDefinition: md.Property | null) {
         this.onToken(
@@ -246,42 +339,6 @@ class SnippetGenerator implements sideEffects.Node, sideEffects.Dictionary, side
     }
     onTypeClose() {
         //
-    }
-    onUnexpectedState(
-        _stateName: string,
-        _tuRange: astn.Range,
-        _tuPreData: astn.ContextData,
-        optionRange: astn.Range,
-        _optionPreData: astn.ContextData,
-        stateGroupDefinition: md.StateGroup
-    ) {
-        this.onToken(
-            optionRange,
-            () => {
-                return Object.keys(stateGroupDefinition.states.mapUnsorted(s => s))
-            },
-            null
-        )
-    }
-    onValue(
-        _valueName: string,
-        syncValue: syncAPI.Value,
-        range: astn.Range,
-        _data: astn.SimpleValueData,
-        definition: md.Value,
-    ) {
-        this.onToken(
-            range,
-            () => {
-                return syncValue.getSuggestions().map(sugg => {
-                    return definition.quoted ? `"${sugg}"` : sugg
-                })
-            },
-            null,
-        )
-    }
-    onComponent() {
-        return this
     }
 }
 

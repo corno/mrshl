@@ -31,7 +31,6 @@ export interface Dataset {
     serialize(
 
         internalSchemaSpecification: syncAPI.InternalSchemaSpecification,
-        compact: boolean,
         callback: (data: string) => void,
     ): void
     purgeChanges(): void

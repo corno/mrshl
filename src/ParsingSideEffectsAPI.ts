@@ -8,79 +8,32 @@ export interface Root {
 }
 
 export interface Dictionary {
-    onDictionaryEntry(
+    onEntry(
         range: astn.Range,
         nodeDefinition: md.Node,
         keyProperty: md.Property,
         entry: ds.Entry,
     ): Node
-    onUnexpectedDictionaryEntry(
+    onUnexpectedEntry(
         entryRange: astn.Range,
     ): void
-    onDictionaryClose(
+    onClose(
         range: astn.Range,
         closeData: astn.ObjectCloseData,
     ): void
 }
 
 export interface List {
-    onListClose(
+    onClose(
         range: astn.Range,
         closeData: astn.ArrayCloseData
     ): void
-    onListEntry(): Node
-    onUnexpectedListEntry(): void
+    onEntry(): Node
+    onUnexpectedEntry(): void
 }
 
-export interface Node {
-    onTypeOpen(
-        range: astn.Range,
-        nodeDefinition: md.Node,
-        keyPropertyDefinition: md.Property | null,
-        nodeBuilder: ds.Node
-    ): void
-    onTypeClose(
-        range: astn.Range
-    ): void
-    onArrayTypeOpen(
-        openRange: astn.Range,
-        openData: astn.ArrayOpenData,
-    ): void
-    onArrayTypeClose(
-        range: astn.Range,
-        closeData: astn.ArrayCloseData
-    ): void
-    onDictionaryOpen(
-        dictionaryName: string,
-        range: astn.Range,
-        openData: astn.ObjectOpenData
-    ): Dictionary
-    onListOpen(
-        name: string,
-        range: astn.Range,
-        openData: astn.ArrayOpenData
-    ): List
-    onValue(
-        valueName: string,
-        syncValue: ds.Value,
-        range: astn.Range,
-        data: astn.SimpleValueData,
-        definition: md.Value,
-    ): void
-    onProperty(
-        propKey: string,
-        propRange: astn.Range,
-        propDefinition: md.Property,
-        nodeBuilder: ds.Node,
-    ): void
-    onUnexpectedProperty(
-        key: string,
-        range: astn.Range,
-        contextData: astn.ContextData,
-        expectedProperties: string[]
-    ): void
+export interface StateGroup {
     onState(
-        stateGroupName: string,
         stateName: string,
         tuRange: astn.Range,
         beginPreData: astn.ContextData,
@@ -95,5 +48,59 @@ export interface Node {
         optionPreData: astn.ContextData,
         stateGroupDefinition: md.StateGroup
     ): void
-    onComponent(name: string): Node
+}
+
+export interface Property {
+    onList(
+        range: astn.Range,
+        openData: astn.ArrayOpenData
+    ): List
+    onDictionary(
+        range: astn.Range,
+        openData: astn.ObjectOpenData
+    ): Dictionary
+    onComponent(): Node
+    onStateGroup(
+    ): StateGroup
+    onValue(
+        syncValue: ds.Value,
+        range: astn.Range,
+        data: astn.SimpleValueData,
+        definition: md.Value,
+    ): void
+    onNull(range: astn.Range): void
+}
+
+export interface Node {
+    onTypeOpen(
+        range: astn.Range,
+        nodeDefinition: md.Node,
+        keyPropertyDefinition: md.Property | null,
+        nodeBuilder: ds.Node
+    ): void
+    onTypeClose(
+        range: astn.Range
+    ): void
+    onShorthandTypeOpen(
+        range: astn.Range,
+        nodeDefinition: md.Node,
+        keyPropertyDefinition: md.Property | null,
+        nodeBuilder: ds.Node
+    ): void
+    onShorthandTypeClose(
+        range: astn.Range,
+        closeData: astn.ArrayCloseData
+    ): void
+    onProperty(
+        propKey: string,
+        propRange: astn.Range | null,
+        propDefinition: md.Property,
+        nodeBuilder: ds.Node,
+    ): Property
+    onUnexpectedProperty(
+        key: string,
+        range: astn.Range,
+        contextData: astn.ContextData,
+        expectedProperties: string[]
+    ): void
 }

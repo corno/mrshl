@@ -26,13 +26,13 @@
     "dist/*"
   ],
   "dependencies": {
-    "astn": "^0.78.0",
+    "astn": "^0.78.4",
     "fountain-pen": "^3.5.4"
   },
   "devDependencies": {
     "@types/chai": "^4.2.18",
     "@types/mocha": "^8.2.2",
-    "@types/node": "^15.3.0",
+    "@types/node": "^15.3.1",
     "@typescript-eslint/eslint-plugin": "^4.24.0",
     "@typescript-eslint/eslint-plugin-tslint": "^4.24.0",
     "@typescript-eslint/parser": "^4.24.0",

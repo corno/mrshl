@@ -132,16 +132,14 @@ function validateDocumentAfterExternalSchemaResolution(
 	return deserializeDataset(
 		documentText,
 		schemaReferenceResolver,
-		(internalSchemaSpecification, schemaAndSideEffects, compact): IDeserializedDataset => {
+		(internalSchemaSpecification, schemaAndSideEffects): IDeserializedDataset => {
 
 			function createDeserializedDataset(
 				schema: md.Schema,
-				compact: boolean,
 			): IDeserializedDataset {
 				return {
 					dataset: createDataset(schema),
 					internalSchemaSpecification: internalSchemaSpecification,
-					compact: compact,
 				}
 			}
 			if (externalSchema === null) {
@@ -158,7 +156,7 @@ function validateDocumentAfterExternalSchemaResolution(
 						severity,
 					)
 				}))
-				return createDeserializedDataset(schemaAndSideEffects.schema, compact)
+				return createDeserializedDataset(schemaAndSideEffects.schema)
 			}
 
 			addDiagnostic(
@@ -168,7 +166,7 @@ function validateDocumentAfterExternalSchemaResolution(
 				}],
 				DiagnosticSeverity.warning,
 			)
-			return createDeserializedDataset(externalSchema, compact)
+			return createDeserializedDataset(externalSchema)
 		},
 		(): IDataset | null => {
 			if (externalSchema === null) {

@@ -126,11 +126,11 @@ function getPropertyComments(prop: syncAPI.Property): syncAPI.Comments {
     }
 }
 
-function transformProperty(prop: syncAPI.Property, compact: boolean): astn.SerializableValueType {
+function transformProperty(prop: syncAPI.Property): astn.SerializableValueType {
     switch (prop.type[0]) {
         case "component": {
             const $ = prop.type[1]
-            return transformNodeToValueType($.node, compact)
+            return transformNodeToValueType($.node)
         }
         case "dictionary": {
             const $ = prop.type[1]
@@ -141,7 +141,7 @@ function transformProperty(prop: syncAPI.Property, compact: boolean): astn.Seria
                 entries[key] = {
                     commentData: transformCommentData(entry.comments),
                     quote: "\"",
-                    value: serializeNode(entry.node, compact),
+                    value: serializeNode(entry.node),
                 }
             })
             return ["object", {
@@ -157,7 +157,7 @@ function transformProperty(prop: syncAPI.Property, compact: boolean): astn.Seria
             $.forEachEntry(entry => {
                 elements.push({
                     commentData: transformCommentData(entry.comments),
-                    type: transformNodeToValueType(entry.node, compact),
+                    type: transformNodeToValueType(entry.node),
                 })
             })
             return ["array", {
@@ -174,7 +174,7 @@ function transformProperty(prop: syncAPI.Property, compact: boolean): astn.Seria
                 commentData: createEmptyCommentData(),
                 quote: "'",
                 option: currentState.getStateKey(),
-                data: serializeNode(currentState.node, compact),
+                data: serializeNode(currentState.node),
             }]
         }
         case "value": {
@@ -189,50 +189,35 @@ function transformProperty(prop: syncAPI.Property, compact: boolean): astn.Seria
     }
 }
 
-function transformNodeToValueType(node: syncAPI.Node, compact: boolean): astn.SerializableValueType {
-    if (compact) {
-        const elements: astn.SerializableValue[] = []
-        node.forEachProperty((prop, _key) => {
-            elements.push({
-                commentData: transformCommentData(getPropertyComments(prop)),
-                type: transformProperty(prop, compact),
-            })
-        })
-        return ["array", {
-            commentData: createEmptyCommentData(),
-            elements: new InArray(elements),
-            openCharacter: `<`,
-            closeCharacter: `>`,
-        }]
-    } else {
-        const properties: { [key: string]: astn.SerializableProperty } = {}
-        node.forEachProperty((prop, key) => {
-            if (!propertyIsDefault(prop)) {
+function transformNodeToValueType(node: syncAPI.Node): astn.SerializableValueType {
 
-                if (!prop.isKeyProperty) {
-                    properties[key] = {
-                        commentData: transformCommentData(getPropertyComments(prop)),
-                        quote: "'",
-                        value: {
-                            commentData: createEmptyCommentData(),
-                            type: transformProperty(prop, compact),
-                        },
-                    }
+    const properties: { [key: string]: astn.SerializableProperty } = {}
+    node.forEachProperty((prop, key) => {
+        if (!propertyIsDefault(prop)) {
+
+            if (!prop.isKeyProperty) {
+                properties[key] = {
+                    commentData: transformCommentData(getPropertyComments(prop)),
+                    quote: "'",
+                    value: {
+                        commentData: createEmptyCommentData(),
+                        type: transformProperty(prop),
+                    },
                 }
             }
-        })
-        return ["object", {
-            commentData: createEmptyCommentData(),
-            properties: new InDictionary(properties),
-            openCharacter: `(`,
-            closeCharacter: `)`,
-        }]
-    }
+        }
+    })
+    return ["object", {
+        commentData: createEmptyCommentData(),
+        properties: new InDictionary(properties),
+        openCharacter: `(`,
+        closeCharacter: `)`,
+    }]
 }
 
-export function serializeNode(node: syncAPI.Node, compact: boolean): astn.SerializableValue {
+export function serializeNode(node: syncAPI.Node): astn.SerializableValue {
     return {
         commentData: createEmptyCommentData(),
-        type: transformNodeToValueType(node, compact),
+        type: transformNodeToValueType(node),
     }
 }

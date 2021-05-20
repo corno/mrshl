@@ -1,3 +1,7 @@
+/* eslint
+    "max-classes-per-file": off,
+*/
+
 import * as astn from "astn"
 import * as sideEffects from "../ParsingSideEffectsAPI"
 import { createDatasetDeserializer } from "./createDatasetDeserializer"
@@ -111,56 +115,31 @@ function createNoOperationRequiredValueHandler(): astn.RequiredValueHandler {
     }
 }
 
-class NOPSideEffects implements
-    sideEffects.Node,
-    sideEffects.List,
-    sideEffects.Dictionary,
-    sideEffects.Root {
+class NOPSideEffects implements sideEffects.Root {
     node: sideEffects.Node
     constructor() {
-        this.node = this
+        this.node = new NodeNOPSideEffects()
     }
     onEnd() {
         //
     }
-    onArrayTypeClose() {
+}
+
+class NodeNOPSideEffects implements sideEffects.Node {
+    constructor() {
         //
     }
-    onArrayTypeOpen() {
+    onShorthandTypeClose() {
         //
     }
-    onDictionaryClose() {
-        //
-    }
-    onUnexpectedDictionaryEntry() {
-        //
-    }
-    onDictionaryEntry() {
-        return this
-    }
-    onDictionaryOpen() {
-        return this
-    }
-    onListClose() {
-        //
-    }
-    onListOpen() {
-        return this
-    }
-    onListEntry() {
-        return this
-    }
-    onUnexpectedListEntry() {
+    onShorthandTypeOpen() {
         //
     }
     onProperty() {
-        //
+        return new PropertyNOPSideEffects()
     }
     onUnexpectedProperty() {
         //
-    }
-    onState() {
-        return this
     }
     onTypeOpen() {
         //
@@ -168,14 +147,71 @@ class NOPSideEffects implements
     onTypeClose() {
         //
     }
+}
+
+class StateGroupNOPSideEffects implements sideEffects.StateGroup {
+    constructor() {
+        //
+    }
     onUnexpectedState() {
         //
+    }
+    onState() {
+        return new NodeNOPSideEffects()
+    }
+}
+
+class PropertyNOPSideEffects implements sideEffects.Property {
+    constructor() {
+        //
+    }
+    onDictionary() {
+        return new DictionaryNOPSideEffects()
+    }
+    onList() {
+        return new ListNOPSideEffects()
+    }
+    onStateGroup() {
+        return new StateGroupNOPSideEffects()
     }
     onValue() {
         //
     }
+    onNull() {
+        //
+    }
     onComponent() {
-        return this
+        return new NodeNOPSideEffects()
+    }
+}
+
+class DictionaryNOPSideEffects implements sideEffects.Dictionary {
+    constructor() {
+        //
+    }
+    onClose() {
+        //
+    }
+    onUnexpectedEntry() {
+        //
+    }
+    onEntry() {
+        return new NodeNOPSideEffects()
+    }
+}
+
+class ListNOPSideEffects implements sideEffects.List {
+    constructor() {
+        //
+    }
+    onClose() {
+        //
+    }
+    onEntry() {
+        return new NodeNOPSideEffects()
+    }
+    onUnexpectedEntry() {
+        //
     }
 }
 
@@ -194,7 +230,6 @@ type InternalSchema = {
  */
 export type IDeserializedDataset = {
     internalSchemaSpecification: InternalSchemaSpecification
-    compact: boolean
     dataset: IDataset
 }
 
@@ -217,7 +252,6 @@ export function deserializeDataset(
     onInternalSchema: (
         specification: InternalSchemaSpecification,
         schemaAndSideEffects: SchemaAndSideEffects,
-        compact: boolean
     ) => IDeserializedDataset,
     onNoInternalSchema: () => IDataset | null,
     onError: (diagnostic: DeserializeDiagnostic, range: astn.Range) => void,
@@ -292,7 +326,7 @@ export function deserializeDataset(
                 }
             )
         },
-        (compact: astn.Range | null): astn.ParserEventConsumer<IDeserializedDataset, ExternalSchemaDeserializationError> => {
+        (): astn.ParserEventConsumer<IDeserializedDataset, ExternalSchemaDeserializationError> => {
             if (internalSchemaSpecificationStart && internalSchema === null && !foundSchemaErrors) {
                 console.error("NO SCHEMA AND NO ERROR")
                 //throw new Error("Unexpected: no schema errors and no schema")
@@ -306,10 +340,9 @@ export function deserializeDataset(
                     return {
                         dataset: ds,
                         internalSchemaSpecification: [InternalSchemaSpecificationType.None],
-                        compact: compact !== null,
                     }
                 })()
-                : onInternalSchema(internalSchema.specification, internalSchema.schemaAndSideEffects, compact !== null) //internal schema
+                : onInternalSchema(internalSchema.specification, internalSchema.schemaAndSideEffects) //internal schema
 
             if (dataset === null) {
                 return {
@@ -349,7 +382,6 @@ export function deserializeDataset(
                 createDatasetDeserializer(
                     context,
                     dataset.dataset.sync,
-                    compact !== null,
                     sideEffectsHandlers.map(h => h.node),
                     (message, range) => onError(createDiagnostic(["deserializer", { message: message }]), range),
                 ),

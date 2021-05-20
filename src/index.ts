@@ -1,9 +1,8 @@
-export * from "astn"
 export * from "./serialize"
 export * from "./deserialize"
 export * from "./inMemoryDataset"
-export * from "./createSnippetsGenerator"
-export * from "./createSnippetFinder"
+export * from "./ide-integration/createSnippetsGenerator"
+export * from "./ide-integration/createSnippetFinder"
 export * from "./loadDocument"
 //export * from "./readSchemaFileFromFileSystem" don't export this file. it uses the fs module. This module cannot be used in the browser
 

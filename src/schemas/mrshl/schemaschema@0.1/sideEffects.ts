@@ -1,3 +1,7 @@
+/* eslint
+    "max-classes-per-file": off,
+*/
+
 import * as astn from "astn"
 import * as t from "./types"
 import * as syncAPI from "../../../syncAPI"
@@ -24,13 +28,13 @@ class Dictionary implements sideEffects.Dictionary {
         this.collectionDefinition = collectionDefinition
         this.onError = onError
     }
-    onDictionaryClose() {
+    onClose() {
         //
     }
-    onUnexpectedDictionaryEntry() {
+    onUnexpectedEntry() {
         //
     }
-    onDictionaryEntry() {
+    onEntry() {
         return new Node(this.collectionDefinition.node, this.onError)
     }
 }
@@ -49,13 +53,13 @@ class List implements sideEffects.List {
         this.collectionDefinition = collectionDefinition
         this.onError = onError
     }
-    onUnexpectedListEntry() {
+    onUnexpectedEntry() {
         //
     }
-    onListEntry() {
+    onEntry() {
         return new Node(this.collectionDefinition.node, this.onError)
     }
-    onListClose() {
+    onClose() {
         //
     }
 }
@@ -73,25 +77,42 @@ export class Root implements sideEffects.Root {
     }
 }
 
-class Node implements sideEffects.Node {
-    private readonly definition: t.Node
+class StateGroup implements sideEffects.StateGroup {
+    public readonly definition: t.StateGroup
     private readonly onError: (message: string, range: astn.Range, severity: DiagnosticSeverity) => void
 
     constructor(
-        definition: t.Node,
+        definition: t.StateGroup,
         onError: (message: string, range: astn.Range, severity: DiagnosticSeverity) => void,
     ) {
         this.definition = definition
         this.onError = onError
     }
-    onArrayTypeClose() {
+    onState(stateName: string) {
+        const state = this.definition.states.getUnsafe(stateName)
+        return new Node(state.node, this.onError)
+    }
+    onUnexpectedState() {
         //
     }
-    onArrayTypeOpen() {
-        throw new Error("IMPLEMENT ME")
+}
+
+class Prop implements sideEffects.Property {
+    public readonly node: Node
+    public readonly name: string
+    private readonly onError: (message: string, range: astn.Range, severity: DiagnosticSeverity) => void
+
+    constructor(
+        name: string,
+        node: Node,
+        onError: (message: string, range: astn.Range, severity: DiagnosticSeverity) => void,
+    ) {
+        this.name = name
+        this.node = node
+        this.onError = onError
     }
-    onDictionaryOpen(name: string) {
-        const prop = this.definition.properties.getUnsafe(name)
+    onDictionary() {
+        const prop = this.node.definition.properties.getUnsafe(this.name)
         if (prop.type[0] !== "collection") {
             throw new Error("unexpected")
         }
@@ -101,8 +122,8 @@ class Node implements sideEffects.Node {
         }
         return new Dictionary($.type[1], $, this.onError)
     }
-    onListOpen(name: string) {
-        const prop = this.definition.properties.getUnsafe(name)
+    onList() {
+        const prop = this.node.definition.properties.getUnsafe(this.name)
         if (prop.type[0] !== "collection") {
             throw new Error("unexpected")
         }
@@ -112,39 +133,33 @@ class Node implements sideEffects.Node {
         }
         return new List($.type[1], $, this.onError)
     }
-    onProperty() {
-        //
-    }
-    onUnexpectedProperty() {
-        //
-    }
-    onState(stateGroupName: string, stateName: string) {
+    onStateGroup() {
 
-        const prop = this.definition.properties.getUnsafe(stateGroupName)
+        const prop = this.node.definition.properties.getUnsafe(this.name)
         if (prop.type[0] !== "state group") {
             throw new Error("unexpected")
         }
         const $ = prop.type[1]
-        const state = $.states.getUnsafe(stateName)
-        return new Node(state.node, this.onError)
+        return new StateGroup($, this.onError)
     }
-    onTypeOpen() {
-        //
+    onComponent() {
+        const prop = this.node.definition.properties.getUnsafe(this.name)
+        if (prop.type[0] !== "component") {
+            throw new Error("unexpected")
+        }
+        const $ = prop.type[1]
+        return new Node($.type.get().node, this.onError)
     }
-    onTypeClose() {
-        //
-    }
-    onUnexpectedState() {
+    onNull() {
         //
     }
     onValue(
-        propertyName: string,
         value: syncAPI.Value,
         range: astn.Range,
         data: astn.SimpleValueData,
         _definition: md.Value
     ) {
-        const prop = this.definition.properties.getUnsafe(propertyName)
+        const prop = this.node.definition.properties.getUnsafe(this.name)
         if (prop.type[0] !== "value") {
             throw new Error("unexpected")
         }
@@ -183,12 +198,35 @@ class Node implements sideEffects.Node {
                 assertUnreachable($.type[0])
         }
     }
-    onComponent(name: string) {
-        const prop = this.definition.properties.getUnsafe(name)
-        if (prop.type[0] !== "component") {
-            throw new Error("unexpected")
-        }
-        const $ = prop.type[1]
-        return new Node($.type.get().node, this.onError)
+}
+
+class Node implements sideEffects.Node {
+    public readonly definition: t.Node
+    private readonly onError: (message: string, range: astn.Range, severity: DiagnosticSeverity) => void
+
+    constructor(
+        definition: t.Node,
+        onError: (message: string, range: astn.Range, severity: DiagnosticSeverity) => void,
+    ) {
+        this.definition = definition
+        this.onError = onError
+    }
+    onShorthandTypeClose() {
+        //
+    }
+    onShorthandTypeOpen() {
+        //
+    }
+    onProperty(key: string) {
+        return new Prop(key, this, this.onError)
+    }
+    onUnexpectedProperty() {
+        //
+    }
+    onTypeOpen() {
+        //
+    }
+    onTypeClose() {
+        //
     }
 }

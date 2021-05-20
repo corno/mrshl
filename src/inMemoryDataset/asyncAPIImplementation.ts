@@ -154,7 +154,6 @@ export class Dataset implements asyncAPI.Dataset {
     }
     public serialize(
         internalSchemaSpecification: syncAPI.InternalSchemaSpecification,
-        compact: boolean,
         callback: (data: string) => void,
     ): void {
         const out: string[] = []
@@ -162,7 +161,6 @@ export class Dataset implements asyncAPI.Dataset {
         s.serialize(
             this.syncDataset,
             internalSchemaSpecification,
-            compact,
         ).handle(
             null,
             {

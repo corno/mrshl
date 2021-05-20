@@ -24,15 +24,13 @@ class InArray<T> implements astn.IInArray<T> {
 export function serialize(
     dataset: syncAPI.IDataset,
     internalSchemaSpecification: syncAPI.InternalSchemaSpecification,
-    compact: boolean,
 ): p.IStream<string, null> {
     const rootComments = dataset.rootComments.getComments()
     const allComments = dataset.documentComments.getComments().concat(rootComments)
     return astn.serializeDocument(
         {
             schema: serializeMetaData(internalSchemaSpecification, dataset.schema),
-            root: serializeNode(dataset.root, compact),
-            compact: compact,
+            root: serializeNode(dataset.root),
             documentComments: new InArray(allComments.map(c => {
                 return {
                     text: c.value,

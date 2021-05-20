@@ -3,7 +3,6 @@
 import * as fs from "fs"
 import * as astn from "astn"
 import * as schemaschema01 from "../src/schemas/mrshl/schemaschema@0.1"
-import * as db5 from "../src"
 import * as p from "pareto"
 import * as p20 from "pareto-20"
 //import * as pc from "pareto-compiler"
@@ -92,7 +91,7 @@ function generateCode(node: schemaschema01.Node) {
     })
 }
 
-const parser = db5.createParser(
+const parser = astn.createParser(
     () => {
         return {
             onData: () => {
@@ -106,13 +105,13 @@ const parser = db5.createParser(
     () => {
         return schemaschema01.createInternalSchemaBuilder(
             (message, range) => {
-                console.error(message, db5.printRange(range))
+                console.error(message, astn.printRange(range))
             }
         )
     },
 
     (message, range) => {
-        console.error(message, db5.printRange(range))
+        console.error(message, astn.printRange(range))
     },
     () => {
         return p.value(false)

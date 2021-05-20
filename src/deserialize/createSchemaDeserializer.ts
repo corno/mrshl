@@ -82,7 +82,7 @@ export function createSchemaDeserializer(
                 }
             )
         },
-        (_compact: astn.Range | null, location: astn.Location): astn.ParserEventConsumer<SchemaAndSideEffects, null> => {
+        (location: astn.Location): astn.ParserEventConsumer<SchemaAndSideEffects, null> => {
             if (!schemaDefinitionFound) {
                 //console.error("missing schema schema types")
                 onSchemaError(["missing schema schema definition"], astn.createRangeFromSingleLocation(location))

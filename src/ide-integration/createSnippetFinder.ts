@@ -1,6 +1,7 @@
 import * as astn from "astn"
-import { Root } from "./ParsingSideEffectsAPI"
+import { Root } from "../ParsingSideEffectsAPI"
 import { createSnippetsGenerator } from "./createSnippetsGenerator"
+import { isPositionBeforeLocation } from "./isPositionBeforeLocation"
 
 export function createSnippetFinder(
     completionPositionLine: number,
@@ -29,14 +30,13 @@ export function createSnippetFinder(
             if (positionAlreadyFound) {
                 return
             }
-            if (completionPositionLine < tokenRange.start.line || (completionPositionLine === tokenRange.start.line && completionPositionCharacter < tokenRange.start.column)) {
+            if (isPositionBeforeLocation(completionPositionLine, completionPositionCharacter, tokenRange.start)) {
                 //console.log("AFTER", previousAfter)
                 generate(previousAfter)
                 positionAlreadyFound = true
                 return
             }
-            const end = astn.getEndLocationFromRange(tokenRange)
-            if (completionPositionLine < end.line || (completionPositionLine === end.line && completionPositionCharacter < end.column)) {
+            if (isPositionBeforeLocation(completionPositionLine, completionPositionCharacter, astn.getEndLocationFromRange(tokenRange))) {
                 //console.log("INTRA", intra)
                 generate(intra)
                 positionAlreadyFound = true
