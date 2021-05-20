@@ -3,6 +3,8 @@ export * from "./deserialize"
 export * from "./inMemoryDataset"
 export * from "./ide-integration/createSnippetsGenerator"
 export * from "./ide-integration/createSnippetFinder"
+export * from "./ide-integration/createHoverTextsGenerator"
+export * from "./ide-integration/createHoverTextFinder"
 export * from "./loadDocument"
 //export * from "./readSchemaFileFromFileSystem" don't export this file. it uses the fs module. This module cannot be used in the browser
 

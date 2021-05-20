@@ -79,7 +79,7 @@ function createHoverTextsForNode(node: md.Node, keyProperty: md.Property | null)
     ]
 }
 
-export type OnToken = (
+export type OnTokenHoverText = (
     range: astn.Range,
     getHoverTexts: GetHoverText | null,
 ) => void
@@ -88,7 +88,7 @@ class HoverTextGenerator implements sideEffects.Root {
     public readonly node: sideEffects.Node
     private readonly onEndCallback: () => void
     constructor(
-        onToken: OnToken,
+        onToken: OnTokenHoverText,
         onEnd: () => void,
     ) {
         this.node = new NodeHoverTextGenerator(onToken)
@@ -100,11 +100,11 @@ class HoverTextGenerator implements sideEffects.Root {
 }
 
 class StateGroupHoverTextGenerator implements sideEffects.StateGroup {
-    private readonly onToken: OnToken
+    private readonly onToken: OnTokenHoverText
     private readonly name: string
     constructor(
         name: string,
-        onToken: OnToken,
+        onToken: OnTokenHoverText,
     ) {
         this.name = name
         this.onToken = onToken
@@ -138,11 +138,11 @@ class StateGroupHoverTextGenerator implements sideEffects.StateGroup {
 }
 
 class PropertyHoverTextGenerator implements sideEffects.Property {
-    private readonly onToken: OnToken
+    private readonly onToken: OnTokenHoverText
     private readonly name: string
     constructor(
         name: string,
-        onToken: OnToken,
+        onToken: OnTokenHoverText,
     ) {
         this.name = name
         this.onToken = onToken
@@ -184,11 +184,11 @@ class PropertyHoverTextGenerator implements sideEffects.Property {
 
 class ListHoverTextGenerator implements sideEffects.List {
     public readonly node: sideEffects.Node
-    private readonly onToken: OnToken
+    private readonly onToken: OnTokenHoverText
     private readonly name: string
     constructor(
         name: string,
-        onToken: OnToken,
+        onToken: OnTokenHoverText,
     ) {
         this.name = name
         this.onToken = onToken
@@ -209,11 +209,11 @@ class ListHoverTextGenerator implements sideEffects.List {
 
 class DictionaryHoverTextGenerator implements sideEffects.Dictionary {
     public readonly node: sideEffects.Node
-    private readonly onToken: OnToken
+    private readonly onToken: OnTokenHoverText
     private readonly name: string
     constructor(
         name: string,
-        onToken: OnToken,
+        onToken: OnTokenHoverText,
     ) {
         this.name = name
         this.onToken = onToken
@@ -238,9 +238,9 @@ class DictionaryHoverTextGenerator implements sideEffects.Dictionary {
 }
 
 class NodeHoverTextGenerator implements sideEffects.Node {
-    private readonly onToken: OnToken
+    private readonly onToken: OnTokenHoverText
     constructor(
-        onToken: OnToken,
+        onToken: OnTokenHoverText,
     ) {
         this.onToken = onToken
     }
@@ -279,7 +279,7 @@ class NodeHoverTextGenerator implements sideEffects.Node {
 }
 
 export function createHoverTextsGenerator(
-    onToken: OnToken,
+    onToken: OnTokenHoverText,
     onEnd: () => void,
 ): sideEffects.Root {
     return new HoverTextGenerator(onToken, onEnd)
