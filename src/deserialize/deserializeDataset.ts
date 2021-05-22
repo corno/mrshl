@@ -71,28 +71,28 @@ function createNoOperationValueHandler(): astn.ValueHandler {
             return {
                 element: () => () => createNoOperationValueHandler(),
                 end: _endData => {
-                    //registerSnippetGenerators.register(endData.range, null, null)
+                    //registerCodeCompletionGenerators.register(endData.range, null, null)
                 },
             }
         },
         object: _range => {
             return {
                 property: (_key, _keyData) => {
-                    //registerSnippetGenerators.register(keyData.keyRange, null, null)
+                    //registerCodeCompletionGenerators.register(keyData.keyRange, null, null)
                     return p.value(createNoOperationRequiredValueHandler())
                 },
                 end: _endData => {
-                    //registerSnippetGenerators.register(endData.range, null, null)
+                    //registerCodeCompletionGenerators.register(endData.range, null, null)
                 },
             }
         },
         simpleValue: (_value, _stringData) => {
-            //registerSnippetGenerators.register(stringData.range, null, null)
+            //registerCodeCompletionGenerators.register(stringData.range, null, null)
             return p.value(false)
         },
         taggedUnion: () => {
-            //registerSnippetGenerators.register(tuData.startRange, null, null)
-            //registerSnippetGenerators.register(tuData.optionRange, null, null)
+            //registerCodeCompletionGenerators.register(tuData.startRange, null, null)
+            //registerCodeCompletionGenerators.register(tuData.optionRange, null, null)
             return {
                 option: () => createNoOperationRequiredValueHandler(),
                 missingOption: () => {

@@ -42,7 +42,7 @@ function createNodeHandler(
                     "properties": {
                         onExists: () => context.expectValue(() => context.expectDictionary(
                             _beginRange => {
-                                //registerSnippetGenerators(endRange, "properties end")
+                                //registerCodeCompletionGenerators(endRange, "properties end")
                             },
                             key => {
                                 let targetPropertyType: t.PropertyType | null = null
@@ -221,7 +221,7 @@ function createNodeHandler(
                                                                     "states": {
                                                                         onExists: () => context.expectValue(() => context.expectDictionary(
                                                                             () => {
-                                                                                //registerSnippetGenerators(endRange, "properties end")
+                                                                                //registerCodeCompletionGenerators(endRange, "properties end")
                                                                             },
                                                                             stateKey => {
                                                                                 let targetNode: t.Node | null = null
@@ -377,7 +377,7 @@ function createNodeHandler(
                                 )
                             },
                             _endRange => {
-                                //registerSnippetGenerators(endRange, "properties end")
+                                //registerCodeCompletionGenerators(endRange, "properties end")
                             },
                         ),
                         ),
@@ -432,7 +432,7 @@ export function createDeserializer(
             "component types": {
                 onExists: (): astn.RequiredValueHandler => context.expectValue(() => context.expectDictionary(
                     () => {
-                        //registerSnippetGenerators(endRange, "properties end")
+                        //registerCodeCompletionGenerators(endRange, "properties end")
                     },
                     key => {
                         let targetNode: t.Node | null = null
@@ -460,7 +460,7 @@ export function createDeserializer(
                         ))
                     },
                     _endRange => {
-                        //registerSnippetGenerators(endRange, "component types end")
+                        //registerCodeCompletionGenerators(endRange, "component types end")
                     },
                 )),
                 onNotExists: (): void => {

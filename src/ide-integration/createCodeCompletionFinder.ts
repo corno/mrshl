@@ -1,29 +1,29 @@
 import * as astn from "astn"
 import { Root } from "../ParsingSideEffectsAPI"
-import { createSnippetsGenerator } from "./createSnippetsGenerator"
+import { createCodeCompletionsGenerator } from "./createCodeCompletionsGenerator"
 import { isPositionBeforeLocation } from "./isPositionBeforeLocation"
 
-export function createSnippetFinder(
+export function createCodeCompletionFinder(
     completionPositionLine: number,
     completionPositionCharacter: number,
-    callback: (snippet: string) => void
+    callback: (codeCompletion: string) => void
 ): Root {
     let positionAlreadyFound = false
     let previousAfter: null | (() => string[]) = null
     //console.log("FINDING COMPLETIONS", line, character)
     function generate(gs: (() => string[]) | null) {
         if (gs !== null) {
-            const snippets = gs()
-            //console.log(snippets)
-            snippets.forEach(snippet => {
-                //console.log("SNIPPET", snippet)
-                callback(snippet)
+            const codeCompletions = gs()
+            //console.log(codeCompletions)
+            codeCompletions.forEach(codeCompletion => {
+                //console.log("codeCompletion", codeCompletion)
+                callback(codeCompletion)
             })
         }
 
     }
 
-    return createSnippetsGenerator(
+    return createCodeCompletionsGenerator(
         (tokenRange, intra, after) => {
             //console.log("LOCATION", range.start.line, range.start.column, range.end.line, range.end.column)
 

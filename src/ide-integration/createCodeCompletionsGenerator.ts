@@ -12,9 +12,9 @@ function assertUnreachable<RT>(_x: never): RT {
     throw new Error("Unreachable")
 }
 
-type GetSnippets = () => string[]
+type GetCodeCompletions = () => string[]
 
-function createPropertySnippet(prop: md.Property): fp.InlineSegment {
+function createPropertyCodeCompletion(prop: md.Property): fp.InlineSegment {
     switch (prop.type[0]) {
         case "collection": {
             const $ = prop.type[1]
@@ -32,13 +32,13 @@ function createPropertySnippet(prop: md.Property): fp.InlineSegment {
         case "component": {
             const $ = prop.type[1]
 
-            return createNodeSnippet($.type.get().node, null)
+            return createNodeCodeCompletion($.type.get().node, null)
         }
         case "state group": {
             const $ = prop.type[1]
             return [
                 `| '${$["default state"].name}' `,
-                createNodeSnippet($["default state"].get().node, null),
+                createNodeCodeCompletion($["default state"].get().node, null),
             ]
         }
         case "value": {
@@ -55,7 +55,7 @@ function createPropertySnippet(prop: md.Property): fp.InlineSegment {
     }
 }
 
-function createPropertiesSnippet(node: md.Node, keyProperty: md.Property | null): fp.Block {
+function createPropertiesCodeCompletion(node: md.Node, keyProperty: md.Property | null): fp.Block {
     const x: fp.Block[] = []
     node.properties.mapUnsorted((prop, propKey) => {
         if (prop === keyProperty) {
@@ -63,17 +63,17 @@ function createPropertiesSnippet(node: md.Node, keyProperty: md.Property | null)
         }
         x.push(fp.line([
             `'${propKey}': `,
-            createPropertySnippet(prop),
+            createPropertyCodeCompletion(prop),
         ]))
     })
     return x
 }
 
-function createNodeSnippet(node: md.Node, keyProperty: md.Property | null): fp.InlineSegment {
+function createNodeCodeCompletion(node: md.Node, keyProperty: md.Property | null): fp.InlineSegment {
     return [
         '(',
         () => {
-            return createPropertiesSnippet(node, keyProperty)
+            return createPropertiesCodeCompletion(node, keyProperty)
         },
         ')',
     ]
@@ -81,18 +81,18 @@ function createNodeSnippet(node: md.Node, keyProperty: md.Property | null): fp.I
 
 export type OnToken = (
     range: astn.Range,
-    getSnippetsInToken: GetSnippets | null,
-    getSnippetsAfterToken: GetSnippets | null
+    getCodeCompletionsInToken: GetCodeCompletions | null,
+    getCodeCompletionsAfterToken: GetCodeCompletions | null
 ) => void
 
-class SnippetGenerator implements sideEffects.Root {
+class CodeCompletionGenerator implements sideEffects.Root {
     public readonly node: sideEffects.Node
     private readonly onEndCallback: () => void
     constructor(
         onToken: OnToken,
         onEnd: () => void,
     ) {
-        this.node = new NodeSnippetGenerator(onToken)
+        this.node = new NodeCodeCompletionGenerator(onToken)
         this.onEndCallback = onEnd
     }
     onEnd() {
@@ -100,7 +100,7 @@ class SnippetGenerator implements sideEffects.Root {
     }
 }
 
-class StateGroupSnippetGenerator implements sideEffects.StateGroup {
+class StateGroupCodeCompletionGenerator implements sideEffects.StateGroup {
     private readonly onToken: OnToken
     constructor(
         onToken: OnToken,
@@ -108,7 +108,7 @@ class StateGroupSnippetGenerator implements sideEffects.StateGroup {
         this.onToken = onToken
     }
     onState() {
-        return new NodeSnippetGenerator(this.onToken)
+        return new NodeCodeCompletionGenerator(this.onToken)
     }
     onUnexpectedState(
         _stateName: string,
@@ -128,7 +128,7 @@ class StateGroupSnippetGenerator implements sideEffects.StateGroup {
     }
 }
 
-class PropertySnippetGenerator implements sideEffects.Property {
+class PropertyCodeCompletionGenerator implements sideEffects.Property {
     private readonly onToken: OnToken
     constructor(
         onToken: OnToken,
@@ -136,13 +136,13 @@ class PropertySnippetGenerator implements sideEffects.Property {
         this.onToken = onToken
     }
     onDictionary() {
-        return new DictionarySnippetGenerator(this.onToken)
+        return new DictionaryCodeCompletionGenerator(this.onToken)
     }
     onList() {
-        return new ListSnippetGenerator(this.onToken)
+        return new ListCodeCompletionGenerator(this.onToken)
     }
     onStateGroup() {
-        return new StateGroupSnippetGenerator(this.onToken)
+        return new StateGroupCodeCompletionGenerator(this.onToken)
     }
     onNull() {
         //
@@ -164,38 +164,38 @@ class PropertySnippetGenerator implements sideEffects.Property {
         )
     }
     onComponent() {
-        return new NodeSnippetGenerator(this.onToken)
+        return new NodeCodeCompletionGenerator(this.onToken)
     }
 }
 
-class ListSnippetGenerator implements sideEffects.List {
+class ListCodeCompletionGenerator implements sideEffects.List {
     public readonly node: sideEffects.Node
     private readonly onToken: OnToken
     constructor(
         onToken: OnToken,
     ) {
         this.onToken = onToken
-        this.node = new NodeSnippetGenerator(onToken)
+        this.node = new NodeCodeCompletionGenerator(onToken)
     }
     onClose() {
         //
     }
     onEntry() {
-        return new NodeSnippetGenerator(this.onToken)
+        return new NodeCodeCompletionGenerator(this.onToken)
     }
     onUnexpectedEntry() {
         //
     }
 }
 
-class DictionarySnippetGenerator implements sideEffects.Dictionary {
+class DictionaryCodeCompletionGenerator implements sideEffects.Dictionary {
     public readonly node: sideEffects.Node
     private readonly onToken: OnToken
     constructor(
         onToken: OnToken,
     ) {
         this.onToken = onToken
-        this.node = new NodeSnippetGenerator(onToken)
+        this.node = new NodeCodeCompletionGenerator(onToken)
     }
     onClose() {
         //
@@ -218,13 +218,13 @@ class DictionarySnippetGenerator implements sideEffects.Dictionary {
                     [
                         fp.line([
                             " ",
-                            createNodeSnippet(nodeDefinition, keyPropertyDefinition),
+                            createNodeCodeCompletion(nodeDefinition, keyPropertyDefinition),
                         ]),
                     ],
                     "    ",
                     true,
-                    snippet => {
-                        out.push(snippet)
+                    codeCompletion => {
+                        out.push(codeCompletion)
                     }
                 )
                 return [out.map((line, index) => {
@@ -237,11 +237,11 @@ class DictionarySnippetGenerator implements sideEffects.Dictionary {
                 }).join("\n")]
             }
         )
-        return new NodeSnippetGenerator(this.onToken)
+        return new NodeCodeCompletionGenerator(this.onToken)
     }
 }
 
-class NodeSnippetGenerator implements sideEffects.Node {
+class NodeCodeCompletionGenerator implements sideEffects.Node {
     private readonly onToken: OnToken
     constructor(
         onToken: OnToken,
@@ -270,13 +270,13 @@ class NodeSnippetGenerator implements sideEffects.Node {
                         [
                             fp.line([
                                 " ",
-                                createPropertySnippet(propDefinition),
+                                createPropertyCodeCompletion(propDefinition),
                             ]),
                         ],
                         "    ",
                         true,
-                        snippet => {
-                            out.push(snippet)
+                        codeCompletion => {
+                            out.push(codeCompletion)
                         }
                     )
                     return [out.map((line, index) => {
@@ -290,7 +290,7 @@ class NodeSnippetGenerator implements sideEffects.Node {
                 },
             )
         }
-        return new PropertySnippetGenerator(this.onToken)
+        return new PropertyCodeCompletionGenerator(this.onToken)
     }
     onUnexpectedProperty(
         _key: string,
@@ -316,14 +316,14 @@ class NodeSnippetGenerator implements sideEffects.Node {
                     [
                         '',
                         () => {
-                            return createPropertiesSnippet(nodeDefinition, keyPropertyDefinition)
+                            return createPropertiesCodeCompletion(nodeDefinition, keyPropertyDefinition)
                         },
                         '',
                     ],
                     "    ",
                     true,
-                    snippet => {
-                        out.push(snippet)
+                    codeCompletion => {
+                        out.push(codeCompletion)
                     }
                 )
                 return [
@@ -344,9 +344,9 @@ class NodeSnippetGenerator implements sideEffects.Node {
     }
 }
 
-export function createSnippetsGenerator(
+export function createCodeCompletionsGenerator(
     onToken: OnToken,
     onEnd: () => void,
 ): sideEffects.Root {
-    return new SnippetGenerator(onToken, onEnd)
+    return new CodeCompletionGenerator(onToken, onEnd)
 }

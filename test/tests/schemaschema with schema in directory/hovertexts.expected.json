@@ -1,0 +1,254 @@
+{
+	"2:24-25": {
+		"hoverText": "component types"
+	},
+	"4:21-22": {
+		"hoverText": "node"
+	},
+	"5:31-32": {
+		"hoverText": "properties"
+	},
+	"7:33-34": {
+		"hoverText": "type"
+	},
+	"7:35-47": {
+		"hoverText": "type"
+	},
+	"8:37-38": {
+		"hoverText": "node"
+	},
+	"9:47-48": {
+		"hoverText": "properties"
+	},
+	"12:49-50": {
+		"hoverText": "type"
+	},
+	"12:51-64": {
+		"hoverText": "type"
+	},
+	"13:55-56": {
+		"hoverText": "states"
+	},
+	"15:61-62": {
+		"hoverText": "node"
+	},
+	"16:71-72": {
+		"hoverText": "properties"
+	},
+	"18:73-74": {
+		"hoverText": "type"
+	},
+	"18:75-86": {
+		"hoverText": "type"
+	},
+	"19:77-83": {
+		"hoverText": "type"
+	},
+	"23:73-74": {
+		"hoverText": "type"
+	},
+	"23:75-88": {
+		"hoverText": "type"
+	},
+	"24:79-80": {
+		"hoverText": "states"
+	},
+	"26:85-86": {
+		"hoverText": "node"
+	},
+	"27:95-96": {
+		"hoverText": "properties"
+	},
+	"29:97-98": {
+		"hoverText": "type"
+	},
+	"29:99-106": {
+		"hoverText": "type"
+	},
+	"30:110-116": {
+		"hoverText": "default value"
+	},
+	"33:81-82": {
+		"hoverText": "properties"
+	},
+	"34:77-78": {
+		"hoverText": "node"
+	},
+	"37:69-70": {
+		"hoverText": "states"
+	},
+	"38:86-92": {
+		"hoverText": "default state"
+	},
+	"41:57-58": {
+		"hoverText": "properties"
+	},
+	"42:53-54": {
+		"hoverText": "node"
+	},
+	"45:61-62": {
+		"hoverText": "node"
+	},
+	"46:71-72": {
+		"hoverText": "properties"
+	},
+	"48:57-58": {
+		"hoverText": "properties"
+	},
+	"49:53-54": {
+		"hoverText": "node"
+	},
+	"52:61-62": {
+		"hoverText": "node"
+	},
+	"53:71-72": {
+		"hoverText": "properties"
+	},
+	"55:73-74": {
+		"hoverText": "type"
+	},
+	"55:75-87": {
+		"hoverText": "type"
+	},
+	"56:77-78": {
+		"hoverText": "node"
+	},
+	"57:87-88": {
+		"hoverText": "properties"
+	},
+	"60:89-90": {
+		"hoverText": "type"
+	},
+	"60:91-102": {
+		"hoverText": "type"
+	},
+	"61:93-99": {
+		"hoverText": "type"
+	},
+	"64:73-74": {
+		"hoverText": "properties"
+	},
+	"65:69-70": {
+		"hoverText": "node"
+	},
+	"66:77-78": {
+		"hoverText": "type"
+	},
+	"66:79-91": {
+		"hoverText": "type"
+	},
+	"70:57-58": {
+		"hoverText": "properties"
+	},
+	"71:53-54": {
+		"hoverText": "node"
+	},
+	"74:61-62": {
+		"hoverText": "node"
+	},
+	"75:71-72": {
+		"hoverText": "properties"
+	},
+	"78:73-74": {
+		"hoverText": "type"
+	},
+	"78:75-88": {
+		"hoverText": "type"
+	},
+	"79:79-80": {
+		"hoverText": "states"
+	},
+	"82:69-70": {
+		"hoverText": "states"
+	},
+	"83:86-92": {
+		"hoverText": "default state"
+	},
+	"86:57-58": {
+		"hoverText": "properties"
+	},
+	"87:53-54": {
+		"hoverText": "node"
+	},
+	"89:45-46": {
+		"hoverText": "states"
+	},
+	"90:62-69": {
+		"hoverText": "default state"
+	},
+	"93:33-34": {
+		"hoverText": "properties"
+	},
+	"94:29-30": {
+		"hoverText": "node"
+	},
+	"95:37-38": {
+		"hoverText": "type"
+	},
+	"95:39-51": {
+		"hoverText": "type"
+	},
+	"98:17-18": {
+		"hoverText": "properties"
+	},
+	"99:13-14": {
+		"hoverText": "node"
+	},
+	"102:21-22": {
+		"hoverText": "node"
+	},
+	"103:31-32": {
+		"hoverText": "properties"
+	},
+	"105:33-34": {
+		"hoverText": "type"
+	},
+	"105:35-47": {
+		"hoverText": "type"
+	},
+	"106:37-38": {
+		"hoverText": "node"
+	},
+	"107:47-48": {
+		"hoverText": "properties"
+	},
+	"110:49-50": {
+		"hoverText": "type"
+	},
+	"110:51-62": {
+		"hoverText": "type"
+	},
+	"111:53-59": {
+		"hoverText": "type"
+	},
+	"114:33-34": {
+		"hoverText": "properties"
+	},
+	"115:29-30": {
+		"hoverText": "node"
+	},
+	"116:37-38": {
+		"hoverText": "type"
+	},
+	"116:39-51": {
+		"hoverText": "type"
+	},
+	"120:33-34": {
+		"hoverText": "type"
+	},
+	"120:35-42": {
+		"hoverText": "type"
+	},
+	"121:46-52": {
+		"hoverText": "default value"
+	},
+	"124:17-18": {
+		"hoverText": "properties"
+	},
+	"125:13-14": {
+		"hoverText": "node"
+	},
+	"127:5-6": {
+		"hoverText": "component types"
+	}
+}

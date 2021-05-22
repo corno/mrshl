@@ -62,10 +62,16 @@ type Issue = [
 
 type Issues = Issue[]
 
-type Snipppets = {
+type CodeCompletions = {
     [key: string]: {
         inToken: string[] | null
         afterToken: string[] | null
+    }
+}
+
+type HoverTexts = {
+    [key: string]: {
+        hoverText: string | null
     }
 }
 
@@ -161,7 +167,8 @@ export function directoryTests(): void {
 
             const actualIssues: Issues = []
             const actualEvents: Event[] = []
-            const actualSnippets: Snipppets = {}
+            const actualCodeCompletions: CodeCompletions = {}
+            const actualHoverTexts: HoverTexts = {}
             const out: string[] = []
 
             // const schemaReferenceResolver = (reference: string) => {
@@ -261,17 +268,28 @@ export function directoryTests(): void {
                     // (warningMessage, range) => {
                     //     actualIssues.push([warningMessage, "warning", range.start.line, range.start.column, range.end.line, range.end.column])
                     // },
-                    [db5.createSnippetsGenerator(
-                        (range, getIntraSnippets, getSnippetsAfter) => {
-                            actualSnippets[astn.printRange(range)] = {
-                                inToken: getIntraSnippets === null ? null : getIntraSnippets(),
-                                afterToken: getSnippetsAfter === null ? null : getSnippetsAfter(),
-                            }
-                        },
-                        () => {
-                            //
-                        },
-                    )],
+                    [
+                        db5.createCodeCompletionsGenerator(
+                            (range, getIntraCodeCompletions, getCodeCompletionsAfter) => {
+                                actualCodeCompletions[astn.printRange(range)] = {
+                                    inToken: getIntraCodeCompletions === null ? null : getIntraCodeCompletions(),
+                                    afterToken: getCodeCompletionsAfter === null ? null : getCodeCompletionsAfter(),
+                                }
+                            },
+                            () => {
+                                //
+                            },
+                        ), db5.createHoverTextsGenerator(
+                            (range, getHoverText) => {
+                                actualHoverTexts[astn.printRange(range)] = {
+                                    hoverText: getHoverText === null ? null : getHoverText(),
+                                }
+                            },
+                            () => {
+                                //
+                            },
+                        ),
+                    ],
                     schema => {
                         return db5.createInMemoryDataset(schema)
                     }
@@ -313,7 +331,8 @@ export function directoryTests(): void {
                         out.join(""),
                         out.join(""),
                     )
-                    deepEqualJSON(testDirPath, "snippets", actualSnippets)
+                    deepEqualJSON(testDirPath, "codecompletions", actualCodeCompletions)
+                    deepEqualJSON(testDirPath, "hovertexts", actualHoverTexts)
                     deepEqualJSON(testDirPath, "events", actualEvents)
                     deepEqualJSON(testDirPath, "issues", actualIssues)
                 })
