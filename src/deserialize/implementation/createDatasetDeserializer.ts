@@ -28,7 +28,7 @@ function createPropertyDeserializer(
     sideEffectsAPIs: sideEffects.Property[],
     onError: OnError,
     flagNonDefaultPropertiesFound: () => void,
-    onNull: ((range: astn.Range, svData: astn.SimpleValueData) => p.IValue<boolean>) | null,
+    nullAllowed: boolean,
 ): astn.RequiredValueHandler {
     switch (propDefinition.type[0]) {
         case "collection": {
@@ -100,15 +100,6 @@ function createPropertyDeserializer(
 
                                 },
                                 null,
-                                (range, data) => {
-                                    // sideEffectsAPIs.map(s => {
-                                    //     return s.onDictionary(range, beginData)
-                                    // })
-                                    if (onNull !== null) {
-                                        return onNull(range, data)
-                                    }
-                                    return p.value(false)
-                                },
                             )
                         },
                     )
@@ -170,12 +161,6 @@ function createPropertyDeserializer(
 
                                 },
                                 undefined,
-                                range => { //onNull
-                                    sideEffectsAPIs.map(s => {
-                                        return s.onNull(range)
-                                    })
-                                    return p.value(false)
-                                },
                             )
                         },
                     )
@@ -262,6 +247,17 @@ function createPropertyDeserializer(
                             sideEffectsAPIs.map(s => {
                                 return s.onNull(range)
                             })
+                            defaultInitializeProperty(
+                                propDefinition,
+                                propKey,
+                                nodeBuilder,
+                                range,
+                                onError
+                            )
+                            if (!nullAllowed) {
+                                onError(`value may not be null`, range)
+                            }
+
                             return p.value(false)
                         },
                     )
@@ -300,13 +296,23 @@ function createPropertyDeserializer(
                             })
                             return p.value(false)
                         },
-                        () => {
-                            //
+                        range => {
+                            onError(`expected a simple value`, range)
                         },
                         range => { //onNull
                             sideEffectsAPIs.map(s => {
                                 return s.onNull(range)
                             })
+                            defaultInitializeProperty(
+                                propDefinition,
+                                propKey,
+                                nodeBuilder,
+                                range,
+                                onError
+                            )
+                            if (!nullAllowed) {
+                                onError(`value may not be null`, range)
+                            }
                             return p.value(false)
                         },
                     )
@@ -448,16 +454,7 @@ function createNodeDeserializer(
                         () => {
                             //
                         },
-                        range => { //null value
-                            defaultInitializeProperty(
-                                propDefinition,
-                                propKey,
-                                nodeBuilder,
-                                range,
-                                onError,
-                            )
-                            return p.value(false)
-                        },
+                        true,
                     )
                 },
             })
@@ -502,7 +499,7 @@ function createNodeDeserializer(
                         () => {
                             processedProperty.isNonDefault = true
                         },
-                        null,
+                        false,
                     )
                 },
                 onNotExists: beginRange => {

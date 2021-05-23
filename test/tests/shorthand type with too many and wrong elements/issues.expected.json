@@ -1,0 +1,38 @@
+[
+	[
+		"deserialization",
+		"error",
+		"expected a simple value",
+		1,
+		4,
+		1,
+		5
+	],
+	[
+		"deserialization",
+		"error",
+		"value '' must be unquoted",
+		1,
+		9,
+		1,
+		11
+	],
+	[
+		"deserialization",
+		"error",
+		"found more than the expected 3 element(s)",
+		1,
+		1,
+		1,
+		2
+	],
+	[
+		"deserialization",
+		"error",
+		"found more than the expected 3 element(s)",
+		1,
+		1,
+		1,
+		2
+	]
+]
