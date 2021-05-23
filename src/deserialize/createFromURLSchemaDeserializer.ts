@@ -1,6 +1,7 @@
 import { createSchemaDeserializer } from "./createSchemaDeserializer"
 import * as p from "pareto"
-import { SchemaAndSideEffects, SchemaReferenceResolvingError } from "../schemas"
+import { SchemaAndSideEffects } from "../API/SchemaAndSideEffects"
+import { SchemaReferenceResolvingError } from "../API/SchemaErrors"
 
 
 export type SchemaHost = {

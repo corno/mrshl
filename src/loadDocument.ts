@@ -1,5 +1,5 @@
 import * as path from "path"
-import * as md from "./types"
+import * as md from "./API/types"
 import {
 	createFromURLSchemaDeserializer,
 	deserializeDataset,
@@ -12,19 +12,15 @@ import {
 	printSchemaSchemaError,
 	SchemaHost,
 } from "./deserialize"
-import * as sideEffects from "./ParsingSideEffectsAPI"
+import * as sideEffects from "./API/ParsingSideEffectsAPI"
 import * as astn from "astn"
 import * as p from "pareto"
 import { IDataset } from "./dataset"
 import { MakeHTTPrequest } from "./makeHTTPrequest"
+import { DiagnosticSeverity } from "./API/DiagnosticSeverity"
 
 function assertUnreachable<RT>(_x: never): RT {
 	throw new Error("unreachable")
-}
-
-export enum DiagnosticSeverity {
-	warning,
-	error
 }
 
 export type LoadDocumentDiagnosticType =
@@ -145,7 +141,7 @@ function validateDocumentAfterExternalSchemaResolution(
 			if (externalSchema === null) {
 
 
-				allSideEffects.push(schemaAndSideEffects.createSideEffects((
+				allSideEffects.push(schemaAndSideEffects.createAdditionalValidator((
 					message,
 					range,
 					severity,
@@ -327,7 +323,7 @@ export function loadDocument(
 						schemaAndSideEffects.schema,
 						makeHTTPRequest,
 						dc,
-						sideEffectHandlers.concat([schemaAndSideEffects.createSideEffects(
+						sideEffectHandlers.concat([schemaAndSideEffects.createAdditionalValidator(
 							(
 								message,
 								range,

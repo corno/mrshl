@@ -1,8 +1,8 @@
 import * as p from "pareto"
 import * as astn from "astn"
-import * as md from "../types"
-import * as syncAPI from "../syncAPI"
-import * as sideEffects from "../ParsingSideEffectsAPI"
+import * as md from "../API/types"
+import * as syncAPI from "../API/syncAPI"
+import * as sideEffects from "../API/ParsingSideEffectsAPI"
 
 function assertUnreachable<RT>(_x: never): RT {
     throw new Error("Unreachable")

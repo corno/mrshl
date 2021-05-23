@@ -1,5 +1,5 @@
 import * as astn from "astn"
-import { Root } from "../ParsingSideEffectsAPI"
+import { Root } from "../API/ParsingSideEffectsAPI"
 import { createHoverTextsGenerator } from "./createHoverTextsGenerator"
 import { isPositionBeforeLocation } from "./isPositionBeforeLocation"
 

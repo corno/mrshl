@@ -1,4 +1,4 @@
-import * as sync from "./syncAPI"
+import * as sync from "./API/syncAPI"
 import * as async from "./asyncAPI"
 
 export type IDataset = {

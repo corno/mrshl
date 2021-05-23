@@ -2,9 +2,9 @@
     "max-classes-per-file": off,
 */
 
-import * as syncAPI from "../syncAPI"
+import * as syncAPI from "../API/syncAPI"
 import * as imp from "./implementation"
-import * as d from "../types"
+import * as d from "../API/types"
 import { Global } from "./Global"
 import { initializeNode } from "./initializeNode"
 

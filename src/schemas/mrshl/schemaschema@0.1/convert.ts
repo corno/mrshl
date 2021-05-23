@@ -1,13 +1,20 @@
-import * as md from "../../../types"
-import * as g from "../../../generics"
+import * as md from "../../../API/types"
+import * as gapi from "../../../API/generics"
+import {
+    ResolveRegistry,
+    createReference,
+} from "./Reference"
+import {
+    Dictionary,
+} from "./Dictionary"
 import { Schema, Node, Property } from "./types"
 
 function assertUnreachable<RT>(_x: never): RT {
     throw new Error("Unreachable")
 }
 
-function convertNode(node: Node, componentTypes: g.IReadonlyLookup<md.ComponentType>, keyProperty: null | Property, resolveRegistry: g.ResolveRegistry): md.Node {
-    const properties = new g.Dictionary<md.Property>({})
+function convertToGenericNode(node: Node, componentTypes: gapi.IReadonlyLookup<md.ComponentType>, keyProperty: null | Property, resolveRegistry: ResolveRegistry): md.Node {
+    const properties = new Dictionary<md.Property>({})
     node.properties.mapSorted((prop, key) => {
         if (prop === keyProperty) {
             //return
@@ -24,16 +31,16 @@ function convertNode(node: Node, componentTypes: g.IReadonlyLookup<md.ComponentT
                                 switch ($.type[0]) {
                                     case "dictionary": {
                                         const $$ = $.type[1]
-                                        const targetNode = convertNode($.node, componentTypes, $$["key property"].get(), resolveRegistry)
+                                        const targetNode = convertToGenericNode($.node, componentTypes, $$["key property"].get(), resolveRegistry)
                                         return ["dictionary", {
                                             "node": targetNode,
-                                            "key property": g.createReference($$["key property"].name, targetNode.properties, resolveRegistry, keys => {
+                                            "key property": createReference($$["key property"].name, targetNode.properties, resolveRegistry, keys => {
                                                 throw new Error(`UNEXPECTED: KEY Property not found: ${$$["key property"].name}, available keys: ${keys.join()}`);
                                             }),
                                         }]
                                     }
                                     case "list": {
-                                        const targetNode = convertNode($.node, componentTypes, null, resolveRegistry)
+                                        const targetNode = convertToGenericNode($.node, componentTypes, null, resolveRegistry)
                                         return ["list", {
                                             node: targetNode,
                                         }]
@@ -47,21 +54,21 @@ function convertNode(node: Node, componentTypes: g.IReadonlyLookup<md.ComponentT
                     case "component": {
                         const $ = prop.type[1]
                         return ["component", {
-                            type: g.createReference($.type.name, componentTypes, resolveRegistry, () => {
+                            type: createReference($.type.name, componentTypes, resolveRegistry, () => {
                                 throw new Error("UNEXPECTED")
                             }),
                         }]
                     }
                     case "state group": {
                         const $ = prop.type[1]
-                        const states = new g.Dictionary($.states.mapSorted(state => {
+                        const states = new Dictionary($.states.mapSorted(state => {
                             return {
-                                node: convertNode(state.node, componentTypes, null, resolveRegistry),
+                                node: convertToGenericNode(state.node, componentTypes, null, resolveRegistry),
                             }
                         }))
                         return ["state group", {
                             "states": states,
-                            "default state": g.createReference($["default state"].name, states, resolveRegistry, keys => {
+                            "default state": createReference($["default state"].name, states, resolveRegistry, keys => {
                                 throw new Error(`UNEXPECTED: KEY state not found: ${$["default state"].name}, available keys: ${keys.join()}`);
                             }),
                         }]
@@ -96,15 +103,15 @@ function convertNode(node: Node, componentTypes: g.IReadonlyLookup<md.ComponentT
     }
 }
 
-export function convert(schema: Schema): md.Schema {
-    const resolveRegistry = new g.ResolveRegistry()
-    const componentTypes: g.Dictionary<md.ComponentType> = new g.Dictionary({})
+export function convertToGenericSchema(schema: Schema): md.Schema {
+    const resolveRegistry = new ResolveRegistry()
+    const componentTypes: Dictionary<md.ComponentType> = new Dictionary({})
     schema["component types"].forEach((ct, ctName) => {
         componentTypes.add(ctName, {
-            node: convertNode(ct.node, componentTypes, null, resolveRegistry),
+            node: convertToGenericNode(ct.node, componentTypes, null, resolveRegistry),
         })
     })
-    const rootType = g.createReference(schema["root type"].name, componentTypes, resolveRegistry, () => {
+    const rootType = createReference(schema["root type"].name, componentTypes, resolveRegistry, () => {
         throw new Error("UNEXPECTED")
     })
     const success = resolveRegistry.resolve()

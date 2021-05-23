@@ -1,4 +1,4 @@
-import * as gapi from "../API/generics"
+import * as gapi from "../../../API/generics"
 
 export class Dictionary<T> implements gapi.IReadonlyDictionary<T>, gapi.IReadonlyLookup<T> {
     private readonly imp: { [key: string]: T } = {}

@@ -1,6 +1,6 @@
 import * as g from "../../generics"
 import * as asyncAPI from "../../asyncAPI"
-import * as d from "../../types"
+import * as d from "../../API/types"
 import { IParentErrorsAggregator, PotentialError, ErrorManager } from "./ErrorManager"
 import { Comments } from "./Comments"
 

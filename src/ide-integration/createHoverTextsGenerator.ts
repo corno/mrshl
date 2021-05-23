@@ -2,11 +2,11 @@
     "max-classes-per-file": off,
 */
 
-import * as sideEffects from "../ParsingSideEffectsAPI"
-import * as syncAPI from "../syncAPI"
+import * as sideEffects from "../API/ParsingSideEffectsAPI"
+import * as syncAPI from "../API/syncAPI"
 import * as astn from "astn"
 import * as fp from "fountain-pen"
-import * as md from "../types"
+import * as md from "../API/types"
 
 function assertUnreachable<RT>(_x: never): RT {
     throw new Error("Unreachable")

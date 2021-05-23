@@ -1,51 +1,6 @@
 import * as astn from "astn"
 import * as p from "pareto-20"
-
-function assertUnreachable<RT>(_x: never): RT {
-    throw new Error("unreachable")
-}
-
-export type InternalSchemaError =
-    | ["unexpected schema format", {
-        found:
-        | ["array"]
-        | ["object"]
-        | ["simple value"]
-        | ["tagged union"]
-    }]
-    | ["stacked", astn.StackedDataError]
-
-
-export function printInternalSchemaError(error: InternalSchemaError): string {
-    switch (error[0]) {
-        case "stacked": {
-            const $$$ = error[1]
-            return astn.printStackedDataError($$$)
-        }
-        case "unexpected schema format": {
-            const $$$ = error[1]
-            switch ($$$.found[0]) {
-                case "array": {
-
-                    return "unexpected array as schema"
-                }
-                case "simple value": {
-                    return "unexpected simple value as schema"
-                }
-                case "tagged union": {
-                    return "unexpected tagged union as schema"
-                }
-                case "object": {
-                    return "unexpected object as schema"
-                }
-                default:
-                    return assertUnreachable($$$.found[0])
-            }
-        }
-        default:
-            return assertUnreachable(error[0])
-    }
-}
+import { InternalSchemaError } from "../API/SchemaErrors"
 
 export function createInternalSchemaHandler<Result>(
     onSchemaError: (error: InternalSchemaError, range: astn.Range) => void,
@@ -53,7 +8,6 @@ export function createInternalSchemaHandler<Result>(
     onSimpleValue: astn.OnSimpleValue | null,
     onEnd: () => p.IUnsafeValue<Result, null>
 ): astn.ParserEventConsumer<Result, null> {
-
     return astn.createStackedDataSubscriber(
         {
             onValue: () => {

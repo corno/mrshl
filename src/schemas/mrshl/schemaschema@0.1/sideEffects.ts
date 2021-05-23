@@ -4,10 +4,10 @@
 
 import * as astn from "astn"
 import * as t from "./types"
-import * as syncAPI from "../../../syncAPI"
-import * as sideEffects from "../../../ParsingSideEffectsAPI"
-import * as md from "../../../types"
-import { DiagnosticSeverity } from "../../../loadDocument"
+import * as syncAPI from "../../../API/syncAPI"
+import * as sideEffects from "../../../API/ParsingSideEffectsAPI"
+import * as md from "../../../API/types"
+import { DiagnosticSeverity } from "../../../API/DiagnosticSeverity"
 
 export * from "./types"
 

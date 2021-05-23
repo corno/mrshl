@@ -11,5 +11,3 @@ export class Mutable<T> {
         return this.t
     }
 }
-
-export type RawObject<T> = { [key: string]: T }

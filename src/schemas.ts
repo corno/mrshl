@@ -1,10 +1,9 @@
 import * as astn from "astn"
 import * as mrshlschemaschema01 from "./schemas/mrshl/schemaschema@0.1"
 import * as metadata01 from "./schemas/mrshl/metadata@0.1"
-import * as md from "./types"
-import * as sideEffects from "./ParsingSideEffectsAPI"
-import { DiagnosticSeverity } from "./loadDocument"
-import { InternalSchemaError, printInternalSchemaError } from "./createInternalSchemaHandler"
+import { SchemaAndSideEffects } from "./API/SchemaAndSideEffects"
+import { InternalSchemaDeserializationError } from "./API/SchemaErrors"
+import { printInternalSchemaError } from "./printInternalSchemaError"
 
 function assertUnreachable<RT>(_x: never): RT {
     throw new Error("unreachable")
@@ -15,21 +14,6 @@ function assertUnreachable<RT>(_x: never): RT {
  * validation errors.
  * All built-in schemas create a combination of these 2
  */
-
-export type SchemaReferenceResolvingError =
-    | ["schema cannot be an empty string"]
-    | ["errors in schema"]
-    | ["loading", {
-        message: string
-    }]
-
-export type InternalSchemaDeserializationError =
-    | ["validation", {
-        "message": string
-    }]
-    | ["expect", astn.ExpectError]
-    | ["schema reference resolving", SchemaReferenceResolvingError]
-    | ["internal schema", InternalSchemaError]
 
 export function printInternalSchemaDeserializationError(error: InternalSchemaDeserializationError): string {
     switch (error[0]) {
@@ -68,13 +52,6 @@ export function printInternalSchemaDeserializationError(error: InternalSchemaDes
     }
 }
 
-
-export type SchemaAndSideEffects = {
-    schema: md.Schema
-    createSideEffects: (
-        onValidationError: (message: string, range: astn.Range, severity: DiagnosticSeverity) => void,
-    ) => sideEffects.Root
-}
 
 export type CreateSchemaAndSideEffectsBuilderFunction = (
     onSchemaError: (error: InternalSchemaDeserializationError, range: astn.Range) => void,

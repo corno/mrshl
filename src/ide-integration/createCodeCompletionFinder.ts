@@ -1,5 +1,5 @@
 import * as astn from "astn"
-import { Root } from "../ParsingSideEffectsAPI"
+import { Root } from "../API/ParsingSideEffectsAPI"
 import { createCodeCompletionsGenerator } from "./createCodeCompletionsGenerator"
 import { isPositionBeforeLocation } from "./isPositionBeforeLocation"
 

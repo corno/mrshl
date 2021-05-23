@@ -1,7 +1,10 @@
 import * as astn from "astn"
 import * as p from "pareto"
-import { schemas, CreateSchemaAndSideEffectsBuilderFunction, SchemaAndSideEffects, InternalSchemaDeserializationError, printInternalSchemaDeserializationError } from "../schemas"
-import { createInternalSchemaHandler, printInternalSchemaError, InternalSchemaError } from "../createInternalSchemaHandler"
+import { schemas, CreateSchemaAndSideEffectsBuilderFunction, printInternalSchemaDeserializationError } from "../schemas"
+import { createInternalSchemaHandler } from "./createInternalSchemaHandler"
+import { SchemaAndSideEffects } from "../API/SchemaAndSideEffects"
+import { InternalSchemaDeserializationError, InternalSchemaError } from "../API/SchemaErrors"
+import { printInternalSchemaError } from "../printInternalSchemaError"
 
 function assertUnreachable<RT>(_x: never): RT {
     throw new Error("unreachable")

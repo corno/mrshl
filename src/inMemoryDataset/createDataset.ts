@@ -1,8 +1,8 @@
-import * as md from "../types"
+import * as md from "../API/types"
 import * as sync from "./syncAPIImplementation"
 import { RootImp } from "./Root"
 import { IDataset } from "../dataset"
-import * as syncAPI from "../syncAPI"
+import * as syncAPI from "../API/syncAPI"
 import * as asyncAPIImp from "./asyncAPIImplementation"
 import { Comments } from "./implementation"
 

@@ -2,7 +2,7 @@
  "@typescript-eslint/no-empty-interface": off
 */
 
-import * as md from "./types"
+import * as t from "./types"
 
 
 export type CommentType =
@@ -78,14 +78,14 @@ export type InternalSchemaSpecification =
     | [InternalSchemaSpecificationType.None]
 
 export interface IDataset {
-    readonly schema: md.Schema
+    readonly schema: t.Schema
     readonly root: Node
     readonly documentComments: Comments
     readonly rootComments: Comments
 }
 
 export interface StateGroup {
-    readonly definition: md.StateGroup
+    readonly definition: t.StateGroup
     setState(stateName: string, onError: (message: string) => void): State
     readonly comments: Comments
     getCurrentState(): State
@@ -98,7 +98,7 @@ export interface State {
 }
 
 export interface Value {
-    readonly definition: md.Value
+    readonly definition: t.Value
     readonly isQuoted: boolean
     setValue(value: string, onError: (message: string) => void): void
     readonly comments: Comments

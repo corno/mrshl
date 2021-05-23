@@ -1,4 +1,4 @@
-import * as syncAPI from "../syncAPI"
+import * as syncAPI from "../API/syncAPI"
 
 export { Entry } from "./syncAPIImplementation"
 

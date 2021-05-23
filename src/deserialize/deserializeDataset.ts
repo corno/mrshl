@@ -3,16 +3,19 @@
 */
 
 import * as astn from "astn"
-import * as sideEffects from "../ParsingSideEffectsAPI"
+import * as sideEffects from "../API/ParsingSideEffectsAPI"
 import { createDatasetDeserializer } from "./createDatasetDeserializer"
 import * as p20 from "pareto-20"
 import * as p from "pareto"
-import { SchemaAndSideEffects, SchemaReferenceResolvingError, InternalSchemaDeserializationError, printInternalSchemaDeserializationError } from "../schemas"
+import { printInternalSchemaDeserializationError } from "../schemas"
 import { IDataset } from "../dataset"
-import { InternalSchemaSpecification, InternalSchemaSpecificationType } from "../syncAPI"
+import { InternalSchemaSpecification, InternalSchemaSpecificationType } from "../API/syncAPI"
 import { createDeserializer as createMetaDataDeserializer } from "../schemas/mrshl/metadata@0.1/deserialize"
 import { ExternalSchemaDeserializationError } from "./deserializeSchemaFromStream"
-import { createInternalSchemaHandler } from "../createInternalSchemaHandler"
+import { createInternalSchemaHandler } from "./createInternalSchemaHandler"
+import { SchemaAndSideEffects } from "../API/SchemaAndSideEffects"
+import { createNOPSideEffects } from "./NOPSideEffects"
+import { InternalSchemaDeserializationError, SchemaReferenceResolvingError } from "../API/SchemaErrors"
 
 function assertUnreachable<RT>(_x: never): RT {
     throw new Error("unreachable")
@@ -115,119 +118,6 @@ function createNoOperationRequiredValueHandler(): astn.RequiredValueHandler {
     }
 }
 
-class NOPSideEffects implements sideEffects.Root {
-    node: sideEffects.Node
-    constructor() {
-        this.node = new NodeNOPSideEffects()
-    }
-    onEnd() {
-        //
-    }
-}
-
-class NodeNOPSideEffects implements sideEffects.Node {
-    constructor() {
-        //
-    }
-    onShorthandTypeOpen() {
-        return new ShorthandTypeNOPSideEffects()
-    }
-    onProperty() {
-        return new PropertyNOPSideEffects()
-    }
-    onUnexpectedProperty() {
-        //
-    }
-    onTypeOpen() {
-        return new NodeNOPSideEffects()
-    }
-    onTypeClose() {
-        //
-    }
-}
-
-class ShorthandTypeNOPSideEffects implements sideEffects.ShorthandType {
-    constructor() {
-        //
-    }
-    onShorthandTypeClose() {
-        //
-    }
-    onProperty() {
-        return new PropertyNOPSideEffects()
-    }
-}
-
-class StateGroupNOPSideEffects implements sideEffects.StateGroup {
-    constructor() {
-        //
-    }
-    onUnexpectedState() {
-        //
-    }
-    onState() {
-        return new NodeNOPSideEffects()
-    }
-}
-
-class PropertyNOPSideEffects implements sideEffects.Property {
-    constructor() {
-        //
-    }
-    onDictionary() {
-        return new DictionaryNOPSideEffects()
-    }
-    onList() {
-        return new ListNOPSideEffects()
-    }
-    onStateGroup() {
-        return new StateGroupNOPSideEffects()
-    }
-    onValue() {
-        //
-    }
-    onNull() {
-        //
-    }
-    onComponent() {
-        return new NodeNOPSideEffects()
-    }
-}
-
-class DictionaryNOPSideEffects implements sideEffects.Dictionary {
-    constructor() {
-        //
-    }
-    onClose() {
-        //
-    }
-    onUnexpectedEntry() {
-        //
-    }
-    onEntry() {
-        return new NodeNOPSideEffects()
-    }
-}
-
-class ListNOPSideEffects implements sideEffects.List {
-    constructor() {
-        //
-    }
-    onClose() {
-        //
-    }
-    onEntry() {
-        return new NodeNOPSideEffects()
-    }
-    onUnexpectedEntry() {
-        //
-    }
-}
-
-export function createNOPSideEffects(): sideEffects.Root {
-    return new NOPSideEffects()
-}
-
 type InternalSchema = {
     specification: InternalSchemaSpecification
     schemaAndSideEffects: SchemaAndSideEffects
@@ -303,7 +193,7 @@ export function deserializeDataset(
                             internalSchema = {
                                 schemaAndSideEffects: {
                                     schema: schema,
-                                    createSideEffects: () => new NOPSideEffects(),
+                                    createAdditionalValidator: () => createNOPSideEffects(),
                                 },
                                 specification: [InternalSchemaSpecificationType.Embedded],
                             }

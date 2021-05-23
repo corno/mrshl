@@ -1,4 +1,4 @@
-import * as g from "../../../generics"
+import * as gapi from "../../../API/generics"
 
 export interface X {
     x: string
@@ -14,7 +14,7 @@ export type Collection = {
 }
 
 export type Component = {
-    readonly "type": g.IReference<ComponentType>
+    readonly "type": gapi.IReference<ComponentType>
 }
 
 export type ComponentType = {
@@ -22,14 +22,14 @@ export type ComponentType = {
 }
 
 export type Dictionary = {
-    readonly "key property": g.IReference<Property>
+    readonly "key property": gapi.IReference<Property>
 }
 
 export type List = {
 }
 
 export type Node = {
-    readonly "properties": g.Dictionary<Property>
+    readonly "properties": gapi.IReadonlyDictionary<Property>
 }
 
 export type Property = {
@@ -43,8 +43,8 @@ export type PropertyType =
     | ["state group", StateGroup]
 
 export type Schema = {
-    readonly "component types": g.Dictionary<ComponentType>
-    readonly "root type": g.IReference<ComponentType>
+    readonly "component types": gapi.IReadonlyDictionary<ComponentType>
+    readonly "root type": gapi.IReference<ComponentType>
 }
 
 export type State = {
@@ -52,14 +52,20 @@ export type State = {
 }
 
 export type StateGroup = {
-    readonly "states": g.Dictionary<State>
-    readonly "default state": g.IReference<State>
+    readonly "states": gapi.IReadonlyDictionary<State>
+    readonly "default state": gapi.IReference<State>
 }
 
 export type ValueType =
-    | ["string", {}]
-    | ["number", {}]
-    | ["boolean", {}]
+    | ["string", {
+        //
+    }]
+    | ["number", {
+        //
+    }]
+    | ["boolean", {
+        //
+    }]
 
 export type Value = {
     readonly "type": ValueType

@@ -8,11 +8,13 @@ export * from "./ide-integration/createHoverTextFinder"
 export * from "./loadDocument"
 //export * from "./readSchemaFileFromFileSystem" don't export this file. it uses the fs module. This module cannot be used in the browser
 
-import * as _syncAPI from "./syncAPI"
+export * from "./API/DiagnosticSeverity"
+
+import * as _syncAPI from "./API/syncAPI"
 export const syncAPI = _syncAPI
 
 import * as _asyncAPI from "./asyncAPI"
 export const asyncAPI = _asyncAPI
 
-import * as _sideEffects from "./ParsingSideEffectsAPI"
+import * as _sideEffects from "./API/ParsingSideEffectsAPI"
 export const sideEffects = _sideEffects

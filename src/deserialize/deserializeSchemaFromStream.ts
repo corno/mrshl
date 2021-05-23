@@ -1,7 +1,7 @@
 import * as astn from "astn"
 import { createSchemaDeserializer, SchemaSchemaError } from "./createSchemaDeserializer"
 import * as p from "pareto"
-import { SchemaAndSideEffects } from "../schemas"
+import { SchemaAndSideEffects } from "../API/SchemaAndSideEffects"
 
 export type ExternalSchemaDeserializationError = {
     problem:

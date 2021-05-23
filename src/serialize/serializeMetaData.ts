@@ -2,10 +2,10 @@
     no-shadow: "off",
 */
 import * as astn from "astn"
-import * as syncAPI from "../syncAPI"
-import * as md from "../types"
-import * as g from "../generics"
-import { InternalSchemaSpecification } from "../syncAPI"
+import * as syncAPI from "../API/syncAPI"
+import * as md from "../API/types"
+import * as gapi from "../API/generics"
+import { InternalSchemaSpecification } from "../API/syncAPI"
 
 function assertUnreachable<RT>(_x: never): RT {
     throw new Error("unreachable")
@@ -74,7 +74,7 @@ function createType(propertyValues: { [Key: string]: [boolean, astn.Serializable
         }],
     }
 }
-function createDictionary<T>(entries: g.IReadonlyDictionary<T>, entryMapper: (entry: T) => astn.SerializableValue): astn.SerializableValue {
+function createDictionary<T>(entries: gapi.IReadonlyDictionary<T>, entryMapper: (entry: T) => astn.SerializableValue): astn.SerializableValue {
     return {
         commentData: createEmptyCommentData(),
         type: ["object", {
@@ -92,7 +92,7 @@ function createDictionary<T>(entries: g.IReadonlyDictionary<T>, entryMapper: (en
     }
 }
 
-function createReference<T>(reference: g.IReference<T>): astn.SerializableValue {
+function createReference<T>(reference: gapi.IReference<T>): astn.SerializableValue {
     return {
         commentData: createEmptyCommentData(),
         type: ["simple value", {

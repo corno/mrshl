@@ -1,11 +1,4 @@
-import {
-    IReadonlyLookup,
-} from "./Dictionary"
-
-export interface IReference<T> {
-    get(): T
-    readonly name: string
-}
+import * as gapi from "../../../API/generics"
 
 type Resolve = () => boolean
 
@@ -26,7 +19,7 @@ export class ResolveRegistry {
     }
 }
 
-export function createReference<T>(name: string, lookup: IReadonlyLookup<T>, resolver: ResolveRegistry, onError: (keys: string[]) => void): IReference<T> {
+export function createReference<T>(name: string, lookup: gapi.IReadonlyLookup<T>, resolver: ResolveRegistry, onError: (keys: string[]) => void): gapi.IReference<T> {
     let t: T | null = null
     resolver.register(() => {
         t = lookup.get(name)

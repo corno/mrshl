@@ -1,6 +1,6 @@
 // tslint:disable: interface-name
 import * as g from "./generics"
-import * as syncAPI from "./syncAPI"
+import * as syncAPI from "./API/syncAPI"
 
 export interface IFocussable {
     setFocus(): void

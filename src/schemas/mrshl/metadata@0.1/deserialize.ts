@@ -4,9 +4,13 @@
 */
 import * as p from "pareto"
 import * as astn from "astn"
-import * as g from "../../../generics"
-import * as t from "../../../types"
-import * as md from "../../../types"
+import * as gapi from "../../../API/generics"
+import * as t from "../../../API/types"
+import {
+    createReference,
+    ResolveRegistry,
+} from "./Reference"
+import * as g from "./Dictionary"
 
 /**
  * this function is only calls back if the value is not null
@@ -29,9 +33,9 @@ type StringAndRange = {
 function createNodeHandler(
     context: astn.ExpectContext,
     raiseValidationError: (message: string, range: astn.Range) => void,
-    componentTypes: g.IReadonlyDictionary<t.ComponentType>,
+    componentTypes: gapi.IReadonlyDictionary<t.ComponentType>,
     callback: (node: t.Node) => void,
-    resolveRegistry: g.ResolveRegistry
+    resolveRegistry: ResolveRegistry
 ): astn.ExpectedProperty {
     return {
         onExists: () => {
@@ -100,7 +104,7 @@ function createNodeHandler(
 
                                                                                             targetCollectionType = ["dictionary", {
                                                                                                 "node": assertedTargetNode,
-                                                                                                "key property": g.createReference(
+                                                                                                "key property": createReference(
                                                                                                     assertedKeyPropertyName.value,
                                                                                                     assertedTargetNode.properties,
                                                                                                     resolveRegistry,
@@ -198,7 +202,7 @@ function createNodeHandler(
                                                                 () => {
                                                                     const assertedTargetComponentTypeName = assertNotNull(targetComponentTypeName)
                                                                     targetPropertyType = ["component", {
-                                                                        "type": g.createReference(
+                                                                        "type": createReference(
                                                                             assertedTargetComponentTypeName.value,
                                                                             componentTypes,
                                                                             resolveRegistry,
@@ -281,7 +285,7 @@ function createNodeHandler(
                                                                     targetPropertyType = ["state group", {
                                                                         "states": states,
 
-                                                                        "default state": g.createReference(
+                                                                        "default state": createReference(
                                                                             assertedDefaultStateName.value,
                                                                             states,
                                                                             resolveRegistry,
@@ -407,7 +411,7 @@ function createNodeHandler(
 export function createDeserializer(
     onExpectError: (error: astn.ExpectError, range: astn.Range) => void,
     onValidationError: (message: string, range: astn.Range) => void,
-    callback: (metaData: md.Schema | null) => void
+    callback: (metaData: t.Schema | null) => void
 ): astn.OnObject {
     const componentTypes = new g.Dictionary<t.ComponentType>({})
     let rootName: string | null = null
@@ -425,7 +429,7 @@ export function createDeserializer(
         astn.Severity.warning,
         astn.OnDuplicateEntry.ignore
     )
-    const resolveRegistry = new g.ResolveRegistry()
+    const resolveRegistry = new ResolveRegistry()
 
     return context.createTypeHandler(
         {
@@ -489,7 +493,7 @@ export function createDeserializer(
             const assertedRange = assertNotNull(rootNameRange)
             schema = {
                 "component types": componentTypes,
-                "root type": g.createReference(
+                "root type": createReference(
                     assertedRootName,
                     componentTypes,
                     resolveRegistry,

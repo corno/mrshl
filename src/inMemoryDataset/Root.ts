@@ -1,4 +1,4 @@
-import * as d from "../types"
+import * as d from "../API/types"
 import { RootErrorsAggregator } from "./implementation/ErrorManager"
 import { Global } from "./Global"
 import { Node } from "./implementation/Node"

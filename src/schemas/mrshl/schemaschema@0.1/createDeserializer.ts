@@ -4,7 +4,14 @@
 */
 import * as p from "pareto"
 import * as astn from "astn"
-import * as g from "../../../generics"
+import * as gapi from "../../../API/generics"
+import {
+    Dictionary,
+} from "./Dictionary"
+import {
+    ResolveRegistry,
+    createReference,
+} from "./Reference"
 import * as t from "./types"
 
 /**
@@ -28,13 +35,13 @@ type StringAndRange = {
 function createExpectedNodeHandler(
     context: astn.ExpectContext,
     raiseValidationError: (message: string, range: astn.Range) => void,
-    componentTypes: g.IReadonlyDictionary<t.ComponentType>,
+    componentTypes: gapi.IReadonlyDictionary<t.ComponentType>,
     callback: (node: t.Node) => void,
-    resolveRegistry: g.ResolveRegistry,
+    resolveRegistry: ResolveRegistry,
 ): astn.ExpectedProperty {
     return {
         onExists: () => {
-            const properties = new g.Dictionary<t.Property>({})
+            const properties = new Dictionary<t.Property>({})
             return context.expectValue(() => context.expectType(
                 {
                     "properties": {
@@ -95,7 +102,7 @@ function createExpectedNodeHandler(
 
                                                                                         const assertedTargetKeyProperty = assertNotNull(targetKeyProperty)
                                                                                         targetCollectionType = ["dictionary", {
-                                                                                            "key property": g.createReference(
+                                                                                            "key property": createReference(
                                                                                                 assertedTargetKeyProperty.value,
                                                                                                 assertedTargetNode.properties,
                                                                                                 resolveRegistry,
@@ -168,7 +175,7 @@ function createExpectedNodeHandler(
                                                             () => {
                                                                 const assertedTargetComponentTypeName = assertNotNull(targetComponentTypeName)
                                                                 targetPropertyType = ["component", {
-                                                                    "type": g.createReference(
+                                                                    "type": createReference(
                                                                         assertedTargetComponentTypeName.value,
                                                                         componentTypes,
                                                                         resolveRegistry,
@@ -184,7 +191,7 @@ function createExpectedNodeHandler(
                                                         ))
                                                     },
                                                     "state group": () => {
-                                                        const states = new g.Dictionary<t.State>({})
+                                                        const states = new Dictionary<t.State>({})
                                                         let targetDefaultState: null | StringAndRange = null
                                                         return context.expectValue(() => context.expectType(
                                                             {
@@ -249,7 +256,7 @@ function createExpectedNodeHandler(
                                                                 const assertedTargetDefaultState = assertNotNull(targetDefaultState)
                                                                 targetPropertyType = ["state group", {
                                                                     "states": states,
-                                                                    "default state": g.createReference(
+                                                                    "default state": createReference(
                                                                         assertedTargetDefaultState.value,
                                                                         states,
                                                                         resolveRegistry,
@@ -362,7 +369,7 @@ function createExpectedNodeHandler(
         },
         onNotExists: () => {
             callback({
-                properties: new g.Dictionary<t.Property>({}),
+                properties: new Dictionary<t.Property>({}),
             })
         },
     }
@@ -373,7 +380,7 @@ export function createDeserializer(
     onValidationError: (message: string, range: astn.Range) => void,
     callback: (metaData: null | t.Schema) => void
 ): astn.OnObject {
-    const componentTypes = new g.Dictionary<t.ComponentType>({})
+    const componentTypes = new Dictionary<t.ComponentType>({})
     let rootName: StringAndRange | null = null
 
     const context = new astn.ExpectContext(
@@ -388,7 +395,7 @@ export function createDeserializer(
         astn.Severity.warning,
         astn.OnDuplicateEntry.ignore
     )
-    const resolveRegistry = new g.ResolveRegistry()
+    const resolveRegistry = new ResolveRegistry()
 
     return context.createTypeHandler(
         {
@@ -455,7 +462,7 @@ export function createDeserializer(
             const assertedRootName = assertNotNull(rootName)
             schema = {
                 "component types": componentTypes,
-                "root type": g.createReference(
+                "root type": createReference(
                     assertedRootName.value,
                     componentTypes,
                     resolveRegistry,

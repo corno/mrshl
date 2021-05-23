@@ -1,5 +1,5 @@
 import * as astn from "astn"
-import * as syncAPI from "../syncAPI"
+import * as syncAPI from "../API/syncAPI"
 
 function assertUnreachable<RT>(_x: never): RT {
     throw new Error("unreachable")

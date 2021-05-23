@@ -1,4 +1,4 @@
-import * as d from "../../types"
+import * as d from "../../API/types"
 import { Node } from "./Node"
 import { Comments } from "./Comments"
 import { IParentErrorsAggregator, ErrorManager } from "./ErrorManager"
