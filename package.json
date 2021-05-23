@@ -11,7 +11,9 @@
     "pubMin": "npm run validatePublishReadiness && npm version minor && git push && npm publish",
     "pubPatch": "npm run validatePublishReadiness && npm version patch && git push && npm publish",
     "test": "tsc && mocha ./dist/test",
-    "update2latest": "ncu -u --packageFile package.json && nsi"
+    "update2latest": "ncu -u --packageFile package.json && nsi",
+    "update2latestAndPublishMinor": "npm run validatePublishReadiness && npm run update2latest && npm run test && git commit -am \"u2l\" && npm run pubMin",
+    "update2latestAndPublishPath": "npm run validatePublishReadiness && npm run update2latest && npm run test && git commit -am \"u2l\" && npm run pubPatch"
   },
   "keywords": [],
   "author": "corno",
