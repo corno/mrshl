@@ -14,16 +14,16 @@ function assertUnreachable<RT>(_x: never): RT {
 
 type GetCodeCompletions = () => string[]
 
-function createPropertyCodeCompletion(prop: md.Property): fp.InlineSegment {
+function createCodeCompletionForProperty(prop: md.Property, shorthand: boolean): fp.InlineSegment {
     switch (prop.type[0]) {
         case "collection": {
             const $ = prop.type[1]
             switch ($.type[0]) {
                 case "dictionary": {
-                    return `{}`
+                    return `{ }`
                 }
                 case "list": {
-                    return `[]`
+                    return `[ ]`
                 }
                 default:
                     return assertUnreachable($.type[0])
@@ -32,13 +32,13 @@ function createPropertyCodeCompletion(prop: md.Property): fp.InlineSegment {
         case "component": {
             const $ = prop.type[1]
 
-            return createNodeCodeCompletion($.type.get().node, null)
+            return createCodeCompletionForNode($.type.get().node, null, shorthand)
         }
         case "state group": {
             const $ = prop.type[1]
             return [
                 `| '${$["default state"].name}' `,
-                createNodeCodeCompletion($["default state"].get().node, null),
+                createCodeCompletionForNode($["default state"].get().node, null, shorthand),
             ]
         }
         case "value": {
@@ -55,7 +55,19 @@ function createPropertyCodeCompletion(prop: md.Property): fp.InlineSegment {
     }
 }
 
-function createPropertiesCodeCompletion(node: md.Node, keyProperty: md.Property | null): fp.Block {
+function createCodeCompletionForShorthandProperties(node: md.Node, keyProperty: md.Property | null): fp.InlineSegment {
+    const x: fp.InlineSegment[] = []
+    node.properties.mapUnsorted((prop, _propKey) => {
+        if (prop === keyProperty) {
+            return
+        }
+        x.push(' ')
+        x.push(createCodeCompletionForProperty(prop, true))
+    })
+    return x
+}
+
+function createCodeCompletionForVerboseProperties(node: md.Node, keyProperty: md.Property | null): fp.Block {
     const x: fp.Block[] = []
     node.properties.mapUnsorted((prop, propKey) => {
         if (prop === keyProperty) {
@@ -63,20 +75,26 @@ function createPropertiesCodeCompletion(node: md.Node, keyProperty: md.Property 
         }
         x.push(fp.line([
             `'${propKey}': `,
-            createPropertyCodeCompletion(prop),
+            createCodeCompletionForProperty(prop, false),
         ]))
     })
     return x
 }
 
-function createNodeCodeCompletion(node: md.Node, keyProperty: md.Property | null): fp.InlineSegment {
-    return [
-        '(',
-        () => {
-            return createPropertiesCodeCompletion(node, keyProperty)
-        },
-        ')',
-    ]
+function createCodeCompletionForNode(node: md.Node, keyProperty: md.Property | null, shorthand: boolean): fp.InlineSegment {
+    if (shorthand) {
+        return [
+            '<', createCodeCompletionForShorthandProperties(node, keyProperty), ' >',
+        ]
+    } else {
+        return [
+            '(',
+            () => {
+                return createCodeCompletionForVerboseProperties(node, keyProperty)
+            },
+            ')',
+        ]
+    }
 }
 
 export type OnToken = (
@@ -92,7 +110,7 @@ class CodeCompletionGenerator implements sideEffects.Root {
         onToken: OnToken,
         onEnd: () => void,
     ) {
-        this.node = new NodeCodeCompletionGenerator(onToken)
+        this.node = new CodeCompletionForNodeGenerator(onToken)
         this.onEndCallback = onEnd
     }
     onEnd() {
@@ -108,7 +126,7 @@ class StateGroupCodeCompletionGenerator implements sideEffects.StateGroup {
         this.onToken = onToken
     }
     onState() {
-        return new NodeCodeCompletionGenerator(this.onToken)
+        return new CodeCompletionForNodeGenerator(this.onToken)
     }
     onUnexpectedState(
         _stateName: string,
@@ -128,7 +146,7 @@ class StateGroupCodeCompletionGenerator implements sideEffects.StateGroup {
     }
 }
 
-class PropertyCodeCompletionGenerator implements sideEffects.Property {
+class CodeCompletionForPropertyGenerator implements sideEffects.Property {
     private readonly onToken: OnToken
     constructor(
         onToken: OnToken,
@@ -136,10 +154,10 @@ class PropertyCodeCompletionGenerator implements sideEffects.Property {
         this.onToken = onToken
     }
     onDictionary() {
-        return new DictionaryCodeCompletionGenerator(this.onToken)
+        return new CodeCompletionForDictionaryGenerator(this.onToken)
     }
     onList() {
-        return new ListCodeCompletionGenerator(this.onToken)
+        return new CodeCompletionForListGenerator(this.onToken)
     }
     onStateGroup() {
         return new StateGroupCodeCompletionGenerator(this.onToken)
@@ -164,38 +182,38 @@ class PropertyCodeCompletionGenerator implements sideEffects.Property {
         )
     }
     onComponent() {
-        return new NodeCodeCompletionGenerator(this.onToken)
+        return new CodeCompletionForNodeGenerator(this.onToken)
     }
 }
 
-class ListCodeCompletionGenerator implements sideEffects.List {
+class CodeCompletionForListGenerator implements sideEffects.List {
     public readonly node: sideEffects.Node
     private readonly onToken: OnToken
     constructor(
         onToken: OnToken,
     ) {
         this.onToken = onToken
-        this.node = new NodeCodeCompletionGenerator(onToken)
+        this.node = new CodeCompletionForNodeGenerator(onToken)
     }
     onClose() {
         //
     }
     onEntry() {
-        return new NodeCodeCompletionGenerator(this.onToken)
+        return new CodeCompletionForNodeGenerator(this.onToken)
     }
     onUnexpectedEntry() {
         //
     }
 }
 
-class DictionaryCodeCompletionGenerator implements sideEffects.Dictionary {
+class CodeCompletionForDictionaryGenerator implements sideEffects.Dictionary {
     public readonly node: sideEffects.Node
     private readonly onToken: OnToken
     constructor(
         onToken: OnToken,
     ) {
         this.onToken = onToken
-        this.node = new NodeCodeCompletionGenerator(onToken)
+        this.node = new CodeCompletionForNodeGenerator(onToken)
     }
     onClose() {
         //
@@ -213,46 +231,65 @@ class DictionaryCodeCompletionGenerator implements sideEffects.Dictionary {
             range,
             null,
             () => {
-                const out: string[] = []
-                fp.serialize(
-                    [
-                        fp.line([
-                            " ",
-                            createNodeCodeCompletion(nodeDefinition, keyPropertyDefinition),
-                        ]),
-                    ],
-                    "    ",
-                    true,
-                    codeCompletion => {
-                        out.push(codeCompletion)
-                    }
-                )
-                return [out.map((line, index) => {
-                    //don't indent the first line
-                    if (index === 0) {
+                function create(shorthand: boolean) {
+                    const out: string[] = []
+                    fp.serialize(
+                        [
+                            fp.line([
+                                " ",
+                                createCodeCompletionForNode(nodeDefinition, keyPropertyDefinition, shorthand),
+                            ]),
+                        ],
+                        "    ",
+                        true,
+                        codeCompletion => {
+                            out.push(codeCompletion)
+                        }
+                    )
+                    return out.map((line, index) => {
+                        //don't indent the first line
+                        if (index === 0) {
+                            return line
+                        }
                         return line
-                    }
-                    return line
-                    //return contextData.indentation + line
-                }).join("\n")]
+                        //return contextData.indentation + line
+                    }).join("\n")
+                }
+                return [
+                    create(false),
+                    create(true),
+                ]
             }
         )
-        return new NodeCodeCompletionGenerator(this.onToken)
+        return new CodeCompletionForNodeGenerator(this.onToken)
     }
 }
 
-class NodeCodeCompletionGenerator implements sideEffects.Node {
+class CodeCompletionForShorthandTypeGenerator implements sideEffects.ShorthandType {
     private readonly onToken: OnToken
     constructor(
         onToken: OnToken,
     ) {
         this.onToken = onToken
     }
+    onProperty(
+        _propKey: string,
+        _propDefinition: md.Property,
+        _nodeBuilder: syncAPI.Node,
+    ) {
+        return new CodeCompletionForPropertyGenerator(this.onToken)
+    }
     onShorthandTypeClose() {
         //
     }
-    onShorthandTypeOpen() {
-        //
+}
+
+class CodeCompletionForVerboseTypeGenerator implements sideEffects.Type {
+    private readonly onToken: OnToken
+    constructor(
+        onToken: OnToken,
+    ) {
+        this.onToken = onToken
     }
     onProperty(
         _propKey: string,
@@ -270,7 +307,7 @@ class NodeCodeCompletionGenerator implements sideEffects.Node {
                         [
                             fp.line([
                                 " ",
-                                createPropertyCodeCompletion(propDefinition),
+                                createCodeCompletionForProperty(propDefinition, false),
                             ]),
                         ],
                         "    ",
@@ -290,7 +327,7 @@ class NodeCodeCompletionGenerator implements sideEffects.Node {
                 },
             )
         }
-        return new PropertyCodeCompletionGenerator(this.onToken)
+        return new CodeCompletionForPropertyGenerator(this.onToken)
     }
     onUnexpectedProperty(
         _key: string,
@@ -306,7 +343,50 @@ class NodeCodeCompletionGenerator implements sideEffects.Node {
             null
         )
     }
-    onTypeOpen(range: astn.Range, nodeDefinition: md.Node, keyPropertyDefinition: md.Property | null) {
+    onTypeClose() {
+        //
+    }
+}
+
+class CodeCompletionForNodeGenerator implements sideEffects.Node {
+    private readonly onToken: OnToken
+    constructor(
+        onToken: OnToken,
+    ) {
+        this.onToken = onToken
+    }
+    onShorthandTypeOpen(
+        range: astn.Range,
+        nodeDefinition: md.Node,
+        keyPropertyDefinition: md.Property | null
+    ) {
+        this.onToken(
+            range,
+            null,
+            () => {
+                const out: string[] = []
+                fp.serialize(
+                    [
+                        fp.line(createCodeCompletionForShorthandProperties(nodeDefinition, keyPropertyDefinition)),
+                    ],
+                    "    ",
+                    true,
+                    codeCompletion => {
+                        out.push(codeCompletion)
+                    }
+                )
+                return [
+                    out.join("\n"),
+                ]
+            },
+        )
+        return new CodeCompletionForShorthandTypeGenerator(this.onToken)
+    }
+    onTypeOpen(
+        range: astn.Range,
+        nodeDefinition: md.Node,
+        keyPropertyDefinition: md.Property | null
+    ) {
         this.onToken(
             range,
             null,
@@ -316,7 +396,7 @@ class NodeCodeCompletionGenerator implements sideEffects.Node {
                     [
                         '',
                         () => {
-                            return createPropertiesCodeCompletion(nodeDefinition, keyPropertyDefinition)
+                            return createCodeCompletionForVerboseProperties(nodeDefinition, keyPropertyDefinition)
                         },
                         '',
                     ],
@@ -327,20 +407,11 @@ class NodeCodeCompletionGenerator implements sideEffects.Node {
                     }
                 )
                 return [
-                    out.map((line, index) => {
-                        //don't indent the first line
-                        if (index === 0) {
-                            return line
-                        }
-                        return line
-                        //return contextData.indentation + line
-                    }).join("\n"),
+                    out.join("\n"),
                 ]
             },
         )
-    }
-    onTypeClose() {
-        //
+        return new CodeCompletionForVerboseTypeGenerator(this.onToken)
     }
 }
 

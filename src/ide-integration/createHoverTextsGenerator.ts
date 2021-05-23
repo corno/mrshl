@@ -233,6 +233,38 @@ class DictionaryHoverTextGenerator implements sideEffects.Dictionary {
     }
 }
 
+class ShorthandTypeHoverTextGenerator implements sideEffects.ShorthandType {
+    private readonly onToken: OnTokenHoverText
+    private readonly componentName: string | null
+    constructor(
+        componentName: string | null,
+        onToken: OnTokenHoverText,
+    ) {
+        this.onToken = onToken
+        this.componentName = componentName
+    }
+    private addOnToken(range: astn.Range) {
+
+        if (this.componentName !== null) {
+            const cn = this.componentName
+            this.onToken(range, () => {
+                return cn
+            })
+        }
+        //
+    }
+    onProperty(
+        propKey: string,
+        _propDefinition: md.Property,
+        _nodeBuilder: syncAPI.Node,
+    ) {
+        return new PropertyHoverTextGenerator(propKey, this.onToken)
+    }
+    onShorthandTypeClose(range: astn.Range) {
+        this.addOnToken(range)
+    }
+}
+
 class NodeHoverTextGenerator implements sideEffects.Node {
     private readonly onToken: OnTokenHoverText
     private readonly componentName: string | null
@@ -253,15 +285,13 @@ class NodeHoverTextGenerator implements sideEffects.Node {
         }
         //
     }
-    onShorthandTypeClose(range: astn.Range) {
-        this.addOnToken(range)
-    }
     onShorthandTypeOpen(range: astn.Range) {
         this.addOnToken(range)
+        return new ShorthandTypeHoverTextGenerator(this.componentName, this.onToken)
     }
     onProperty(
         propKey: string,
-        _propRange: astn.Range | null,
+        _propRange: astn.Range,
         _propDefinition: md.Property,
         _nodeBuilder: syncAPI.Node,
     ) {
@@ -281,6 +311,7 @@ class NodeHoverTextGenerator implements sideEffects.Node {
         _keyPropertyDefinition: md.Property | null
     ) {
         this.addOnToken(range)
+        return new NodeHoverTextGenerator(this.componentName, this.onToken)
     }
     onTypeClose(range: astn.Range) {
         this.addOnToken(range)

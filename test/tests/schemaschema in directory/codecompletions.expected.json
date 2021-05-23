@@ -2,49 +2,51 @@
 	"1:28-29": {
 		"inToken": null,
 		"afterToken": [
-			"\n    'component types': {}\n    'root type': \"root\"\n"
+			"\n    'component types': { }\n    'root type': \"root\"\n"
 		]
 	},
 	"2:5-22": {
 		"inToken": null,
 		"afterToken": [
-			" {}"
+			" { }"
 		]
 	},
 	"3:9-15": {
 		"inToken": null,
 		"afterToken": [
-			" (\n    'node': (\n        'properties': {}\n    )\n)"
+			" (\n    'node': (\n        'properties': { }\n    )\n)",
+			" < < { } > >"
 		]
 	},
 	"3:17-18": {
 		"inToken": null,
 		"afterToken": [
-			"\n    'node': (\n        'properties': {}\n    )\n"
+			"\n    'node': (\n        'properties': { }\n    )\n"
 		]
 	},
 	"4:13-19": {
 		"inToken": null,
 		"afterToken": [
-			" (\n    'properties': {}\n)"
+			" (\n    'properties': { }\n)"
 		]
 	},
 	"4:21-22": {
 		"inToken": null,
 		"afterToken": [
-			"\n    'properties': {}\n"
+			"\n    'properties': { }\n"
 		]
 	},
 	"5:17-29": {
 		"inToken": null,
 		"afterToken": [
-			" {}"
+			" { }"
 		]
 	},
 	"6:21-33": {
 		"inToken": null,
 		"afterToken": [
-			" (\n    'type': | 'value' (\n        'default value': \"\"\n        'type': | 'text' (\n        )\n    )\n)"
+			" (\n    'type': | 'value' (\n        'default value': \"\"\n        'type': | 'text' (\n        )\n    )\n)",
+			" < | 'value' < \"\" | 'text' < > > >"
 		]
 	},
 	"6:35-36": {
@@ -62,31 +64,32 @@
 	"7:48-49": {
 		"inToken": null,
 		"afterToken": [
-			"\n    'node': (\n        'properties': {}\n    )\n    'type': | 'list' (\n    )\n"
+			"\n    'node': (\n        'properties': { }\n    )\n    'type': | 'list' (\n    )\n"
 		]
 	},
 	"8:29-35": {
 		"inToken": null,
 		"afterToken": [
-			" (\n    'properties': {}\n)"
+			" (\n    'properties': { }\n)"
 		]
 	},
 	"8:37-38": {
 		"inToken": null,
 		"afterToken": [
-			"\n    'properties': {}\n"
+			"\n    'properties': { }\n"
 		]
 	},
 	"9:33-45": {
 		"inToken": null,
 		"afterToken": [
-			" {}"
+			" { }"
 		]
 	},
 	"10:37-43": {
 		"inToken": null,
 		"afterToken": [
-			" (\n    'type': | 'value' (\n        'default value': \"\"\n        'type': | 'text' (\n        )\n    )\n)"
+			" (\n    'type': | 'value' (\n        'default value': \"\"\n        'type': | 'text' (\n        )\n    )\n)",
+			" < | 'value' < \"\" | 'text' < > > >"
 		]
 	},
 	"10:45-46": {
@@ -98,7 +101,8 @@
 	"11:37-43": {
 		"inToken": null,
 		"afterToken": [
-			" (\n    'type': | 'value' (\n        'default value': \"\"\n        'type': | 'text' (\n        )\n    )\n)"
+			" (\n    'type': | 'value' (\n        'default value': \"\"\n        'type': | 'text' (\n        )\n    )\n)",
+			" < | 'value' < \"\" | 'text' < > > >"
 		]
 	},
 	"11:45-46": {
@@ -116,49 +120,51 @@
 	"12:65-66": {
 		"inToken": null,
 		"afterToken": [
-			"\n    'states': {}\n    'default state': \"\"\n"
+			"\n    'states': { }\n    'default state': \"\"\n"
 		]
 	},
 	"13:45-53": {
 		"inToken": null,
 		"afterToken": [
-			" {}"
+			" { }"
 		]
 	},
 	"14:49-61": {
 		"inToken": null,
 		"afterToken": [
-			" (\n    'node': (\n        'properties': {}\n    )\n)"
+			" (\n    'node': (\n        'properties': { }\n    )\n)",
+			" < < { } > >"
 		]
 	},
 	"14:63-64": {
 		"inToken": null,
 		"afterToken": [
-			"\n    'node': (\n        'properties': {}\n    )\n"
+			"\n    'node': (\n        'properties': { }\n    )\n"
 		]
 	},
 	"15:53-59": {
 		"inToken": null,
 		"afterToken": [
-			" (\n    'properties': {}\n)"
+			" (\n    'properties': { }\n)"
 		]
 	},
 	"15:61-62": {
 		"inToken": null,
 		"afterToken": [
-			"\n    'properties': {}\n"
+			"\n    'properties': { }\n"
 		]
 	},
 	"16:57-69": {
 		"inToken": null,
 		"afterToken": [
-			" {}"
+			" { }"
 		]
 	},
 	"17:61-67": {
 		"inToken": null,
 		"afterToken": [
-			" (\n    'type': | 'value' (\n        'default value': \"\"\n        'type': | 'text' (\n        )\n    )\n)"
+			" (\n    'type': | 'value' (\n        'default value': \"\"\n        'type': | 'text' (\n        )\n    )\n)",
+			" < | 'value' < \"\" | 'text' < > > >"
 		]
 	},
 	"17:69-70": {
@@ -194,7 +200,8 @@
 	"22:61-67": {
 		"inToken": null,
 		"afterToken": [
-			" (\n    'type': | 'value' (\n        'default value': \"\"\n        'type': | 'text' (\n        )\n    )\n)"
+			" (\n    'type': | 'value' (\n        'default value': \"\"\n        'type': | 'text' (\n        )\n    )\n)",
+			" < | 'value' < \"\" | 'text' < > > >"
 		]
 	},
 	"22:69-70": {
@@ -212,49 +219,51 @@
 	"23:89-90": {
 		"inToken": null,
 		"afterToken": [
-			"\n    'states': {}\n    'default state': \"\"\n"
+			"\n    'states': { }\n    'default state': \"\"\n"
 		]
 	},
 	"24:69-77": {
 		"inToken": null,
 		"afterToken": [
-			" {}"
+			" { }"
 		]
 	},
 	"25:73-85": {
 		"inToken": null,
 		"afterToken": [
-			" (\n    'node': (\n        'properties': {}\n    )\n)"
+			" (\n    'node': (\n        'properties': { }\n    )\n)",
+			" < < { } > >"
 		]
 	},
 	"25:87-88": {
 		"inToken": null,
 		"afterToken": [
-			"\n    'node': (\n        'properties': {}\n    )\n"
+			"\n    'node': (\n        'properties': { }\n    )\n"
 		]
 	},
 	"26:77-83": {
 		"inToken": null,
 		"afterToken": [
-			" (\n    'properties': {}\n)"
+			" (\n    'properties': { }\n)"
 		]
 	},
 	"26:85-86": {
 		"inToken": null,
 		"afterToken": [
-			"\n    'properties': {}\n"
+			"\n    'properties': { }\n"
 		]
 	},
 	"27:81-93": {
 		"inToken": null,
 		"afterToken": [
-			" {}"
+			" { }"
 		]
 	},
 	"28:85-99": {
 		"inToken": null,
 		"afterToken": [
-			" (\n    'type': | 'value' (\n        'default value': \"\"\n        'type': | 'text' (\n        )\n    )\n)"
+			" (\n    'type': | 'value' (\n        'default value': \"\"\n        'type': | 'text' (\n        )\n    )\n)",
+			" < | 'value' < \"\" | 'text' < > > >"
 		]
 	},
 	"28:101-102": {
@@ -290,13 +299,14 @@
 	"36:73-79": {
 		"inToken": null,
 		"afterToken": [
-			" (\n    'node': (\n        'properties': {}\n    )\n)"
+			" (\n    'node': (\n        'properties': { }\n    )\n)",
+			" < < { } > >"
 		]
 	},
 	"36:81-82": {
 		"inToken": null,
 		"afterToken": [
-			"\n    'node': (\n        'properties': {}\n    )\n"
+			"\n    'node': (\n        'properties': { }\n    )\n"
 		]
 	},
 	"38:69-84": {
@@ -314,37 +324,39 @@
 	"44:49-60": {
 		"inToken": null,
 		"afterToken": [
-			" (\n    'node': (\n        'properties': {}\n    )\n)"
+			" (\n    'node': (\n        'properties': { }\n    )\n)",
+			" < < { } > >"
 		]
 	},
 	"44:62-63": {
 		"inToken": null,
 		"afterToken": [
-			"\n    'node': (\n        'properties': {}\n    )\n"
+			"\n    'node': (\n        'properties': { }\n    )\n"
 		]
 	},
 	"45:53-59": {
 		"inToken": null,
 		"afterToken": [
-			" (\n    'properties': {}\n)"
+			" (\n    'properties': { }\n)"
 		]
 	},
 	"45:61-62": {
 		"inToken": null,
 		"afterToken": [
-			"\n    'properties': {}\n"
+			"\n    'properties': { }\n"
 		]
 	},
 	"46:57-69": {
 		"inToken": null,
 		"afterToken": [
-			" {}"
+			" { }"
 		]
 	},
 	"47:61-67": {
 		"inToken": null,
 		"afterToken": [
-			" (\n    'type': | 'value' (\n        'default value': \"\"\n        'type': | 'text' (\n        )\n    )\n)"
+			" (\n    'type': | 'value' (\n        'default value': \"\"\n        'type': | 'text' (\n        )\n    )\n)",
+			" < | 'value' < \"\" | 'text' < > > >"
 		]
 	},
 	"47:69-70": {
@@ -356,37 +368,39 @@
 	"51:49-62": {
 		"inToken": null,
 		"afterToken": [
-			" (\n    'node': (\n        'properties': {}\n    )\n)"
+			" (\n    'node': (\n        'properties': { }\n    )\n)",
+			" < < { } > >"
 		]
 	},
 	"51:64-65": {
 		"inToken": null,
 		"afterToken": [
-			"\n    'node': (\n        'properties': {}\n    )\n"
+			"\n    'node': (\n        'properties': { }\n    )\n"
 		]
 	},
 	"52:53-59": {
 		"inToken": null,
 		"afterToken": [
-			" (\n    'properties': {}\n)"
+			" (\n    'properties': { }\n)"
 		]
 	},
 	"52:61-62": {
 		"inToken": null,
 		"afterToken": [
-			"\n    'properties': {}\n"
+			"\n    'properties': { }\n"
 		]
 	},
 	"53:57-69": {
 		"inToken": null,
 		"afterToken": [
-			" {}"
+			" { }"
 		]
 	},
 	"54:61-69": {
 		"inToken": null,
 		"afterToken": [
-			" (\n    'type': | 'value' (\n        'default value': \"\"\n        'type': | 'text' (\n        )\n    )\n)"
+			" (\n    'type': | 'value' (\n        'default value': \"\"\n        'type': | 'text' (\n        )\n    )\n)",
+			" < | 'value' < \"\" | 'text' < > > >"
 		]
 	},
 	"54:71-72": {
@@ -404,31 +418,32 @@
 	"55:88-89": {
 		"inToken": null,
 		"afterToken": [
-			"\n    'node': (\n        'properties': {}\n    )\n    'type': | 'list' (\n    )\n"
+			"\n    'node': (\n        'properties': { }\n    )\n    'type': | 'list' (\n    )\n"
 		]
 	},
 	"56:69-75": {
 		"inToken": null,
 		"afterToken": [
-			" (\n    'properties': {}\n)"
+			" (\n    'properties': { }\n)"
 		]
 	},
 	"56:77-78": {
 		"inToken": null,
 		"afterToken": [
-			"\n    'properties': {}\n"
+			"\n    'properties': { }\n"
 		]
 	},
 	"57:73-85": {
 		"inToken": null,
 		"afterToken": [
-			" {}"
+			" { }"
 		]
 	},
 	"58:77-83": {
 		"inToken": null,
 		"afterToken": [
-			" (\n    'type': | 'value' (\n        'default value': \"\"\n        'type': | 'text' (\n        )\n    )\n)"
+			" (\n    'type': | 'value' (\n        'default value': \"\"\n        'type': | 'text' (\n        )\n    )\n)",
+			" < | 'value' < \"\" | 'text' < > > >"
 		]
 	},
 	"58:85-86": {
@@ -440,7 +455,8 @@
 	"59:77-83": {
 		"inToken": null,
 		"afterToken": [
-			" (\n    'type': | 'value' (\n        'default value': \"\"\n        'type': | 'text' (\n        )\n    )\n)"
+			" (\n    'type': | 'value' (\n        'default value': \"\"\n        'type': | 'text' (\n        )\n    )\n)",
+			" < | 'value' < \"\" | 'text' < > > >"
 		]
 	},
 	"59:85-86": {
@@ -488,7 +504,8 @@
 	"69:61-76": {
 		"inToken": null,
 		"afterToken": [
-			" (\n    'type': | 'value' (\n        'default value': \"\"\n        'type': | 'text' (\n        )\n    )\n)"
+			" (\n    'type': | 'value' (\n        'default value': \"\"\n        'type': | 'text' (\n        )\n    )\n)",
+			" < | 'value' < \"\" | 'text' < > > >"
 		]
 	},
 	"69:78-79": {
@@ -500,37 +517,39 @@
 	"73:49-56": {
 		"inToken": null,
 		"afterToken": [
-			" (\n    'node': (\n        'properties': {}\n    )\n)"
+			" (\n    'node': (\n        'properties': { }\n    )\n)",
+			" < < { } > >"
 		]
 	},
 	"73:58-59": {
 		"inToken": null,
 		"afterToken": [
-			"\n    'node': (\n        'properties': {}\n    )\n"
+			"\n    'node': (\n        'properties': { }\n    )\n"
 		]
 	},
 	"74:53-59": {
 		"inToken": null,
 		"afterToken": [
-			" (\n    'properties': {}\n)"
+			" (\n    'properties': { }\n)"
 		]
 	},
 	"74:61-62": {
 		"inToken": null,
 		"afterToken": [
-			"\n    'properties': {}\n"
+			"\n    'properties': { }\n"
 		]
 	},
 	"75:57-69": {
 		"inToken": null,
 		"afterToken": [
-			" {}"
+			" { }"
 		]
 	},
 	"76:61-76": {
 		"inToken": null,
 		"afterToken": [
-			" (\n    'type': | 'value' (\n        'default value': \"\"\n        'type': | 'text' (\n        )\n    )\n)"
+			" (\n    'type': | 'value' (\n        'default value': \"\"\n        'type': | 'text' (\n        )\n    )\n)",
+			" < | 'value' < \"\" | 'text' < > > >"
 		]
 	},
 	"76:78-79": {
@@ -542,7 +561,8 @@
 	"77:61-67": {
 		"inToken": null,
 		"afterToken": [
-			" (\n    'type': | 'value' (\n        'default value': \"\"\n        'type': | 'text' (\n        )\n    )\n)"
+			" (\n    'type': | 'value' (\n        'default value': \"\"\n        'type': | 'text' (\n        )\n    )\n)",
+			" < | 'value' < \"\" | 'text' < > > >"
 		]
 	},
 	"77:69-70": {
@@ -560,37 +580,39 @@
 	"78:89-90": {
 		"inToken": null,
 		"afterToken": [
-			"\n    'states': {}\n    'default state': \"\"\n"
+			"\n    'states': { }\n    'default state': \"\"\n"
 		]
 	},
 	"79:69-77": {
 		"inToken": null,
 		"afterToken": [
-			" {}"
+			" { }"
 		]
 	},
 	"80:73-81": {
 		"inToken": null,
 		"afterToken": [
-			" (\n    'node': (\n        'properties': {}\n    )\n)"
+			" (\n    'node': (\n        'properties': { }\n    )\n)",
+			" < < { } > >"
 		]
 	},
 	"80:83-84": {
 		"inToken": null,
 		"afterToken": [
-			"\n    'node': (\n        'properties': {}\n    )\n"
+			"\n    'node': (\n        'properties': { }\n    )\n"
 		]
 	},
 	"81:73-79": {
 		"inToken": null,
 		"afterToken": [
-			" (\n    'node': (\n        'properties': {}\n    )\n)"
+			" (\n    'node': (\n        'properties': { }\n    )\n)",
+			" < < { } > >"
 		]
 	},
 	"81:81-82": {
 		"inToken": null,
 		"afterToken": [
-			"\n    'node': (\n        'properties': {}\n    )\n"
+			"\n    'node': (\n        'properties': { }\n    )\n"
 		]
 	},
 	"83:69-84": {
@@ -632,37 +654,39 @@
 	"101:9-15": {
 		"inToken": null,
 		"afterToken": [
-			" (\n    'node': (\n        'properties': {}\n    )\n)"
+			" (\n    'node': (\n        'properties': { }\n    )\n)",
+			" < < { } > >"
 		]
 	},
 	"101:17-18": {
 		"inToken": null,
 		"afterToken": [
-			"\n    'node': (\n        'properties': {}\n    )\n"
+			"\n    'node': (\n        'properties': { }\n    )\n"
 		]
 	},
 	"102:13-19": {
 		"inToken": null,
 		"afterToken": [
-			" (\n    'properties': {}\n)"
+			" (\n    'properties': { }\n)"
 		]
 	},
 	"102:21-22": {
 		"inToken": null,
 		"afterToken": [
-			"\n    'properties': {}\n"
+			"\n    'properties': { }\n"
 		]
 	},
 	"103:17-29": {
 		"inToken": null,
 		"afterToken": [
-			" {}"
+			" { }"
 		]
 	},
 	"104:21-38": {
 		"inToken": null,
 		"afterToken": [
-			" (\n    'type': | 'value' (\n        'default value': \"\"\n        'type': | 'text' (\n        )\n    )\n)"
+			" (\n    'type': | 'value' (\n        'default value': \"\"\n        'type': | 'text' (\n        )\n    )\n)",
+			" < | 'value' < \"\" | 'text' < > > >"
 		]
 	},
 	"104:40-41": {
@@ -680,31 +704,32 @@
 	"105:48-49": {
 		"inToken": null,
 		"afterToken": [
-			"\n    'node': (\n        'properties': {}\n    )\n    'type': | 'list' (\n    )\n"
+			"\n    'node': (\n        'properties': { }\n    )\n    'type': | 'list' (\n    )\n"
 		]
 	},
 	"106:29-35": {
 		"inToken": null,
 		"afterToken": [
-			" (\n    'properties': {}\n)"
+			" (\n    'properties': { }\n)"
 		]
 	},
 	"106:37-38": {
 		"inToken": null,
 		"afterToken": [
-			"\n    'properties': {}\n"
+			"\n    'properties': { }\n"
 		]
 	},
 	"107:33-45": {
 		"inToken": null,
 		"afterToken": [
-			" {}"
+			" { }"
 		]
 	},
 	"108:37-43": {
 		"inToken": null,
 		"afterToken": [
-			" (\n    'type': | 'value' (\n        'default value': \"\"\n        'type': | 'text' (\n        )\n    )\n)"
+			" (\n    'type': | 'value' (\n        'default value': \"\"\n        'type': | 'text' (\n        )\n    )\n)",
+			" < | 'value' < \"\" | 'text' < > > >"
 		]
 	},
 	"108:45-46": {
@@ -716,7 +741,8 @@
 	"109:37-43": {
 		"inToken": null,
 		"afterToken": [
-			" (\n    'type': | 'value' (\n        'default value': \"\"\n        'type': | 'text' (\n        )\n    )\n)"
+			" (\n    'type': | 'value' (\n        'default value': \"\"\n        'type': | 'text' (\n        )\n    )\n)",
+			" < | 'value' < \"\" | 'text' < > > >"
 		]
 	},
 	"109:45-46": {
@@ -764,7 +790,8 @@
 	"119:21-32": {
 		"inToken": null,
 		"afterToken": [
-			" (\n    'type': | 'value' (\n        'default value': \"\"\n        'type': | 'text' (\n        )\n    )\n)"
+			" (\n    'type': | 'value' (\n        'default value': \"\"\n        'type': | 'text' (\n        )\n    )\n)",
+			" < | 'value' < \"\" | 'text' < > > >"
 		]
 	},
 	"119:34-35": {

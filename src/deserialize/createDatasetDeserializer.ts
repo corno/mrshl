@@ -417,6 +417,9 @@ function createNodeDeserializer(
     return contextData => {
         addComments(targetComments, contextData)
 
+        let shorthandTypeSideEffects: sideEffects.ShorthandType[] | null = null
+        let typeSideEffects: sideEffects.Type[] | null = null
+
         const expectedElements: astn.ExpectedElements = []
         nodeDefinition.properties.forEach((propDefinition, propKey) => {
             if (propDefinition === keyPropertyDefinition) {
@@ -425,15 +428,17 @@ function createNodeDeserializer(
             expectedElements.push({
                 name: propKey,
                 getHandler: () => {
+                    if (shorthandTypeSideEffects === null) {
+                        throw new Error("missing shorthand side effects")
+                    }
                     return createPropertyDeserializer(
                         context,
                         propDefinition,
                         propKey,
                         nodeBuilder,
-                        sideEffectsAPI.map(s => {
+                        shorthandTypeSideEffects.map(s => {
                             return s.onProperty(
                                 propKey,
-                                null,
                                 propDefinition,
                                 nodeBuilder,
                             )
@@ -476,12 +481,15 @@ function createNodeDeserializer(
                         isNonDefault: false,
                     }
                     processedProperties[propKey] = processedProperty
+                    if (typeSideEffects === null) {
+                        throw new Error("missing type side effects")
+                    }
                     return createPropertyDeserializer(
                         context,
                         propDefinition,
                         propKey,
                         nodeBuilder,
-                        sideEffectsAPI.map(s => {
+                        typeSideEffects.map(s => {
                             return s.onProperty(
                                 propKey,
                                 range,
@@ -512,8 +520,8 @@ function createNodeDeserializer(
             expectedProperties,
             expectedElements,
             (range, _openData) => { //onTypeBegin
-                sideEffectsAPI.forEach(s => {
-                    s.onTypeOpen(
+                typeSideEffects = sideEffectsAPI.map(s => {
+                    return s.onTypeOpen(
                         range,
                         nodeDefinition,
                         keyPropertyDefinition,
@@ -537,12 +545,18 @@ function createNodeDeserializer(
                 if (hadNonDefaultProperties) {
                     flagNonDefaultPropertiesFound()
                 }
-                sideEffectsAPI.forEach(s => {
+                if (typeSideEffects === null) {
+                    throw new Error("missing type side effects")
+                }
+                typeSideEffects.forEach(s => {
                     s.onTypeClose(endRange)
                 })
             },
             (key, metaData) => { //onUnexpectedProperty
-                sideEffectsAPI.forEach(s => {
+                if (typeSideEffects === null) {
+                    throw new Error("missing type side effects")
+                }
+                typeSideEffects.forEach(s => {
                     s.onUnexpectedProperty(
                         key,
                         metaData,
@@ -553,8 +567,8 @@ function createNodeDeserializer(
                 return astn.createDummyRequiredValueHandler()
             },
             (startRange, _startData) => { //shorthand open
-                sideEffectsAPI.forEach(s => {
-                    s.onShorthandTypeOpen(
+                shorthandTypeSideEffects = sideEffectsAPI.map(s => {
+                    return s.onShorthandTypeOpen(
                         startRange,
                         nodeDefinition,
                         keyPropertyDefinition,
@@ -564,7 +578,10 @@ function createNodeDeserializer(
 
             },
             (endRange, endData, endContextData) => { //shorthand close
-                sideEffectsAPI.forEach(s => {
+                if (shorthandTypeSideEffects === null) {
+                    throw new Error("unexpected: no shorthand type side effect handlers")
+                }
+                shorthandTypeSideEffects.forEach(s => {
                     s.onShorthandTypeClose(endRange, endData)
                 })
                 addComments(targetComments, endContextData)

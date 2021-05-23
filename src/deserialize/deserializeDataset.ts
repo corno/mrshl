@@ -129,11 +129,8 @@ class NodeNOPSideEffects implements sideEffects.Node {
     constructor() {
         //
     }
-    onShorthandTypeClose() {
-        //
-    }
     onShorthandTypeOpen() {
-        //
+        return new ShorthandTypeNOPSideEffects()
     }
     onProperty() {
         return new PropertyNOPSideEffects()
@@ -142,10 +139,22 @@ class NodeNOPSideEffects implements sideEffects.Node {
         //
     }
     onTypeOpen() {
-        //
+        return new NodeNOPSideEffects()
     }
     onTypeClose() {
         //
+    }
+}
+
+class ShorthandTypeNOPSideEffects implements sideEffects.ShorthandType {
+    constructor() {
+        //
+    }
+    onShorthandTypeClose() {
+        //
+    }
+    onProperty() {
+        return new PropertyNOPSideEffects()
     }
 }
 

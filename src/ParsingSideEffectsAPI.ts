@@ -71,29 +71,22 @@ export interface Property {
     onNull(range: astn.Range): void
 }
 
-export interface Node {
-    onTypeOpen(
-        range: astn.Range,
-        nodeDefinition: md.Node,
-        keyPropertyDefinition: md.Property | null,
-        nodeBuilder: ds.Node
-    ): void
-    onTypeClose(
-        range: astn.Range
-    ): void
-    onShorthandTypeOpen(
-        range: astn.Range,
-        nodeDefinition: md.Node,
-        keyPropertyDefinition: md.Property | null,
-        nodeBuilder: ds.Node
-    ): void
+export interface ShorthandType {
     onShorthandTypeClose(
         range: astn.Range,
         closeData: astn.ArrayCloseData
     ): void
     onProperty(
         propKey: string,
-        propRange: astn.Range | null,
+        propDefinition: md.Property,
+        nodeBuilder: ds.Node,
+    ): Property
+}
+
+export interface Type {
+    onProperty(
+        propKey: string,
+        propRange: astn.Range,
         propDefinition: md.Property,
         nodeBuilder: ds.Node,
     ): Property
@@ -103,4 +96,22 @@ export interface Node {
         contextData: astn.ContextData,
         expectedProperties: string[]
     ): void
+    onTypeClose(
+        range: astn.Range
+    ): void
+}
+
+export interface Node {
+    onTypeOpen(
+        range: astn.Range,
+        nodeDefinition: md.Node,
+        keyPropertyDefinition: md.Property | null,
+        nodeBuilder: ds.Node
+    ): Type
+    onShorthandTypeOpen(
+        range: astn.Range,
+        nodeDefinition: md.Node,
+        keyPropertyDefinition: md.Property | null,
+        nodeBuilder: ds.Node
+    ): ShorthandType
 }

@@ -98,21 +98,21 @@ class StateGroup implements sideEffects.StateGroup {
 }
 
 class Prop implements sideEffects.Property {
-    public readonly node: Node
+    public readonly nodedefinition: t.Node
     public readonly name: string
     private readonly onError: (message: string, range: astn.Range, severity: DiagnosticSeverity) => void
 
     constructor(
         name: string,
-        node: Node,
+        nodedefinition: t.Node,
         onError: (message: string, range: astn.Range, severity: DiagnosticSeverity) => void,
     ) {
         this.name = name
-        this.node = node
+        this.nodedefinition = nodedefinition
         this.onError = onError
     }
     onDictionary() {
-        const prop = this.node.definition.properties.getUnsafe(this.name)
+        const prop = this.nodedefinition.properties.getUnsafe(this.name)
         if (prop.type[0] !== "collection") {
             throw new Error("unexpected")
         }
@@ -123,7 +123,7 @@ class Prop implements sideEffects.Property {
         return new Dictionary($.type[1], $, this.onError)
     }
     onList() {
-        const prop = this.node.definition.properties.getUnsafe(this.name)
+        const prop = this.nodedefinition.properties.getUnsafe(this.name)
         if (prop.type[0] !== "collection") {
             throw new Error("unexpected")
         }
@@ -135,7 +135,7 @@ class Prop implements sideEffects.Property {
     }
     onStateGroup() {
 
-        const prop = this.node.definition.properties.getUnsafe(this.name)
+        const prop = this.nodedefinition.properties.getUnsafe(this.name)
         if (prop.type[0] !== "state group") {
             throw new Error("unexpected")
         }
@@ -143,7 +143,7 @@ class Prop implements sideEffects.Property {
         return new StateGroup($, this.onError)
     }
     onComponent() {
-        const prop = this.node.definition.properties.getUnsafe(this.name)
+        const prop = this.nodedefinition.properties.getUnsafe(this.name)
         if (prop.type[0] !== "component") {
             throw new Error("unexpected")
         }
@@ -159,7 +159,7 @@ class Prop implements sideEffects.Property {
         data: astn.SimpleValueData,
         _definition: md.Value
     ) {
-        const prop = this.node.definition.properties.getUnsafe(this.name)
+        const prop = this.nodedefinition.properties.getUnsafe(this.name)
         if (prop.type[0] !== "value") {
             throw new Error("unexpected")
         }
@@ -200,6 +200,25 @@ class Prop implements sideEffects.Property {
     }
 }
 
+class ShorthandType implements sideEffects.ShorthandType {
+    public readonly definition: t.Node
+    private readonly onError: (message: string, range: astn.Range, severity: DiagnosticSeverity) => void
+
+    constructor(
+        definition: t.Node,
+        onError: (message: string, range: astn.Range, severity: DiagnosticSeverity) => void,
+    ) {
+        this.definition = definition
+        this.onError = onError
+    }
+    onProperty(key: string) {
+        return new Prop(key, this.definition, this.onError)
+    }
+    onShorthandTypeClose() {
+        //
+    }
+}
+
 class Node implements sideEffects.Node {
     public readonly definition: t.Node
     private readonly onError: (message: string, range: astn.Range, severity: DiagnosticSeverity) => void
@@ -211,20 +230,17 @@ class Node implements sideEffects.Node {
         this.definition = definition
         this.onError = onError
     }
-    onShorthandTypeClose() {
-        //
-    }
     onShorthandTypeOpen() {
-        //
+        return new ShorthandType(this.definition, this.onError)
     }
     onProperty(key: string) {
-        return new Prop(key, this, this.onError)
+        return new Prop(key, this.definition, this.onError)
     }
     onUnexpectedProperty() {
         //
     }
     onTypeOpen() {
-        //
+        return new Node(this.definition, this.onError)
     }
     onTypeClose() {
         //
