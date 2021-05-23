@@ -5,13 +5,13 @@ import { convertToGenericSchema } from "./convert"
 import * as p from "pareto-20"
 import * as sideEffects from "./sideEffects"
 import { DiagnosticSeverity } from "../../../API/DiagnosticSeverity"
-import { SchemaAndSideEffects } from "../../../API/SchemaAndSideEffects"
+import { CreateSchemaAndSideEffects, SchemaAndSideEffects } from "../../../API/CreateSchemaAndSideEffects"
 import { InternalSchemaDeserializationError } from "../../../API/SchemaErrors"
 import { InternalSchemaError } from "../../../API/SchemaErrors"
 
-export function createSchemaAndSideEffects(
+export const createSchemaAndSideEffects: CreateSchemaAndSideEffects = (
     onSchemaError: (error: InternalSchemaDeserializationError, range: astn.Range) => void,
-): astn.ParserEventConsumer<SchemaAndSideEffects, null> {
+): astn.ParserEventConsumer<SchemaAndSideEffects, null> => {
     const isb = createInternalSchemaBuilder(onSchemaError)
     return {
         onData: (data: astn.BodyEvent): p.IValue<boolean> => {

@@ -13,7 +13,7 @@ import { InternalSchemaSpecification, InternalSchemaSpecificationType } from "..
 import { createDeserializer as createMetaDataDeserializer } from "../schemas/mrshl/metadata@0.1/deserialize"
 import { ExternalSchemaDeserializationError } from "./deserializeSchemaFromStream"
 import { createInternalSchemaHandler } from "./createInternalSchemaHandler"
-import { SchemaAndSideEffects } from "../API/SchemaAndSideEffects"
+import { SchemaAndSideEffects } from "../API/CreateSchemaAndSideEffects"
 import { createNOPSideEffects } from "./NOPSideEffects"
 import { InternalSchemaDeserializationError, SchemaReferenceResolvingError } from "../API/SchemaErrors"
 

@@ -1,6 +1,6 @@
 import { createSchemaDeserializer } from "./createSchemaDeserializer"
 import * as p from "pareto"
-import { SchemaAndSideEffects } from "../API/SchemaAndSideEffects"
+import { SchemaAndSideEffects } from "../API/CreateSchemaAndSideEffects"
 import { SchemaReferenceResolvingError } from "../API/SchemaErrors"
 
 

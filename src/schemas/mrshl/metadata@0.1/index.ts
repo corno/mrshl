@@ -2,14 +2,13 @@ import * as astn from "astn"
 import * as p from "pareto-20"
 import { createDeserializer } from "./deserialize"
 import { createNOPSideEffects } from "./NOPSideEffects"
-import { SchemaAndSideEffects } from "../../../API/SchemaAndSideEffects"
+import { CreateSchemaAndSideEffects, SchemaAndSideEffects } from "../../../API/CreateSchemaAndSideEffects"
 import { InternalSchemaDeserializationError } from "../../../API/SchemaErrors"
 import { InternalSchemaError } from "../../../API/SchemaErrors"
 
-
-export function createSchemaAndSideEffects(
+export const createSchemaAndSideEffects: CreateSchemaAndSideEffects = (
     onSchemaError: (error: InternalSchemaDeserializationError, range: astn.Range) => void,
-): astn.ParserEventConsumer<SchemaAndSideEffects, null> {
+): astn.ParserEventConsumer<SchemaAndSideEffects, null> => {
     let foundError = false
     let metadata: null | SchemaAndSideEffects = null
 

@@ -1,8 +1,8 @@
 import * as astn from "astn"
 import * as p from "pareto"
-import { schemas, CreateSchemaAndSideEffectsBuilderFunction, printInternalSchemaDeserializationError } from "../schemas"
+import { schemas, printInternalSchemaDeserializationError } from "../schemas"
 import { createInternalSchemaHandler } from "./createInternalSchemaHandler"
-import { SchemaAndSideEffects } from "../API/SchemaAndSideEffects"
+import { CreateSchemaAndSideEffects, SchemaAndSideEffects } from "../API/CreateSchemaAndSideEffects"
 import { InternalSchemaDeserializationError, InternalSchemaError } from "../API/SchemaErrors"
 import { printInternalSchemaError } from "../printInternalSchemaError"
 
@@ -53,7 +53,7 @@ export function createSchemaDeserializer(
     let foundError = false
 
     let schemaDefinitionFound = false
-    let schemaProcessor: null | CreateSchemaAndSideEffectsBuilderFunction = null
+    let schemaProcessor: null | CreateSchemaAndSideEffects = null
     function onSchemaError(error: SchemaSchemaError, range: astn.Range) {
         onError(error, range)
         foundError = true

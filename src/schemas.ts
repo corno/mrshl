@@ -1,7 +1,7 @@
 import * as astn from "astn"
 import * as mrshlschemaschema01 from "./schemas/mrshl/schemaschema@0.1"
 import * as metadata01 from "./schemas/mrshl/metadata@0.1"
-import { SchemaAndSideEffects } from "./API/SchemaAndSideEffects"
+import { CreateSchemaAndSideEffects } from "./API/CreateSchemaAndSideEffects"
 import { InternalSchemaDeserializationError } from "./API/SchemaErrors"
 import { printInternalSchemaError } from "./printInternalSchemaError"
 
@@ -52,13 +52,8 @@ export function printInternalSchemaDeserializationError(error: InternalSchemaDes
     }
 }
 
-
-export type CreateSchemaAndSideEffectsBuilderFunction = (
-    onSchemaError: (error: InternalSchemaDeserializationError, range: astn.Range) => void,
-) => astn.ParserEventConsumer<SchemaAndSideEffects, null>
-
 export const schemas: {
-    [key: string]: CreateSchemaAndSideEffectsBuilderFunction
+    [key: string]: CreateSchemaAndSideEffects
 } = {
     "mrshl/schemaschema@0.1": mrshlschemaschema01.createSchemaAndSideEffects,
     "metadata@0.1": metadata01.createSchemaAndSideEffects,

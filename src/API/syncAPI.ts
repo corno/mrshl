@@ -4,7 +4,6 @@
 
 import * as t from "./types"
 
-
 export type CommentType =
     | ["block"]
     | ["line"]
