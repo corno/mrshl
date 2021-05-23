@@ -57,7 +57,7 @@ function createCodeCompletionForProperty(prop: md.Property, shorthand: boolean):
 
 function createCodeCompletionForShorthandProperties(node: md.Node, keyProperty: md.Property | null): fp.InlineSegment {
     const x: fp.InlineSegment[] = []
-    node.properties.mapUnsorted((prop, _propKey) => {
+    node.properties.mapSorted((prop, _propKey) => {
         if (prop === keyProperty) {
             return
         }
@@ -69,7 +69,7 @@ function createCodeCompletionForShorthandProperties(node: md.Node, keyProperty: 
 
 function createCodeCompletionForVerboseProperties(node: md.Node, keyProperty: md.Property | null): fp.Block {
     const x: fp.Block[] = []
-    node.properties.mapUnsorted((prop, propKey) => {
+    node.properties.mapSorted((prop, propKey) => {
         if (prop === keyProperty) {
             return
         }
@@ -139,7 +139,7 @@ class StateGroupCodeCompletionGenerator implements sideEffects.StateGroup {
         this.onToken(
             optionRange,
             () => {
-                return Object.keys(stateGroupDefinition.states.mapUnsorted(s => s))
+                return Object.keys(stateGroupDefinition.states.mapSorted(s => s))
             },
             null
         )

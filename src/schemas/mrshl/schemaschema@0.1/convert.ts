@@ -8,7 +8,7 @@ function assertUnreachable<RT>(_x: never): RT {
 
 function convertNode(node: Node, componentTypes: g.IReadonlyLookup<md.ComponentType>, keyProperty: null | Property, resolveRegistry: g.ResolveRegistry): md.Node {
     const properties = new g.Dictionary<md.Property>({})
-    node.properties.mapUnsorted((prop, key) => {
+    node.properties.mapSorted((prop, key) => {
         if (prop === keyProperty) {
             //return
         }
@@ -54,7 +54,7 @@ function convertNode(node: Node, componentTypes: g.IReadonlyLookup<md.ComponentT
                     }
                     case "state group": {
                         const $ = prop.type[1]
-                        const states = new g.Dictionary($.states.mapUnsorted(state => {
+                        const states = new g.Dictionary($.states.mapSorted(state => {
                             return {
                                 node: convertNode(state.node, componentTypes, null, resolveRegistry),
                             }

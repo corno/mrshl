@@ -209,7 +209,7 @@ function createPropertyDeserializer(
                 valueContextData => {
                     addComments(stateGroup.comments, valueContextData)
                     return context.expectTaggedUnion(
-                        $.states.mapUnsorted((stateDef, stateName) => {
+                        $.states.mapSorted((stateDef, stateName) => {
                             return (tuRange, optionRange, optionContextData) => {
                                 const stateSideEffects = sideEffectsAPIs.map(s => {
                                     return s.onStateGroup().onState(

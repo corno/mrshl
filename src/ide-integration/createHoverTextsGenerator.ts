@@ -57,7 +57,7 @@ function createPropertyHoverText(prop: md.Property): fp.InlineSegment {
 
 function createHoverTextsForProperties(node: md.Node, keyProperty: md.Property | null): fp.Block {
     const x: fp.Block[] = []
-    node.properties.mapUnsorted((prop, propKey) => {
+    node.properties.mapSorted((prop, propKey) => {
         if (prop === keyProperty) {
             return
         }
