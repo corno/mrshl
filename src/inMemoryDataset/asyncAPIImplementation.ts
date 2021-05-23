@@ -8,7 +8,7 @@ import * as cc from "./changeControl"
 import * as d from "../API/types"
 import * as g from "../generics"
 import * as s from "../serialize"
-import * as syncAPI from "../API/syncAPI"
+import * as id from "../API/IDataset"
 import * as syncAPIImp from "./syncAPIImplementation"
 import { copyEntry } from "./copyEntry"
 import { Global } from "./Global"
@@ -127,13 +127,13 @@ export class Dataset implements asyncAPI.Dataset {
     public readonly rootNode: Node
 
     private readonly imp: RootImp
-    private readonly syncDataset: syncAPI.IDataset
+    private readonly syncDataset: id.IDataset
 
     //public readonly rootNode: Node
     constructor(
         rootImp: RootImp,
         global: Global,
-        syncDataset: syncAPI.IDataset,
+        syncDataset: id.IDataset,
     ) {
         this.imp = rootImp
         this.syncDataset = syncDataset
@@ -153,7 +153,7 @@ export class Dataset implements asyncAPI.Dataset {
         })
     }
     public serialize(
-        internalSchemaSpecification: syncAPI.InternalSchemaSpecification,
+        internalSchemaSpecification: id.InternalSchemaSpecification,
         callback: (data: string) => void,
     ): void {
         const out: string[] = []

@@ -1,7 +1,7 @@
-import * as sync from "./API/syncAPI"
 import * as async from "./asyncAPI"
+import * as foo from "./API/IDataset"
 
 export type IDataset = {
-	sync: sync.IDataset
+	sync: foo.IDataset
 	async: async.Dataset
 }

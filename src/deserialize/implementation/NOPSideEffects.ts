@@ -2,7 +2,7 @@
     "max-classes-per-file": off,
 */
 
-import * as sideEffects from "../API/ParsingSideEffectsAPI"
+import * as sideEffects from "../../API/ParsingSideEffectsAPI"
 
 export function createNOPSideEffects(): sideEffects.Root {
     return new NOPSideEffects()

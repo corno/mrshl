@@ -1,6 +1,6 @@
 // tslint:disable: interface-name
 import * as g from "./generics"
-import * as syncAPI from "./API/syncAPI"
+import { InternalSchemaSpecification } from "./API/IDataset"
 
 export interface IFocussable {
     setFocus(): void
@@ -30,7 +30,7 @@ export interface Dataset {
     readonly rootNode: Node
     serialize(
 
-        internalSchemaSpecification: syncAPI.InternalSchemaSpecification,
+        internalSchemaSpecification: InternalSchemaSpecification,
         callback: (data: string) => void,
     ): void
     purgeChanges(): void

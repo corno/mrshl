@@ -2,70 +2,28 @@
     "max-classes-per-file": off,
 */
 
-import * as astn from "astn"
-import * as sideEffects from "../API/ParsingSideEffectsAPI"
-import { createDatasetDeserializer } from "./createDatasetDeserializer"
 import * as p20 from "pareto-20"
 import * as p from "pareto"
-import { printInternalSchemaDeserializationError } from "../schemas"
-import { IDataset } from "../dataset"
-import { InternalSchemaSpecification, InternalSchemaSpecificationType } from "../API/syncAPI"
-import { createDeserializer as createMetaDataDeserializer } from "../schemas/mrshl/metadata@0.1/deserialize"
+import * as astn from "astn"
+
+import * as sideEffects from "../../API/ParsingSideEffectsAPI"
+import { InternalSchemaSpecification, InternalSchemaSpecificationType } from "../../API/IDataset"
+import { SchemaAndSideEffects } from "../../API/CreateSchemaAndSideEffects"
+import { InternalSchemaDeserializationError, SchemaReferenceResolvingError } from "../../API/SchemaErrors"
+
+import { createDeserializer as createMetaDataDeserializer } from "../../schemas/mrshl/metadata@0.1/deserialize"
+
+import { createDatasetDeserializer } from "./createDatasetDeserializer"
+
 import { ExternalSchemaDeserializationError } from "./deserializeSchemaFromStream"
 import { createInternalSchemaHandler } from "./createInternalSchemaHandler"
-import { SchemaAndSideEffects } from "../API/CreateSchemaAndSideEffects"
 import { createNOPSideEffects } from "./NOPSideEffects"
-import { InternalSchemaDeserializationError, SchemaReferenceResolvingError } from "../API/SchemaErrors"
+import { DeserializeDiagnostic, DeserializeDiagnosticType } from "../DeserializeDiagnostic"
+import { IDeserializedDataset } from "../IDeserializedDataset"
+import { IDataset } from "../../dataset"
 
 function assertUnreachable<RT>(_x: never): RT {
     throw new Error("unreachable")
-}
-
-export type DeserializeDiagnosticType =
-    | ["structure", {
-        message: "ignoring invalid internal schema"
-    }]
-    | ["expect", astn.ExpectError]
-    | ["deserializer", {
-        message: string
-    }]
-    | ["stacked", astn.StackedDataError]
-    | ["parsing", astn.ParsingError]
-    | ["schema error", InternalSchemaDeserializationError]
-
-export type DeserializeDiagnostic = {
-    type: DeserializeDiagnosticType
-}
-
-export function printDeserializeDiagnostic($: DeserializeDiagnostic): string {
-    switch ($.type[0]) {
-        case "stacked": {
-            const $$ = $.type[1]
-            return $$[0]
-        }
-        case "deserializer": {
-            const $$ = $.type[1]
-            return $$.message
-        }
-        case "expect": {
-            const $$ = $.type[1]
-            return astn.printExpectError($$)
-        }
-        case "parsing": {
-            const $$ = $.type[1]
-            return astn.printParsingError($$)
-        }
-        case "schema error": {
-            const $$ = $.type[1]
-            return printInternalSchemaDeserializationError($$)
-        }
-        case "structure": {
-            const $$ = $.type[1]
-            return $$.message
-        }
-        default:
-            return assertUnreachable($.type[0])
-    }
 }
 
 function createNoOperationValueHandler(): astn.ValueHandler {
@@ -121,15 +79,6 @@ function createNoOperationRequiredValueHandler(): astn.RequiredValueHandler {
 type InternalSchema = {
     specification: InternalSchemaSpecification
     schemaAndSideEffects: SchemaAndSideEffects
-}
-
-
-/**
- * this type has information about how the dataset was serialized in regards to compactness and schema specification
- */
-export type IDeserializedDataset = {
-    internalSchemaSpecification: InternalSchemaSpecification
-    dataset: IDataset
 }
 
 /**

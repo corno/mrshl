@@ -1,8 +1,9 @@
 import * as p from "pareto"
 import * as astn from "astn"
-import * as md from "../API/types"
-import * as syncAPI from "../API/syncAPI"
-import * as sideEffects from "../API/ParsingSideEffectsAPI"
+import * as md from "../../API/types"
+import * as syncAPI from "../../API/syncAPI"
+import * as id from "../../API/IDataset"
+import * as sideEffects from "../../API/ParsingSideEffectsAPI"
 
 function assertUnreachable<RT>(_x: never): RT {
     throw new Error("Unreachable")
@@ -596,7 +597,7 @@ function createNodeDeserializer(
 
 export function createDatasetDeserializer(
     context: astn.ExpectContext,
-    dataset: syncAPI.IDataset,
+    dataset: id.IDataset,
     sideEffectsHandlers: sideEffects.Node[],
     onError: OnError,
 ): astn.RequiredValueHandler {

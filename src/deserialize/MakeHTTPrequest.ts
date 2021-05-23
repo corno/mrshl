@@ -1,5 +1,5 @@
 import * as p from "pareto"
-import { SchemaHost } from "./deserialize"
+import { SchemaHost } from "."
 
 export type MakeHTTPrequest = (
     schemaHost: SchemaHost,

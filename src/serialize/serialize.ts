@@ -1,6 +1,6 @@
 import * as p from "pareto"
 import * as astn from "astn"
-import * as syncAPI from "../API/syncAPI"
+import * as id from "../API/IDataset"
 import { serializeNode } from "./serializeInstanceData"
 import { serializeMetaData } from "./serializeMetaData"
 
@@ -22,8 +22,8 @@ class InArray<T> implements astn.IInArray<T> {
 }
 
 export function serialize(
-    dataset: syncAPI.IDataset,
-    internalSchemaSpecification: syncAPI.InternalSchemaSpecification,
+    dataset: id.IDataset,
+    internalSchemaSpecification: id.InternalSchemaSpecification,
 ): p.IStream<string, null> {
     const rootComments = dataset.rootComments.getComments()
     const allComments = dataset.documentComments.getComments().concat(rootComments)

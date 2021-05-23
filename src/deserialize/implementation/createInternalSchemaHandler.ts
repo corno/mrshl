@@ -1,6 +1,6 @@
 import * as astn from "astn"
 import * as p from "pareto-20"
-import { InternalSchemaError } from "../API/SchemaErrors"
+import { InternalSchemaError } from "../../API/SchemaErrors"
 
 export function createInternalSchemaHandler<Result>(
     onSchemaError: (error: InternalSchemaError, range: astn.Range) => void,

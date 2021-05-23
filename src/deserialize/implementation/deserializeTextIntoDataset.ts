@@ -1,101 +1,20 @@
-import * as path from "path"
-import * as md from "./API/types"
-import {
-	createFromURLSchemaDeserializer,
-	deserializeDataset,
-	deserializeSchemaFromStream,
-	IDeserializedDataset,
-	DeserializeDiagnostic,
-	ExternalSchemaDeserializationError,
-	SchemaSchemaError,
-	printDeserializeDiagnostic,
-	printSchemaSchemaError,
-	SchemaHost,
-} from "./deserialize"
-import * as sideEffects from "./API/ParsingSideEffectsAPI"
-import * as astn from "astn"
 import * as p from "pareto"
-import { IDataset } from "./dataset"
-import { MakeHTTPrequest } from "./makeHTTPrequest"
-import { DiagnosticSeverity } from "./API/DiagnosticSeverity"
+import * as path from "path"
 
-function assertUnreachable<RT>(_x: never): RT {
-	throw new Error("unreachable")
-}
+import * as md from "../../API/types"
+import * as sideEffects from "../../API/ParsingSideEffectsAPI"
+import { DiagnosticSeverity } from "../../API/DiagnosticSeverity"
 
-export type LoadDocumentDiagnosticType =
-	| ["schema retrieval", {
-		issue:
-		| ["unknown file system error"]
-		| ["validating schema file against internal schema"]
-		| ["found both external and internal schema. ignoring internal schema"]
-		| ["error in external schema", SchemaSchemaError]
-		| ["no valid schema"]
-		| ["missing schema"]
-	}]
-	| ["validation", {
-		range: astn.Range
-		message: string
-	}]
-	| ["structure", {
-		message: "missing (valid) schema"
-	}]
-	| ["deserialization", {
-		data: DeserializeDiagnostic
-		range: astn.Range
-	}]
+import { IDataset } from "../../dataset"
 
-export type LoadDocumentDiagnostic = {
-	type: LoadDocumentDiagnosticType
-	severity: DiagnosticSeverity
-}
+import { LoadDocumentDiagnostic, LoadDocumentDiagnosticType, DiagnosticCallback, FileError } from "../DeserializeTextSupportTypes"
+import { IDeserializedDataset } from "../IDeserializedDataset"
+import { MakeHTTPrequest } from "../MakeHTTPrequest"
+import { SchemaHost } from "../SchemaHost"
 
-export function printLoadDocumentDiagnostic(loadDiagnostic: LoadDocumentDiagnostic): string {
-	switch (loadDiagnostic.type[0]) {
-		case "deserialization": {
-			const $ = loadDiagnostic.type[1]
-			return `${printDeserializeDiagnostic($.data)} @ ${astn.printRange($.range)}`
-		}
-		case "schema retrieval": {
-			const $ = loadDiagnostic.type[1]
-			switch ($.issue[0]) {
-				case "error in external schema": {
-					const $$ = $.issue[1]
-					return `error in external schema: ${printSchemaSchemaError($$)}`
-				}
-				case "found both external and internal schema. ignoring internal schema": {
-					return `found both external and internal schema. ignoring internal schema`
-				}
-				case "missing schema": {
-					return `missing schema`
-				}
-				case "no valid schema": {
-					return `no valid schema`
-				}
-				case "unknown file system error": {
-					return `unknown file system error`
-				}
-				case "validating schema file against internal schema": {
-					return `this is the directory's schema file. It is validated against its own internal schema`
-				}
-				default:
-					return assertUnreachable($.issue[0])
-			}
-		}
-		case "structure": {
-			const $ = loadDiagnostic.type[1]
-			return $.message
-		}
-		case "validation": {
-			const $ = loadDiagnostic.type[1]
-			return `${$.message} @ ${astn.printRange($.range)}`
-		}
-		default:
-			return assertUnreachable(loadDiagnostic.type[0])
-	}
-}
-
-type DiagnosticCallback = (diagnostic: LoadDocumentDiagnostic) => void
+import { deserializeDataset } from "./deserializeDataset"
+import { deserializeSchemaFromStream, ExternalSchemaDeserializationError } from "./deserializeSchemaFromStream"
+import { createFromURLSchemaDeserializer } from "./createFromURLSchemaDeserializer"
 
 function validateDocumentAfterExternalSchemaResolution(
 	schemaHost: SchemaHost,
@@ -215,12 +134,7 @@ function addDiagnostic(
 
 export const schemaFileName = "schema.astn-schema"
 
-export enum FileError {
-	FileNotFound,
-	UnknownError,
-}
-
-export function loadDocument(
+export function deserializeTextIntoDataset(
 	schemaHost: SchemaHost,
 	documentText: string,
 	filePath: string,

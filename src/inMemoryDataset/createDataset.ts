@@ -2,11 +2,11 @@ import * as md from "../API/types"
 import * as sync from "./syncAPIImplementation"
 import { RootImp } from "./Root"
 import { IDataset } from "../dataset"
-import * as syncAPI from "../API/syncAPI"
+import * as id from "../API/IDataset"
 import * as asyncAPIImp from "./asyncAPIImplementation"
 import { Comments } from "./implementation"
 
-class SyncDataset implements syncAPI.IDataset {
+class SyncDataset implements id.IDataset {
     public readonly schema: md.Schema
     public readonly root: sync.Node
     public readonly documentComments = new Comments()

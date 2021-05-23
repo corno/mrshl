@@ -1,14 +1,8 @@
 import { createSchemaDeserializer } from "./createSchemaDeserializer"
 import * as p from "pareto"
-import { SchemaAndSideEffects } from "../API/CreateSchemaAndSideEffects"
-import { SchemaReferenceResolvingError } from "../API/SchemaErrors"
-
-
-export type SchemaHost = {
-	host: string
-	pathStart: string
-}
-
+import { SchemaAndSideEffects } from "../../API/CreateSchemaAndSideEffects"
+import { SchemaReferenceResolvingError } from "../../API/SchemaErrors"
+import { SchemaHost } from "../SchemaHost"
 
 export function createFromURLSchemaDeserializer(
     schemaHost: SchemaHost,

@@ -1,51 +1,9 @@
 import * as astn from "astn"
 import * as p from "pareto"
-import { schemas, printInternalSchemaDeserializationError } from "../schemas"
+import { schemas } from "../../schemas"
 import { createInternalSchemaHandler } from "./createInternalSchemaHandler"
-import { CreateSchemaAndSideEffects, SchemaAndSideEffects } from "../API/CreateSchemaAndSideEffects"
-import { InternalSchemaDeserializationError, InternalSchemaError } from "../API/SchemaErrors"
-import { printInternalSchemaError } from "../printInternalSchemaError"
-
-function assertUnreachable<RT>(_x: never): RT {
-    throw new Error("unreachable")
-}
-
-export type SchemaSchemaError =
-    | ["internal schema", InternalSchemaError]
-    | ["unknown schema schema", {
-        name: string
-    }]
-    | ["missing schema schema definition"]
-    | ["parsing", astn.ParsingError]
-    | ["schema processing", InternalSchemaDeserializationError]
-
-
-export function printSchemaSchemaError($$: SchemaSchemaError): string {
-    switch ($$[0]) {
-        case "missing schema schema definition": {
-            //const $$$ = $$[1]
-            return `missing schema schema definition`
-        }
-        case "parsing": {
-            const $$$ = $$[1]
-            return astn.printParsingError($$$)
-        }
-        case "schema processing": {
-            const $$$ = $$[1]
-            return printInternalSchemaDeserializationError($$$)
-        }
-        case "internal schema": {
-            const $$$ = $$[1]
-            return printInternalSchemaError($$$)
-        }
-        case "unknown schema schema": {
-            //const $$$ = $$[1]
-            return `unknown schema schema`
-        }
-        default:
-            return assertUnreachable($$[0])
-    }
-}
+import { CreateSchemaAndSideEffects, SchemaAndSideEffects } from "../../API/CreateSchemaAndSideEffects"
+import { SchemaSchemaError } from "../SchemaSchemaError"
 
 export function createSchemaDeserializer(
     onError: (error: SchemaSchemaError, range: astn.Range) => void,

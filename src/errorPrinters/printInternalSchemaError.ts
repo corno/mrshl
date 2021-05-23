@@ -1,5 +1,5 @@
 import * as astn from "astn"
-import { InternalSchemaError } from "./API/SchemaErrors"
+import { InternalSchemaError } from "../API/SchemaErrors"
 
 function assertUnreachable<RT>(_x: never): RT {
     throw new Error("unreachable")

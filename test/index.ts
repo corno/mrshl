@@ -16,14 +16,12 @@ import * as async from "../src/asyncAPI"
 import { makeNativeHTTPrequest } from "./makeNativeHTTPrequest"
 //import { deserializeSchemaFromString } from "../src"
 import * as p20 from "pareto-20"
-import { FileError } from "../src/loadDocument"
-import { printDeserializeDiagnostic, printSchemaSchemaError } from "../src"
 import { schemaHost } from "./schemaHost"
 
 function readFileFromFileSystem(
     dir: string,
     schemaFileName: string,
-): p.IUnsafeValue<p.IStream<string, null>, FileError> {
+): p.IUnsafeValue<p.IStream<string, null>, db5.FileError> {
     return p20.wrapUnsafeFunction((onError, onSuccess) => {
         fs.readFile(
             path.join(dir, schemaFileName),
@@ -34,9 +32,9 @@ function readFileFromFileSystem(
                 } else {
                     if (err.code === "ENOENT") {
                         //there is no schema file
-                        onError(FileError.FileNotFound)
+                        onError(db5.FileError.FileNotFound)
                     } else {
-                        onError(FileError.UnknownError)
+                        onError(db5.FileError.UnknownError)
                     }
                 }
             }
@@ -184,7 +182,7 @@ export function directoryTests(): void {
             function myFunc(): p.IValue<null> {
 
                 const serializedDataset = fs.readFileSync(serializedDatasetPath, { encoding: "utf-8" })
-                return db5.loadDocument(
+                return db5.deserializeTextIntoDataset(
                     schemaHost,
                     serializedDataset,
                     serializedDatasetPath,
@@ -200,7 +198,7 @@ export function directoryTests(): void {
                                 actualIssues.push([
                                     "deserialization",
                                     diagSev,
-                                    printDeserializeDiagnostic($.data),
+                                    db5.printDeserializeDiagnostic($.data),
                                     $.range.start.line,
                                     $.range.start.column,
                                     end.line,
@@ -217,7 +215,7 @@ export function directoryTests(): void {
                                     (() => {
                                         if ($.issue[0] === "error in external schema") {
                                             const $$ = $.issue[1]
-                                            return `${$.issue[0]}: ${printSchemaSchemaError($$)}`
+                                            return `${$.issue[0]}: ${db5.printSchemaSchemaError($$)}`
                                         }
                                         return $.issue[0]
                                     })(),

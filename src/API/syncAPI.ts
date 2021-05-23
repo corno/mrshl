@@ -64,25 +64,6 @@ export interface Node {
     getValue(name: string): Value
     forEachProperty(callback: (entry: Property, key: string) => void): void
 }
-
-export enum InternalSchemaSpecificationType {
-    Reference,
-    None,
-    Embedded
-}
-
-export type InternalSchemaSpecification =
-    | [InternalSchemaSpecificationType.Embedded]
-    | [InternalSchemaSpecificationType.Reference, { name: string }]
-    | [InternalSchemaSpecificationType.None]
-
-export interface IDataset {
-    readonly schema: t.Schema
-    readonly root: Node
-    readonly documentComments: Comments
-    readonly rootComments: Comments
-}
-
 export interface StateGroup {
     readonly definition: t.StateGroup
     setState(stateName: string, onError: (message: string) => void): State

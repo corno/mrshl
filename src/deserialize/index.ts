@@ -1,6 +1,13 @@
-//export * from "../builderAPI"
-export * from "./createSchemaDeserializer"
-export * from "./createFromURLSchemaDeserializer"
-export * from "./deserializeSchemaFromStream"
-export * from "./deserializeDataset"
-//export * from "./dummyBuilders"
+export * from "./MakeHTTPrequest"
+export * from "../errorPrinters/printDeserializeDiagnostic"
+export * from "./SchemaHost"
+export * from "./SchemaSchemaError"
+export * from "./DeserializeTextIntoDataset"
+export * from "./DeserializeTextSupportTypes"
+
+
+import * as ld from "./implementation/deserializeTextIntoDataset"
+import { DeserializeTextIntoDataset } from "./DeserializeTextIntoDataset"
+
+
+export const deserializeTextIntoDataset: DeserializeTextIntoDataset = ld.deserializeTextIntoDataset

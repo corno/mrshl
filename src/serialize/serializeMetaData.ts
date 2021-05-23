@@ -2,10 +2,9 @@
     no-shadow: "off",
 */
 import * as astn from "astn"
-import * as syncAPI from "../API/syncAPI"
+import * as id from "../API/IDataset"
 import * as md from "../API/types"
 import * as gapi from "../API/generics"
-import { InternalSchemaSpecification } from "../API/syncAPI"
 
 function assertUnreachable<RT>(_x: never): RT {
     throw new Error("unreachable")
@@ -287,11 +286,11 @@ function createSerializableValueFromSchemaNode(schemaNode: md.Node): astn.Serial
 }
 
 export function serializeMetaData(
-    internalSchemaSpecification: InternalSchemaSpecification,
+    internalSchemaSpecification: id.InternalSchemaSpecification,
     schema: md.Schema
 ): astn.SerializableValue | null {
     switch (internalSchemaSpecification[0]) {
-        case syncAPI.InternalSchemaSpecificationType.Embedded: {
+        case id.InternalSchemaSpecificationType.Embedded: {
 
             return createType({
                 "component types": [schema["component types"].isEmpty(), createDictionary(
@@ -305,10 +304,10 @@ export function serializeMetaData(
                 "root type": [schema["root type"].name === "root", createReference(schema["root type"])],
             })
         }
-        case syncAPI.InternalSchemaSpecificationType.None: {
+        case id.InternalSchemaSpecificationType.None: {
             return null
         }
-        case syncAPI.InternalSchemaSpecificationType.Reference: {
+        case id.InternalSchemaSpecificationType.Reference: {
             const $ = internalSchemaSpecification[1]
             return {
                 commentData: createEmptyCommentData(),
