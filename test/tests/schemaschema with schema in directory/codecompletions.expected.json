@@ -120,7 +120,7 @@
 	"12:65-66": {
 		"inToken": null,
 		"afterToken": [
-			"\n    'states': { }\n    'default state': \"\"\n"
+			"\n    'default state': \"\"\n    'states': { }\n"
 		]
 	},
 	"13:45-53": {
@@ -219,7 +219,7 @@
 	"23:89-90": {
 		"inToken": null,
 		"afterToken": [
-			"\n    'states': { }\n    'default state': \"\"\n"
+			"\n    'default state': \"\"\n    'states': { }\n"
 		]
 	},
 	"24:69-77": {
@@ -580,7 +580,7 @@
 	"78:89-90": {
 		"inToken": null,
 		"afterToken": [
-			"\n    'states': { }\n    'default state': \"\"\n"
+			"\n    'default state': \"\"\n    'states': { }\n"
 		]
 	},
 	"79:69-77": {
