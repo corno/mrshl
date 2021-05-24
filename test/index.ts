@@ -17,12 +17,11 @@ import { makeNativeHTTPrequest } from "./makeNativeHTTPrequest"
 //import { deserializeSchemaFromString } from "../src"
 import * as p20 from "pareto-20"
 import { schemaHost } from "./schemaHost"
-import { createFromURLSchemaDeserializer } from "../src/deserialize/implementation/createFromURLSchemaDeserializer"
 
 function readFileFromFileSystem(
     dir: string,
     schemaFileName: string,
-): p.IUnsafeValue<p.IStream<string, null>, db5.FileError> {
+): p.IUnsafeValue<p.IStream<string, null>, db5.RetrievalError> {
     return p20.wrapUnsafeFunction((onError, onSuccess) => {
         fs.readFile(
             path.join(dir, schemaFileName),
@@ -33,9 +32,9 @@ function readFileFromFileSystem(
                 } else {
                     if (err.code === "ENOENT") {
                         //there is no schema file
-                        onError(db5.FileError.FileNotFound)
+                        onError(["not found", {}])
                     } else {
-                        onError(db5.FileError.UnknownError)
+                        onError(["other", { description: err.message }])
                     }
                 }
             }
@@ -184,16 +183,19 @@ export function directoryTests(): void {
 
                 const serializedDataset = fs.readFileSync(serializedDatasetPath, { encoding: "utf-8" })
                 return db5.deserializeTextIntoDataset(
-                    serializedDataset,
-                    serializedDatasetPath,
-                    schemaID => {
-                        return createFromURLSchemaDeserializer(
-                            schemaHost,
-                            3000,
-                            makeNativeHTTPrequest,
-                        )(schemaID)
+                    {
+
+                        getContextSchema: readFileFromFileSystem,
+                        filePath: serializedDatasetPath,
                     },
-                    readFileFromFileSystem,
+                    serializedDataset,
+                    schemaID => {
+                        return makeNativeHTTPrequest(
+                            schemaHost,
+                            schemaID,
+                            3000,
+                        )
+                    },
                     diagnostic => {
                         const diagSev = diagnostic.severity === db5.DiagnosticSeverity.error ? "error" : "warning"
                         switch (diagnostic.type[0]) {
@@ -408,7 +410,7 @@ describe("main", () => {
                     null,
                     st,
                 ).mapError(() => {
-                    return p.value("hmm")
+                    return p.value(["other", { description: "????" }])
                 })
             }).convertToNativePromise(() => "error during parsing").then(() => {
                 //

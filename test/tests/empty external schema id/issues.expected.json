@@ -2,7 +2,7 @@
 	[
 		"deserialization",
 		"error",
-		"schema cannot be an empty string",
+		"schema not found",
 		1,
 		3,
 		1,

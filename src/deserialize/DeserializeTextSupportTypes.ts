@@ -1,19 +1,23 @@
 import * as astn from "astn"
+import * as p from "pareto"
 
 import { DiagnosticSeverity } from "../API/DiagnosticSeverity"
 
 import { SchemaSchemaError } from "./SchemaSchemaError"
 import { DeserializationDiagnostic } from "./DeserializationDiagnostic"
 
-export enum FileError {
-	FileNotFound,
-	UnknownError,
-}
+export type RetrievalError =
+	| ["not found", {
+		//
+	}]
+	| ["other", {
+		"description": string
+	}]
 
 export type LoadDocumentDiagnosticType =
 	| ["schema retrieval", {
 		issue:
-		| ["unknown file system error"]
+		| ["unknown retrieval error", { "description": string }]
 		| ["validating schema file against internal schema"]
 		| ["found both external and internal schema. ignoring internal schema"]
 		| ["error in external schema", SchemaSchemaError]
@@ -38,3 +42,5 @@ export type LoadDocumentDiagnostic = {
 }
 
 export type DiagnosticCallback = (diagnostic: LoadDocumentDiagnostic) => void
+
+export type ResolveExternalSchema = (id: string) => p.IUnsafeValue<p.IStream<string, null>, RetrievalError>

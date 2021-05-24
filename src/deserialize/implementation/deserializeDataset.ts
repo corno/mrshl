@@ -9,7 +9,7 @@ import * as astn from "astn"
 import * as sideEffects from "../../API/ParsingSideEffectsAPI"
 import { InternalSchemaSpecification, InternalSchemaSpecificationType } from "../../API/IDataset"
 import { SchemaAndSideEffects } from "../../API/CreateSchemaAndSideEffects"
-import { InternalSchemaDeserializationError, ExternalSchemaResolvingError } from "../../API/SchemaErrors"
+import { InternalSchemaDeserializationError } from "../../API/SchemaErrors"
 
 import { createDeserializer as createMetaDataDeserializer } from "../../schemas/mrshl/metadata@0.1/deserialize"
 
@@ -21,6 +21,8 @@ import { createNOPSideEffects } from "./NOPSideEffects"
 import { DeserializationDiagnostic, DeserializationDiagnosticType } from "../DeserializationDiagnostic"
 import { IDeserializedDataset } from "../IDeserializedDataset"
 import { IDataset } from "../../dataset"
+import { ResolveExternalSchema } from "../DeserializeTextSupportTypes"
+import { createSchemaAndSideEffectsFromStream } from "./createSchemaAndSideEffectsFromStream"
 
 function assertUnreachable<RT>(_x: never): RT {
     throw new Error("unreachable")
@@ -94,7 +96,7 @@ type InternalSchema = {
  */
 export function deserializeDataset(
     serializedDataset: string,
-	resolveExternalSchema: (id: string) => p.IUnsafeValue<SchemaAndSideEffects, ExternalSchemaResolvingError>,
+	resolveExternalSchema: ResolveExternalSchema,
     onInternalSchema: (
         specification: InternalSchemaSpecification,
         schemaAndSideEffects: SchemaAndSideEffects,
@@ -110,8 +112,6 @@ export function deserializeDataset(
     both their behaviour depends on the external schema.
     just add a 'externalSchema' parameter and then handle the logic in this function.
     */
-
-
 
     function createDiagnostic(type: DeserializationDiagnosticType): DeserializationDiagnostic {
         return {
@@ -150,7 +150,7 @@ export function deserializeDataset(
                     }
                 ),
                 (range, data) => {
-                    return resolveExternalSchema(data.value).reworkAndCatch(
+                    return createSchemaAndSideEffectsFromStream(resolveExternalSchema(data.value)).reworkAndCatch(
                         error => {
                             onSchemaError(["schema reference resolving", error], range)
                             return p.value(false)

@@ -29,7 +29,7 @@ export function printInternalSchemaDeserializationError(error: InternalSchemaDes
                     return $$$$.message
                 }
                 case "schema id cannot be an empty string": {
-                    return `schema cannot be an empty string`
+                    return `schema id cannot be an empty string`
                 }
                 default:
                     return assertUnreachable($$$[0])

@@ -29,8 +29,9 @@ export function printLoadDocumentDiagnostic(loadDiagnostic: LoadDocumentDiagnost
 				case "no valid schema": {
 					return `no valid schema`
 				}
-				case "unknown file system error": {
-					return `unknown file system error`
+				case "unknown retrieval error": {
+					const $$ = $.issue[1]
+					return `unknown retrieval error: ${$$.description}`
 				}
 				case "validating schema file against internal schema": {
 					return `this is the directory's schema file. It is validated against its own internal schema`

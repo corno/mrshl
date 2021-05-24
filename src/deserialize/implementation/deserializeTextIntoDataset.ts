@@ -7,18 +7,22 @@ import { DiagnosticSeverity } from "../../API/DiagnosticSeverity"
 
 import { IDataset } from "../../dataset"
 
-import { LoadDocumentDiagnostic, LoadDocumentDiagnosticType, DiagnosticCallback, FileError } from "../DeserializeTextSupportTypes"
+import { LoadDocumentDiagnostic, LoadDocumentDiagnosticType, DiagnosticCallback, ResolveExternalSchema } from "../DeserializeTextSupportTypes"
 import { IDeserializedDataset } from "../IDeserializedDataset"
 
 import { deserializeDataset } from "./deserializeDataset"
 import { deserializeSchemaFromStream, ExternalSchemaDeserializationError } from "./deserializeSchemaFromStream"
+import { ContextSchemaData } from "../DeserializeASTNTextIntoDataset"
 import { SchemaAndSideEffects } from "../../API/CreateSchemaAndSideEffects"
-import { ExternalSchemaResolvingError } from "../../API/SchemaErrors"
 
-function validateDocumentAfterExternalSchemaResolution(
+function assertUnreachable<RT>(_x: never): RT {
+	throw new Error("unreachable")
+}
+
+function validateDocumentAfterContextSchemaResolution(
 	documentText: string,
 	contextSchema: md.Schema | null,
-	resolveExternalSchema: (id: string) => p.IUnsafeValue<SchemaAndSideEffects, ExternalSchemaResolvingError>,
+	resolveExternalSchema: ResolveExternalSchema,
 	diagnosticCallback: DiagnosticCallback,
 	sideEffectHandlers: sideEffects.Root[],
 	createDataset: (
@@ -28,6 +32,16 @@ function validateDocumentAfterExternalSchemaResolution(
 
 	const allSideEffects = sideEffectHandlers.slice(0)
 
+
+	function addDiagnostic(
+		type: LoadDocumentDiagnosticType,
+		severity: DiagnosticSeverity,
+	) {
+		diagnosticCallback({
+			type: type,
+			severity: severity,
+		})
+	}
 	return deserializeDataset(
 		documentText,
 		resolveExternalSchema,
@@ -50,7 +64,6 @@ function validateDocumentAfterExternalSchemaResolution(
 					severity,
 				) => {
 					addDiagnostic(
-						diagnosticCallback,
 						["validation", { range: range, message: message }],
 						severity,
 					)
@@ -59,7 +72,6 @@ function validateDocumentAfterExternalSchemaResolution(
 			}
 
 			addDiagnostic(
-				diagnosticCallback,
 				["schema retrieval", {
 					issue: ["found both external and internal schema. ignoring internal schema"],
 				}],
@@ -70,7 +82,6 @@ function validateDocumentAfterExternalSchemaResolution(
 		(): IDataset | null => {
 			if (contextSchema === null) {
 				addDiagnostic(
-					diagnosticCallback,
 					["structure", {
 						message: "missing (valid) schema",
 					}],
@@ -83,7 +94,6 @@ function validateDocumentAfterExternalSchemaResolution(
 		},
 		(errorDiagnostic, range) => {
 			addDiagnostic(
-				diagnosticCallback,
 				["deserialization", {
 					data: errorDiagnostic,
 					range: range,
@@ -93,7 +103,6 @@ function validateDocumentAfterExternalSchemaResolution(
 		},
 		(warningDiagnostic, range) => {
 			addDiagnostic(
-				diagnosticCallback,
 				["deserialization", {
 					data: warningDiagnostic,
 					range: range,
@@ -105,24 +114,12 @@ function validateDocumentAfterExternalSchemaResolution(
 	)
 }
 
-function addDiagnostic(
-	callback: DiagnosticCallback,
-	type: LoadDocumentDiagnosticType,
-	severity: DiagnosticSeverity,
-) {
-	callback({
-		type: type,
-		severity: severity,
-	})
-}
-
 export const schemaFileName = "schema.astn-schema"
 
 export function deserializeTextIntoDataset(
+	contextSchemaData: ContextSchemaData,
 	documentText: string,
-	filePath: string,
-	resolveExternalSchema: (id: string) => p.IUnsafeValue<SchemaAndSideEffects, ExternalSchemaResolvingError>,
-	readSchemaFile: (dir: string, schemaFileName: string) => p.IUnsafeValue<p.IStream<string, null>, FileError>,
+	resolveExternalSchema: ResolveExternalSchema,
 	diagnosticCallback: DiagnosticCallback,
 	sideEffectHandlers: sideEffects.Root[],
 	createInitialDataset: (
@@ -137,10 +134,20 @@ export function deserializeTextIntoDataset(
 		return diagnosticCallback(diagnostic)
 	}
 
+
+	function addDiagnostic(
+		type: LoadDocumentDiagnosticType,
+		severity: DiagnosticSeverity,
+	) {
+		dc({
+			type: type,
+			severity: severity,
+		})
+	}
+
 	function validateThatErrorsAreFound(error: ExternalSchemaDeserializationError) {
 		if (!diagnosticFound) {
 			addDiagnostic(
-				dc,
 				['schema retrieval', {
 					issue: [error.problem],
 				}],
@@ -150,8 +157,35 @@ export function deserializeTextIntoDataset(
 		return p.value(null)
 	}
 
-	const basename = path.basename(filePath)
-	const dir = path.dirname(filePath)
+	function validateDocumentAfter(
+		schemaAndSideEffects: SchemaAndSideEffects | null
+	) {
+		return validateDocumentAfterContextSchemaResolution(
+			documentText,
+			schemaAndSideEffects !== null ? schemaAndSideEffects.schema : null,
+			resolveExternalSchema,
+			dc,
+			schemaAndSideEffects === null ? sideEffectHandlers : sideEffectHandlers.concat([schemaAndSideEffects.createAdditionalValidator(
+				(
+					message,
+					range,
+					severity
+				) => {
+					addDiagnostic(
+						["validation", {
+							range: range,
+							message: message,
+						}],
+						severity,
+					)
+				}
+			)]),
+			createInitialDataset,
+		).mapError(validateThatErrorsAreFound)
+	}
+
+	const basename = path.basename(contextSchemaData.filePath)
+	const dir = path.dirname(contextSchemaData.filePath)
 	if (basename === schemaFileName) {
 		//don't validate the schema against itself
 		dc({
@@ -161,40 +195,32 @@ export function deserializeTextIntoDataset(
 			severity: DiagnosticSeverity.warning,
 		})
 
-		return validateDocumentAfterExternalSchemaResolution(
-			documentText,
-			null,
-			resolveExternalSchema,
-			dc,
-			sideEffectHandlers,
-			createInitialDataset,
-		).mapError(validateThatErrorsAreFound)
+		return validateDocumentAfter(null)
 	}
-	return readSchemaFile(
+	return contextSchemaData.getContextSchema(
 		dir,
 		schemaFileName,
 	).rework(
 		error => {
-			if (error === FileError.FileNotFound) {
+			switch (error[0]) {
+				case "not found": {
+					//const $ = error[1]
+					return validateDocumentAfter(null)
 
-				return validateDocumentAfterExternalSchemaResolution(
-					documentText,
-					null,
-					resolveExternalSchema,
-					dc,
-					sideEffectHandlers,
-					createInitialDataset,
-				).mapError(validateThatErrorsAreFound)
-			} else {
-				//something else went wrong
-				addDiagnostic(
-					dc,
-					['schema retrieval', {
-						issue: ['unknown file system error'],
-					}],
-					DiagnosticSeverity.error,
-				)
-				return p.value(null)
+				}
+				case "other": {
+					const $ = error[1]
+					//something else went wrong
+					addDiagnostic(
+						['schema retrieval', {
+							issue: ['unknown retrieval error', { description: $.description }],
+						}],
+						DiagnosticSeverity.error,
+					)
+					return p.value(null)
+				}
+				default:
+					return assertUnreachable(error[0])
 			}
 		},
 		schemaStream => {
@@ -212,29 +238,7 @@ export function deserializeTextIntoDataset(
 			).mapError(validateThatErrorsAreFound).try(
 				schemaAndSideEffects => {
 
-					return validateDocumentAfterExternalSchemaResolution(
-						documentText,
-						schemaAndSideEffects.schema,
-						resolveExternalSchema,
-						dc,
-						sideEffectHandlers.concat([schemaAndSideEffects.createAdditionalValidator(
-							(
-								message,
-								range,
-								severity
-							) => {
-								addDiagnostic(
-									dc,
-									["validation", {
-										range: range,
-										message: message,
-									}],
-									severity,
-								)
-							}
-						)]),
-						createInitialDataset,
-					).mapError(validateThatErrorsAreFound)
+					return validateDocumentAfter(schemaAndSideEffects)
 				}
 			)
 		},

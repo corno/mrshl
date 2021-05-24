@@ -11,16 +11,16 @@ export type InternalSchemaError =
     | ["stacked", astn.StackedDataError]
 
 export type ExternalSchemaResolvingError =
-| ["schema id cannot be an empty string"]
-| ["errors in schema"]
-| ["loading", {
-    message: string
-}]
+    | ["schema id cannot be an empty string"]
+    | ["errors in schema"]
+    | ["loading", {
+        message: string
+    }]
 
 export type InternalSchemaDeserializationError =
-| ["validation", {
-    "message": string
-}]
-| ["expect", astn.ExpectError]
-| ["schema reference resolving", ExternalSchemaResolvingError]
-| ["internal schema", InternalSchemaError]
+    | ["validation", {
+        "message": string
+    }]
+    | ["expect", astn.ExpectError]
+    | ["schema reference resolving", ExternalSchemaResolvingError]
+    | ["internal schema", InternalSchemaError]
