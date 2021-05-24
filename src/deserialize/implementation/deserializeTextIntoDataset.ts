@@ -9,44 +9,28 @@ import { IDataset } from "../../dataset"
 
 import { LoadDocumentDiagnostic, LoadDocumentDiagnosticType, DiagnosticCallback, FileError } from "../DeserializeTextSupportTypes"
 import { IDeserializedDataset } from "../IDeserializedDataset"
-import { MakeHTTPrequest } from "../MakeHTTPrequest"
-import { SchemaHost } from "../SchemaHost"
 
 import { deserializeDataset } from "./deserializeDataset"
 import { deserializeSchemaFromStream, ExternalSchemaDeserializationError } from "./deserializeSchemaFromStream"
-import { createFromURLSchemaDeserializer } from "./createFromURLSchemaDeserializer"
+import { SchemaAndSideEffects } from "../../API/CreateSchemaAndSideEffects"
+import { ExternalSchemaResolvingError } from "../../API/SchemaErrors"
 
 function validateDocumentAfterExternalSchemaResolution(
-	schemaHost: SchemaHost,
 	documentText: string,
-	externalSchema: md.Schema | null,
-	makeHTTPrequest: MakeHTTPrequest,
+	contextSchema: md.Schema | null,
+	resolveExternalSchema: (id: string) => p.IUnsafeValue<SchemaAndSideEffects, ExternalSchemaResolvingError>,
 	diagnosticCallback: DiagnosticCallback,
 	sideEffectHandlers: sideEffects.Root[],
 	createDataset: (
 		schema: md.Schema,
 	) => IDataset,
 ): p.IUnsafeValue<IDeserializedDataset, ExternalSchemaDeserializationError> {
-	const schemaReferenceResolver = createFromURLSchemaDeserializer(
-		schemaHost,
-		7000,
-		makeHTTPrequest,
-		// (instanceValidationErrorMessage, range) => {
-		// 	addDiagnostic(
-		// 		diagnosticCallback,
-		// 		"constraint validation",
-		// 		instanceValidationErrorMessage,
-		// 		DiagnosticSeverity.error,
-		// 		range
-		// 	)
-		// }
-	)
 
 	const allSideEffects = sideEffectHandlers.slice(0)
 
 	return deserializeDataset(
 		documentText,
-		schemaReferenceResolver,
+		resolveExternalSchema,
 		(internalSchemaSpecification, schemaAndSideEffects): IDeserializedDataset => {
 
 			function createDeserializedDataset(
@@ -57,7 +41,7 @@ function validateDocumentAfterExternalSchemaResolution(
 					internalSchemaSpecification: internalSchemaSpecification,
 				}
 			}
-			if (externalSchema === null) {
+			if (contextSchema === null) {
 
 
 				allSideEffects.push(schemaAndSideEffects.createAdditionalValidator((
@@ -81,10 +65,10 @@ function validateDocumentAfterExternalSchemaResolution(
 				}],
 				DiagnosticSeverity.warning,
 			)
-			return createDeserializedDataset(externalSchema)
+			return createDeserializedDataset(contextSchema)
 		},
 		(): IDataset | null => {
-			if (externalSchema === null) {
+			if (contextSchema === null) {
 				addDiagnostic(
 					diagnosticCallback,
 					["structure", {
@@ -94,7 +78,7 @@ function validateDocumentAfterExternalSchemaResolution(
 				)
 				return null
 			}
-			return createDataset(externalSchema)
+			return createDataset(contextSchema)
 
 		},
 		(errorDiagnostic, range) => {
@@ -135,10 +119,9 @@ function addDiagnostic(
 export const schemaFileName = "schema.astn-schema"
 
 export function deserializeTextIntoDataset(
-	schemaHost: SchemaHost,
 	documentText: string,
 	filePath: string,
-	makeHTTPRequest: MakeHTTPrequest,
+	resolveExternalSchema: (id: string) => p.IUnsafeValue<SchemaAndSideEffects, ExternalSchemaResolvingError>,
 	readSchemaFile: (dir: string, schemaFileName: string) => p.IUnsafeValue<p.IStream<string, null>, FileError>,
 	diagnosticCallback: DiagnosticCallback,
 	sideEffectHandlers: sideEffects.Root[],
@@ -179,10 +162,9 @@ export function deserializeTextIntoDataset(
 		})
 
 		return validateDocumentAfterExternalSchemaResolution(
-			schemaHost,
 			documentText,
 			null,
-			makeHTTPRequest,
+			resolveExternalSchema,
 			dc,
 			sideEffectHandlers,
 			createInitialDataset,
@@ -196,10 +178,9 @@ export function deserializeTextIntoDataset(
 			if (error === FileError.FileNotFound) {
 
 				return validateDocumentAfterExternalSchemaResolution(
-					schemaHost,
 					documentText,
 					null,
-					makeHTTPRequest,
+					resolveExternalSchema,
 					dc,
 					sideEffectHandlers,
 					createInitialDataset,
@@ -232,10 +213,9 @@ export function deserializeTextIntoDataset(
 				schemaAndSideEffects => {
 
 					return validateDocumentAfterExternalSchemaResolution(
-						schemaHost,
 						documentText,
 						schemaAndSideEffects.schema,
-						makeHTTPRequest,
+						resolveExternalSchema,
 						dc,
 						sideEffectHandlers.concat([schemaAndSideEffects.createAdditionalValidator(
 							(

@@ -9,7 +9,7 @@ import * as astn from "astn"
 import * as sideEffects from "../../API/ParsingSideEffectsAPI"
 import { InternalSchemaSpecification, InternalSchemaSpecificationType } from "../../API/IDataset"
 import { SchemaAndSideEffects } from "../../API/CreateSchemaAndSideEffects"
-import { InternalSchemaDeserializationError, SchemaReferenceResolvingError } from "../../API/SchemaErrors"
+import { InternalSchemaDeserializationError, ExternalSchemaResolvingError } from "../../API/SchemaErrors"
 
 import { createDeserializer as createMetaDataDeserializer } from "../../schemas/mrshl/metadata@0.1/deserialize"
 
@@ -94,9 +94,7 @@ type InternalSchema = {
  */
 export function deserializeDataset(
     serializedDataset: string,
-    schemaReferenceResolver: (
-        reference: string,
-    ) => p.IUnsafeValue<SchemaAndSideEffects, SchemaReferenceResolvingError>,
+	resolveExternalSchema: (id: string) => p.IUnsafeValue<SchemaAndSideEffects, ExternalSchemaResolvingError>,
     onInternalSchema: (
         specification: InternalSchemaSpecification,
         schemaAndSideEffects: SchemaAndSideEffects,
@@ -112,6 +110,8 @@ export function deserializeDataset(
     both their behaviour depends on the external schema.
     just add a 'externalSchema' parameter and then handle the logic in this function.
     */
+
+
 
     function createDiagnostic(type: DeserializeDiagnosticType): DeserializeDiagnostic {
         return {
@@ -150,7 +150,7 @@ export function deserializeDataset(
                     }
                 ),
                 (range, data) => {
-                    return schemaReferenceResolver(data.value).reworkAndCatch(
+                    return resolveExternalSchema(data.value).reworkAndCatch(
                         error => {
                             onSchemaError(["schema reference resolving", error], range)
                             return p.value(false)

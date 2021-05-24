@@ -1,7 +1,7 @@
 import { createSchemaDeserializer } from "./createSchemaDeserializer"
 import * as p from "pareto"
 import { SchemaAndSideEffects } from "../../API/CreateSchemaAndSideEffects"
-import { SchemaReferenceResolvingError } from "../../API/SchemaErrors"
+import { ExternalSchemaResolvingError } from "../../API/SchemaErrors"
 import { SchemaHost } from "../SchemaHost"
 
 export function createFromURLSchemaDeserializer(
@@ -13,14 +13,14 @@ export function createFromURLSchemaDeserializer(
         timeout: number,
     ) => p.IUnsafeValue<p.IStream<string, null>, string>,
 ) {
-    return (reference: string): p.IUnsafeValue<SchemaAndSideEffects, SchemaReferenceResolvingError> => {
+    return (reference: string): p.IUnsafeValue<SchemaAndSideEffects, ExternalSchemaResolvingError> => {
 
         // //const errors: string[] = []
         // function onSchemaError(_message: string, _range: astn.Range) {
         //     //errors.push(message)
         // }
         if (reference === "") {
-            return p.error(["schema cannot be an empty string"])
+            return p.error(["schema id cannot be an empty string"])
         }
         // const options = {
         //     host: schemaHost.host,
@@ -35,7 +35,7 @@ export function createFromURLSchemaDeserializer(
             schemaHost,
             reference,
             timeout
-        ).mapError<SchemaReferenceResolvingError>(errorMessage => {
+        ).mapError<ExternalSchemaResolvingError>(errorMessage => {
             return p.value(["loading", { message: errorMessage }])
         }).try(
             stream => {

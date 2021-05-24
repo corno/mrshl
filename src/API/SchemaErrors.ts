@@ -10,8 +10,8 @@ export type InternalSchemaError =
     }]
     | ["stacked", astn.StackedDataError]
 
-export type SchemaReferenceResolvingError =
-| ["schema cannot be an empty string"]
+export type ExternalSchemaResolvingError =
+| ["schema id cannot be an empty string"]
 | ["errors in schema"]
 | ["loading", {
     message: string
@@ -22,5 +22,5 @@ export type InternalSchemaDeserializationError =
     "message": string
 }]
 | ["expect", astn.ExpectError]
-| ["schema reference resolving", SchemaReferenceResolvingError]
+| ["schema reference resolving", ExternalSchemaResolvingError]
 | ["internal schema", InternalSchemaError]
