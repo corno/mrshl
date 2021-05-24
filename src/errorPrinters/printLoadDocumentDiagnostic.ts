@@ -1,6 +1,6 @@
 import * as astn from "astn"
 import { printSchemaSchemaError } from "./printSchemaSchemaError"
-import { printDeserializeDiagnostic } from "./printDeserializeDiagnostic"
+import { printDeserializationDiagnostic } from "./printDeserializeDiagnostic"
 import { LoadDocumentDiagnostic } from "../deserialize/DeserializeTextSupportTypes"
 
 function assertUnreachable<RT>(_x: never): RT {
@@ -11,7 +11,7 @@ export function printLoadDocumentDiagnostic(loadDiagnostic: LoadDocumentDiagnost
 	switch (loadDiagnostic.type[0]) {
 		case "deserialization": {
 			const $ = loadDiagnostic.type[1]
-			return `${printDeserializeDiagnostic($.data)} @ ${astn.printRange($.range)}`
+			return `${printDeserializationDiagnostic($.data)} @ ${astn.printRange($.range)}`
 		}
 		case "schema retrieval": {
 			const $ = loadDiagnostic.type[1]

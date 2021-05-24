@@ -17,6 +17,7 @@ import { makeNativeHTTPrequest } from "./makeNativeHTTPrequest"
 //import { deserializeSchemaFromString } from "../src"
 import * as p20 from "pareto-20"
 import { schemaHost } from "./schemaHost"
+import { createFromURLSchemaDeserializer } from "../src/deserialize/implementation/createFromURLSchemaDeserializer"
 
 function readFileFromFileSystem(
     dir: string,
@@ -183,10 +184,15 @@ export function directoryTests(): void {
 
                 const serializedDataset = fs.readFileSync(serializedDatasetPath, { encoding: "utf-8" })
                 return db5.deserializeTextIntoDataset(
-                    schemaHost,
                     serializedDataset,
                     serializedDatasetPath,
-                    makeNativeHTTPrequest,
+                    schemaID => {
+                        return createFromURLSchemaDeserializer(
+                            schemaHost,
+                            3000,
+                            makeNativeHTTPrequest,
+                        )(schemaID)
+                    },
                     readFileFromFileSystem,
                     diagnostic => {
                         const diagSev = diagnostic.severity === db5.DiagnosticSeverity.error ? "error" : "warning"
@@ -198,7 +204,7 @@ export function directoryTests(): void {
                                 actualIssues.push([
                                     "deserialization",
                                     diagSev,
-                                    db5.printDeserializeDiagnostic($.data),
+                                    db5.printDeserializationDiagnostic($.data),
                                     $.range.start.line,
                                     $.range.start.column,
                                     end.line,

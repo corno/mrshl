@@ -3,7 +3,7 @@ import * as astn from "astn"
 import { DiagnosticSeverity } from "../API/DiagnosticSeverity"
 
 import { SchemaSchemaError } from "./SchemaSchemaError"
-import { DeserializeDiagnostic } from "./DeserializeDiagnostic"
+import { DeserializationDiagnostic } from "./DeserializationDiagnostic"
 
 export enum FileError {
 	FileNotFound,
@@ -28,7 +28,7 @@ export type LoadDocumentDiagnosticType =
 		message: "missing (valid) schema"
 	}]
 	| ["deserialization", {
-		data: DeserializeDiagnostic
+		data: DeserializationDiagnostic
 		range: astn.Range
 	}]
 

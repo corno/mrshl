@@ -4,13 +4,13 @@
 
 import * as astn from "astn"
 import { printInternalSchemaDeserializationError } from "./printInternalSchemaDeserializationError"
-import { DeserializeDiagnostic } from "../deserialize/DeserializeDiagnostic"
+import { DeserializationDiagnostic } from "../deserialize/DeserializationDiagnostic"
 
 function assertUnreachable<RT>(_x: never): RT {
     throw new Error("unreachable")
 }
 
-export function printDeserializeDiagnostic($: DeserializeDiagnostic): string {
+export function printDeserializationDiagnostic($: DeserializationDiagnostic): string {
     switch ($.type[0]) {
         case "stacked": {
             const $$ = $.type[1]

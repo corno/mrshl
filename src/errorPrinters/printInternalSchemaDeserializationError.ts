@@ -28,7 +28,7 @@ export function printInternalSchemaDeserializationError(error: InternalSchemaDes
                     const $$$$ = $$$[1]
                     return $$$$.message
                 }
-                case "schema cannot be an empty string": {
+                case "schema id cannot be an empty string": {
                     return `schema cannot be an empty string`
                 }
                 default:

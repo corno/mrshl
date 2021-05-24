@@ -5,7 +5,7 @@
 import * as astn from "astn"
 import { InternalSchemaDeserializationError } from "../API/SchemaErrors"
 
-export type DeserializeDiagnosticType =
+export type DeserializationDiagnosticType =
     | ["structure", {
         message: "ignoring invalid internal schema"
     }]
@@ -17,6 +17,6 @@ export type DeserializeDiagnosticType =
     | ["parsing", astn.ParsingError]
     | ["schema error", InternalSchemaDeserializationError]
 
-export type DeserializeDiagnostic = {
-    type: DeserializeDiagnosticType
+export type DeserializationDiagnostic = {
+    type: DeserializationDiagnosticType
 }

@@ -1,4 +1,3 @@
-export * from "./MakeHTTPrequest"
 export * from "../errorPrinters/printDeserializeDiagnostic"
 export * from "./SchemaHost"
 export * from "./SchemaSchemaError"

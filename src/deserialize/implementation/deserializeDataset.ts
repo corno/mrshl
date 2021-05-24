@@ -18,7 +18,7 @@ import { createDatasetDeserializer } from "./createDatasetDeserializer"
 import { ExternalSchemaDeserializationError } from "./deserializeSchemaFromStream"
 import { createInternalSchemaHandler } from "./createInternalSchemaHandler"
 import { createNOPSideEffects } from "./NOPSideEffects"
-import { DeserializeDiagnostic, DeserializeDiagnosticType } from "../DeserializeDiagnostic"
+import { DeserializationDiagnostic, DeserializationDiagnosticType } from "../DeserializationDiagnostic"
 import { IDeserializedDataset } from "../IDeserializedDataset"
 import { IDataset } from "../../dataset"
 
@@ -100,8 +100,8 @@ export function deserializeDataset(
         schemaAndSideEffects: SchemaAndSideEffects,
     ) => IDeserializedDataset,
     onNoInternalSchema: () => IDataset | null,
-    onError: (diagnostic: DeserializeDiagnostic, range: astn.Range) => void,
-    onWarning: (diagnostic: DeserializeDiagnostic, range: astn.Range) => void,
+    onError: (diagnostic: DeserializationDiagnostic, range: astn.Range) => void,
+    onWarning: (diagnostic: DeserializationDiagnostic, range: astn.Range) => void,
     sideEffectsHandlers: sideEffects.Root[],
 ): p.IUnsafeValue<IDeserializedDataset, ExternalSchemaDeserializationError> {
 
@@ -113,7 +113,7 @@ export function deserializeDataset(
 
 
 
-    function createDiagnostic(type: DeserializeDiagnosticType): DeserializeDiagnostic {
+    function createDiagnostic(type: DeserializationDiagnosticType): DeserializationDiagnostic {
         return {
             type: type,
         }
