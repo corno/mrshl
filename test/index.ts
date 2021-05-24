@@ -33,7 +33,11 @@ function readFileFromFileSystem(
                     if (err.code === "ENOENT") {
                         //there is no schema file
                         onError(["not found", {}])
-                    } else {
+                    } else if (err.code === "EISDIR") {
+                        //the path is a directory
+                        onError(["not found", {}])
+                    } else{
+                        console.log(err.code)
                         onError(["other", { description: err.message }])
                     }
                 }
@@ -190,11 +194,12 @@ export function directoryTests(): void {
                     },
                     serializedDataset,
                     schemaID => {
-                        return makeNativeHTTPrequest(
-                            schemaHost,
-                            schemaID,
-                            3000,
-                        )
+                        // return makeNativeHTTPrequest(
+                        //     schemaHost,
+                        //     schemaID,
+                        //     3000,
+                        // )
+                        return readFileFromFileSystem(__dirname + "/../../test/schemas", schemaID)
                     },
                     diagnostic => {
                         const diagSev = diagnostic.severity === db5.DiagnosticSeverity.error ? "error" : "warning"
