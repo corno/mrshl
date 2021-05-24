@@ -45,6 +45,6 @@
     "typescript": "^4.2.4"
   },
   "bin": {
-    "generateSchemaCode": "dist/bin/generateSchemaCode.js"
+    "astn-to-expanded-json": "bin/toExpandedJSON.mjs"
   }
 }
