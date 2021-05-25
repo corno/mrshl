@@ -20,4 +20,4 @@ import { InternalSchemaDeserializationError } from "./SchemaErrors"
  */
 export type CreateSchemaAndSideEffects = (
     onSchemaError: (error: InternalSchemaDeserializationError, range: astn.Range) => void,
-) => astn.ParserEventConsumer<SchemaAndSideEffects, null>
+) => astn.TextParserEventConsumer<SchemaAndSideEffects, null>

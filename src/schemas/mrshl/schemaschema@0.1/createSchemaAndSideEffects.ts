@@ -11,10 +11,10 @@ import { InternalSchemaError } from "../../../API/SchemaErrors"
 
 export const createSchemaAndSideEffects: CreateSchemaAndSideEffects = (
     onSchemaError: (error: InternalSchemaDeserializationError, range: astn.Range) => void,
-): astn.ParserEventConsumer<SchemaAndSideEffects, null> => {
+): astn.TextParserEventConsumer<SchemaAndSideEffects, null> => {
     const isb = createInternalSchemaBuilder(onSchemaError)
     return {
-        onData: (data: astn.BodyEvent): p.IValue<boolean> => {
+        onData: (data: astn.TreeEvent): p.IValue<boolean> => {
             return isb.onData(data)
         },
         onEnd: (aborted: boolean, location: astn.Location): p.IUnsafeValue<SchemaAndSideEffects, null> => {
@@ -32,7 +32,7 @@ export const createSchemaAndSideEffects: CreateSchemaAndSideEffects = (
 
 export function createInternalSchemaBuilder(
     onSchemaError: (error: InternalSchemaDeserializationError, range: astn.Range) => void,
-): astn.ParserEventConsumer<t.Schema, null> {
+): astn.TextParserEventConsumer<t.Schema, null> {
     let foundError = false
     let metaData: null | t.Schema = null
 
@@ -46,10 +46,10 @@ export function createInternalSchemaBuilder(
         onObject: astn.OnObject | null,
         onSimpleValue: astn.OnSimpleValue | null,
         onEnd: () => p.IUnsafeValue<Result, null>
-    ): astn.ParserEventConsumer<Result, null> {
-        return astn.createStackedDataSubscriber(
+    ): astn.TextParserEventConsumer<Result, null> {
+        return astn.createStackedParser(
             {
-                onValue: () => {
+                onExists: () => {
                     return {
                         array: (range: astn.Range): astn.ArrayHandler => {
                             onSchemaError(["unexpected schema format", { found: ["array"] }], range)

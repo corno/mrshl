@@ -8,7 +8,7 @@ import { InternalSchemaError } from "../../../API/SchemaErrors"
 
 export const createSchemaAndSideEffects: CreateSchemaAndSideEffects = (
     onSchemaError: (error: InternalSchemaDeserializationError, range: astn.Range) => void,
-): astn.ParserEventConsumer<SchemaAndSideEffects, null> => {
+): astn.TextParserEventConsumer<SchemaAndSideEffects, null> => {
     let foundError = false
     let metadata: null | SchemaAndSideEffects = null
 
@@ -17,10 +17,10 @@ export const createSchemaAndSideEffects: CreateSchemaAndSideEffects = (
         onObject: astn.OnObject | null,
         onSimpleValue: astn.OnSimpleValue | null,
         onEnd: () => p.IUnsafeValue<Result, null>
-    ): astn.ParserEventConsumer<Result, null> {
-        return astn.createStackedDataSubscriber(
+    ): astn.TextParserEventConsumer<Result, null> {
+        return astn.createStackedParser(
             {
-                onValue: () => {
+                onExists: () => {
                     return {
                         array: (range: astn.Range): astn.ArrayHandler => {
                             onSchemaError(["unexpected schema format", { found: ["array"] }], range)

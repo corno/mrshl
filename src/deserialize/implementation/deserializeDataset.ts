@@ -32,20 +32,22 @@ function createNoOperationValueHandler(): astn.ValueHandler {
     return {
         array: _range => {
             return {
-                element: () => () => createNoOperationValueHandler(),
-                end: _endData => {
+                onData: () => () => createNoOperationValueHandler(),
+                onEnd: _endData => {
                     //registerCodeCompletionGenerators.register(endData.range, null, null)
+                    return p.value(null)
                 },
             }
         },
         object: _range => {
             return {
-                property: (_key, _keyData) => {
+                onData: _propertyData => {
                     //registerCodeCompletionGenerators.register(keyData.keyRange, null, null)
                     return p.value(createNoOperationRequiredValueHandler())
                 },
-                end: _endData => {
+                onEnd: _endData => {
                     //registerCodeCompletionGenerators.register(endData.range, null, null)
+                    return p.value(null)
                 },
             }
         },
@@ -74,7 +76,7 @@ function createNoOperationRequiredValueHandler(): astn.RequiredValueHandler {
         onMissing: () => {
             //
         },
-        onValue: () => createNoOperationValueHandler(),
+        onExists: () => createNoOperationValueHandler(),
     }
 }
 
@@ -174,7 +176,7 @@ export function deserializeDataset(
                 }
             )
         },
-        (): astn.ParserEventConsumer<IDeserializedDataset, ExternalSchemaDeserializationError> => {
+        (): astn.TextParserEventConsumer<IDeserializedDataset, ExternalSchemaDeserializationError> => {
             if (internalSchemaSpecificationStart && internalSchema === null && !foundSchemaErrors) {
                 console.error("NO SCHEMA AND NO ERROR")
                 //throw new Error("Unexpected: no schema errors and no schema")
@@ -226,7 +228,7 @@ export function deserializeDataset(
                 astn.Severity.warning,
                 astn.OnDuplicateEntry.ignore
             )
-            return astn.createStackedDataSubscriber(
+            return astn.createStackedParser(
                 createDatasetDeserializer(
                     context,
                     dataset.dataset.sync,

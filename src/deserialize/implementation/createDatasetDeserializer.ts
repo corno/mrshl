@@ -51,12 +51,12 @@ function createPropertyDeserializer(
                                         return s.onDictionary(range, beginData)
                                     })
                                 },
-                                (key, range, entryContextData) => {
+                                propertyData => {
                                     hasEntries = true
                                     const entry = dictionary.createEntry()
                                     //const entry = collBuilder.createEntry(errorMessage => onError(errorMessage, propertyData.keyRange))
-                                    entry.node.getValue($$["key property"].name).setValue(key, errorMessage => onError(errorMessage, range))
-                                    addComments(entry.comments, entryContextData)
+                                    entry.node.getValue($$["key property"].name).setValue(propertyData.key, errorMessage => onError(errorMessage, propertyData.keyRange))
+                                    addComments(entry.comments, propertyData.contextData)
 
 
                                     if (dictionarySideEffects === null) {
@@ -64,7 +64,7 @@ function createPropertyDeserializer(
                                     }
                                     const propertySideEffects = dictionarySideEffects.map(s => {
                                         return s.onEntry(
-                                            range,
+                                            propertyData.keyRange,
                                             $$.node,
                                             $$["key property"].get(),
                                             entry
@@ -86,17 +86,17 @@ function createPropertyDeserializer(
                                         ),
                                     )
                                 },
-                                (endRange, endData, endContextData) => {
+                                endData => {
                                     if (dictionarySideEffects === null) {
                                         throw new Error("UNEXPECTED")
                                     }
                                     dictionarySideEffects.forEach(s => {
-                                        s.onClose(endRange, endData)
+                                        s.onClose(endData.range, endData.data)
                                     })
                                     if (hasEntries) {
                                         flagNonDefaultPropertiesFound()
                                     }
-                                    addComments(dictionary.comments, endContextData)
+                                    addComments(dictionary.comments, endData.contextData)
 
                                 },
                                 null,
@@ -147,7 +147,7 @@ function createPropertyDeserializer(
                                         entry.comments,
                                     )
                                 },
-                                (endRange, endData, endContextData) => {
+                                endData => {
                                     if (hasEntries) {
                                         flagNonDefaultPropertiesFound()
                                     }
@@ -155,9 +155,9 @@ function createPropertyDeserializer(
                                         throw new Error("UNEXPECTED")
                                     }
                                     listSideEffects.forEach(s => {
-                                        s.onClose(endRange, endData)
+                                        s.onClose(endData.range, endData.data)
                                     })
-                                    addComments(list.comments, endContextData)
+                                    addComments(list.comments, endData.contextData)
 
                                 },
                                 undefined,
@@ -575,14 +575,14 @@ function createNodeDeserializer(
                 })
 
             },
-            (endRange, endData, endContextData) => { //shorthand close
+            shortHandEndData => { //shorthand close
                 if (shorthandTypeSideEffects === null) {
                     throw new Error("unexpected: no shorthand type side effect handlers")
                 }
                 shorthandTypeSideEffects.forEach(s => {
-                    s.onShorthandTypeClose(endRange, endData)
+                    s.onShorthandTypeClose(shortHandEndData.range, shortHandEndData.data)
                 })
-                addComments(targetComments, endContextData)
+                addComments(targetComments, shortHandEndData.contextData)
             },
             () => { //onInvalidType
 

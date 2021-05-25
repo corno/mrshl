@@ -48,7 +48,7 @@ function createNodeHandler(
                             _beginRange => {
                                 //registerCodeCompletionGenerators(endRange, "properties end")
                             },
-                            key => {
+                            propertyData => {
                                 let targetPropertyType: t.PropertyType | null = null
                                 return context.expectValue(() => context.expectType(
                                     {
@@ -227,7 +227,7 @@ function createNodeHandler(
                                                                             () => {
                                                                                 //registerCodeCompletionGenerators(endRange, "properties end")
                                                                             },
-                                                                            stateKey => {
+                                                                            stateData => {
                                                                                 let targetNode: t.Node | null = null
                                                                                 return context.expectValue(() => context.expectType(
                                                                                     {
@@ -246,7 +246,7 @@ function createNodeHandler(
                                                                                     },
                                                                                     () => {
                                                                                         const asserted = assertNotNull(targetNode)
-                                                                                        states.add(stateKey, {
+                                                                                        states.add(stateData.key, {
                                                                                             node: asserted,
                                                                                         })
                                                                                     },
@@ -373,7 +373,7 @@ function createNodeHandler(
                                     () => {
                                         //HERE BE DRAGONS
                                         const asserted = assertNotNull(targetPropertyType)
-                                        properties.add(key, {
+                                        properties.add(propertyData.key, {
                                             type: asserted,
                                         })
                                     }
@@ -438,7 +438,7 @@ export function createDeserializer(
                     () => {
                         //registerCodeCompletionGenerators(endRange, "properties end")
                     },
-                    key => {
+                    propertyData => {
                         let targetNode: t.Node | null = null
                         return context.expectValue(() => context.expectType(
                             {
@@ -457,7 +457,7 @@ export function createDeserializer(
                             },
                             () => {
                                 const asserted = assertNotNull(targetNode)
-                                componentTypes.add(key, {
+                                componentTypes.add(propertyData.key, {
                                     node: asserted,
                                 })
                             },

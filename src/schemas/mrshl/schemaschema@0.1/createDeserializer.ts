@@ -49,7 +49,7 @@ function createExpectedNodeHandler(
                             () => {
                                 //
                             },
-                            key => {
+                            propertyData => {
                                 let targetPropertyType: t.PropertyType | null = null
                                 return context.expectValue(() => context.expectType(
                                     {
@@ -200,7 +200,7 @@ function createExpectedNodeHandler(
                                                                         () => {
                                                                             //
                                                                         },
-                                                                        stateKey => {
+                                                                        stateData => {
                                                                             let targetNode: t.Node | null = null
                                                                             return context.expectValue(() => context.expectType(
                                                                                 {
@@ -219,7 +219,7 @@ function createExpectedNodeHandler(
                                                                                 },
                                                                                 () => {
                                                                                     const asserted = assertNotNull(targetNode)
-                                                                                    states.add(stateKey, {
+                                                                                    states.add(stateData.key, {
                                                                                         node: asserted,
                                                                                     })
                                                                                 },
@@ -344,7 +344,7 @@ function createExpectedNodeHandler(
                                     },
                                     () => {
                                         const asserted = assertNotNull(targetPropertyType)
-                                        properties.add(key, {
+                                        properties.add(propertyData.key, {
                                             type: asserted,
                                         })
                                     }
@@ -404,7 +404,7 @@ export function createDeserializer(
                     () => {
                         //
                     },
-                    key => {
+                    propertyData => {
                         let targetNode: t.Node | null = null
                         return context.expectValue(() => context.expectType(
                             {
@@ -423,7 +423,7 @@ export function createDeserializer(
                             },
                             () => {
                                 const asserted = assertNotNull(targetNode)
-                                componentTypes.add(key, {
+                                componentTypes.add(propertyData.key, {
                                     node: asserted,
                                 })
                             },
