@@ -2,6 +2,7 @@ import * as p from "pareto"
 
 import * as sideEffects from "../API/ParsingSideEffectsAPI"
 import * as t from "../API/types"
+import * as astn from "astn"
 
 import { IDataset } from "../dataset"
 import { IDeserializedDataset } from "./IDeserializedDataset"
@@ -20,7 +21,7 @@ export type DeserializeASTNTextIntoDataset = (
 	astnText: string,
 	resolveExternalSchema: ResolveExternalSchema,
 	diagnosticCallback: DiagnosticCallback,
-	sideEffectHandlers: sideEffects.Root[],
+	sideEffectHandlers: sideEffects.Root<astn.ParserAnnotationData>[],
 	createInitialDataset: (
 		schema: t.Schema,
 	) => IDataset,

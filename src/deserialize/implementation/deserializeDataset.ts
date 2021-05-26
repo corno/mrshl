@@ -28,18 +28,18 @@ function assertUnreachable<RT>(_x: never): RT {
     throw new Error("unreachable")
 }
 
-function createNoOperationValueHandler(): astn.ValueHandler {
+function createNoOperationValueHandler(): astn.ValueHandler<astn.ParserAnnotationData> {
     return {
-        array: _range => {
+        array: () => {
             return {
-                onData: () => () => createNoOperationValueHandler(),
+                onData: () => createNoOperationValueHandler(),
                 onEnd: _endData => {
                     //registerCodeCompletionGenerators.register(endData.range, null, null)
                     return p.value(null)
                 },
             }
         },
-        object: _range => {
+        object: _data => {
             return {
                 onData: _propertyData => {
                     //registerCodeCompletionGenerators.register(keyData.keyRange, null, null)
@@ -51,7 +51,7 @@ function createNoOperationValueHandler(): astn.ValueHandler {
                 },
             }
         },
-        simpleValue: (_value, _stringData) => {
+        simpleValue: () => {
             //registerCodeCompletionGenerators.register(stringData.range, null, null)
             return p.value(false)
         },
@@ -71,12 +71,12 @@ function createNoOperationValueHandler(): astn.ValueHandler {
     }
 }
 
-function createNoOperationRequiredValueHandler(): astn.RequiredValueHandler {
+function createNoOperationRequiredValueHandler(): astn.RequiredValueHandler<astn.ParserAnnotationData> {
     return {
         onMissing: () => {
             //
         },
-        onExists: () => createNoOperationValueHandler(),
+        onExists: createNoOperationValueHandler(),
     }
 }
 
@@ -98,7 +98,7 @@ type InternalSchema = {
  */
 export function deserializeDataset(
     serializedDataset: string,
-	resolveExternalSchema: ResolveExternalSchema,
+    resolveExternalSchema: ResolveExternalSchema,
     onInternalSchema: (
         specification: InternalSchemaSpecification,
         schemaAndSideEffects: SchemaAndSideEffects,
@@ -106,7 +106,7 @@ export function deserializeDataset(
     onNoInternalSchema: () => IDataset | null,
     onError: (diagnostic: DeserializationDiagnostic, range: astn.Range) => void,
     onWarning: (diagnostic: DeserializationDiagnostic, range: astn.Range) => void,
-    sideEffectsHandlers: sideEffects.Root[],
+    sideEffectsHandlers: sideEffects.Root<astn.ParserAnnotationData>[],
 ): p.IUnsafeValue<IDeserializedDataset, ExternalSchemaDeserializationError> {
 
     /*
@@ -133,11 +133,11 @@ export function deserializeDataset(
                     onSchemaError(["internal schema", error], range)
                 },
                 createMetaDataDeserializer(
-                    (error, range) => {
-                        onSchemaError(["expect", error], range)
+                    (error, annotation) => {
+                        onSchemaError(["expect", error], annotation.range)
                     },
-                    (errorMessage, range) => {
-                        onSchemaError(["validation", { message: errorMessage }], range)
+                    (errorMessage, annotation) => {
+                        onSchemaError(["validation", { message: errorMessage }], annotation.range)
                     },
                     schema => {
                         if (schema !== null) {
@@ -151,10 +151,10 @@ export function deserializeDataset(
                         }
                     }
                 ),
-                (range, data) => {
+                data => {
                     return createSchemaAndSideEffectsFromStream(resolveExternalSchema(data.value)).reworkAndCatch(
                         error => {
-                            onSchemaError(["schema reference resolving", error], range)
+                            onSchemaError(["schema reference resolving", error], data.annotation.range)
                             return p.value(false)
                         },
                         schemaAndSideEffects => {
@@ -220,20 +220,20 @@ export function deserializeDataset(
                 }
             }
 
-            const context = new astn.ExpectContext(
-                (issue, range) => onError(createDiagnostic(["expect", issue]), range),
-                (issue, range) => onWarning(createDiagnostic(["expect", issue]), range),
-                (_range, _key, _contextData) => () => createNoOperationValueHandler(),
-                () => () => createNoOperationValueHandler(),
+            const expectContext = new astn.ExpectContext<astn.ParserAnnotationData>(
+                (issue, annotation) => onError(createDiagnostic(["expect", issue]), annotation.range),
+                (issue, annotation) => onWarning(createDiagnostic(["expect", issue]), annotation.range),
+                () => createNoOperationValueHandler(),
+                () => createNoOperationValueHandler(),
                 astn.Severity.warning,
                 astn.OnDuplicateEntry.ignore
             )
             return astn.createStackedParser(
                 createDatasetDeserializer(
-                    context,
+                    expectContext,
                     dataset.dataset.sync,
                     sideEffectsHandlers.map(h => h.node),
-                    (message, range) => onError(createDiagnostic(["deserializer", { message: message }]), range),
+                    (message, annotation) => onError(createDiagnostic(["deserializer", { message: message }]), annotation.range),
                 ),
                 (error, range) => {
                     onError(createDiagnostic(["stacked", error]), range)

@@ -4,9 +4,9 @@
 		"error",
 		"expected a simple value",
 		1,
-		4,
+		3,
 		1,
-		5
+		4
 	],
 	[
 		"deserialization",

@@ -281,8 +281,8 @@ export function directoryTests(): void {
                     // },
                     [
                         db5.createCodeCompletionsGenerator(
-                            (range, getIntraCodeCompletions, getCodeCompletionsAfter) => {
-                                actualCodeCompletions[astn.printRange(range)] = {
+                            (annotation, getIntraCodeCompletions, getCodeCompletionsAfter) => {
+                                actualCodeCompletions[astn.printRange(annotation.range)] = {
                                     inToken: getIntraCodeCompletions === null ? null : getIntraCodeCompletions(),
                                     afterToken: getCodeCompletionsAfter === null ? null : getCodeCompletionsAfter(),
                                 }
@@ -291,8 +291,8 @@ export function directoryTests(): void {
                                 //
                             },
                         ), db5.createHoverTextsGenerator(
-                            (range, getHoverText) => {
-                                actualHoverTexts[astn.printRange(range)] = {
+                            (annotation, getHoverText) => {
+                                actualHoverTexts[astn.printRange(annotation.range)] = {
                                     hoverText: getHoverText === null ? null : getHoverText(),
                                 }
                             },
@@ -356,7 +356,7 @@ describe("main", () => {
     describe('functions', () => {
         function createDummyParser() {
 
-            const parser = astn.createParser<null, null>(
+            const parser = astn.createTextParser<null, null>(
                 () => {
                     return {
                         onData: () => {

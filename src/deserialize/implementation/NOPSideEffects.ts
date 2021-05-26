@@ -4,12 +4,12 @@
 
 import * as sideEffects from "../../API/ParsingSideEffectsAPI"
 
-export function createNOPSideEffects(): sideEffects.Root {
+export function createNOPSideEffects<Annotation>(): sideEffects.Root<Annotation> {
     return new NOPSideEffects()
 }
 
-class NOPSideEffects implements sideEffects.Root {
-    node: sideEffects.Node
+class NOPSideEffects<Annotation> implements sideEffects.Root<Annotation> {
+    node: sideEffects.Node<Annotation>
     constructor() {
         this.node = new NodeNOPSideEffects()
     }
@@ -18,7 +18,7 @@ class NOPSideEffects implements sideEffects.Root {
     }
 }
 
-class NodeNOPSideEffects implements sideEffects.Node {
+class NodeNOPSideEffects<Annotation> implements sideEffects.Node<Annotation> {
     constructor() {
         //
     }
@@ -39,7 +39,7 @@ class NodeNOPSideEffects implements sideEffects.Node {
     }
 }
 
-class ShorthandTypeNOPSideEffects implements sideEffects.ShorthandType {
+class ShorthandTypeNOPSideEffects<Annotation> implements sideEffects.ShorthandType<Annotation> {
     constructor() {
         //
     }
@@ -51,7 +51,7 @@ class ShorthandTypeNOPSideEffects implements sideEffects.ShorthandType {
     }
 }
 
-class StateGroupNOPSideEffects implements sideEffects.StateGroup {
+class StateGroupNOPSideEffects<Annotation> implements sideEffects.StateGroup<Annotation> {
     constructor() {
         //
     }
@@ -63,7 +63,7 @@ class StateGroupNOPSideEffects implements sideEffects.StateGroup {
     }
 }
 
-class PropertyNOPSideEffects implements sideEffects.Property {
+class PropertyNOPSideEffects<Annotation> implements sideEffects.Property<Annotation> {
     constructor() {
         //
     }
@@ -87,14 +87,11 @@ class PropertyNOPSideEffects implements sideEffects.Property {
     }
 }
 
-class DictionaryNOPSideEffects implements sideEffects.Dictionary {
+class DictionaryNOPSideEffects<Annotation> implements sideEffects.Dictionary<Annotation> {
     constructor() {
         //
     }
     onClose() {
-        //
-    }
-    onUnexpectedEntry() {
         //
     }
     onEntry() {
@@ -102,7 +99,7 @@ class DictionaryNOPSideEffects implements sideEffects.Dictionary {
     }
 }
 
-class ListNOPSideEffects implements sideEffects.List {
+class ListNOPSideEffects<Annotation> implements sideEffects.List<Annotation> {
     constructor() {
         //
     }
@@ -111,8 +108,5 @@ class ListNOPSideEffects implements sideEffects.List {
     }
     onEntry() {
         return new NodeNOPSideEffects()
-    }
-    onUnexpectedEntry() {
-        //
     }
 }

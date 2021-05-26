@@ -11,8 +11,8 @@ import { InternalSchemaDeserializationError } from "./SchemaErrors"
  export type SchemaAndSideEffects = {
     schema: t.Schema
     createAdditionalValidator: (
-        onValidationError: (message: string, range: astn.Range, severity: DiagnosticSeverity) => void,
-    ) => sideEffects.Root
+        onValidationError: (message: string, annotation: astn.ParserAnnotationData, severity: DiagnosticSeverity) => void,
+    ) => sideEffects.Root<astn.ParserAnnotationData>
 }
 
 /**

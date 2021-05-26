@@ -3,7 +3,6 @@
 */
 
 import * as sideEffects from "../API/ParsingSideEffectsAPI"
-import * as syncAPI from "../API/syncAPI"
 import * as astn from "astn"
 import * as fp from "fountain-pen"
 import * as md from "../API/types"
@@ -79,16 +78,16 @@ function createHoverTextsForNode(node: md.Node, keyProperty: md.Property | null)
     ]
 }
 
-export type OnTokenHoverText = (
-    range: astn.Range,
+export type OnTokenHoverText<Annotation> = (
+    annotation: Annotation,
     getHoverTexts: GetHoverText | null,
 ) => void
 
-class HoverTextGenerator implements sideEffects.Root {
-    public readonly node: sideEffects.Node
+class HoverTextGenerator<Annotation> implements sideEffects.Root<Annotation> {
+    public readonly node: sideEffects.Node<Annotation>
     private readonly onEndCallback: () => void
     constructor(
-        onToken: OnTokenHoverText,
+        onToken: OnTokenHoverText<Annotation>,
         onEnd: () => void,
     ) {
         this.node = new NodeHoverTextGenerator(null, onToken)
@@ -99,81 +98,85 @@ class HoverTextGenerator implements sideEffects.Root {
     }
 }
 
-class StateGroupHoverTextGenerator implements sideEffects.StateGroup {
-    private readonly onToken: OnTokenHoverText
+class StateGroupHoverTextGenerator<Annotation> implements sideEffects.StateGroup<Annotation>{
+    private readonly onToken: OnTokenHoverText<Annotation>
     private readonly name: string
     constructor(
         name: string,
-        onToken: OnTokenHoverText,
+        onToken: OnTokenHoverText<Annotation>,
     ) {
         this.name = name
         this.onToken = onToken
     }
     onState(
-        _stateName: string,
-        tuRange: astn.Range,
-        _beginPreData: astn.ContextData,
-        optionRange: astn.Range,
-        _optionPreData: astn.ContextData
-
+        optionData: astn.OptionData<Annotation>,
     ) {
-        this.onToken(tuRange, () => {
-            return this.name
-        })
-        this.onToken(optionRange, () => {
+        this.onToken(optionData.annotation, () => {
             return this.name
         })
         return new NodeHoverTextGenerator(null, this.onToken)
     }
     onUnexpectedState(
-        _stateName: string,
-        _tuRange: astn.Range,
-        _tuPreData: astn.ContextData,
-        _optionRange: astn.Range,
-        _optionPreData: astn.ContextData,
-        _stateGroupDefinition: md.StateGroup
+        // _stateName: string,
+        // _tuRange: astn.Range,
+        // _tuPreData: astn.ContextData,
+        // _optionRange: astn.Range,
+        // _optionPreData: astn.ContextData,
+        // _stateGroupDefinition: md.StateGroup
     ) {
         //
     }
 }
 
-class PropertyHoverTextGenerator implements sideEffects.Property {
-    private readonly onToken: OnTokenHoverText
+class PropertyHoverTextGenerator<Annotation> implements sideEffects.Property<Annotation> {
+    private readonly onToken: OnTokenHoverText<Annotation>
     private readonly name: string
     constructor(
         name: string,
-        onToken: OnTokenHoverText,
+        onToken: OnTokenHoverText<Annotation>,
     ) {
         this.name = name
         this.onToken = onToken
     }
-    onDictionary(range: astn.Range) {
-        this.onToken(range, () => {
+    onDictionary(
+        data: astn.ObjectBeginData<Annotation>
+    ) {
+        this.onToken(data.annotation, () => {
             return this.name
         })
         return new DictionaryHoverTextGenerator(this.name, this.onToken)
     }
-    onList(range: astn.Range) {
-        this.onToken(range, () => {
+    onList(
+        data: astn.ArrayBeginData<Annotation>
+    ) {
+        this.onToken(data.annotation, () => {
             return this.name
         })
         return new ListHoverTextGenerator(this.name, this.onToken)
     }
-    onStateGroup() {
+    onStateGroup(
+        data: astn.TaggedUnionData<Annotation>
+    ) {
+        this.onToken(data.annotation, () => {
+            return this.name
+        })
         return new StateGroupHoverTextGenerator(this.name, this.onToken)
     }
-    onNull(range: astn.Range) {
-        this.onToken(range, () => {
+    onNull(
+        data: astn.SimpleValueData2<Annotation>
+    ) {
+        this.onToken(data.annotation, () => {
             return this.name
         })
     }
     onValue(
-        _syncValue: syncAPI.Value,
-        range: astn.Range,
-        _data: astn.SimpleValueData,
-        _definition: md.Value,
+        data: astn.SimpleValueData2<Annotation>
+        // _syncValue: syncAPI.Value,
+        // range: astn.Range,
+        // _data: astn.SimpleValueData,
+        // _definition: md.Value,
     ) {
-        this.onToken(range, () => {
+        this.onToken(data.annotation, () => {
             return this.name
         })
     }
@@ -182,72 +185,69 @@ class PropertyHoverTextGenerator implements sideEffects.Property {
     }
 }
 
-class ListHoverTextGenerator implements sideEffects.List {
-    private readonly onToken: OnTokenHoverText
+class ListHoverTextGenerator<Annotation> implements sideEffects.List<Annotation> {
+    private readonly onToken: OnTokenHoverText<Annotation>
     private readonly name: string
     constructor(
         name: string,
-        onToken: OnTokenHoverText,
+        onToken: OnTokenHoverText<Annotation>,
     ) {
         this.name = name
         this.onToken = onToken
     }
-    onClose(range: astn.Range) {
-        this.onToken(range, () => {
+    onClose(
+        data: astn.ArrayEndData<Annotation>
+    ) {
+        this.onToken(data.annotation, () => {
             return this.name
         })
     }
     onEntry() {
         return new NodeHoverTextGenerator(null, this.onToken)
     }
-    onUnexpectedEntry() {
-        //
-    }
 }
 
-class DictionaryHoverTextGenerator implements sideEffects.Dictionary {
-    private readonly onToken: OnTokenHoverText
+class DictionaryHoverTextGenerator<Annotation> implements sideEffects.Dictionary<Annotation> {
+    private readonly onToken: OnTokenHoverText<Annotation>
     private readonly name: string
     constructor(
         name: string,
-        onToken: OnTokenHoverText,
+        onToken: OnTokenHoverText<Annotation>,
     ) {
         this.name = name
         this.onToken = onToken
     }
-    onClose(range: astn.Range) {
-        this.onToken(range, () => {
+    onClose(
+        data: astn.ObjectEndData<Annotation>
+    ) {
+        this.onToken(data.annotation, () => {
             return this.name
         })
     }
-    onUnexpectedEntry(
-    ) {
-        //
-    }
     onEntry(
-        _range: astn.Range,
-        _nodeDefinition: md.Node,
-        _keyPropertyDefinition: md.Property,
+        // _range: astn.Range,
+        // _nodeDefinition: md.Node,
+        // _keyPropertyDefinition: md.Property,
     ) {
         return new NodeHoverTextGenerator(null, this.onToken)
     }
 }
 
-class ShorthandTypeHoverTextGenerator implements sideEffects.ShorthandType {
-    private readonly onToken: OnTokenHoverText
+class ShorthandTypeHoverTextGenerator<Annotation> implements sideEffects.ShorthandType<Annotation> {
+    private readonly onToken: OnTokenHoverText<Annotation>
     private readonly componentName: string | null
     constructor(
         componentName: string | null,
-        onToken: OnTokenHoverText,
+        onToken: OnTokenHoverText<Annotation>,
     ) {
         this.onToken = onToken
         this.componentName = componentName
     }
-    private addOnToken(range: astn.Range) {
+    private addOnToken(annotation: Annotation) {
 
         if (this.componentName !== null) {
             const cn = this.componentName
-            this.onToken(range, () => {
+            this.onToken(annotation, () => {
                 return cn
             })
         }
@@ -255,72 +255,81 @@ class ShorthandTypeHoverTextGenerator implements sideEffects.ShorthandType {
     }
     onProperty(
         propKey: string,
-        _propDefinition: md.Property,
-        _nodeBuilder: syncAPI.Node,
+        // _data: astn.PropertyData<Annotation>,
+        // _propDefinition: md.Property,
+        // _nodeBuilder: syncAPI.Node,
     ) {
         return new PropertyHoverTextGenerator(propKey, this.onToken)
     }
-    onShorthandTypeClose(range: astn.Range) {
-        this.addOnToken(range)
+    onShorthandTypeClose(
+        data: astn.ArrayEndData<Annotation>
+    ) {
+        this.addOnToken(data.annotation)
     }
 }
 
-class NodeHoverTextGenerator implements sideEffects.Node {
-    private readonly onToken: OnTokenHoverText
+class NodeHoverTextGenerator<Annotation> implements sideEffects.Node<Annotation> {
+    private readonly onToken: OnTokenHoverText<Annotation>
     private readonly componentName: string | null
     constructor(
         componentName: string | null,
-        onToken: OnTokenHoverText,
+        onToken: OnTokenHoverText<Annotation>,
     ) {
         this.onToken = onToken
         this.componentName = componentName
     }
-    private addOnToken(range: astn.Range) {
+    private addOnToken(annotation: Annotation) {
 
         if (this.componentName !== null) {
             const cn = this.componentName
-            this.onToken(range, () => {
+            this.onToken(annotation, () => {
                 return cn
             })
         }
         //
     }
-    onShorthandTypeOpen(range: astn.Range) {
-        this.addOnToken(range)
+    onShorthandTypeOpen(
+        data: astn.ArrayBeginData<Annotation>
+    ) {
+        this.addOnToken(data.annotation)
         return new ShorthandTypeHoverTextGenerator(this.componentName, this.onToken)
     }
     onProperty(
-        propKey: string,
-        _propRange: astn.Range,
-        _propDefinition: md.Property,
-        _nodeBuilder: syncAPI.Node,
+        data: astn.PropertyData<Annotation>
+        // propKey: string,
+        // _propRange: astn.Range,
+        // _propDefinition: md.Property,
+        // _nodeBuilder: syncAPI.Node,
     ) {
-        return new PropertyHoverTextGenerator(propKey, this.onToken)
+        return new PropertyHoverTextGenerator(data.key, this.onToken)
     }
     onUnexpectedProperty(
-        _key: string,
-        _range: astn.Range,
-        _preData: astn.ContextData,
-        _expectedProperties: string[]
+        // _key: string,
+        // _range: astn.Range,
+        // _preData: astn.ContextData,
+        // _expectedProperties: string[]
     ) {
         //
     }
     onTypeOpen(
-        range: astn.Range,
-        _nodeDefinition: md.Node,
-        _keyPropertyDefinition: md.Property | null
+        data: astn.ObjectBeginData<Annotation>
+        // range: astn.Range,
+        // _nodeDefinition: md.Node,
+        // _keyPropertyDefinition: md.Property | null
     ) {
-        this.addOnToken(range)
+        this.addOnToken(data.annotation)
         return new NodeHoverTextGenerator(this.componentName, this.onToken)
     }
-    onTypeClose(range: astn.Range) {
-        this.addOnToken(range)
+    onTypeClose(
+        data: astn.ObjectEndData<Annotation>
+    ) {
+        this.addOnToken(data.annotation)
     }
 }
 
-export function createHoverTextsGenerator(
-    onToken: OnTokenHoverText,
+export function createHoverTextsGenerator<Annotation>(
+    onToken: OnTokenHoverText<Annotation>,
     onEnd: () => void,
-): sideEffects.Root {
+): sideEffects.Root<Annotation> {
     return new HoverTextGenerator(onToken, onEnd)
 }

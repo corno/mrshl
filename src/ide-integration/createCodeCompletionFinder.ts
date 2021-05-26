@@ -7,7 +7,7 @@ export function createCodeCompletionFinder(
     completionPositionLine: number,
     completionPositionCharacter: number,
     callback: (codeCompletion: string) => void
-): Root {
+): Root<astn.ParserAnnotationData> {
     let positionAlreadyFound = false
     let previousAfter: null | (() => string[]) = null
     //console.log("FINDING COMPLETIONS", line, character)
@@ -24,19 +24,19 @@ export function createCodeCompletionFinder(
     }
 
     return createCodeCompletionsGenerator(
-        (tokenRange, intra, after) => {
+        (annotation, intra, after) => {
             //console.log("LOCATION", range.start.line, range.start.column, range.end.line, range.end.column)
 
             if (positionAlreadyFound) {
                 return
             }
-            if (isPositionBeforeLocation(completionPositionLine, completionPositionCharacter, tokenRange.start)) {
+            if (isPositionBeforeLocation(completionPositionLine, completionPositionCharacter, annotation.range.start)) {
                 //console.log("AFTER", previousAfter)
                 generate(previousAfter)
                 positionAlreadyFound = true
                 return
             }
-            if (isPositionBeforeLocation(completionPositionLine, completionPositionCharacter, astn.getEndLocationFromRange(tokenRange))) {
+            if (isPositionBeforeLocation(completionPositionLine, completionPositionCharacter, astn.getEndLocationFromRange(annotation.range))) {
                 //console.log("INTRA", intra)
                 generate(intra)
                 positionAlreadyFound = true

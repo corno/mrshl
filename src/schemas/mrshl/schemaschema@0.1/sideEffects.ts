@@ -15,14 +15,14 @@ function assertUnreachable(_x: never) {
     throw new Error("unreachable")
 }
 
-class Dictionary implements sideEffects.Dictionary {
+class Dictionary<Annotation> implements sideEffects.Dictionary<Annotation> {
     private readonly collectionDefinition: t.Collection
     //private readonly definition: t.Dictionary
-    private readonly onError: (message: string, range: astn.Range, severity: DiagnosticSeverity) => void
+    private readonly onError: (message: string, annotation: Annotation, severity: DiagnosticSeverity) => void
     constructor(
         _definition: t.Dictionary,
         collectionDefinition: t.Collection,
-        onError: (message: string, range: astn.Range, severity: DiagnosticSeverity) => void,
+        onError: (message: string, annotation: Annotation, severity: DiagnosticSeverity) => void,
     ) {
         //this.definition = definition
         this.collectionDefinition = collectionDefinition
@@ -31,30 +31,24 @@ class Dictionary implements sideEffects.Dictionary {
     onClose() {
         //
     }
-    onUnexpectedEntry() {
-        //
-    }
     onEntry() {
         return new Node(this.collectionDefinition.node, this.onError)
     }
 }
 
-class List implements sideEffects.List {
+class List<Annotation> implements sideEffects.List<Annotation> {
     private readonly collectionDefinition: t.Collection
     //private readonly definition: t.List
-    private readonly onError: (message: string, range: astn.Range, severity: DiagnosticSeverity) => void
+    private readonly onError: (message: string, annotation: Annotation, severity: DiagnosticSeverity) => void
 
     constructor(
         _definition: t.List,
         collectionDefinition: t.Collection,
-        onError: (message: string, range: astn.Range, severity: DiagnosticSeverity) => void,
+        onError: (message: string, annotation: Annotation, severity: DiagnosticSeverity) => void,
     ) {
         //this.definition = definition
         this.collectionDefinition = collectionDefinition
         this.onError = onError
-    }
-    onUnexpectedEntry() {
-        //
     }
     onEntry() {
         return new Node(this.collectionDefinition.node, this.onError)
@@ -64,11 +58,11 @@ class List implements sideEffects.List {
     }
 }
 
-export class Root implements sideEffects.Root {
-    public readonly node: Node
+export class Root<Annotation> implements sideEffects.Root<Annotation> {
+    public readonly node: Node<Annotation>
     constructor(
         schema: t.Schema,
-        onError: (message: string, range: astn.Range, severity: DiagnosticSeverity) => void
+        onError: (message: string, annotation: Annotation, severity: DiagnosticSeverity) => void
     ) {
         this.node = new Node(schema["root type"].get().node, onError)
     }
@@ -77,19 +71,21 @@ export class Root implements sideEffects.Root {
     }
 }
 
-class StateGroup implements sideEffects.StateGroup {
+class StateGroup<Annotation> implements sideEffects.StateGroup<Annotation> {
     public readonly definition: t.StateGroup
-    private readonly onError: (message: string, range: astn.Range, severity: DiagnosticSeverity) => void
+    private readonly onError: (message: string, annotation: Annotation, severity: DiagnosticSeverity) => void
 
     constructor(
         definition: t.StateGroup,
-        onError: (message: string, range: astn.Range, severity: DiagnosticSeverity) => void,
+        onError: (message: string, annotation: Annotation, severity: DiagnosticSeverity) => void,
     ) {
         this.definition = definition
         this.onError = onError
     }
-    onState(stateName: string) {
-        const state = this.definition.states.getUnsafe(stateName)
+    onState(
+        data: astn.OptionData<Annotation>
+    ) {
+        const state = this.definition.states.getUnsafe(data.option)
         return new Node(state.node, this.onError)
     }
     onUnexpectedState() {
@@ -97,15 +93,15 @@ class StateGroup implements sideEffects.StateGroup {
     }
 }
 
-class Prop implements sideEffects.Property {
+class Prop<Annotation> implements sideEffects.Property<Annotation> {
     public readonly nodedefinition: t.Node
     public readonly name: string
-    private readonly onError: (message: string, range: astn.Range, severity: DiagnosticSeverity) => void
+    private readonly onError: (message: string, annotation: Annotation, severity: DiagnosticSeverity) => void
 
     constructor(
         name: string,
         nodedefinition: t.Node,
-        onError: (message: string, range: astn.Range, severity: DiagnosticSeverity) => void,
+        onError: (message: string, annotation: Annotation, severity: DiagnosticSeverity) => void,
     ) {
         this.name = name
         this.nodedefinition = nodedefinition
@@ -154,9 +150,8 @@ class Prop implements sideEffects.Property {
         //
     }
     onValue(
+        data: astn.SimpleValueData2<Annotation>,
         value: syncAPI.Value,
-        range: astn.Range,
-        data: astn.SimpleValueData,
         _definition: md.Value
     ) {
         const prop = this.nodedefinition.properties.getUnsafe(this.name)
@@ -168,29 +163,29 @@ class Prop implements sideEffects.Property {
         const val = value.getValue()
         switch ($.type[0]) {
             case "boolean": {
-                if (data.quote !== null) {
-                    this.onError(`expected a boolean, found a quoted string`, range, DiagnosticSeverity.error)
+                if (data.wrapper[0] !== "none") {
+                    this.onError(`expected a boolean, found a quoted string`, data.annotation, DiagnosticSeverity.error)
                 } else {
                     if (val !== "true" && val !== "false") {
-                        this.onError(`value '${val}' is not a boolean`, range, DiagnosticSeverity.error)
+                        this.onError(`value '${val}' is not a boolean`, data.annotation, DiagnosticSeverity.error)
                     }
                 }
                 break
             }
             case "number": {
-                if (data.quote !== null) {
-                    this.onError(`expected a number, found a quoted string`, range, DiagnosticSeverity.error)
+                if (data.wrapper[0] !== "none") {
+                    this.onError(`expected a number, found a quoted string`, data.annotation, DiagnosticSeverity.error)
                 } else {
                     //eslint-disable-next-line no-new-wrappers
                     if (isNaN(new Number(val).valueOf())) {
-                        this.onError(`value '${val}' is not a number`, range, DiagnosticSeverity.error)
+                        this.onError(`value '${val}' is not a number`, data.annotation, DiagnosticSeverity.error)
                     }
                 }
                 break
             }
             case "string": {
-                if (data.quote === null) {
-                    this.onError(`expected a quoted string`, range, DiagnosticSeverity.error)
+                if (data.wrapper[0] === "none") {
+                    this.onError(`expected a quoted string`, data.annotation, DiagnosticSeverity.error)
                 }
                 break
             }
@@ -200,32 +195,32 @@ class Prop implements sideEffects.Property {
     }
 }
 
-class ShorthandType implements sideEffects.ShorthandType {
+class ShorthandType<Annotation> implements sideEffects.ShorthandType<Annotation> {
     public readonly definition: t.Node
-    private readonly onError: (message: string, range: astn.Range, severity: DiagnosticSeverity) => void
+    private readonly onError: (message: string, annotation: Annotation, severity: DiagnosticSeverity) => void
 
     constructor(
         definition: t.Node,
-        onError: (message: string, range: astn.Range, severity: DiagnosticSeverity) => void,
+        onError: (message: string, annotation: Annotation, severity: DiagnosticSeverity) => void,
     ) {
         this.definition = definition
         this.onError = onError
     }
-    onProperty(key: string) {
-        return new Prop(key, this.definition, this.onError)
+    onProperty(propKey: string) {
+        return new Prop(propKey, this.definition, this.onError)
     }
     onShorthandTypeClose() {
         //
     }
 }
 
-class Node implements sideEffects.Node {
+class Node<Annotation> implements sideEffects.Node<Annotation> {
     public readonly definition: t.Node
-    private readonly onError: (message: string, range: astn.Range, severity: DiagnosticSeverity) => void
+    private readonly onError: (message: string, annotation: Annotation, severity: DiagnosticSeverity) => void
 
     constructor(
         definition: t.Node,
-        onError: (message: string, range: astn.Range, severity: DiagnosticSeverity) => void,
+        onError: (message: string, annotation: Annotation, severity: DiagnosticSeverity) => void,
     ) {
         this.definition = definition
         this.onError = onError
@@ -233,8 +228,8 @@ class Node implements sideEffects.Node {
     onShorthandTypeOpen() {
         return new ShorthandType(this.definition, this.onError)
     }
-    onProperty(key: string) {
-        return new Prop(key, this.definition, this.onError)
+    onProperty(data: astn.PropertyData<Annotation>) {
+        return new Prop(data.key, this.definition, this.onError)
     }
     onUnexpectedProperty() {
         //

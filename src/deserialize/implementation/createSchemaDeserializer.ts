@@ -27,11 +27,11 @@ export function createSchemaDeserializer(
                     onSchemaError(["internal schema", error], range)
                 },
                 null,
-                (range, svData) => {
-                    const createSchemaFunc = schemas[svData.value]
+                data => {
+                    const createSchemaFunc = schemas[data.value]
                     if (createSchemaFunc === undefined) {
-                        console.error(`unknown schema schema '${svData.value},`)
-                        onSchemaError(["unknown schema schema", { name: svData.value }], range)
+                        console.error(`unknown schema schema '${data.value},`)
+                        onSchemaError(["unknown schema schema", { name: data.value }], data.annotation.range)
                     } else {
                         schemaProcessor = createSchemaFunc
                     }

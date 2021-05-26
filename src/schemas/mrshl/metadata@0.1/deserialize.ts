@@ -25,48 +25,48 @@ function assertNotNull<T>(value: T | null) {
     throw err
 }
 
-type StringAndRange = {
+type AnnotatedString<Annotation> = {
     value: string
-    range: astn.Range
+    annotation: Annotation
 }
 
-function createNodeHandler(
-    context: astn.ExpectContext,
-    raiseValidationError: (message: string, range: astn.Range) => void,
+function createNodeHandler<Annotation>(
+    context: astn.ExpectContext<Annotation>,
+    raiseValidationError: (message: string, annotation: Annotation) => void,
     componentTypes: gapi.IReadonlyDictionary<t.ComponentType>,
     callback: (node: t.Node) => void,
     resolveRegistry: ResolveRegistry
-): astn.ExpectedProperty {
+): astn.ExpectedProperty<Annotation> {
     return {
         onExists: () => {
 
             const properties = new g.Dictionary<t.Property>({})
-            return context.expectValue(() => context.expectType(
+            return context.expectValue(context.expectType(
                 {
                     "properties": {
-                        onExists: () => context.expectValue(() => context.expectDictionary(
+                        onExists: () => context.expectValue(context.expectDictionary(
                             _beginRange => {
                                 //registerCodeCompletionGenerators(endRange, "properties end")
                             },
                             propertyData => {
                                 let targetPropertyType: t.PropertyType | null = null
-                                return context.expectValue(() => context.expectType(
+                                return context.expectValue(context.expectType(
                                     {
                                         "type": {
-                                            onExists: () => context.expectValue(() =>
+                                            onExists: () => context.expectValue(
                                                 context.expectTaggedUnion(
                                                     {
                                                         "collection": () => {
                                                             let targetCollectionType: t.CollectionType | null = null
-                                                            return context.expectValue(() => context.expectType(
+                                                            return context.expectValue(context.expectType(
                                                                 {
                                                                     "type": {
-                                                                        onExists: () => context.expectValue(() => context.expectTaggedUnion(
+                                                                        onExists: () => context.expectValue(context.expectTaggedUnion(
                                                                             {
                                                                                 "dictionary": () => {
                                                                                     let targetNode: t.Node | null = null
-                                                                                    let keyPropertyName: StringAndRange | null = null
-                                                                                    return context.expectValue(() => context.expectType(
+                                                                                    let keyPropertyName: AnnotatedString<Annotation> | null = null
+                                                                                    return context.expectValue(context.expectType(
                                                                                         {
                                                                                             "node": createNodeHandler(
                                                                                                 context,
@@ -76,19 +76,19 @@ function createNodeHandler(
                                                                                                 resolveRegistry,
                                                                                             ),
                                                                                             "key property": {
-                                                                                                onExists: () => context.expectValue(() =>
-                                                                                                    context.expectSimpleValue((range, data) => {
+                                                                                                onExists: () => context.expectValue(
+                                                                                                    context.expectSimpleValue(data => {
                                                                                                         keyPropertyName = {
                                                                                                             value: data.value,
-                                                                                                            range: range,
+                                                                                                            annotation: data.annotation,
                                                                                                         }
                                                                                                         return p.value(false)
                                                                                                     })
                                                                                                 ),
-                                                                                                onNotExists: range => {
+                                                                                                onNotExists: data => {
                                                                                                     keyPropertyName = {
                                                                                                         value: "name",
-                                                                                                        range: range,
+                                                                                                        annotation: data.annotation,
                                                                                                     }
 
                                                                                                 },
@@ -111,7 +111,7 @@ function createNodeHandler(
                                                                                                     () => {
                                                                                                         raiseValidationError(
                                                                                                             `property '${assertedKeyPropertyName.value}' not found`,
-                                                                                                            assertedKeyPropertyName.range,
+                                                                                                            assertedKeyPropertyName.annotation,
                                                                                                         )
                                                                                                     },
                                                                                                 ),
@@ -122,7 +122,7 @@ function createNodeHandler(
                                                                                 },
                                                                                 "list": () => {
                                                                                     let targetNode: t.Node | null = null
-                                                                                    return context.expectValue(() => context.expectType(
+                                                                                    return context.expectValue(context.expectType(
                                                                                         {
                                                                                             "node": createNodeHandler(
                                                                                                 context,
@@ -176,22 +176,22 @@ function createNodeHandler(
 
                                                         },
                                                         "component": () => {
-                                                            let targetComponentTypeName: StringAndRange | null = null
-                                                            return context.expectValue(() => context.expectType(
+                                                            let targetComponentTypeName: AnnotatedString<Annotation> | null = null
+                                                            return context.expectValue(context.expectType(
                                                                 {
                                                                     "type": {
-                                                                        onExists: () => context.expectValue(() => context.expectSimpleValue((range, data) => {
+                                                                        onExists: () => context.expectValue(context.expectSimpleValue(data => {
                                                                             targetComponentTypeName = {
                                                                                 value: data.value,
-                                                                                range: range,
+                                                                                annotation: data.annotation,
                                                                             }
                                                                             return p.value(false)
 
                                                                         })),
-                                                                        onNotExists: range => {
+                                                                        onNotExists: data => {
                                                                             targetComponentTypeName = {
                                                                                 value: "",
-                                                                                range: range,
+                                                                                annotation: data.annotation,
                                                                             }
                                                                         },
                                                                     },
@@ -209,7 +209,7 @@ function createNodeHandler(
                                                                             () => {
                                                                                 raiseValidationError(
                                                                                     `component type '${assertedTargetComponentTypeName.value}' not found`,
-                                                                                    assertedTargetComponentTypeName.range,
+                                                                                    assertedTargetComponentTypeName.annotation,
                                                                                 )
                                                                             },
                                                                         ),
@@ -219,17 +219,17 @@ function createNodeHandler(
                                                         },
                                                         "state group": () => {
                                                             const states = new g.Dictionary<t.State>({})
-                                                            let defaultStateName: null | StringAndRange = null
-                                                            return context.expectValue(() => context.expectType(
+                                                            let defaultStateName: null | AnnotatedString<Annotation> = null
+                                                            return context.expectValue(context.expectType(
                                                                 {
                                                                     "states": {
-                                                                        onExists: () => context.expectValue(() => context.expectDictionary(
+                                                                        onExists: () => context.expectValue(context.expectDictionary(
                                                                             () => {
                                                                                 //registerCodeCompletionGenerators(endRange, "properties end")
                                                                             },
                                                                             stateData => {
                                                                                 let targetNode: t.Node | null = null
-                                                                                return context.expectValue(() => context.expectType(
+                                                                                return context.expectValue(context.expectType(
                                                                                     {
                                                                                         "node": createNodeHandler(
                                                                                             context,
@@ -261,17 +261,17 @@ function createNodeHandler(
                                                                         },
                                                                     },
                                                                     "default state": {
-                                                                        onExists: () => context.expectValue(() => context.expectSimpleValue((range, data) => {
+                                                                        onExists: () => context.expectValue(context.expectSimpleValue(data => {
                                                                             defaultStateName = {
                                                                                 value: data.value,
-                                                                                range: range,
+                                                                                annotation: data.annotation,
                                                                             }
                                                                             return p.value(false)
                                                                         })),
-                                                                        onNotExists: range => {
+                                                                        onNotExists: data => {
                                                                             defaultStateName = {
                                                                                 value: "yes",
-                                                                                range: range,
+                                                                                annotation: data.annotation,
                                                                             }
                                                                         },
                                                                     },
@@ -292,7 +292,7 @@ function createNodeHandler(
                                                                             () => {
                                                                                 raiseValidationError(
                                                                                     `state '${assertedDefaultStateName.value}' not found`,
-                                                                                    assertedDefaultStateName.range,
+                                                                                    assertedDefaultStateName.annotation,
                                                                                 )
                                                                             },
                                                                         ),
@@ -303,11 +303,11 @@ function createNodeHandler(
                                                         "value": () => {
                                                             let quoted: null | boolean = null
                                                             let defaultValue: null | string = null
-                                                            return context.expectValue(() =>
+                                                            return context.expectValue(
                                                                 context.expectType(
                                                                     {
                                                                         "quoted": {
-                                                                            onExists: () => context.expectValue(() => context.expectBoolean(value => {
+                                                                            onExists: () => context.expectValue(context.expectBoolean(value => {
                                                                                 quoted = value
                                                                                 return p.value(false)
 
@@ -317,7 +317,7 @@ function createNodeHandler(
                                                                             },
                                                                         },
                                                                         "default value": {
-                                                                            onExists: () => context.expectValue(() => context.expectSimpleValue((_range, data) => {
+                                                                            onExists: () => context.expectValue(context.expectSimpleValue(data => {
                                                                                 defaultValue = data.value
                                                                                 return p.value(false)
 
@@ -408,16 +408,16 @@ function createNodeHandler(
 }
 
 
-export function createDeserializer(
-    onExpectError: (error: astn.ExpectError, range: astn.Range) => void,
-    onValidationError: (message: string, range: astn.Range) => void,
+export function createDeserializer<Annotation>(
+    onExpectError: (error: astn.ExpectError, annotation: Annotation) => void,
+    onValidationError: (message: string, annotation: Annotation) => void,
     callback: (metaData: t.Schema | null) => void
-): astn.OnObject {
+): astn.OnObject<Annotation> {
     const componentTypes = new g.Dictionary<t.ComponentType>({})
     let rootName: string | null = null
-    let rootNameRange: astn.Range | null = null
+    let rootNameAnnotation: Annotation | null = null
 
-    const context = new astn.ExpectContext(
+    const context = new astn.ExpectContext<Annotation>(
         (_errorMessage, _range) => {
             onExpectError(_errorMessage, _range)
         },
@@ -434,13 +434,13 @@ export function createDeserializer(
     return context.createTypeHandler(
         {
             "component types": {
-                onExists: (): astn.RequiredValueHandler => context.expectValue(() => context.expectDictionary(
+                onExists: (): astn.RequiredValueHandler<Annotation> => context.expectValue(context.expectDictionary(
                     () => {
                         //registerCodeCompletionGenerators(endRange, "properties end")
                     },
                     propertyData => {
                         let targetNode: t.Node | null = null
-                        return context.expectValue(() => context.expectType(
+                        return context.expectValue(context.expectType(
                             {
                                 "node": createNodeHandler(
                                     context,
@@ -472,15 +472,15 @@ export function createDeserializer(
                 },
             },
             "root type": {
-                onExists: (): astn.RequiredValueHandler => context.expectValue(() => context.expectSimpleValue((range, data) => {
+                onExists: () => context.expectValue(context.expectSimpleValue(data => {
                     rootName = data.value
-                    rootNameRange = range
+                    rootNameAnnotation = data.annotation
                     return p.value(false)
 
                 })),
-                onNotExists: (range: astn.Range): void => {
+                onNotExists: data => {
                     rootName = "root"
-                    rootNameRange = range
+                    rootNameAnnotation = data.annotation
                 },
             },
         },
@@ -490,7 +490,7 @@ export function createDeserializer(
         () => {
             let schema: t.Schema | null = null
             const assertedRootName = assertNotNull(rootName)
-            const assertedRange = assertNotNull(rootNameRange)
+            const assertedRange = assertNotNull(rootNameAnnotation)
             schema = {
                 "component types": componentTypes,
                 "root type": createReference(

@@ -91,7 +91,7 @@ function generateCode(node: schemaschema01.Node) {
     })
 }
 
-const parser = astn.createParser(
+const parser = astn.createTextParser(
     () => {
         return {
             onData: () => {

@@ -14,43 +14,41 @@ export const createSchemaAndSideEffects: CreateSchemaAndSideEffects = (
 
     function createInternalSchemaHandler<Result>(
         onSchemaError: (error: InternalSchemaError, range: astn.Range) => void,
-        onObject: astn.OnObject | null,
-        onSimpleValue: astn.OnSimpleValue | null,
+        onObject: astn.OnObject<astn.ParserAnnotationData> | null,
+        onSimpleValue: astn.OnSimpleValue<astn.ParserAnnotationData> | null,
         onEnd: () => p.IUnsafeValue<Result, null>
     ): astn.TextParserEventConsumer<Result, null> {
         return astn.createStackedParser(
             {
-                onExists: () => {
-                    return {
-                        array: (range: astn.Range): astn.ArrayHandler => {
-                            onSchemaError(["unexpected schema format", { found: ["array"] }], range)
-                            return astn.createDummyArrayHandler()
+                onExists: {
+                    array: data => {
+                        onSchemaError(["unexpected schema format", { found: ["array"] }], data.annotation.range)
+                        return astn.createDummyArrayHandler()
+                    },
+                    object: onObject !== null
+                        ? onObject
+                        : data => {
+                            onSchemaError(["unexpected schema format", { found: ["object"] }], data.annotation.range)
+                            return astn.createDummyObjectHandler()
                         },
-                        object: onObject !== null
-                            ? onObject
-                            : (range: astn.Range): astn.ObjectHandler => {
-                                onSchemaError(["unexpected schema format", { found: ["object"] }], range)
-                                return astn.createDummyObjectHandler()
-                            },
-                        simpleValue: onSimpleValue !== null
-                            ? onSimpleValue
-                            : (range: astn.Range, _data: astn.SimpleValueData): p.IValue<boolean> => {
-                                onSchemaError(["unexpected schema format", { found: ["simple value"] }], range)
-                                return p.value(false)
-                            },
-                        taggedUnion: (range: astn.Range): astn.TaggedUnionHandler => {
-                            onSchemaError(["unexpected schema format", { found: ["tagged union"] }], range)
-                            return {
-                                option: (): astn.RequiredValueHandler => astn.createDummyRequiredValueHandler(),
-                                missingOption: (): void => {
-                                    //
-                                },
-                                end: () => {
-                                    //
-                                },
-                            }
+                    simpleValue: onSimpleValue !== null
+                        ? onSimpleValue
+                        : data => {
+                            onSchemaError(["unexpected schema format", { found: ["simple value"] }], data.annotation.range)
+                            return p.value(false)
                         },
-                    }
+                    taggedUnion: data => {
+                        onSchemaError(["unexpected schema format", { found: ["tagged union"] }], data.annotation.range)
+                        return {
+                            option: (): astn.RequiredValueHandler<astn.ParserAnnotationData> => astn.createDummyRequiredValueHandler(),
+                            missingOption: (): void => {
+                                //
+                            },
+                            end: () => {
+                                //
+                            },
+                        }
+                    },
                 },
                 onMissing: () => {
                     //
@@ -68,11 +66,11 @@ export const createSchemaAndSideEffects: CreateSchemaAndSideEffects = (
             foundError = true
         },
         createDeserializer(
-            (error, range) => {
-                onSchemaError(["expect", error], range)
+            (error, annotation) => {
+                onSchemaError(["expect", error], annotation.range)
             },
-            (errorMessage, range) => {
-                onSchemaError(["validation", { message: errorMessage }], range)
+            (errorMessage, annotation) => {
+                onSchemaError(["validation", { message: errorMessage }], annotation.range)
             },
             md2 => {
                 metadata = md2 === null

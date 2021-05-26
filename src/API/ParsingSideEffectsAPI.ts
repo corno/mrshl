@@ -2,116 +2,91 @@ import * as astn from "astn"
 import * as ds from "./syncAPI"
 import * as md from "./types"
 
-export interface Root {
-    node: Node
+export interface Root<Annotation> {
+    node: Node<Annotation>
     onEnd: () => void
 }
 
-export interface Dictionary {
+export interface Dictionary<Annotation> {
     onEntry(
-        range: astn.Range,
+        data: astn.PropertyData<Annotation>,
         nodeDefinition: md.Node,
         keyProperty: md.Property,
         entry: ds.Entry,
-    ): Node
-    onUnexpectedEntry(
-        entryRange: astn.Range,
-    ): void
-    onClose(
-        range: astn.Range,
-        closeData: astn.ObjectCloseData,
-    ): void
+    ): Node<Annotation>
+    onClose(data: astn.ObjectEndData<Annotation>): void
 }
 
-export interface List {
+export interface List<Annotation> {
     onClose(
-        range: astn.Range,
-        closeData: astn.ArrayCloseData
+        data: astn.ArrayEndData<Annotation>
     ): void
-    onEntry(): Node
-    onUnexpectedEntry(): void
+    onEntry(): Node<Annotation>
 }
 
-export interface StateGroup {
+export interface StateGroup<Annotation> {
     onState(
-        stateName: string,
-        tuRange: astn.Range,
-        beginPreData: astn.ContextData,
-        optionRange: astn.Range,
-        optionPreData: astn.ContextData
-    ): Node
+        data: astn.OptionData<Annotation>
+    ): Node<Annotation>
     onUnexpectedState(
-        stateName: string,
-        tuRange: astn.Range,
-        beginPreData: astn.ContextData,
-        optionRange: astn.Range,
-        optionPreData: astn.ContextData,
+        data: astn.OptionData<Annotation>,
         stateGroupDefinition: md.StateGroup
     ): void
 }
 
-export interface Property {
-    onList(
-        range: astn.Range,
-        openData: astn.ArrayOpenData
-    ): List
-    onDictionary(
-        range: astn.Range,
-        openData: astn.ObjectOpenData
-    ): Dictionary
-    onComponent(): Node
-    onStateGroup(
-    ): StateGroup
+export interface Property<Annotation> {
+    onList(data: astn.ArrayBeginData<Annotation>): List<Annotation>
+    onDictionary(data: astn.ObjectBeginData<Annotation>): Dictionary<Annotation>
+    onComponent(): Node<Annotation>
+    onStateGroup(data: astn.TaggedUnionData<Annotation>
+    ): StateGroup<Annotation>
     onValue(
+        data: astn.SimpleValueData2<Annotation>,
         syncValue: ds.Value,
-        range: astn.Range,
-        data: astn.SimpleValueData,
         definition: md.Value,
     ): void
-    onNull(range: astn.Range): void
+    onNull(
+        data: astn.SimpleValueData2<Annotation>
+    ): void
 }
 
-export interface ShorthandType {
+export interface ShorthandType<Annotation> {
     onShorthandTypeClose(
-        range: astn.Range,
-        closeData: astn.ArrayCloseData
+        data: astn.ArrayEndData<Annotation>
     ): void
     onProperty(
         propKey: string,
         propDefinition: md.Property,
         nodeBuilder: ds.Node,
-    ): Property
+    ): Property<Annotation>
 }
 
-export interface Type {
+export interface Type<Annotation> {
     onProperty(
-        propKey: string,
-        propRange: astn.Range,
+        data: astn.PropertyData<Annotation>,
         propDefinition: md.Property,
         nodeBuilder: ds.Node,
-    ): Property
+    ): Property<Annotation>
     onUnexpectedProperty(
-        key: string,
-        range: astn.Range,
-        contextData: astn.ContextData,
+        data: astn.PropertyData<Annotation>,
         expectedProperties: string[]
     ): void
     onTypeClose(
-        range: astn.Range
+        data: astn.ObjectEndData<Annotation>
     ): void
 }
 
-export interface Node {
+export interface Node<Annotation> {
     onTypeOpen(
-        range: astn.Range,
+        data: astn.ObjectBeginData<Annotation>,
         nodeDefinition: md.Node,
         keyPropertyDefinition: md.Property | null,
         nodeBuilder: ds.Node
-    ): Type
+    ): Type<Annotation>
     onShorthandTypeOpen(
-        range: astn.Range,
+        data: astn.ArrayBeginData<Annotation>,
         nodeDefinition: md.Node,
         keyPropertyDefinition: md.Property | null,
         nodeBuilder: ds.Node
-    ): ShorthandType
+    ): ShorthandType<Annotation>
 }

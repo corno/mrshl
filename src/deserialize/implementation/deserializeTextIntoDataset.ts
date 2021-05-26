@@ -1,5 +1,6 @@
 import * as p from "pareto"
 import * as path from "path"
+import * as astn from "astn"
 
 import * as md from "../../API/types"
 import * as sideEffects from "../../API/ParsingSideEffectsAPI"
@@ -24,7 +25,7 @@ function validateDocumentAfterContextSchemaResolution(
 	contextSchema: md.Schema | null,
 	resolveExternalSchema: ResolveExternalSchema,
 	diagnosticCallback: DiagnosticCallback,
-	sideEffectHandlers: sideEffects.Root[],
+	sideEffectHandlers: sideEffects.Root<astn.ParserAnnotationData>[],
 	createDataset: (
 		schema: md.Schema,
 	) => IDataset,
@@ -60,11 +61,11 @@ function validateDocumentAfterContextSchemaResolution(
 
 				allSideEffects.push(schemaAndSideEffects.createAdditionalValidator((
 					message,
-					range,
+					annotation,
 					severity,
 				) => {
 					addDiagnostic(
-						["validation", { range: range, message: message }],
+						["validation", { range: annotation.range, message: message }],
 						severity,
 					)
 				}))
@@ -121,7 +122,7 @@ export function deserializeTextIntoDataset(
 	documentText: string,
 	resolveExternalSchema: ResolveExternalSchema,
 	diagnosticCallback: DiagnosticCallback,
-	sideEffectHandlers: sideEffects.Root[],
+	sideEffectHandlers: sideEffects.Root<astn.ParserAnnotationData>[],
 	createInitialDataset: (
 		schema: md.Schema,
 	) => IDataset,
@@ -168,12 +169,12 @@ export function deserializeTextIntoDataset(
 			schemaAndSideEffects === null ? sideEffectHandlers : sideEffectHandlers.concat([schemaAndSideEffects.createAdditionalValidator(
 				(
 					message,
-					range,
+					annotation,
 					severity
 				) => {
 					addDiagnostic(
 						["validation", {
-							range: range,
+							range: annotation.range,
 							message: message,
 						}],
 						severity,
