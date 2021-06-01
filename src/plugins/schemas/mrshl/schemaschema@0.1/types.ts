@@ -1,4 +1,4 @@
-import * as gapi from "../../../../db5api/generics"
+import * as db5api from "../../../../db5api"
 
 export interface X {
     x: string
@@ -14,7 +14,7 @@ export type Collection = {
 }
 
 export type Component = {
-    readonly "type": gapi.IReference<ComponentType>
+    readonly "type": db5api.IReference<ComponentType>
 }
 
 export type ComponentType = {
@@ -22,14 +22,14 @@ export type ComponentType = {
 }
 
 export type Dictionary = {
-    readonly "key property": gapi.IReference<Property>
+    readonly "key property": db5api.IReference<Property>
 }
 
 export type List = {
 }
 
 export type Node = {
-    readonly "properties": gapi.IReadonlyDictionary<Property>
+    readonly "properties": db5api.IReadonlyDictionary<Property>
 }
 
 export type Property = {
@@ -43,8 +43,8 @@ export type PropertyType =
     | ["state group", StateGroup]
 
 export type Schema = {
-    readonly "component types": gapi.IReadonlyDictionary<ComponentType>
-    readonly "root type": gapi.IReference<ComponentType>
+    readonly "component types": db5api.IReadonlyDictionary<ComponentType>
+    readonly "root type": db5api.IReference<ComponentType>
 }
 
 export type State = {
@@ -52,8 +52,8 @@ export type State = {
 }
 
 export type StateGroup = {
-    readonly "states": gapi.IReadonlyDictionary<State>
-    readonly "default state": gapi.IReference<State>
+    readonly "states": db5api.IReadonlyDictionary<State>
+    readonly "default state": db5api.IReference<State>
 }
 
 export type ValueType =

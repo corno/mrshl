@@ -1,4 +1,4 @@
-import * as gapi from "../../../../db5api/generics"
+import * as db5api from "../../../../db5api"
 
 type Resolve = () => boolean
 
@@ -19,7 +19,7 @@ export class ResolveRegistry {
     }
 }
 
-export function createReference<T>(name: string, lookup: gapi.IReadonlyLookup<T>, resolver: ResolveRegistry, onError: (keys: string[]) => void): gapi.IReference<T> {
+export function createReference<T>(name: string, lookup: db5api.IReadonlyLookup<T>, resolver: ResolveRegistry, onError: (keys: string[]) => void): db5api.IReference<T> {
     let t: T | null = null
     resolver.register(() => {
         t = lookup.get(name)

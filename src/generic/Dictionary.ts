@@ -1,6 +1,20 @@
-import * as gapi from "../db5api/generics"
 
-export class Dictionary<T> implements gapi.IReadonlyDictionary<T>, gapi.IReadonlyLookup<T> {
+export type RawObject<T> = { [key: string]: T }
+
+export interface IReadonlyLookup<T> {
+    getUnsafe(key: string): T
+    get(key: string): T | null
+    getKeys(): string[]
+}
+
+export interface IReadonlyDictionary<T> extends IReadonlyLookup<T> {
+    forEach(callback: (entry: T, key: string) => void): void
+    isEmpty(): boolean
+    mapSorted<RT>(callback: (entry: T, key: string) => RT): RawObject<RT>
+    mapUnsorted<RT>(callback: (entry: T, key: string) => RT): RawObject<RT>
+}
+
+export class Dictionary<T> implements IReadonlyDictionary<T>, IReadonlyLookup<T> {
     private readonly imp: { [key: string]: T } = {}
     constructor(imp: { [key: string]: T }) {
         this.imp = imp
@@ -8,15 +22,15 @@ export class Dictionary<T> implements gapi.IReadonlyDictionary<T>, gapi.IReadonl
     public forEach(callback: (entry: T, key: string) => void): void {
         Object.keys(this.imp).sort().forEach(key => callback(this.imp[key], key))
     }
-    public map<RT>(callback: (entry: T, key: string) => RT): gapi.RawObject<RT> {
-        const rt: gapi.RawObject<RT> = {}
+    public map<RT>(callback: (entry: T, key: string) => RT): RawObject<RT> {
+        const rt: RawObject<RT> = {}
         Object.keys(this.imp).sort().forEach(key => {
             rt[key] = callback(this.imp[key], key)
         })
         return rt
     }
     public filter<RT>(callback: (entry: T, key: string) => null | RT): Dictionary<RT> {
-        const rt: gapi.RawObject<RT> = {}
+        const rt: RawObject<RT> = {}
         Object.keys(this.imp).sort().forEach(key => {
             const result = callback(this.imp[key], key)
             if (result !== null) {
@@ -42,15 +56,15 @@ export class Dictionary<T> implements gapi.IReadonlyDictionary<T>, gapi.IReadonl
         }
         return entry
     }
-    public mapSorted<RT>(callback: (entry: T, key: string) => RT): gapi.RawObject<RT> {
-        const rt: gapi.RawObject<RT> = {}
+    public mapSorted<RT>(callback: (entry: T, key: string) => RT): RawObject<RT> {
+        const rt: RawObject<RT> = {}
         Object.keys(this.imp).sort().forEach(key => {
             rt[key] = callback(this.imp[key], key)
         })
         return rt
     }
-    public mapUnsorted<RT>(callback: (entry: T, key: string) => RT): gapi.RawObject<RT> {
-        const rt: gapi.RawObject<RT> = {}
+    public mapUnsorted<RT>(callback: (entry: T, key: string) => RT): RawObject<RT> {
+        const rt: RawObject<RT> = {}
         Object.keys(this.imp).forEach(key => {
             rt[key] = callback(this.imp[key], key)
         })

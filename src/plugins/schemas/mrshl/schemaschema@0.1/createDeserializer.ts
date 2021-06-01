@@ -4,7 +4,7 @@
 */
 import * as p from "pareto"
 import * as astncore from "astn-core"
-import * as gapi from "../../../../db5api/generics"
+import * as db5api from "../../../../db5api"
 import {
     Dictionary,
 } from "./Dictionary"
@@ -35,7 +35,7 @@ type AnnotatedString<TokenAnnotation> = {
 function createExpectedNodeHandler<TokenAnnotation, NonTokenAnnotation>(
     context: astncore.IExpectContext<TokenAnnotation, NonTokenAnnotation>,
     raiseValidationError: (message: string, annotation: TokenAnnotation) => void,
-    componentTypes: gapi.IReadonlyDictionary<t.ComponentType>,
+    componentTypes: db5api.IReadonlyDictionary<t.ComponentType>,
     callback: (node: t.Node) => void,
     resolveRegistry: ResolveRegistry,
 ): astncore.ExpectedProperty<TokenAnnotation, NonTokenAnnotation> {

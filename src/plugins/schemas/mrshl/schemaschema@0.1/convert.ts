@@ -1,5 +1,4 @@
 import * as db5api from "../../../../db5api"
-import * as gapi from "../../../../db5api/generics"
 import {
     ResolveRegistry,
     createReference,
@@ -13,7 +12,11 @@ function assertUnreachable<RT>(_x: never): RT {
     throw new Error("Unreachable")
 }
 
-function convertToGenericNode(node: Node, componentTypes: gapi.IReadonlyLookup<db5api.ComponentTypeDefinition>, keyProperty: null | Property, resolveRegistry: ResolveRegistry): db5api.NodeDefinition {
+function convertToGenericNode(
+    node: Node, componentTypes: db5api.IReadonlyLookup<db5api.ComponentTypeDefinition>,
+    keyProperty: null | Property,
+    resolveRegistry: ResolveRegistry,
+): db5api.NodeDefinition {
     const properties = new Dictionary<db5api.PropertyDefinition>({})
     node.properties.mapSorted((prop, key) => {
         if (prop === keyProperty) {
