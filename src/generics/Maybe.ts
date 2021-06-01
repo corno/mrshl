@@ -9,11 +9,11 @@ export class Maybe<T> {
             callback(this.t)
         }
     }
-    public map<RT>(onExists: (t: T) => RT, onNotExists: () => RT): RT {
+    public map<RT>(exists: (t: T) => RT, onNotExists: () => RT): RT {
         if (this.t === null) {
             return onNotExists()
         } else {
-            return onExists(this.t)
+            return exists(this.t)
         }
     }
 }

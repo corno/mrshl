@@ -1,4 +1,4 @@
-import * as gapi from "../etc/interfaces/generics"
+import * as gapi from "../../../../etc/interfaces/generics"
 
 export class Dictionary<T> implements gapi.IReadonlyDictionary<T>, gapi.IReadonlyLookup<T> {
     private readonly imp: { [key: string]: T } = {}

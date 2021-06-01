@@ -2,7 +2,7 @@
 
 import * as fs from "fs"
 import * as astn from "astn"
-import * as schemaschema01 from "../src/schemas/mrshl/schemaschema@0.1"
+import * as schemaschema01 from "../src/plugins/schemas/mrshl/schemaschema@0.1"
 import * as p from "pareto"
 import * as p20 from "pareto-20"
 //import * as pc from "pareto-compiler"
@@ -104,8 +104,8 @@ const parser = astn.createTextParser(
     },
     () => {
         return schemaschema01.createInternalSchemaBuilder(
-            (message, range) => {
-                console.error(message, astn.printRange(range))
+            (message, annotation) => {
+                console.error(message, astn.printRange(annotation.range))
             }
         )
     },
@@ -120,8 +120,8 @@ const parser = astn.createTextParser(
 
 const st = astn.createStreamPreTokenizer(
     astn.createTokenizer(parser),
-    (message, range) => {
-        console.error(message, range)
+    $ => {
+        console.error($.error, $.range)
     },
 )
 

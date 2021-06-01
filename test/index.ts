@@ -12,7 +12,7 @@ import * as p from "pareto"
 import { describe } from "mocha"
 import * as db5 from "../src"
 import * as astn from "astn"
-import * as async from "../src/asyncAPI"
+//import * as async from "../src/asyncAPI"
 import { makeNativeHTTPrequest } from "./makeNativeHTTPrequest"
 //import { deserializeSchemaFromString } from "../src"
 import * as p20 from "pareto-20"
@@ -116,46 +116,46 @@ function deepEqualJSON(
 
 type Event = [string, string?]
 
-function subscribeToNode(node: async.Node, actualEvents: Event[]) {
-    node.forEachProperty((prop, propKey) => {
-        actualEvents.push(["property", propKey])
-        switch (prop.type[0]) {
-            case "collection": {
-                const $ = prop.type[1]
-                $.entries.subscribeToEntries(e => {
-                    actualEvents.push(["collection entry"])
-                    subscribeToNode(e.entry.node, actualEvents)
-                })
-                break
-            }
-            case "component": {
-                const $ = prop.type[1]
-                subscribeToNode($.node, actualEvents)
-                break
-            }
-            case "state group": {
-                const $ = prop.type[1]
-                $.currentStateKey.subscribeToValue(state => {
-                    actualEvents.push(["current state", state])
-                })
-                $.statesOverTime.subscribeToEntries(sot => {
-                    actualEvents.push(["state", sot.entry.key])
-                    subscribeToNode(sot.entry.node, actualEvents)
-                })
-                break
-            }
-            case "value": {
-                const $ = prop.type[1]
-                $.value.subscribeToValue(value => {
-                    actualEvents.push(["value", value])
-                })
-                break
-            }
-            default:
-                assertUnreachable(prop.type[0])
-        }
-    })
-}
+// function subscribeToNode(node: async.Node, actualEvents: Event[]) {
+//     node.forEachProperty((prop, propKey) => {
+//         actualEvents.push(["property", propKey])
+//         switch (prop.type[0]) {
+//             case "collection": {
+//                 const $ = prop.type[1]
+//                 $.entries.subscribeToEntries(e => {
+//                     actualEvents.push(["collection entry"])
+//                     subscribeToNode(e.entry.node, actualEvents)
+//                 })
+//                 break
+//             }
+//             case "component": {
+//                 const $ = prop.type[1]
+//                 subscribeToNode($.node, actualEvents)
+//                 break
+//             }
+//             case "state group": {
+//                 const $ = prop.type[1]
+//                 $.currentStateKey.subscribeToValue(state => {
+//                     actualEvents.push(["current state", state])
+//                 })
+//                 $.statesOverTime.subscribeToEntries(sot => {
+//                     actualEvents.push(["state", sot.entry.key])
+//                     subscribeToNode(sot.entry.node, actualEvents)
+//                 })
+//                 break
+//             }
+//             case "value": {
+//                 const $ = prop.type[1]
+//                 $.value.subscribeToValue(value => {
+//                     actualEvents.push(["value", value])
+//                 })
+//                 break
+//             }
+//             default:
+//                 assertUnreachable(prop.type[0])
+//         }
+//     })
+// }
 
 export function directoryTests(): void {
 
@@ -304,24 +304,27 @@ export function directoryTests(): void {
                     schema => {
                         return db5.createInMemoryDataset(schema)
                     }
-                ).mapResult<null>(dataset => {
-                    return db5.serialize(
-                        dataset.dataset.sync,
-                        dataset.internalSchemaSpecification,
-                    ).consume<null>(
-                        null,
-                        {
-                            onData: data => {
-                                out.push(data)
-                                return p.value(false)
-                            },
-                            onEnd: () => {
-                                subscribeToNode(dataset.dataset.async.rootNode, actualEvents)
+                ).mapResult<null>(_dataset => {
+                    console.error("IMPLEMENT ME: SERIALIZE")
 
-                                return p.value(null)
-                            },
-                        }
-                    )
+                    // return db5.serialize(
+                    //     dataset.dataset.sync,
+                    //     dataset.internalSchemaSpecification,
+                    // ).consume<null>(
+                    //     null,
+                    //     {
+                    //         onData: $ => {
+                    //             out.push($)
+                    //             return p.value(false)
+                    //         },
+                    //         onEnd: () => {
+                    //             subscribeToNode(dataset.dataset.async.rootNode, actualEvents)
+
+                    //             return p.value(null)
+                    //         },
+                    //     }
+                    // )
+                    return p.value(null)
                 }).catch(
                     _e => {
                         if (actualIssues.length === 0) {
@@ -388,8 +391,8 @@ describe("main", () => {
             console.log("SIMPLE TEST")
             return astn.createStreamPreTokenizer(
                 astn.createTokenizer(parser),
-                (message, _location) => {
-                    console.error("error found", message)
+                $ => {
+                    console.error("error found", $.error)
                     //actualEvents.push(["tokenizererror", message])
                 },
             )

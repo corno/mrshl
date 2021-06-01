@@ -28,21 +28,21 @@
     "dist/*"
   ],
   "dependencies": {
-    "astn": "^0.78.15",
+    "astn": "^0.80.1",
     "fountain-pen": "^3.5.4"
   },
   "devDependencies": {
     "@types/chai": "^4.2.18",
     "@types/mocha": "^8.2.2",
     "@types/node": "^15.6.1",
-    "@typescript-eslint/eslint-plugin": "^4.25.0",
-    "@typescript-eslint/eslint-plugin-tslint": "^4.25.0",
-    "@typescript-eslint/parser": "^4.25.0",
+    "@typescript-eslint/eslint-plugin": "^4.26.0",
+    "@typescript-eslint/eslint-plugin-tslint": "^4.26.0",
+    "@typescript-eslint/parser": "^4.26.0",
     "chai": "^4.3.4",
     "eslint": "^7.27.0",
     "mocha": "^8.4.0",
     "tslint": "^6.1.3",
-    "typescript": "^4.2.4"
+    "typescript": "^4.3.2"
   },
   "bin": {
     "astn-to-expanded-json": "bin/toExpandedJSON.mjs"

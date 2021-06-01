@@ -1,6 +1,6 @@
 import { SchemaHost } from "../src";
 
 export const schemaHost: SchemaHost = {
-    host: 'astn.io',
+    host: 'astncore.io',
     pathStart: '/dev/schemas/',
 }
