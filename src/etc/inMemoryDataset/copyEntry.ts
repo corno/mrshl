@@ -1,10 +1,10 @@
-import * as syncAPI from "../interfaces/syncAPI"
+import * as db5api from "../../db5api"
 
 export { Entry } from "./syncAPIImplementation"
 
 function copyNode(
-    sourceNode: syncAPI.Node,
-    targetNode: syncAPI.Node
+    sourceNode: db5api.Node,
+    targetNode: db5api.Node
 ) {
     sourceNode.forEachProperty((property, pKey) => {
         if (property.type[0] !== "dictionary") {
@@ -64,8 +64,8 @@ function copyNode(
 }
 
 export function copyEntry(
-    sourceEntry: syncAPI.Entry,
-    targetEntry: syncAPI.Entry
+    sourceEntry: db5api.Entry,
+    targetEntry: db5api.Entry
 ): void {
     copyNode(sourceEntry.node, targetEntry.node)
 }

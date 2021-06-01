@@ -7,7 +7,8 @@ import * as p from "pareto"
 import * as astncore from "astn-core"
 import * as astn from "astn"
 
-import * as sideEffects from "../etc/interfaces/ParsingSideEffectsAPI"
+import * as db5api from "../db5api"
+
 import { InternalSchemaSpecification, InternalSchemaSpecificationType } from "../etc/interfaces/IDataset"
 import { SchemaAndSideEffects } from "../etc/interfaces/SchemaAndSideEffects"
 import { InternalSchemaDeserializationError } from "../etc/interfaces/SchemaErrors"
@@ -107,7 +108,7 @@ export function deserializeDataset(
     onNoInternalSchema: () => IDataset | null,
     onError: (diagnostic: DeserializationDiagnostic, range: astn.Range) => void,
     onWarning: (diagnostic: DeserializationDiagnostic, range: astn.Range) => void,
-    sideEffectsHandlers: sideEffects.Root<astn.ParserAnnotationData>[],
+    sideEffectsHandlers: db5api.RootHandler<astn.ParserAnnotationData>[],
 ): p.IUnsafeValue<IDeserializedDataset, ExternalSchemaDeserializationError> {
 
     /*

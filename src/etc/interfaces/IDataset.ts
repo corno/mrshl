@@ -1,5 +1,4 @@
-import * as t from "./types"
-import * as syncapi from "./syncAPI"
+import * as db5api from "../../db5api"
 
 export enum InternalSchemaSpecificationType {
     Reference,
@@ -13,8 +12,8 @@ export type InternalSchemaSpecification =
     | [InternalSchemaSpecificationType.None]
 
 export interface IDataset {
-    readonly schema: t.Schema
-    readonly root: syncapi.Node
-    readonly documentComments: syncapi.Comments
-    readonly rootComments: syncapi.Comments
+    readonly schema: db5api.Schema
+    readonly root: db5api.Node
+    readonly documentComments: db5api.Comments
+    readonly rootComments: db5api.Comments
 }

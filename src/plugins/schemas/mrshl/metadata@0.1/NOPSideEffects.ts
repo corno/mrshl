@@ -2,14 +2,14 @@
     "max-classes-per-file": off,
 */
 
-import * as sideEffects from "../../../../etc/interfaces/ParsingSideEffectsAPI"
+import * as db5api from "../../../../db5api"
 
-export function createNOPSideEffects<Annotation>(): sideEffects.Root<Annotation> {
+export function createNOPSideEffects<Annotation>(): db5api.RootHandler<Annotation> {
     return new NOPSideEffects()
 }
 
-class NOPSideEffects<Annotation> implements sideEffects.Root<Annotation> {
-    node: sideEffects.Node<Annotation>
+class NOPSideEffects<Annotation> implements db5api.RootHandler<Annotation> {
+    node: db5api.NodeHandler<Annotation>
     constructor() {
         this.node = new NodeNOPSideEffects()
     }
@@ -18,7 +18,7 @@ class NOPSideEffects<Annotation> implements sideEffects.Root<Annotation> {
     }
 }
 
-class NodeNOPSideEffects<Annotation> implements sideEffects.Node<Annotation> {
+class NodeNOPSideEffects<Annotation> implements db5api.NodeHandler<Annotation> {
     constructor() {
         //
     }
@@ -39,7 +39,7 @@ class NodeNOPSideEffects<Annotation> implements sideEffects.Node<Annotation> {
     }
 }
 
-class ShorthandTypeNOPSideEffects<Annotation> implements sideEffects.ShorthandType<Annotation> {
+class ShorthandTypeNOPSideEffects<Annotation> implements db5api.ShorthandTypeHandler<Annotation> {
     constructor() {
         //
     }
@@ -51,7 +51,7 @@ class ShorthandTypeNOPSideEffects<Annotation> implements sideEffects.ShorthandTy
     }
 }
 
-class StateGroupNOPSideEffects<Annotation> implements sideEffects.StateGroup<Annotation> {
+class StateGroupNOPSideEffects<Annotation> implements db5api.StateGroupHandler<Annotation> {
     constructor() {
         //
     }
@@ -63,7 +63,7 @@ class StateGroupNOPSideEffects<Annotation> implements sideEffects.StateGroup<Ann
     }
 }
 
-class PropertyNOPSideEffects<Annotation> implements sideEffects.Property<Annotation> {
+class PropertyNOPSideEffects<Annotation> implements db5api.PropertyHandler<Annotation> {
     constructor() {
         //
     }
@@ -87,7 +87,7 @@ class PropertyNOPSideEffects<Annotation> implements sideEffects.Property<Annotat
     }
 }
 
-class DictionaryNOPSideEffects<Annotation> implements sideEffects.Dictionary<Annotation> {
+class DictionaryNOPSideEffects<Annotation> implements db5api.DictionaryHandler<Annotation> {
     constructor() {
         //
     }
@@ -99,7 +99,7 @@ class DictionaryNOPSideEffects<Annotation> implements sideEffects.Dictionary<Ann
     }
 }
 
-class ListNOPSideEffects<Annotation> implements sideEffects.List<Annotation> {
+class ListNOPSideEffects<Annotation> implements db5api.ListHandler<Annotation> {
     constructor() {
         //
     }

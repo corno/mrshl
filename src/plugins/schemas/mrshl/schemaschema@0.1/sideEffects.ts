@@ -3,7 +3,7 @@
 */
 
 import * as t from "./types"
-import * as sideEffects from "../../../../etc/interfaces/ParsingSideEffectsAPI"
+import * as db5api from "../../../../db5api"
 import { DiagnosticSeverity } from "../../../../etc/interfaces/DiagnosticSeverity"
 
 export * from "./types"
@@ -16,7 +16,7 @@ function createDictionary<Annotation>(
     _definition: t.Dictionary,
     collectionDefinition: t.Collection,
     onError: (message: string, annotation: Annotation, severity: DiagnosticSeverity) => void,
-): sideEffects.Dictionary<Annotation> {
+): db5api.DictionaryHandler<Annotation> {
     return {
         onClose: () => {
             //
@@ -31,7 +31,7 @@ function createList<Annotation>(
     _definition: t.List,
     collectionDefinition: t.Collection,
     onError: (message: string, annotation: Annotation, severity: DiagnosticSeverity) => void,
-): sideEffects.List<Annotation> {
+): db5api.ListHandler<Annotation> {
     return {
         onEntry: () => {
             return createNode(collectionDefinition.node, onError)
@@ -45,7 +45,7 @@ function createList<Annotation>(
 function createStateGroup<Annotation>(
     definition: t.StateGroup,
     onError: (message: string, annotation: Annotation, severity: DiagnosticSeverity) => void,
-): sideEffects.StateGroup<Annotation> {
+): db5api.StateGroupHandler<Annotation> {
     return {
         onState: $ => {
             const state = definition.states.getUnsafe($.data.option)
@@ -61,7 +61,7 @@ function createProp<Annotation>(
     name: string,
     nodedefinition: t.Node,
     onError: (message: string, annotation: Annotation, severity: DiagnosticSeverity) => void,
-): sideEffects.Property<Annotation> {
+): db5api.PropertyHandler<Annotation> {
     return {
         onDictionary: () => {
             const prop = nodedefinition.properties.getUnsafe(name)
@@ -152,7 +152,7 @@ function createProp<Annotation>(
 function createShorthandType<Annotation>(
     definition: t.Node,
     onError: (message: string, annotation: Annotation, severity: DiagnosticSeverity) => void,
-): sideEffects.ShorthandType<Annotation> {
+): db5api.ShorthandTypeHandler<Annotation> {
     return {
         onProperty: $ => {
             return createProp($.propKey, definition, onError)
@@ -166,7 +166,7 @@ function createShorthandType<Annotation>(
 function createType<Annotation>(
     definition: t.Node,
     onError: (message: string, annotation: Annotation, severity: DiagnosticSeverity) => void,
-): sideEffects.Type<Annotation> {
+): db5api.TypeHandler<Annotation> {
     return {
         onProperty: $ => {
             return createProp($.data.key, definition, onError)
@@ -183,7 +183,7 @@ function createType<Annotation>(
 function createNode<Annotation>(
     definition: t.Node,
     onError: (message: string, annotation: Annotation, severity: DiagnosticSeverity) => void,
-): sideEffects.Node<Annotation> {
+): db5api.NodeHandler<Annotation> {
     return {
         onShorthandTypeOpen: () => {
             return createShorthandType(definition, onError)
@@ -197,7 +197,7 @@ function createNode<Annotation>(
 export function createRoot<Annotation>(
     schema: t.Schema,
     onError: (message: string, annotation: Annotation, severity: DiagnosticSeverity) => void
-): sideEffects.Root<Annotation> {
+): db5api.RootHandler<Annotation> {
     return {
         node: createNode(schema["root type"].get().node, onError),
         onEnd: () => {

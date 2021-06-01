@@ -2,9 +2,8 @@
     "max-classes-per-file": off,
 */
 
-import * as syncAPI from "../interfaces/syncAPI"
+import * as db5api from "../../db5api"
 import * as imp from "./implementation"
-import * as d from "../interfaces/types"
 import { Global } from "./Global"
 import { initializeNode } from "./initializeNode"
 
@@ -12,14 +11,14 @@ function assertUnreachable<RT>(_x: never): RT {
     throw new Error("unreachable")
 }
 
-export class Component implements syncAPI.Component {
+export class Component implements db5api.Component {
     public node: Node
     public readonly comments: imp.Comments
     constructor(
-        definition: d.Component,
+        definition: db5api.ComponentDefinition,
         component: imp.Component,
         global: Global,
-        keyProperty: d.Property | null,
+        keyProperty: db5api.PropertyDefinition | null,
     ) {
         this.node = new Node(
             component.node,
@@ -31,17 +30,17 @@ export class Component implements syncAPI.Component {
     }
 }
 
-class Property implements syncAPI.Property {
-    public readonly type: syncAPI.PropertyType
+class Property implements db5api.Property {
+    public readonly type: db5api.PropertyType
     public readonly isKeyProperty: boolean
     constructor(
         propertyKey: string,
-        definition: d.Property,
+        definition: db5api.PropertyDefinition,
         nodeImp: imp.Node,
         global: Global,
-        keyProperty: d.Property | null,
+        keyProperty: db5api.PropertyDefinition | null,
     ) {
-        this.type = ((): syncAPI.PropertyType => {
+        this.type = ((): db5api.PropertyType => {
             switch (definition.type[0]) {
                 case "component": {
                     const $ = definition.type[1]
@@ -100,16 +99,16 @@ class Property implements syncAPI.Property {
     }
 }
 
-export class Node implements syncAPI.Node {
+export class Node implements db5api.Node {
     private readonly imp: imp.Node
-    private readonly definition: d.Node
+    private readonly definition: db5api.NodeDefinition
     private readonly global: Global
-    private readonly keyProperty: d.Property | null
+    private readonly keyProperty: db5api.PropertyDefinition | null
     constructor(
         node: imp.Node,
-        definition: d.Node,
+        definition: db5api.NodeDefinition,
         global: Global,
-        keyProperty: d.Property | null,
+        keyProperty: db5api.PropertyDefinition | null,
     ) {
         this.definition = definition
         this.imp = node
@@ -169,7 +168,7 @@ export class Node implements syncAPI.Node {
         }
         return new Value(this.imp.values.getUnsafe(key), propDef.type[1])
     }
-    public forEachProperty(callback: (property: syncAPI.Property, key: string) => void): void {
+    public forEachProperty(callback: (property: db5api.Property, key: string) => void): void {
         this.definition.properties.forEach((p, pKey) => {
             callback(
                 new Property(
@@ -186,12 +185,12 @@ export class Node implements syncAPI.Node {
 }
 
 
-export class StateGroup implements syncAPI.StateGroup {
+export class StateGroup implements db5api.StateGroup {
     private readonly imp: imp.StateGroup
     public readonly comments: imp.Comments
     private readonly global: Global
-    public readonly definition: d.StateGroup
-    constructor(stateGroup: imp.StateGroup, definition: d.StateGroup, global: Global) {
+    public readonly definition: db5api.StateGroupDefinition
+    constructor(stateGroup: imp.StateGroup, definition: db5api.StateGroupDefinition, global: Global) {
         this.imp = stateGroup
         this.global = global
         this.definition = definition
@@ -225,10 +224,10 @@ export class StateGroup implements syncAPI.StateGroup {
     }
 }
 
-export class State implements syncAPI.State {
+export class State implements db5api.State {
     public readonly node: Node
     private readonly imp: imp.State
-    constructor(stateImp: imp.State, definition: d.State, global: Global) {
+    constructor(stateImp: imp.State, definition: db5api.StateDefinition, global: Global) {
         this.node = new Node(stateImp.node, definition.node, global, null)
         this.imp = stateImp
     }
@@ -237,7 +236,7 @@ export class State implements syncAPI.State {
     }
 }
 
-export class Entry implements syncAPI.Entry {
+export class Entry implements db5api.Entry {
     public readonly node: Node
     public readonly comments: imp.Comments
     constructor(
@@ -266,14 +265,14 @@ export class Entry implements syncAPI.Entry {
     // }
 }
 
-export class Dictionary implements syncAPI.Dictionary {
+export class Dictionary implements db5api.Dictionary {
     readonly comments: imp.Comments
     public readonly imp: imp.Collection
-    private readonly definition: d.Dictionary
+    private readonly definition: db5api.DictionaryDefinition
     private readonly global: Global
     constructor(
         collectionImp: imp.Collection,
-        definition: d.Dictionary,
+        definition: db5api.DictionaryDefinition,
         global: Global,
     ) {
         this.imp = collectionImp
@@ -295,7 +294,7 @@ export class Dictionary implements syncAPI.Dictionary {
         imp.addEntry(this.imp, entryPlaceHolder)
         return entry
     }
-    public forEachEntry(callback: (entry: syncAPI.Entry, key: string) => void): void {
+    public forEachEntry(callback: (entry: db5api.Entry, key: string) => void): void {
         const keyPropertyName = this.definition["key property"].name
         this.imp.entries.forEach(e => {
             if (e.status.get()[0] !== "inactive") {
@@ -313,7 +312,7 @@ export class Dictionary implements syncAPI.Dictionary {
 }
 
 
-export class List implements syncAPI.List {
+export class List implements db5api.List {
     readonly comments: imp.Comments
 
     private readonly imp: imp.Collection
@@ -339,7 +338,7 @@ export class List implements syncAPI.List {
         imp.addEntry(this.imp, entryPlaceHolder)
         return entry
     }
-    public forEachEntry(callback: (entry: syncAPI.Entry) => void): void {
+    public forEachEntry(callback: (entry: db5api.Entry) => void): void {
         this.imp.entries.forEach(e => {
             if (e.status.get()[0] !== "inactive") {
                 callback(new Entry(
@@ -352,12 +351,12 @@ export class List implements syncAPI.List {
     }
 }
 
-export class Value implements syncAPI.Value {
+export class Value implements db5api.Value {
     public readonly comments: imp.Comments
     private readonly imp: imp.Value
     public readonly isQuoted: boolean
-    public readonly definition: d.Value
-    constructor(valueImp: imp.Value, definition: d.Value) {
+    public readonly definition: db5api.ValueDefinition
+    constructor(valueImp: imp.Value, definition: db5api.ValueDefinition) {
         this.imp = valueImp
         this.comments = valueImp.comments
         this.isQuoted = definition.quoted

@@ -1,4 +1,4 @@
-import * as gapi from "../../../../etc/interfaces/generics"
+import * as gapi from "../../../../db5api/generics"
 
 export interface X {
     x: string

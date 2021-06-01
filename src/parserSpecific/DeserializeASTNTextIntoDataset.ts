@@ -1,7 +1,6 @@
 import * as p from "pareto"
 
-import * as sideEffects from "../etc/interfaces/ParsingSideEffectsAPI"
-import * as t from "../etc/interfaces/types"
+import * as db5api from "../db5api"
 import * as astn from "astn"
 
 import { IDataset } from "../etc/dataset"
@@ -22,8 +21,8 @@ export type DeserializeASTNTextIntoDataset = (
 	astnText: string,
 	resolveExternalSchema: ResolveExternalSchema,
 	diagnosticCallback: DiagnosticCallback,
-	sideEffectHandlers: sideEffects.Root<astn.ParserAnnotationData>[],
+	sideEffectHandlers: db5api.RootHandler<astn.ParserAnnotationData>[],
 	createInitialDataset: (
-		schema: t.Schema,
+		schema: db5api.Schema,
 	) => IDataset,
 ) => p.IUnsafeValue<IDeserializedDataset, null>

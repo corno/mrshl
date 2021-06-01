@@ -1,64 +1,64 @@
 import * as astncore from "astn-core"
 import * as ds from "./syncAPI"
-import * as md from "./types"
+import * as md from "./definitions"
 
-export interface Root<Annotation> {
-    node: Node<Annotation>
+export interface RootHandler<Annotation> {
+    node: NodeHandler<Annotation>
     onEnd: ($: {
         //
     }) => void
 }
 
-export interface Dictionary<Annotation> {
+export interface DictionaryHandler<Annotation> {
     onEntry($: {
         data: astncore.PropertyData
-        nodeDefinition: md.Node
-        keyProperty: md.Property
+        nodeDefinition: md.NodeDefinition
+        keyProperty: md.PropertyDefinition
         entry: ds.Entry
         annotation: Annotation
-    }): Node<Annotation>
+    }): NodeHandler<Annotation>
     onClose($: {
         annotation: Annotation
     }): void
 }
 
-export interface List<Annotation> {
+export interface ListHandler<Annotation> {
     onClose($: {
         annotation: Annotation
     }): void
-    onEntry(): Node<Annotation>
+    onEntry(): NodeHandler<Annotation>
 }
 
-export interface StateGroup<Annotation> {
+export interface StateGroupHandler<Annotation> {
     onState($: {
         data: astncore.OptionData
         annotation: Annotation
-    }): Node<Annotation>
+    }): NodeHandler<Annotation>
     onUnexpectedState($: {
         data: astncore.OptionData
-        stateGroupDefinition: md.StateGroup
+        stateGroupDefinition: md.StateGroupDefinition
         annotation: Annotation
     }): void
 }
 
-export interface Property<Annotation> {
+export interface PropertyHandler<Annotation> {
     onList($: {
         data: astncore.ArrayData
         annotation: Annotation
-    }): List<Annotation>
+    }): ListHandler<Annotation>
     onDictionary($: {
         data: astncore.ObjectData
         annotation: Annotation
-    }): Dictionary<Annotation>
-    onComponent(): Node<Annotation>
+    }): DictionaryHandler<Annotation>
+    onComponent(): NodeHandler<Annotation>
     onStateGroup($: {
         annotation: Annotation
-    }): StateGroup<Annotation>
+    }): StateGroupHandler<Annotation>
     onScalarValue($: {
         value: string
         data: astncore.StringValueData
         syncValue: ds.Value
-        definition: md.Value
+        definition: md.ValueDefinition
         annotation: Annotation
     }): void
     onNull($: {
@@ -67,24 +67,24 @@ export interface Property<Annotation> {
     }): void
 }
 
-export interface ShorthandType<Annotation> {
+export interface ShorthandTypeHandler<Annotation> {
     onShorthandTypeClose($: {
         annotation: Annotation
     }): void
     onProperty($: {
         propKey: string
-        propDefinition: md.Property
+        propDefinition: md.PropertyDefinition
         nodeBuilder: ds.Node
-    }): Property<Annotation>
+    }): PropertyHandler<Annotation>
 }
 
-export interface Type<Annotation> {
+export interface TypeHandler<Annotation> {
     onProperty($: {
         data: astncore.PropertyData
-        propDefinition: md.Property
+        propDefinition: md.PropertyDefinition
         nodeBuilder: ds.Node
         annotation: Annotation
-    }): Property<Annotation>
+    }): PropertyHandler<Annotation>
     onUnexpectedProperty($: {
         data: astncore.PropertyData
         expectedProperties: string[]
@@ -96,19 +96,19 @@ export interface Type<Annotation> {
     }): void
 }
 
-export interface Node<Annotation> {
+export interface NodeHandler<Annotation> {
     onTypeOpen($: {
         data: astncore.ObjectData
-        nodeDefinition: md.Node
-        keyPropertyDefinition: md.Property | null
+        nodeDefinition: md.NodeDefinition
+        keyPropertyDefinition: md.PropertyDefinition | null
         nodeBuilder: ds.Node
         annotation: Annotation
-    }): Type<Annotation>
+    }): TypeHandler<Annotation>
     onShorthandTypeOpen($: {
         data: astncore.ArrayData
-        nodeDefinition: md.Node
-        keyPropertyDefinition: md.Property | null
+        nodeDefinition: md.NodeDefinition
+        keyPropertyDefinition: md.PropertyDefinition | null
         nodeBuilder: ds.Node
         annotation: Annotation
-    }): ShorthandType<Annotation>
+    }): ShorthandTypeHandler<Annotation>
 }

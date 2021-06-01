@@ -2,9 +2,8 @@
     "max-classes-per-file": off,
 */
 
-import * as sideEffects from "../interfaces/ParsingSideEffectsAPI"
+import * as db5api from "../db5api"
 import * as fp from "fountain-pen"
-import * as md from "../interfaces/types"
 
 function assertUnreachable<RT>(_x: never): RT {
     throw new Error("Unreachable")
@@ -12,7 +11,7 @@ function assertUnreachable<RT>(_x: never): RT {
 
 type GetHoverText = () => string
 
-function createPropertyHoverText(prop: md.Property): fp.InlineSegment {
+function createPropertyHoverText(prop: db5api.PropertyDefinition): fp.InlineSegment {
     switch (prop.type[0]) {
         case "collection": {
             const $ = prop.type[1]
@@ -53,7 +52,7 @@ function createPropertyHoverText(prop: md.Property): fp.InlineSegment {
     }
 }
 
-function createHoverTextsForProperties(node: md.Node, keyProperty: md.Property | null): fp.Block {
+function createHoverTextsForProperties(node: db5api.NodeDefinition, keyProperty: db5api.PropertyDefinition | null): fp.Block {
     const x: fp.Block[] = []
     node.properties.mapSorted((prop, propKey) => {
         if (prop === keyProperty) {
@@ -67,7 +66,7 @@ function createHoverTextsForProperties(node: md.Node, keyProperty: md.Property |
     return x
 }
 
-function createHoverTextsForNode(node: md.Node, keyProperty: md.Property | null): fp.InlineSegment {
+function createHoverTextsForNode(node: db5api.NodeDefinition, keyProperty: db5api.PropertyDefinition | null): fp.InlineSegment {
     return [
         '(',
         () => {
@@ -85,7 +84,7 @@ export type OnTokenHoverText<Annotation> = (
 function createHoverTextGenerator<Annotation>(
     onToken: OnTokenHoverText<Annotation>,
     onEnd: () => void,
-): sideEffects.Root<Annotation> {
+): db5api.RootHandler<Annotation> {
     return {
         node: createNodeHoverTextGenerator(null, onToken),
         onEnd: () => {
@@ -98,7 +97,7 @@ function createStateGroupHoverTextGenerator<Annotation>(
 
     name: string,
     onToken: OnTokenHoverText<Annotation>,
-): sideEffects.StateGroup<Annotation> {
+): db5api.StateGroupHandler<Annotation> {
 
     return {
         onState: $ => {
@@ -118,7 +117,7 @@ function createPropertyHoverTextGenerator<Annotation>(
 
     name: string,
     onToken: OnTokenHoverText<Annotation>,
-): sideEffects.Property<Annotation> {
+): db5api.PropertyHandler<Annotation> {
     return {
 
         onDictionary: $ => {
@@ -158,7 +157,7 @@ function createPropertyHoverTextGenerator<Annotation>(
 function createListHoverTextGenerator<Annotation>(
     name: string,
     onToken: OnTokenHoverText<Annotation>,
-): sideEffects.List<Annotation> {
+): db5api.ListHandler<Annotation> {
     return {
 
         onClose: $ => {
@@ -175,7 +174,7 @@ function createListHoverTextGenerator<Annotation>(
 function createDictionaryHoverTextGenerator<Annotation>(
     name: string,
     onToken: OnTokenHoverText<Annotation>,
-): sideEffects.Dictionary<Annotation> {
+): db5api.DictionaryHandler<Annotation> {
     return {
         onClose: $ => {
             onToken($.annotation, () => {
@@ -191,7 +190,7 @@ function createDictionaryHoverTextGenerator<Annotation>(
 function createShorthandTypeHoverTextGenerator<Annotation>(
     componentName: string | null,
     onToken: OnTokenHoverText<Annotation>,
-): sideEffects.ShorthandType<Annotation> {
+): db5api.ShorthandTypeHandler<Annotation> {
     return {
         onProperty: $ => {
             return createPropertyHoverTextGenerator($.propKey, onToken)
@@ -210,7 +209,7 @@ function createShorthandTypeHoverTextGenerator<Annotation>(
 function createNodeHoverTextGenerator<Annotation>(
     componentName: string | null,
     onToken: OnTokenHoverText<Annotation>,
-): sideEffects.Node<Annotation> {
+): db5api.NodeHandler<Annotation> {
 
     function addOnToken(annotation: Annotation) {
 
@@ -239,7 +238,7 @@ function createNodeHoverTextGenerator<Annotation>(
 function createTypeHoverTextGenerator<Annotation>(
     componentName: string | null,
     onToken: OnTokenHoverText<Annotation>,
-): sideEffects.Type<Annotation> {
+): db5api.TypeHandler<Annotation> {
     function addOnToken(annotation: Annotation) {
 
         if (componentName !== null) {
@@ -266,6 +265,6 @@ function createTypeHoverTextGenerator<Annotation>(
 export function createHoverTextsGenerator<Annotation>(
     onToken: OnTokenHoverText<Annotation>,
     onEnd: () => void,
-): sideEffects.Root<Annotation> {
+): db5api.RootHandler<Annotation> {
     return createHoverTextGenerator(onToken, onEnd)
 }

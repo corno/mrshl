@@ -1,10 +1,10 @@
-import * as syncAPI from "../../interfaces/syncAPI"
+import * as db5api from "../../../db5api"
 
 export type CommentType =
     | ["block"]
     | ["line"]
 
-export class Comment implements syncAPI.Comment {
+export class Comment implements db5api.Comment {
     readonly value: string
     readonly type: CommentType
     constructor(value: string, type: CommentType) {
@@ -13,7 +13,7 @@ export class Comment implements syncAPI.Comment {
     }
 }
 
-export class Comments implements syncAPI.Comments {
+export class Comments implements db5api.Comments {
     private readonly imp: Comment[] = []
     addComment(comment: string, type: CommentType): void {
         this.imp.push(new Comment(comment, type))

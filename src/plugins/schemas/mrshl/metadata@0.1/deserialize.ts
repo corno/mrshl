@@ -4,8 +4,8 @@
 */
 import * as p from "pareto"
 import * as astncore from "astn-core"
-import * as gapi from "../../../../etc/interfaces/generics"
-import * as t from "../../../../etc/interfaces/types"
+import * as gapi from "../../../../db5api/generics"
+import * as db5api from "../../../../db5api"
 import {
     createReference,
     ResolveRegistry,
@@ -33,8 +33,8 @@ type AnnotatedString<TokenAnnotation> = {
 function createNodeHandler<TokenAnnotation, NonTokenAnnotation>(
     context: astncore.IExpectContext<TokenAnnotation, NonTokenAnnotation>,
     raiseValidationError: (message: string, annotation: TokenAnnotation) => void,
-    componentTypes: gapi.IReadonlyDictionary<t.ComponentType>,
-    callback: (node: t.Node) => void,
+    componentTypes: gapi.IReadonlyDictionary<db5api.ComponentTypeDefinition>,
+    callback: (node: db5api.NodeDefinition) => void,
     resolveRegistry: ResolveRegistry
 ): astncore.ExpectedProperty<TokenAnnotation, NonTokenAnnotation> {
 
@@ -46,13 +46,13 @@ function createNodeHandler<TokenAnnotation, NonTokenAnnotation>(
     return {
         onExists: () => {
 
-            const properties = new g.Dictionary<t.Property>({})
+            const properties = new g.Dictionary<db5api.PropertyDefinition>({})
             return wrap(context.expectType({
                 properties: {
                     "properties": {
                         onExists: () => wrap(context.expectDictionary({
                             onProperty: propertyData => {
-                                let targetPropertyType: t.PropertyType | null = null
+                                let targetPropertyType: db5api.PropertyTypeDefinition | null = null
                                 return wrap(context.expectType({
                                     properties: {
                                         "type": {
@@ -60,14 +60,14 @@ function createNodeHandler<TokenAnnotation, NonTokenAnnotation>(
                                                 context.expectTaggedUnion({
                                                     options: {
                                                         "collection": () => {
-                                                            let targetCollectionType: t.CollectionType | null = null
+                                                            let targetCollectionType: db5api.CollectionTypeDefinition | null = null
                                                             return wrap(context.expectType({
                                                                 properties: {
                                                                     "type": {
                                                                         onExists: () => wrap(context.expectTaggedUnion({
                                                                             options: {
                                                                                 "dictionary": () => {
-                                                                                    let targetNode: t.Node | null = null
+                                                                                    let targetNode: db5api.NodeDefinition | null = null
                                                                                     let keyPropertyName: AnnotatedString<TokenAnnotation> | null = null
                                                                                     return wrap(context.expectType({
                                                                                         properties: {
@@ -122,7 +122,7 @@ function createNodeHandler<TokenAnnotation, NonTokenAnnotation>(
                                                                                     }))
                                                                                 },
                                                                                 "list": () => {
-                                                                                    let targetNode: t.Node | null = null
+                                                                                    let targetNode: db5api.NodeDefinition | null = null
                                                                                     return wrap(context.expectType({
                                                                                         properties: {
                                                                                             "node": createNodeHandler(
@@ -204,14 +204,14 @@ function createNodeHandler<TokenAnnotation, NonTokenAnnotation>(
                                                             }))
                                                         },
                                                         "state group": () => {
-                                                            const states = new g.Dictionary<t.State>({})
+                                                            const states = new g.Dictionary<db5api.StateDefinition>({})
                                                             let defaultStateName: null | AnnotatedString<TokenAnnotation> = null
                                                             return wrap(context.expectType({
                                                                 properties: {
                                                                     "states": {
                                                                         onExists: () => wrap(context.expectDictionary({
                                                                             onProperty: stateData => {
-                                                                                let targetNode: t.Node | null = null
+                                                                                let targetNode: db5api.NodeDefinition | null = null
                                                                                 return wrap(context.expectType({
                                                                                     properties: {
                                                                                         "node": createNodeHandler(
@@ -368,9 +368,9 @@ function createNodeHandler<TokenAnnotation, NonTokenAnnotation>(
 export function createDeserializer<TokenAnnotation, NonTokenAnnotation>(
     onExpectError: (error: astncore.ExpectError, annotation: TokenAnnotation) => void,
     onValidationError: (message: string, annotation: TokenAnnotation) => void,
-    callback: (metaData: t.Schema | null) => void
+    callback: (metaData: db5api.Schema | null) => void
 ): astncore.OnObject<TokenAnnotation, NonTokenAnnotation> {
-    const componentTypes = new g.Dictionary<t.ComponentType>({})
+    const componentTypes = new g.Dictionary<db5api.ComponentTypeDefinition>({})
     let rootName: string | null = null
     let rootNameAnnotation: TokenAnnotation | null = null
 
@@ -398,7 +398,7 @@ export function createDeserializer<TokenAnnotation, NonTokenAnnotation>(
             "component types": {
                 onExists: (): astncore.RequiredValueHandler<TokenAnnotation, NonTokenAnnotation> => wrap(context.expectDictionary({
                     onProperty: propertyData => {
-                        let targetNode: t.Node | null = null
+                        let targetNode: db5api.NodeDefinition | null = null
                         return wrap(context.expectType({
                             properties: {
                                 "node": createNodeHandler(
@@ -439,7 +439,7 @@ export function createDeserializer<TokenAnnotation, NonTokenAnnotation>(
             },
         },
         onEnd: () => {
-            let schema: t.Schema | null = null
+            let schema: db5api.Schema | null = null
             const assertedRootName = assertNotNull(rootName)
             const assertedRange = assertNotNull(rootNameAnnotation)
             schema = {

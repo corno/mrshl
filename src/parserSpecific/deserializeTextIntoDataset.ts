@@ -2,8 +2,7 @@ import * as p from "pareto"
 import * as path from "path"
 import * as astn from "astn"
 
-import * as md from "../etc/interfaces/types"
-import * as sideEffects from "../etc/interfaces/ParsingSideEffectsAPI"
+import * as db5api from "../db5api"
 import { DiagnosticSeverity } from "../etc/interfaces/DiagnosticSeverity"
 
 import { IDataset } from "../etc/dataset"
@@ -59,12 +58,12 @@ export type DiagnosticCallback = (diagnostic: LoadDocumentDiagnostic) => void
 
 function validateDocumentAfterContextSchemaResolution(
 	documentText: string,
-	contextSchema: md.Schema | null,
+	contextSchema: db5api.Schema | null,
 	resolveExternalSchema: ResolveExternalSchema,
 	diagnosticCallback: DiagnosticCallback,
-	sideEffectHandlers: sideEffects.Root<astn.ParserAnnotationData>[],
+	sideEffectHandlers: db5api.RootHandler<astn.ParserAnnotationData>[],
 	createDataset: (
-		schema: md.Schema,
+		schema: db5api.Schema,
 	) => IDataset,
 ): p.IUnsafeValue<IDeserializedDataset, ExternalSchemaDeserializationError> {
 
@@ -86,7 +85,7 @@ function validateDocumentAfterContextSchemaResolution(
 		(internalSchemaSpecification, schemaAndSideEffects): IDeserializedDataset => {
 
 			function createDeserializedDataset(
-				schema: md.Schema,
+				schema: db5api.Schema,
 			): IDeserializedDataset {
 				return {
 					dataset: createDataset(schema),
@@ -159,9 +158,9 @@ export function deserializeTextIntoDataset(
 	documentText: string,
 	resolveExternalSchema: ResolveExternalSchema,
 	diagnosticCallback: DiagnosticCallback,
-	sideEffectHandlers: sideEffects.Root<astn.ParserAnnotationData>[],
+	sideEffectHandlers: db5api.RootHandler<astn.ParserAnnotationData>[],
 	createInitialDataset: (
-		schema: md.Schema,
+		schema: db5api.Schema,
 	) => IDataset,
 ): p.IUnsafeValue<IDeserializedDataset, null> {
 	let diagnosticFound = false

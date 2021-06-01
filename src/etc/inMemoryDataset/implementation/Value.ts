@@ -1,6 +1,6 @@
-import * as g from "../../../generics"
+import * as g from "../../../generic"
 import * as asyncAPI from "../../asyncAPI"
-import * as d from "../../interfaces/types"
+import * as db5api from "../../../db5api"
 import { IParentErrorsAggregator, PotentialError, ErrorManager } from "./ErrorManager"
 import { Comments } from "./Comments"
 
@@ -20,7 +20,7 @@ export class Value {
     public readonly initialValue: string
 
     constructor(
-        definition: d.Value,
+        definition: db5api.ValueDefinition,
         errorsAggregator: IParentErrorsAggregator,
         createdInNewContext: boolean,
         errorManager: ErrorManager,

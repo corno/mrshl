@@ -1,5 +1,5 @@
-import * as g from "../../../generics"
-import * as d from "../../interfaces/types"
+import * as g from "../../../generic"
+import * as db5api from "../../../db5api"
 import { Collection } from "./Collection"
 import { Component } from "./Component"
 import { StateGroup } from "./StateGroup"
@@ -10,10 +10,10 @@ export class Node {
     public readonly components = new g.Dictionary<Component>({})
     public readonly stateGroups = new g.Dictionary<StateGroup>({})
     public readonly values = new g.Dictionary<Value>({})
-    public readonly keyProperty: d.Property | null
+    public readonly keyProperty: db5api.PropertyDefinition | null
 
     constructor(
-        keyProperty: null | d.Property,
+        keyProperty: null | db5api.PropertyDefinition,
         initialize: (node: Node) => void,
     ) {
         this.keyProperty = keyProperty

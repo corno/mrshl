@@ -1,13 +1,13 @@
 import * as astn from "astn"
-import { Root } from "../etc/interfaces/ParsingSideEffectsAPI"
-import { createCodeCompletionsGenerator } from "../etc/ide-integration/createCodeCompletionsGenerator"
+import * as db5api from "../db5api"
+import { createCodeCompletionsGenerator } from "../ide-integration/createCodeCompletionsGenerator"
 import { isPositionBeforeLocation } from "./isPositionBeforeLocation"
 
 export function createCodeCompletionFinder(
     completionPositionLine: number,
     completionPositionCharacter: number,
     callback: (codeCompletion: string) => void
-): Root<astn.ParserAnnotationData> {
+): db5api.RootHandler<astn.ParserAnnotationData> {
     let positionAlreadyFound = false
     let previousAfter: null | (() => string[]) = null
     //console.log("FINDING COMPLETIONS", line, character)

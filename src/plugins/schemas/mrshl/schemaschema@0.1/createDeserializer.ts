@@ -4,7 +4,7 @@
 */
 import * as p from "pareto"
 import * as astncore from "astn-core"
-import * as gapi from "../../../../etc/interfaces/generics"
+import * as gapi from "../../../../db5api/generics"
 import {
     Dictionary,
 } from "./Dictionary"

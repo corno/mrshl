@@ -2,9 +2,8 @@
     "max-classes-per-file": off,
 */
 
-import * as sideEffects from "../interfaces/ParsingSideEffectsAPI"
+import * as db5api from "../db5api"
 import * as fp from "fountain-pen"
-import * as md from "../interfaces/types"
 
 function assertUnreachable<RT>(_x: never): RT {
     throw new Error("Unreachable")
@@ -12,7 +11,7 @@ function assertUnreachable<RT>(_x: never): RT {
 
 type GetCodeCompletions = () => string[]
 
-function createCodeCompletionForProperty(prop: md.Property, shorthand: boolean): fp.InlineSegment {
+function createCodeCompletionForProperty(prop: db5api.PropertyDefinition, shorthand: boolean): fp.InlineSegment {
     switch (prop.type[0]) {
         case "collection": {
             const $ = prop.type[1]
@@ -53,7 +52,7 @@ function createCodeCompletionForProperty(prop: md.Property, shorthand: boolean):
     }
 }
 
-function createCodeCompletionForShorthandProperties(node: md.Node, keyProperty: md.Property | null): fp.InlineSegment {
+function createCodeCompletionForShorthandProperties(node: db5api.NodeDefinition, keyProperty: db5api.PropertyDefinition | null): fp.InlineSegment {
     const x: fp.InlineSegment[] = []
     node.properties.mapSorted((prop, _propKey) => {
         if (prop === keyProperty) {
@@ -65,7 +64,7 @@ function createCodeCompletionForShorthandProperties(node: md.Node, keyProperty: 
     return x
 }
 
-function createCodeCompletionForVerboseProperties(node: md.Node, keyProperty: md.Property | null): fp.Block {
+function createCodeCompletionForVerboseProperties(node: db5api.NodeDefinition, keyProperty: db5api.PropertyDefinition | null): fp.Block {
     const x: fp.Block[] = []
     node.properties.mapSorted((prop, propKey) => {
         if (prop === keyProperty) {
@@ -79,7 +78,7 @@ function createCodeCompletionForVerboseProperties(node: md.Node, keyProperty: md
     return x
 }
 
-function createCodeCompletionForNode(node: md.Node, keyProperty: md.Property | null, shorthand: boolean): fp.InlineSegment {
+function createCodeCompletionForNode(node: db5api.NodeDefinition, keyProperty: db5api.PropertyDefinition | null, shorthand: boolean): fp.InlineSegment {
     if (shorthand) {
         return [
             '<', createCodeCompletionForShorthandProperties(node, keyProperty), ' >',
@@ -105,7 +104,7 @@ export type OnToken<Annotation> = (
 function createCodeCompletionGenerator<Annotation>(
     onToken: OnToken<Annotation>,
     onEnd2: () => void,
-): sideEffects.Root<Annotation> {
+): db5api.RootHandler<Annotation> {
     return {
         node: createCodeCompletionForNodeGenerator<Annotation>(onToken),
         onEnd: () => {
@@ -117,7 +116,7 @@ function createCodeCompletionGenerator<Annotation>(
 
 function createStateGroupCodeCompletionGenerator<Annotation>(
     onToken: OnToken<Annotation>,
-): sideEffects.StateGroup<Annotation> {
+): db5api.StateGroupHandler<Annotation> {
     return {
         onState: () => {
             return createCodeCompletionForNodeGenerator(onToken)
@@ -137,7 +136,7 @@ function createStateGroupCodeCompletionGenerator<Annotation>(
 function createCodeCompletionForPropertyGenerator<Annotation>(
     onToken: OnToken<Annotation>,
 
-): sideEffects.Property<Annotation> {
+): db5api.PropertyHandler<Annotation> {
     return {
 
         onDictionary: () => {
@@ -172,7 +171,7 @@ function createCodeCompletionForPropertyGenerator<Annotation>(
 function createCodeCompletionForListGenerator<Annotation>(
     onToken: OnToken<Annotation>,
 
-): sideEffects.List<Annotation> {
+): db5api.ListHandler<Annotation> {
     return {
         onClose: () => {
             //
@@ -185,7 +184,7 @@ function createCodeCompletionForListGenerator<Annotation>(
 
 function createCodeCompletionForDictionaryGenerator<Annotation>(
     onToken: OnToken<Annotation>,
-): sideEffects.Dictionary<Annotation> {
+): db5api.DictionaryHandler<Annotation> {
     return {
         onClose: () => {
             //
@@ -232,7 +231,7 @@ function createCodeCompletionForDictionaryGenerator<Annotation>(
 
 function createCodeCompletionForShorthandTypeGenerator<Annotation>(
     onToken: OnToken<Annotation>,
-): sideEffects.ShorthandType<Annotation> {
+): db5api.ShorthandTypeHandler<Annotation> {
     return {
         onProperty: () => {
             return createCodeCompletionForPropertyGenerator(onToken)
@@ -245,7 +244,7 @@ function createCodeCompletionForShorthandTypeGenerator<Annotation>(
 
 function createCodeCompletionForVerboseTypeGenerator<Annotation>(
     onToken: OnToken<Annotation>,
-): sideEffects.Type<Annotation> {
+): db5api.TypeHandler<Annotation> {
     return {
         onProperty: $ => {
             onToken(
@@ -295,7 +294,7 @@ function createCodeCompletionForVerboseTypeGenerator<Annotation>(
 
 function createCodeCompletionForNodeGenerator<Annotation>(
     onToken: OnToken<Annotation>,
-): sideEffects.Node<Annotation> {
+): db5api.NodeHandler<Annotation> {
 
     return {
         onShorthandTypeOpen: $ => {
@@ -354,6 +353,6 @@ function createCodeCompletionForNodeGenerator<Annotation>(
 export function createCodeCompletionsGenerator<Annotation>(
     onToken: OnToken<Annotation>,
     onEnd: () => void,
-): sideEffects.Root<Annotation> {
+): db5api.RootHandler<Annotation> {
     return createCodeCompletionGenerator(onToken, onEnd)
 }

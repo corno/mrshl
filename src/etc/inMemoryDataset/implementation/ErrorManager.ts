@@ -2,7 +2,7 @@
     "max-classes-per-file": off,
 */
 
-import * as g from "../../../generics"
+import * as g from "../../../generic"
 import { IFocussable } from "./IFocussable"
 
 export class ValidationError {

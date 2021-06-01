@@ -1,4 +1,4 @@
-import * as g from "../../../generics"
+import * as g from "../../../generic"
 
 function assertUnreachable(_x: never) {
     throw new Error("Unreachable")

@@ -2,7 +2,7 @@
  "@typescript-eslint/no-empty-interface": off
 */
 
-import * as t from "./types"
+import * as t from "./definitions"
 
 export type CommentType =
     | ["block"]
@@ -65,7 +65,7 @@ export interface Node {
     forEachProperty(callback: (entry: Property, key: string) => void): void
 }
 export interface StateGroup {
-    readonly definition: t.StateGroup
+    readonly definition: t.StateGroupDefinition
     setState(stateName: string, onError: (message: string) => void): State
     readonly comments: Comments
     getCurrentState(): State
@@ -78,7 +78,7 @@ export interface State {
 }
 
 export interface Value {
-    readonly definition: t.Value
+    readonly definition: t.ValueDefinition
     readonly isQuoted: boolean
     setValue(value: string, onError: (message: string) => void): void
     readonly comments: Comments

@@ -1,9 +1,7 @@
 import * as p from "pareto"
 import * as astncore from "astn-core"
-import * as md from "../../interfaces/types"
-import * as syncAPI from "../../interfaces/syncAPI"
+import * as db5api from "../../../db5api"
 import * as id from "../../interfaces/IDataset"
-import * as sideEffects from "../../interfaces/ParsingSideEffectsAPI"
 
 function assertUnreachable<RT>(_x: never): RT {
     throw new Error("Unreachable")
@@ -11,7 +9,7 @@ function assertUnreachable<RT>(_x: never): RT {
 
 type OnError<TokenAnnotation> = (message: string, annotation: TokenAnnotation) => void
 
-function addComments<TokenAnnotation>(_target: syncAPI.Comments, _annotation: TokenAnnotation) {
+function addComments<TokenAnnotation>(_target: db5api.Comments, _annotation: TokenAnnotation) {
     // contextData.before.comments.forEach(c => {
     //     target.addComment(c.text, c.type === "block" ? ["block"] : ["line"])
     // })
@@ -22,10 +20,10 @@ function addComments<TokenAnnotation>(_target: syncAPI.Comments, _annotation: To
 
 function createPropertyDeserializer<TokenAnnotation, NonTokenAnnotation>(
     context: astncore.IExpectContext<TokenAnnotation, NonTokenAnnotation>,
-    propDefinition: md.Property,
+    propDefinition: db5api.PropertyDefinition,
     propKey: string,
-    nodeBuilder: syncAPI.Node,
-    sideEffectsAPIs: sideEffects.Property<TokenAnnotation>[],
+    nodeBuilder: db5api.Node,
+    sideEffectsAPIs: db5api.PropertyHandler<TokenAnnotation>[],
     onError: OnError<TokenAnnotation>,
     flagNonDefaultPropertiesFound: () => void,
     nullAllowed: boolean,
@@ -44,7 +42,7 @@ function createPropertyDeserializer<TokenAnnotation, NonTokenAnnotation>(
                     const $$ = $.type[1]
                     const dictionary = nodeBuilder.getDictionary(propKey)
                     let hasEntries = false
-                    let dictionarySideEffects: null | sideEffects.Dictionary<TokenAnnotation>[] = null
+                    let dictionarySideEffects: null | db5api.DictionaryHandler<TokenAnnotation>[] = null
 
                     return wrap(context.expectDictionary({
                         onBegin: data => {
@@ -110,7 +108,7 @@ function createPropertyDeserializer<TokenAnnotation, NonTokenAnnotation>(
                 case "list": {
                     const $$ = $.type[1]
                     const list = nodeBuilder.getList(propKey)
-                    let listSideEffects: null | sideEffects.List<TokenAnnotation>[] = null
+                    let listSideEffects: null | db5api.ListHandler<TokenAnnotation>[] = null
 
                     let hasEntries = false
                     return wrap(context.expectList({
@@ -347,8 +345,8 @@ function createPropertyDeserializer<TokenAnnotation, NonTokenAnnotation>(
 
 function defaultInitializeNode<TokenAnnotation>(
     annotation: TokenAnnotation,
-    nodeDefinition: md.Node,
-    nodeBuilder: syncAPI.Node,
+    nodeDefinition: db5api.NodeDefinition,
+    nodeBuilder: db5api.Node,
     onError: OnError<TokenAnnotation>,
 ) {
     nodeDefinition.properties.forEach((propDef, propKey) => {
@@ -365,9 +363,9 @@ function defaultInitializeNode<TokenAnnotation>(
 
 function defaultInitializeProperty<TokenAnnotation>(
     annotation: TokenAnnotation,
-    propDefinition: md.Property,
+    propDefinition: db5api.PropertyDefinition,
     propKey: string,
-    nodeBuilder: syncAPI.Node,
+    nodeBuilder: db5api.Node,
     onError: OnError<TokenAnnotation>,
 ) {
 
@@ -401,7 +399,7 @@ function defaultInitializeProperty<TokenAnnotation>(
     }
 }
 
-function getPropertyComments(node: syncAPI.Node, propertyName: string, propertyDefinition: md.Property): syncAPI.Comments {
+function getPropertyComments(node: db5api.Node, propertyName: string, propertyDefinition: db5api.PropertyDefinition): db5api.Comments {
     switch (propertyDefinition.type[0]) {
         case "component": {
             return node.getComponent(propertyName).comments
@@ -432,19 +430,19 @@ function getPropertyComments(node: syncAPI.Node, propertyName: string, propertyD
 
 function createNodeDeserializer<TokenAnnotation, NonTokenAnnotation>(
     context: astncore.IExpectContext<TokenAnnotation, NonTokenAnnotation>,
-    nodeDefinition: md.Node,
-    keyPropertyDefinition: md.Property | null,
-    nodeBuilder: syncAPI.Node,
-    keyProperty: md.Property | null,
-    sideEffectsAPI: sideEffects.Node<TokenAnnotation>[],
+    nodeDefinition: db5api.NodeDefinition,
+    keyPropertyDefinition: db5api.PropertyDefinition | null,
+    nodeBuilder: db5api.Node,
+    keyProperty: db5api.PropertyDefinition | null,
+    sideEffectsAPI: db5api.NodeHandler<TokenAnnotation>[],
     onError: OnError<TokenAnnotation>,
     flagNonDefaultPropertiesFound: () => void,
-    targetComments: syncAPI.Comments,
+    targetComments: db5api.Comments,
 ): astncore.ValueHandler<TokenAnnotation, NonTokenAnnotation> {
 
 
-    let shorthandTypeSideEffects: sideEffects.ShorthandType<TokenAnnotation>[] | null = null
-    let typeSideEffects: sideEffects.Type<TokenAnnotation>[] | null = null
+    let shorthandTypeSideEffects: db5api.ShorthandTypeHandler<TokenAnnotation>[] | null = null
+    let typeSideEffects: db5api.TypeHandler<TokenAnnotation>[] | null = null
 
     const expectedElements: astncore.ExpectedElements<TokenAnnotation, NonTokenAnnotation> = []
     nodeDefinition.properties.forEach((propDefinition, propKey) => {
@@ -619,7 +617,7 @@ function createNodeDeserializer<TokenAnnotation, NonTokenAnnotation>(
 export function createDatasetDeserializer<TokenAnnotation, NonTokenAnnotation>(
     context: astncore.IExpectContext<TokenAnnotation, NonTokenAnnotation>,
     dataset: id.IDataset,
-    sideEffectsHandlers: sideEffects.Node<TokenAnnotation>[],
+    sideEffectsHandlers: db5api.NodeHandler<TokenAnnotation>[],
     onError: OnError<TokenAnnotation>,
 ): astncore.TreeHandler<TokenAnnotation, NonTokenAnnotation> {
 

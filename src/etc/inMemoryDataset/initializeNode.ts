@@ -1,4 +1,4 @@
-import * as d from "../interfaces/types"
+import * as db5api from "../../db5api"
 import * as cc from "./changeControl"
 import { Collection, Dictionary, Node } from "./implementation"
 import { Component } from "./implementation/Component"
@@ -12,7 +12,7 @@ function assertUnreachable<RT>(_x: never): RT {
 
 export function initializeNode(
     node: Node,
-    definition: d.Node,
+    definition: db5api.NodeDefinition,
     errorManager: ErrorManager,
     errorsAggregator: IParentErrorsAggregator,
     subEntriesErrorsAggregator: IParentErrorsAggregator,

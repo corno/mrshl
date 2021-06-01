@@ -1,5 +1,5 @@
-import * as md from "../../../../etc/interfaces/types"
-import * as gapi from "../../../../etc/interfaces/generics"
+import * as db5api from "../../../../db5api"
+import * as gapi from "../../../../db5api/generics"
 import {
     ResolveRegistry,
     createReference,
@@ -13,21 +13,21 @@ function assertUnreachable<RT>(_x: never): RT {
     throw new Error("Unreachable")
 }
 
-function convertToGenericNode(node: Node, componentTypes: gapi.IReadonlyLookup<md.ComponentType>, keyProperty: null | Property, resolveRegistry: ResolveRegistry): md.Node {
-    const properties = new Dictionary<md.Property>({})
+function convertToGenericNode(node: Node, componentTypes: gapi.IReadonlyLookup<db5api.ComponentTypeDefinition>, keyProperty: null | Property, resolveRegistry: ResolveRegistry): db5api.NodeDefinition {
+    const properties = new Dictionary<db5api.PropertyDefinition>({})
     node.properties.mapSorted((prop, key) => {
         if (prop === keyProperty) {
             //return
         }
         properties.add(key, {
-            type: ((): md.PropertyType => {
+            type: ((): db5api.PropertyTypeDefinition => {
                 switch (prop.type[0]) {
                     case "collection": {
                         const $ = prop.type[1]
 
                         return ["collection", {
 
-                            type: ((): md.CollectionType => {
+                            type: ((): db5api.CollectionTypeDefinition => {
                                 switch ($.type[0]) {
                                     case "dictionary": {
                                         const $$ = $.type[1]
@@ -103,9 +103,9 @@ function convertToGenericNode(node: Node, componentTypes: gapi.IReadonlyLookup<m
     }
 }
 
-export function convertToGenericSchema(schema: Schema): md.Schema {
+export function convertToGenericSchema(schema: Schema): db5api.Schema {
     const resolveRegistry = new ResolveRegistry()
-    const componentTypes: Dictionary<md.ComponentType> = new Dictionary({})
+    const componentTypes: Dictionary<db5api.ComponentTypeDefinition> = new Dictionary({})
     schema["component types"].forEach((ct, ctName) => {
         componentTypes.add(ctName, {
             node: convertToGenericNode(ct.node, componentTypes, null, resolveRegistry),

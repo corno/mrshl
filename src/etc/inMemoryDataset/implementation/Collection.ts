@@ -2,8 +2,8 @@
     "max-classes-per-file": off,
 */
 
-import * as g from "../../../generics"
-import * as d from "../../interfaces/types"
+import * as g from "../../../generic"
+import * as db5api from "../../../db5api"
 import { FlexibleErrorsAggregator, IParentErrorsAggregator, ErrorManager } from "./ErrorManager"
 import { Node } from "./Node"
 import { Comments } from "./Comments"
@@ -19,7 +19,7 @@ export class Entry {
     public readonly node: Node
     public readonly comments = new Comments()
     constructor(
-        nodeDefinition: d.Node,
+        nodeDefinition: db5api.NodeDefinition,
         errorManager: ErrorManager,
         dictionary: Dictionary | null
     ) {
@@ -95,7 +95,7 @@ export class EntryPlaceholder {
 export class Dictionary {
     public readonly duplicatesCheckFunction: (oldValue: string, newValue: string) => void
     public readonly keyPropertyName: string
-    public readonly keyProperty: d.Property
+    public readonly keyProperty: db5api.PropertyDefinition
     /**
      *
      * @param keyPropertyName
@@ -104,7 +104,7 @@ export class Dictionary {
      */
     constructor(
         keyPropertyName: string,
-        keyProperty: d.Property,
+        keyProperty: db5api.PropertyDefinition,
         duplicatesCheckFunction: (oldValue: string, newValue: string) => void,
     ) {
         this.duplicatesCheckFunction = duplicatesCheckFunction
@@ -116,17 +116,17 @@ export class Dictionary {
 export class Collection {
     public readonly errorsAggregator: IParentErrorsAggregator
     public readonly entries = new g.ReactiveArray<EntryPlaceholder>()
-    public readonly nodeDefinition: d.Node
+    public readonly nodeDefinition: db5api.NodeDefinition
     public readonly dictionary: Dictionary | null
     public readonly comments = new Comments()
     constructor(
-        definition: d.Collection,
+        definition: db5api.CollectionDefinition,
         errorsAggregator: IParentErrorsAggregator,
         dictionary: Dictionary | null,
     ) {
         this.errorsAggregator = errorsAggregator
         this.dictionary = dictionary
-        this.nodeDefinition = ((): d.Node => {
+        this.nodeDefinition = ((): db5api.NodeDefinition => {
             switch (definition.type[0]) {
                 case "dictionary": {
                     const $ = definition.type[1]

@@ -1,14 +1,13 @@
 import { DiagnosticSeverity } from "./DiagnosticSeverity"
-import * as t from "./types"
-import * as sideEffects from "./ParsingSideEffectsAPI"
+import * as db5api from "../../db5api"
 
 
 /**
  * a schema implementation should provide this type
  */
  export type SchemaAndSideEffects<Annotation> = {
-    schema: t.Schema
+    schema: db5api.Schema
     createAdditionalValidator: (
         onValidationError: (message: string, annotation: Annotation, severity: DiagnosticSeverity) => void,
-    ) => sideEffects.Root<Annotation>
+    ) => db5api.RootHandler<Annotation>
 }

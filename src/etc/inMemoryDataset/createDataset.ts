@@ -1,4 +1,4 @@
-import * as md from "../interfaces/types"
+import * as db5api from "../../db5api"
 import * as sync from "./syncAPIImplementation"
 import { RootImp } from "./Root"
 import { IDataset } from "../dataset"
@@ -7,7 +7,7 @@ import * as asyncAPIImp from "./asyncAPIImplementation"
 import { Comments } from "./implementation"
 
 class SyncDataset implements id.IDataset {
-    public readonly schema: md.Schema
+    public readonly schema: db5api.Schema
     public readonly root: sync.Node
     public readonly documentComments = new Comments()
     public readonly rootComments = new Comments()
@@ -22,7 +22,7 @@ class SyncDataset implements id.IDataset {
     }
 }
 
-export function createInMemoryDataset(schema: md.Schema): IDataset {
+export function createInMemoryDataset(schema: db5api.Schema): IDataset {
     const rootImp = new RootImp(schema)
     const syncDataset = new SyncDataset(rootImp)
     return {
