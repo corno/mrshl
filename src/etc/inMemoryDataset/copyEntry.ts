@@ -3,7 +3,7 @@ import * as db5api from "../../db5api"
 export { Entry } from "./syncAPIImplementation"
 
 function copyNode(
-    sourceNode: db5api.Node,
+    sourceNode: db5api.BSENode,
     targetNode: db5api.Node
 ) {
     sourceNode.forEachProperty((property, pKey) => {
@@ -64,7 +64,7 @@ function copyNode(
 }
 
 export function copyEntry(
-    sourceEntry: db5api.Entry,
+    sourceEntry: db5api.BSEEntry,
     targetEntry: db5api.Entry
 ): void {
     copyNode(sourceEntry.node, targetEntry.node)

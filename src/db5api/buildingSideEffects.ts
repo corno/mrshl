@@ -1,6 +1,86 @@
 import * as astncore from "astn-core"
-import * as ds from "./syncAPI"
 import * as md from "./definitions"
+
+
+import * as t from "./definitions"
+
+export type BSECommentType =
+    | ["block"]
+    | ["line"]
+
+export interface BSEComment {
+    value: string
+    type:
+    | ["block"]
+    | ["line"]
+}
+
+export interface BSEComments {
+    getComments(): BSEComment[]
+}
+
+export type BSEPropertyType =
+    | ["list", BSEList]
+    | ["dictionary", BSEDictionary]
+    | ["component", BSEComponent]
+    | ["state group", BSEStateGroup]
+    | ["value", BSEValue]
+
+export interface BSEProperty {
+    readonly isKeyProperty: boolean
+    readonly type: BSEPropertyType
+}
+
+export interface BSEDictionary {
+    readonly comments: BSEComments
+
+    forEachEntry(callback: (entry: BSEEntry, key: string) => void): void
+    isEmpty(): boolean
+}
+export interface BSEList {
+    readonly comments: BSEComments
+    forEachEntry(callback: (entry: BSEEntry) => void): void
+    isEmpty(): boolean
+}
+
+export interface BSEComponent {
+    readonly node: BSENode
+    readonly comments: BSEComments
+}
+
+export interface BSEEntry {
+    readonly node: BSENode
+    readonly comments: BSEComments
+}
+
+export interface BSENode {
+    getDictionary(name: string): BSEDictionary
+    getList(name: string): BSEList
+    getComponent(name: string): BSEComponent
+    getStateGroup(name: string): BSEStateGroup
+    getValue(name: string): BSEValue
+    forEachProperty(callback: (entry: BSEProperty, key: string) => void): void
+}
+export interface BSEStateGroup {
+    readonly definition: t.StateGroupDefinition
+    readonly comments: BSEComments
+    getCurrentState(): BSEState
+
+}
+
+export interface BSEState {
+    readonly node: BSENode
+    getStateKey(): string
+}
+
+export interface BSEValue {
+    readonly definition: t.ValueDefinition
+    readonly isQuoted: boolean
+    readonly comments: BSEComments
+    getValue(): string
+    getSuggestions(): string[]
+}
+
 
 export interface RootHandler<Annotation> {
     node: NodeHandler<Annotation>
@@ -14,7 +94,7 @@ export interface DictionaryHandler<Annotation> {
         data: astncore.PropertyData
         nodeDefinition: md.NodeDefinition
         keyProperty: md.PropertyDefinition
-        entry: ds.Entry
+        entry: BSEEntry
         annotation: Annotation
     }): NodeHandler<Annotation>
     onClose($: {
@@ -57,7 +137,7 @@ export interface PropertyHandler<Annotation> {
     onScalarValue($: {
         value: string
         data: astncore.StringValueData
-        syncValue: ds.Value
+        syncValue: BSEValue
         definition: md.ValueDefinition
         annotation: Annotation
     }): void
@@ -74,7 +154,7 @@ export interface ShorthandTypeHandler<Annotation> {
     onProperty($: {
         propKey: string
         propDefinition: md.PropertyDefinition
-        nodeBuilder: ds.Node
+        nodeBuilder: BSENode
     }): PropertyHandler<Annotation>
 }
 
@@ -82,7 +162,7 @@ export interface TypeHandler<Annotation> {
     onProperty($: {
         data: astncore.PropertyData
         propDefinition: md.PropertyDefinition
-        nodeBuilder: ds.Node
+        nodeBuilder: BSENode
         annotation: Annotation
     }): PropertyHandler<Annotation>
     onUnexpectedProperty($: {
@@ -101,14 +181,14 @@ export interface NodeHandler<Annotation> {
         data: astncore.ObjectData
         nodeDefinition: md.NodeDefinition
         keyPropertyDefinition: md.PropertyDefinition | null
-        nodeBuilder: ds.Node
+        nodeBuilder: BSENode
         annotation: Annotation
     }): TypeHandler<Annotation>
     onShorthandTypeOpen($: {
         data: astncore.ArrayData
         nodeDefinition: md.NodeDefinition
         keyPropertyDefinition: md.PropertyDefinition | null
-        nodeBuilder: ds.Node
+        nodeBuilder: BSENode
         annotation: Annotation
     }): ShorthandTypeHandler<Annotation>
 }

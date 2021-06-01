@@ -11,7 +11,7 @@ function assertUnreachable<RT>(_x: never): RT {
     throw new Error("unreachable")
 }
 
-export class Component implements db5api.Component {
+export class Component implements db5api.Component, db5api.BSEComponent {
     public node: Node
     public readonly comments: imp.Comments
     constructor(
@@ -30,7 +30,7 @@ export class Component implements db5api.Component {
     }
 }
 
-class Property implements db5api.Property {
+class Property implements db5api.Property, db5api.BSEProperty {
     public readonly type: db5api.PropertyType
     public readonly isKeyProperty: boolean
     constructor(
@@ -99,7 +99,7 @@ class Property implements db5api.Property {
     }
 }
 
-export class Node implements db5api.Node {
+export class Node implements db5api.Node, db5api.BSENode {
     private readonly imp: imp.Node
     private readonly definition: db5api.NodeDefinition
     private readonly global: Global
@@ -185,7 +185,7 @@ export class Node implements db5api.Node {
 }
 
 
-export class StateGroup implements db5api.StateGroup {
+export class StateGroup implements db5api.StateGroup, db5api.BSEStateGroup {
     private readonly imp: imp.StateGroup
     public readonly comments: imp.Comments
     private readonly global: Global
@@ -224,7 +224,7 @@ export class StateGroup implements db5api.StateGroup {
     }
 }
 
-export class State implements db5api.State {
+export class State implements db5api.State, db5api.BSEState {
     public readonly node: Node
     private readonly imp: imp.State
     constructor(stateImp: imp.State, definition: db5api.StateDefinition, global: Global) {
@@ -236,7 +236,7 @@ export class State implements db5api.State {
     }
 }
 
-export class Entry implements db5api.Entry {
+export class Entry implements db5api.Entry, db5api.BSEEntry {
     public readonly node: Node
     public readonly comments: imp.Comments
     constructor(
@@ -265,7 +265,7 @@ export class Entry implements db5api.Entry {
     // }
 }
 
-export class Dictionary implements db5api.Dictionary {
+export class Dictionary implements db5api.Dictionary, db5api.BSEDictionary {
     readonly comments: imp.Comments
     public readonly imp: imp.Collection
     private readonly definition: db5api.DictionaryDefinition
@@ -294,7 +294,7 @@ export class Dictionary implements db5api.Dictionary {
         imp.addEntry(this.imp, entryPlaceHolder)
         return entry
     }
-    public forEachEntry(callback: (entry: db5api.Entry, key: string) => void): void {
+    public forEachEntry(callback: (entry: Entry, key: string) => void): void {
         const keyPropertyName = this.definition["key property"].name
         this.imp.entries.forEach(e => {
             if (e.status.get()[0] !== "inactive") {
@@ -312,7 +312,7 @@ export class Dictionary implements db5api.Dictionary {
 }
 
 
-export class List implements db5api.List {
+export class List implements db5api.List, db5api.BSEList {
     readonly comments: imp.Comments
 
     private readonly imp: imp.Collection
@@ -351,7 +351,7 @@ export class List implements db5api.List {
     }
 }
 
-export class Value implements db5api.Value {
+export class Value implements db5api.Value, db5api.BSEValue {
     public readonly comments: imp.Comments
     private readonly imp: imp.Value
     public readonly isQuoted: boolean

@@ -4,7 +4,7 @@ export type CommentType =
     | ["block"]
     | ["line"]
 
-export class Comment implements db5api.Comment {
+export class Comment implements db5api.BSEComment {
     readonly value: string
     readonly type: CommentType
     constructor(value: string, type: CommentType) {
@@ -13,7 +13,7 @@ export class Comment implements db5api.Comment {
     }
 }
 
-export class Comments implements db5api.Comments {
+export class Comments implements db5api.BSEComments {
     private readonly imp: Comment[] = []
     addComment(comment: string, type: CommentType): void {
         this.imp.push(new Comment(comment, type))
