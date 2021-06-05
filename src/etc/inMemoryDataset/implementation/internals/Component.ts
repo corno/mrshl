@@ -2,7 +2,7 @@ import * as streamVal from "../../../../interfaces/streamingValidationAPI"
 import { Node } from "./Node"
 import { Comments } from "./Comments"
 import { IParentErrorsAggregator, ErrorManager } from "./ErrorManager"
-import { initializeNode } from "../../initializeNode"
+import { initializeNode } from "../initializeNode"
 
 export class Component {
     public readonly node: Node

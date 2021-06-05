@@ -1,10 +1,10 @@
-import * as streamVal from "../../interfaces/streamingValidationAPI"
-import * as cc from "./changeControl"
-import { Collection, Dictionary, Node } from "./implementation/internals"
-import { Component } from "./implementation/internals/Component"
-import { IParentErrorsAggregator, ErrorManager } from "./implementation/internals/ErrorManager"
-import { StateGroup } from "./implementation/internals/StateGroup"
-import { Value } from "./implementation/internals/Value"
+import * as streamVal from "../../../interfaces/streamingValidationAPI"
+import * as cc from "../changeControl"
+import { Collection, Dictionary, Node } from "./internals"
+import { Component } from "./internals/Component"
+import { IParentErrorsAggregator, ErrorManager } from "./internals/ErrorManager"
+import { StateGroup } from "./internals/StateGroup"
+import { Value } from "./internals/Value"
 
 function assertUnreachable<RT>(_x: never): RT {
     throw new Error("Unreachable")

@@ -2,8 +2,8 @@
     "max-classes-per-file": off,
 */
 
-import * as buildAPI from "../../interfaces/buildAPI"
-import * as imp from "./implementation/internals"
+import * as buildAPI from "../../../interfaces/buildAPI"
+import * as imp from "./internals"
 import { Global } from "./Global"
 import { initializeNode } from "./initializeNode"
 

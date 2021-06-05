@@ -2,20 +2,20 @@
     "max-classes-per-file": off
 */
 
-import * as asyncAPI from "../../interfaces/asyncAPI/asyncAPI"
-import * as cc from "./changeControl"
-import * as streamVal from "../../interfaces/streamingValidationAPI"
-import * as g from "./implementation/genericimp"
+import * as asyncAPI from "../../../interfaces/asyncAPI/asyncAPI"
+import * as cc from "../changeControl"
+import * as streamVal from "../../../interfaces/streamingValidationAPI"
+import * as g from "./genericimp"
 //import * as s from "../serialize"
-import * as id from "../../interfaces/buildAPI/IDataset"
-import * as iss from "../interfaces/InternalSchemaSpecification"
+import * as id from "../../../interfaces/buildAPI/IDataset"
+import * as iss from "../../interfaces/InternalSchemaSpecification"
 import * as syncAPIImp from "./buildAPIImplementation"
 import { copyEntry } from "./copyEntry"
 import { Global } from "./Global"
 import { Command, RootImp } from "./Root"
-import * as imp from "./implementation/internals"
+import * as imp from "./internals"
 import { initializeNode } from "./initializeNode"
-import { ISubscribableValue } from "../../interfaces/asyncAPI/generic"
+import { ISubscribableValue } from "../../../interfaces/asyncAPI/generic"
 
 function assertUnreachable<RT>(_x: never): RT {
     throw new Error("unreachable")

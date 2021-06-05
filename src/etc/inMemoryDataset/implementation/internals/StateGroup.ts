@@ -4,7 +4,7 @@ import * as streamVal from "../../../../interfaces/streamingValidationAPI"
 import { FlexibleErrorsAggregator, IParentErrorsAggregator, ErrorManager } from "./ErrorManager"
 import { Node } from "./Node"
 import { Comments } from "./Comments"
-import { initializeNode } from "../../initializeNode"
+import { initializeNode } from "../initializeNode"
 
 export class State {
     public readonly key: string

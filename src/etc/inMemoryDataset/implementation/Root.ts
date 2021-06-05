@@ -1,7 +1,7 @@
-import * as streamVal from "../../interfaces/streamingValidationAPI"
-import { RootErrorsAggregator } from "./implementation/internals/ErrorManager"
+import * as streamVal from "../../../interfaces/streamingValidationAPI"
+import { RootErrorsAggregator } from "./internals/ErrorManager"
 import { Global } from "./Global"
-import { Node } from "./implementation/internals/Node"
+import { Node } from "./internals/Node"
 import { initializeNode } from "./initializeNode"
 
 export class RootImp {
