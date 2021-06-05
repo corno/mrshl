@@ -1,5 +1,5 @@
 import * as astn from "astn"
-import * as db5api from "../db5api"
+import * as streamVal from "../interfaces/streamingValidationAPI"
 import { createCodeCompletionsGenerator } from "../ide-integration/createCodeCompletionsGenerator"
 import { isPositionBeforeLocation } from "./isPositionBeforeLocation"
 
@@ -7,7 +7,7 @@ export function createCodeCompletionFinder(
     completionPositionLine: number,
     completionPositionCharacter: number,
     callback: (codeCompletion: string) => void
-): db5api.RootHandler<astn.ParserAnnotationData> {
+): streamVal.RootHandler<astn.ParserAnnotationData> {
     let positionAlreadyFound = false
     let previousAfter: null | (() => string[]) = null
     //console.log("FINDING COMPLETIONS", line, character)

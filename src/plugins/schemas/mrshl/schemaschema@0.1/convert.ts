@@ -1,4 +1,4 @@
-import * as db5api from "../../../../db5api"
+import * as streamVal from "../../../../interfaces/streamingValidationAPI"
 import {
     ResolveRegistry,
     createReference,
@@ -13,24 +13,24 @@ function assertUnreachable<RT>(_x: never): RT {
 }
 
 function convertToGenericNode(
-    node: Node, componentTypes: db5api.IReadonlyLookup<db5api.ComponentTypeDefinition>,
+    node: Node, componentTypes: streamVal.IReadonlyLookup<streamVal.ComponentTypeDefinition>,
     keyProperty: null | Property,
     resolveRegistry: ResolveRegistry,
-): db5api.NodeDefinition {
-    const properties = new Dictionary<db5api.PropertyDefinition>({})
+): streamVal.NodeDefinition {
+    const properties = new Dictionary<streamVal.PropertyDefinition>({})
     node.properties.mapSorted((prop, key) => {
         if (prop === keyProperty) {
             //return
         }
         properties.add(key, {
-            type: ((): db5api.PropertyTypeDefinition => {
+            type: ((): streamVal.PropertyTypeDefinition => {
                 switch (prop.type[0]) {
                     case "collection": {
                         const $ = prop.type[1]
 
                         return ["collection", {
 
-                            type: ((): db5api.CollectionTypeDefinition => {
+                            type: ((): streamVal.CollectionTypeDefinition => {
                                 switch ($.type[0]) {
                                     case "dictionary": {
                                         const $$ = $.type[1]
@@ -106,9 +106,9 @@ function convertToGenericNode(
     }
 }
 
-export function convertToGenericSchema(schema: Schema): db5api.Schema {
+export function convertToGenericSchema(schema: Schema): streamVal.Schema {
     const resolveRegistry = new ResolveRegistry()
-    const componentTypes: Dictionary<db5api.ComponentTypeDefinition> = new Dictionary({})
+    const componentTypes: Dictionary<streamVal.ComponentTypeDefinition> = new Dictionary({})
     schema["component types"].forEach((ct, ctName) => {
         componentTypes.add(ctName, {
             node: convertToGenericNode(ct.node, componentTypes, null, resolveRegistry),

@@ -4,8 +4,8 @@
 
 import * as asyncAPI from "../asyncAPI"
 import * as cc from "./changeControl"
-import * as db5api from "../../db5api"
-import * as g from "../../generic"
+import * as streamVal from "../../interfaces/streamingValidationAPI"
+import * as g from "../generic"
 //import * as s from "../serialize"
 import * as id from "../interfaces/IDataset"
 import * as syncAPIImp from "./syncAPIImplementation"
@@ -57,7 +57,7 @@ class Collection implements asyncAPI.Collection {
     public readonly entries: g.ISubscribableArray<asyncAPI.Entry>
     private readonly global: Global
     private readonly imp: imp.Collection
-    constructor(collectionImp: imp.Collection, nodeDefinition: db5api.NodeDefinition, global: Global) {
+    constructor(collectionImp: imp.Collection, nodeDefinition: streamVal.NodeDefinition, global: Global) {
         this.imp = collectionImp
         this.global = global
         this.entries = collectionImp.entries.map(e => {
@@ -108,7 +108,7 @@ class Collection implements asyncAPI.Collection {
 class Component implements asyncAPI.Component {
     public readonly node: Node
     //private readonly imp: imp.Component
-    constructor(componentImp: imp.Component, definition: db5api.ComponentDefinition, global: Global) {
+    constructor(componentImp: imp.Component, definition: streamVal.ComponentDefinition, global: Global) {
         //this.imp = componentImp
         this.node = new Node(componentImp.node, definition.type.get().node, global)
     }
@@ -198,7 +198,7 @@ class Entry implements asyncAPI.Entry {
     public readonly status: g.ISubscribableValue<asyncAPI.EntryStatus>
     private readonly imp: imp.EntryPlaceholder
     private readonly global: Global
-    constructor(entryImp: imp.EntryPlaceholder, nodeDefinition: db5api.NodeDefinition, global: Global) {
+    constructor(entryImp: imp.EntryPlaceholder, nodeDefinition: streamVal.NodeDefinition, global: Global) {
         this.imp = entryImp
         this.node = new Node(entryImp.node, nodeDefinition, global)
         this.hasSubEntryErrors = entryImp.hasSubEntryErrors
@@ -223,7 +223,7 @@ class Property implements asyncAPI.Property {
     //public readonly isKeyProperty: boolean
     //private readonly definition: d.Property
     constructor(
-        _definition: db5api.PropertyDefinition,
+        _definition: streamVal.PropertyDefinition,
         type: asyncAPI.PropertyType,
         //isKeyProperty: boolean,
     ) {
@@ -236,8 +236,8 @@ class Property implements asyncAPI.Property {
 class Node implements asyncAPI.Node {
     public readonly imp: imp.Node
     private readonly global: Global
-    private readonly definition: db5api.NodeDefinition
-    constructor(nodeImp: imp.Node, definition: db5api.NodeDefinition, global: Global) {
+    private readonly definition: streamVal.NodeDefinition
+    constructor(nodeImp: imp.Node, definition: streamVal.NodeDefinition, global: Global) {
         this.imp = nodeImp
         this.definition = definition
         this.global = global
@@ -302,7 +302,7 @@ class Node implements asyncAPI.Node {
             throw new Error("unexpected")
         }
         const $ = propDef.type[1]
-        const nodeDefinition = ((): db5api.NodeDefinition => {
+        const nodeDefinition = ((): streamVal.NodeDefinition => {
             switch ($.type[0]) {
                 case "dictionary": {
                     const $$ = $.type[1]
@@ -342,7 +342,7 @@ class State implements asyncAPI.State {
     public readonly isCurrentState: g.ISubscribableValue<boolean>
     public readonly key: string
     //private readonly imp: imp.State
-    constructor(stateImp: imp.State, definition: db5api.StateDefinition, global: Global) {
+    constructor(stateImp: imp.State, definition: streamVal.StateDefinition, global: Global) {
         //this.imp = stateImp
         this.node = new Node(stateImp.node, definition.node, global)
         this.isCurrentState = stateImp.isCurrentState
@@ -357,8 +357,8 @@ class StateGroup implements asyncAPI.StateGroup {
     public readonly currentStateKey: g.ISubscribableValue<string>
     private readonly global: Global
     private readonly imp: imp.StateGroup
-    private readonly definition: db5api.StateGroupDefinition
-    constructor(stateGroupImp: imp.StateGroup, definition: db5api.StateGroupDefinition, global: Global) {
+    private readonly definition: streamVal.StateGroupDefinition
+    constructor(stateGroupImp: imp.StateGroup, definition: streamVal.StateGroupDefinition, global: Global) {
         this.imp = stateGroupImp
         this.definition = definition
         this.statesOverTime = this.imp.statesOverTime.map(stateImp => {

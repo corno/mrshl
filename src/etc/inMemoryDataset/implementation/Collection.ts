@@ -2,8 +2,8 @@
     "max-classes-per-file": off,
 */
 
-import * as g from "../../../generic"
-import * as db5api from "../../../db5api"
+import * as g from "../../generic"
+import * as streamVal from "../../../interfaces/streamingValidationAPI"
 import { FlexibleErrorsAggregator, IParentErrorsAggregator, ErrorManager } from "./ErrorManager"
 import { Node } from "./Node"
 import { Comments } from "./Comments"
@@ -19,7 +19,7 @@ export class Entry {
     public readonly node: Node
     public readonly comments = new Comments()
     constructor(
-        nodeDefinition: db5api.NodeDefinition,
+        nodeDefinition: streamVal.NodeDefinition,
         errorManager: ErrorManager,
         dictionary: Dictionary | null
     ) {
@@ -95,7 +95,7 @@ export class EntryPlaceholder {
 export class Dictionary {
     public readonly duplicatesCheckFunction: (oldValue: string, newValue: string) => void
     public readonly keyPropertyName: string
-    public readonly keyProperty: db5api.PropertyDefinition
+    public readonly keyProperty: streamVal.PropertyDefinition
     /**
      *
      * @param keyPropertyName
@@ -104,7 +104,7 @@ export class Dictionary {
      */
     constructor(
         keyPropertyName: string,
-        keyProperty: db5api.PropertyDefinition,
+        keyProperty: streamVal.PropertyDefinition,
         duplicatesCheckFunction: (oldValue: string, newValue: string) => void,
     ) {
         this.duplicatesCheckFunction = duplicatesCheckFunction
@@ -116,17 +116,17 @@ export class Dictionary {
 export class Collection {
     public readonly errorsAggregator: IParentErrorsAggregator
     public readonly entries = new g.ReactiveArray<EntryPlaceholder>()
-    public readonly nodeDefinition: db5api.NodeDefinition
+    public readonly nodeDefinition: streamVal.NodeDefinition
     public readonly dictionary: Dictionary | null
     public readonly comments = new Comments()
     constructor(
-        definition: db5api.CollectionDefinition,
+        definition: streamVal.CollectionDefinition,
         errorsAggregator: IParentErrorsAggregator,
         dictionary: Dictionary | null,
     ) {
         this.errorsAggregator = errorsAggregator
         this.dictionary = dictionary
-        this.nodeDefinition = ((): db5api.NodeDefinition => {
+        this.nodeDefinition = ((): streamVal.NodeDefinition => {
             switch (definition.type[0]) {
                 case "dictionary": {
                     const $ = definition.type[1]

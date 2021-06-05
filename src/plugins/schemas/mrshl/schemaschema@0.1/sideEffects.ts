@@ -3,7 +3,7 @@
 */
 
 import * as t from "./types"
-import * as db5api from "../../../../db5api"
+import * as streamVal from "../../../../interfaces/streamingValidationAPI"
 import { DiagnosticSeverity } from "../../../../etc/interfaces/DiagnosticSeverity"
 
 export * from "./types"
@@ -16,7 +16,7 @@ function createDictionary<Annotation>(
     _definition: t.Dictionary,
     collectionDefinition: t.Collection,
     onError: (message: string, annotation: Annotation, severity: DiagnosticSeverity) => void,
-): db5api.DictionaryHandler<Annotation> {
+): streamVal.DictionaryHandler<Annotation> {
     return {
         onClose: () => {
             //
@@ -31,7 +31,7 @@ function createList<Annotation>(
     _definition: t.List,
     collectionDefinition: t.Collection,
     onError: (message: string, annotation: Annotation, severity: DiagnosticSeverity) => void,
-): db5api.ListHandler<Annotation> {
+): streamVal.ListHandler<Annotation> {
     return {
         onEntry: () => {
             return createNode(collectionDefinition.node, onError)
@@ -45,15 +45,15 @@ function createList<Annotation>(
 function createStateGroup<Annotation>(
     definition: t.StateGroup,
     onError: (message: string, annotation: Annotation, severity: DiagnosticSeverity) => void,
-): db5api.StateGroupHandler<Annotation> {
+): streamVal.TaggedUnionHandler<Annotation> {
     return {
-        onState: $ => {
+        onOption: $ => {
             const state = definition.states.getUnsafe($.data.option)
             return createNode(state.node, onError)
         },
-        onUnexpectedState: () => {
-            //
-        },
+        // onUnexpectedOption: () => {
+        //     //
+        // },
     }
 }
 
@@ -61,7 +61,7 @@ function createProp<Annotation>(
     name: string,
     nodedefinition: t.Node,
     onError: (message: string, annotation: Annotation, severity: DiagnosticSeverity) => void,
-): db5api.PropertyHandler<Annotation> {
+): streamVal.PropertyHandler<Annotation> {
     return {
         onDictionary: () => {
             const prop = nodedefinition.properties.getUnsafe(name)
@@ -115,30 +115,30 @@ function createProp<Annotation>(
             switch ($$.type[0]) {
                 case "boolean": {
                     if ($.data.type[0] !== "nonwrapped") {
-                        onError(`expected a boolean, found a quoted string`, $.annotation, DiagnosticSeverity.error)
+                        onError(`expected a boolean, found a quoted string`, $.annotation.annotation, DiagnosticSeverity.error)
                     } else {
                         const val = $.data.type[1].value
                         if (val !== "true" && val !== "false") {
-                            onError(`value '${val}' is not a boolean`, $.annotation, DiagnosticSeverity.error)
+                            onError(`value '${val}' is not a boolean`, $.annotation.annotation, DiagnosticSeverity.error)
                         }
                     }
                     break
                 }
                 case "number": {
                     if ($.data.type[0] !== "nonwrapped") {
-                        onError(`expected a number, found a wrapped string`, $.annotation, DiagnosticSeverity.error)
+                        onError(`expected a number, found a wrapped string`, $.annotation.annotation, DiagnosticSeverity.error)
                     } else {
                         const val = $.data.type[1].value
                         //eslint-disable-next-line no-new-wrappers
                         if (isNaN(new Number(val).valueOf())) {
-                            onError(`value '${val}' is not a number`, $.annotation, DiagnosticSeverity.error)
+                            onError(`value '${val}' is not a number`, $.annotation.annotation, DiagnosticSeverity.error)
                         }
                     }
                     break
                 }
                 case "string": {
                     if ($.data.type[0] === "nonwrapped") {
-                        onError(`expected a quoted string or a multiline string`, $.annotation, DiagnosticSeverity.error)
+                        onError(`expected a quoted string or a multiline string`, $.annotation.annotation, DiagnosticSeverity.error)
                     }
                     break
                 }
@@ -152,10 +152,10 @@ function createProp<Annotation>(
 function createShorthandType<Annotation>(
     definition: t.Node,
     onError: (message: string, annotation: Annotation, severity: DiagnosticSeverity) => void,
-): db5api.ShorthandTypeHandler<Annotation> {
+): streamVal.ShorthandTypeHandler<Annotation> {
     return {
         onProperty: $ => {
-            return createProp($.propKey, definition, onError)
+            return createProp($.annotation.propKey, definition, onError)
         },
         onShorthandTypeClose: () => {
             //
@@ -166,14 +166,14 @@ function createShorthandType<Annotation>(
 function createType<Annotation>(
     definition: t.Node,
     onError: (message: string, annotation: Annotation, severity: DiagnosticSeverity) => void,
-): db5api.TypeHandler<Annotation> {
+): streamVal.TypeHandler<Annotation> {
     return {
         onProperty: $ => {
             return createProp($.data.key, definition, onError)
         },
-        onUnexpectedProperty: () => {
-            //
-        },
+        // onUnexpectedProperty: () => {
+        //     //
+        // },
         onTypeClose: () => {
             //
         },
@@ -183,7 +183,7 @@ function createType<Annotation>(
 function createNode<Annotation>(
     definition: t.Node,
     onError: (message: string, annotation: Annotation, severity: DiagnosticSeverity) => void,
-): db5api.NodeHandler<Annotation> {
+): streamVal.NodeHandler<Annotation> {
     return {
         onShorthandTypeOpen: () => {
             return createShorthandType(definition, onError)
@@ -197,7 +197,7 @@ function createNode<Annotation>(
 export function createRoot<Annotation>(
     schema: t.Schema,
     onError: (message: string, annotation: Annotation, severity: DiagnosticSeverity) => void
-): db5api.RootHandler<Annotation> {
+): streamVal.RootHandler<Annotation> {
     return {
         node: createNode(schema["root type"].get().node, onError),
         onEnd: () => {

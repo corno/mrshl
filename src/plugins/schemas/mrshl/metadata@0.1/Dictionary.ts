@@ -1,6 +1,6 @@
-import * as db5api from "../../../../db5api"
+import * as streamVal from "../../../../interfaces/streamingValidationAPI"
 
-export class Dictionary<T> implements db5api.IReadonlyDictionary<T>, db5api.IReadonlyLookup<T> {
+export class Dictionary<T> implements streamVal.IReadonlyDictionary<T>, streamVal.IReadonlyLookup<T> {
     private readonly imp: { [key: string]: T } = {}
     constructor(imp: { [key: string]: T }) {
         this.imp = imp
@@ -8,15 +8,15 @@ export class Dictionary<T> implements db5api.IReadonlyDictionary<T>, db5api.IRea
     public forEach(callback: (entry: T, key: string) => void): void {
         Object.keys(this.imp).sort().forEach(key => callback(this.imp[key], key))
     }
-    public map<RT>(callback: (entry: T, key: string) => RT): db5api.RawObject<RT> {
-        const rt: db5api.RawObject<RT> = {}
+    public map<RT>(callback: (entry: T, key: string) => RT): streamVal.RawObject<RT> {
+        const rt: streamVal.RawObject<RT> = {}
         Object.keys(this.imp).sort().forEach(key => {
             rt[key] = callback(this.imp[key], key)
         })
         return rt
     }
     public filter<RT>(callback: (entry: T, key: string) => null | RT): Dictionary<RT> {
-        const rt: db5api.RawObject<RT> = {}
+        const rt: streamVal.RawObject<RT> = {}
         Object.keys(this.imp).sort().forEach(key => {
             const result = callback(this.imp[key], key)
             if (result !== null) {
@@ -42,15 +42,15 @@ export class Dictionary<T> implements db5api.IReadonlyDictionary<T>, db5api.IRea
         }
         return entry
     }
-    public mapSorted<RT>(callback: (entry: T, key: string) => RT): db5api.RawObject<RT> {
-        const rt: db5api.RawObject<RT> = {}
+    public mapSorted<RT>(callback: (entry: T, key: string) => RT): streamVal.RawObject<RT> {
+        const rt: streamVal.RawObject<RT> = {}
         Object.keys(this.imp).sort().forEach(key => {
             rt[key] = callback(this.imp[key], key)
         })
         return rt
     }
-    public mapUnsorted<RT>(callback: (entry: T, key: string) => RT): db5api.RawObject<RT> {
-        const rt: db5api.RawObject<RT> = {}
+    public mapUnsorted<RT>(callback: (entry: T, key: string) => RT): streamVal.RawObject<RT> {
+        const rt: streamVal.RawObject<RT> = {}
         Object.keys(this.imp).forEach(key => {
             rt[key] = callback(this.imp[key], key)
         })

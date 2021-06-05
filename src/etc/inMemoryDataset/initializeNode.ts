@@ -1,4 +1,4 @@
-import * as db5api from "../../db5api"
+import * as streamVal from "../../interfaces/streamingValidationAPI"
 import * as cc from "./changeControl"
 import { Collection, Dictionary, Node } from "./implementation"
 import { Component } from "./implementation/Component"
@@ -12,7 +12,7 @@ function assertUnreachable<RT>(_x: never): RT {
 
 export function initializeNode(
     node: Node,
-    definition: db5api.NodeDefinition,
+    definition: streamVal.NodeDefinition,
     errorManager: ErrorManager,
     errorsAggregator: IParentErrorsAggregator,
     subEntriesErrorsAggregator: IParentErrorsAggregator,

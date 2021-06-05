@@ -3,7 +3,7 @@ import * as astn from "astn"
 import * as p from "pareto"
 import { getSchemaSchemaBuilder, SchemaSchemaBuilder } from "../etc/getSchemaSchemaBuilder"
 import { createInternalSchemaHandler } from "../etc/deserialize/implementation/createInternalSchemaHandler"
-import { SchemaAndSideEffects } from "../etc/interfaces/SchemaAndSideEffects"
+import { SchemaAndSideEffects } from "../plugins/api/SchemaAndSideEffects"
 import { SchemaSchemaError } from "./SchemaSchemaError"
 
 function assertUnreachable<RT>(_x: never): RT {

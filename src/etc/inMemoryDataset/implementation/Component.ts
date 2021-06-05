@@ -1,4 +1,4 @@
-import * as db5api from "../../../db5api"
+import * as streamVal from "../../../interfaces/streamingValidationAPI"
 import { Node } from "./Node"
 import { Comments } from "./Comments"
 import { IParentErrorsAggregator, ErrorManager } from "./ErrorManager"
@@ -8,7 +8,7 @@ export class Component {
     public readonly node: Node
     public readonly comments = new Comments()
     constructor(
-        definition: db5api.ComponentDefinition,
+        definition: streamVal.ComponentDefinition,
         errorManager: ErrorManager,
         errorsAggregator: IParentErrorsAggregator,
         subEntriesErrorsAggregator: IParentErrorsAggregator,

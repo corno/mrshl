@@ -1,4 +1,4 @@
-import * as db5api from "../../../../db5api"
+import * as streamVal from "../../../../interfaces/streamingValidationAPI"
 
 export interface X {
     x: string
@@ -14,7 +14,7 @@ export type Collection = {
 }
 
 export type Component = {
-    readonly "type": db5api.IReference<ComponentType>
+    readonly "type": streamVal.IReference<ComponentType>
 }
 
 export type ComponentType = {
@@ -22,14 +22,14 @@ export type ComponentType = {
 }
 
 export type Dictionary = {
-    readonly "key property": db5api.IReference<Property>
+    readonly "key property": streamVal.IReference<Property>
 }
 
 export type List = {
 }
 
 export type Node = {
-    readonly "properties": db5api.IReadonlyDictionary<Property>
+    readonly "properties": streamVal.IReadonlyDictionary<Property>
 }
 
 export type Property = {
@@ -43,8 +43,8 @@ export type PropertyType =
     | ["state group", StateGroup]
 
 export type Schema = {
-    readonly "component types": db5api.IReadonlyDictionary<ComponentType>
-    readonly "root type": db5api.IReference<ComponentType>
+    readonly "component types": streamVal.IReadonlyDictionary<ComponentType>
+    readonly "root type": streamVal.IReference<ComponentType>
 }
 
 export type State = {
@@ -52,8 +52,8 @@ export type State = {
 }
 
 export type StateGroup = {
-    readonly "states": db5api.IReadonlyDictionary<State>
-    readonly "default state": db5api.IReference<State>
+    readonly "states": streamVal.IReadonlyDictionary<State>
+    readonly "default state": streamVal.IReference<State>
 }
 
 export type ValueType =

@@ -2,7 +2,7 @@
     "max-classes-per-file": off,
 */
 
-import * as db5api from "../db5api"
+import * as streamVal from "../interfaces/streamingValidationAPI"
 import * as fp from "fountain-pen"
 
 function assertUnreachable<RT>(_x: never): RT {
@@ -11,7 +11,7 @@ function assertUnreachable<RT>(_x: never): RT {
 
 type GetHoverText = () => string
 
-function createPropertyHoverText(prop: db5api.PropertyDefinition): fp.InlineSegment {
+function createPropertyHoverText(prop: streamVal.PropertyDefinition): fp.InlineSegment {
     switch (prop.type[0]) {
         case "collection": {
             const $ = prop.type[1]
@@ -52,7 +52,7 @@ function createPropertyHoverText(prop: db5api.PropertyDefinition): fp.InlineSegm
     }
 }
 
-function createHoverTextsForProperties(node: db5api.NodeDefinition, keyProperty: db5api.PropertyDefinition | null): fp.Block {
+function createHoverTextsForProperties(node: streamVal.NodeDefinition, keyProperty: streamVal.PropertyDefinition | null): fp.Block {
     const x: fp.Block[] = []
     node.properties.mapSorted((prop, propKey) => {
         if (prop === keyProperty) {
@@ -66,7 +66,7 @@ function createHoverTextsForProperties(node: db5api.NodeDefinition, keyProperty:
     return x
 }
 
-function createHoverTextsForNode(node: db5api.NodeDefinition, keyProperty: db5api.PropertyDefinition | null): fp.InlineSegment {
+function createHoverTextsForNode(node: streamVal.NodeDefinition, keyProperty: streamVal.PropertyDefinition | null): fp.InlineSegment {
     return [
         '(',
         () => {
@@ -84,7 +84,7 @@ export type OnTokenHoverText<Annotation> = (
 function createHoverTextGenerator<Annotation>(
     onToken: OnTokenHoverText<Annotation>,
     onEnd: () => void,
-): db5api.RootHandler<Annotation> {
+): streamVal.RootHandler<Annotation> {
     return {
         node: createNodeHoverTextGenerator(null, onToken),
         onEnd: () => {
@@ -97,18 +97,18 @@ function createStateGroupHoverTextGenerator<Annotation>(
 
     name: string,
     onToken: OnTokenHoverText<Annotation>,
-): db5api.StateGroupHandler<Annotation> {
+): streamVal.TaggedUnionHandler<Annotation> {
 
     return {
-        onState: $ => {
-            onToken($.annotation, () => {
+        onOption: $ => {
+            onToken($.annotation.annotation, () => {
                 return name
             })
             return createNodeHoverTextGenerator(null, onToken)
         },
-        onUnexpectedState: () => {
-            //
-        },
+        // onUnexpectedOption: () => {
+        //     //
+        // },
     }
 
 }
@@ -117,34 +117,35 @@ function createPropertyHoverTextGenerator<Annotation>(
 
     name: string,
     onToken: OnTokenHoverText<Annotation>,
-): db5api.PropertyHandler<Annotation> {
+): streamVal.PropertyHandler<Annotation> {
     return {
 
         onDictionary: $ => {
-            onToken($.annotation, () => {
+            onToken($.annotation.annotation, () => {
                 return name
             })
             return createDictionaryHoverTextGenerator(name, onToken)
         },
         onList: $ => {
-            onToken($.annotation, () => {
+            onToken($.annotation.annotation, () => {
                 return name
             })
             return createListHoverTextGenerator(name, onToken)
         },
         onStateGroup: $ => {
-            onToken($.annotation, () => {
+            onToken($.annotation.annotation, () => {
                 return name
             })
             return createStateGroupHoverTextGenerator(name, onToken)
         },
-        onNull: $ => {
-            onToken($.annotation, () => {
-                return name
-            })
+        onNull: () => {
+            //FIXME
+            // onToken($.annotation.annotation, () => {
+            //     return name
+            // })
         },
         onScalarValue: $ => {
-            onToken($.annotation, () => {
+            onToken($.annotation.annotation, () => {
                 return name
             })
         },
@@ -157,11 +158,11 @@ function createPropertyHoverTextGenerator<Annotation>(
 function createListHoverTextGenerator<Annotation>(
     name: string,
     onToken: OnTokenHoverText<Annotation>,
-): db5api.ListHandler<Annotation> {
+): streamVal.ListHandler<Annotation> {
     return {
 
         onClose: $ => {
-            onToken($.annotation, () => {
+            onToken($.annotation.annotation, () => {
                 return name
             })
         },
@@ -174,10 +175,10 @@ function createListHoverTextGenerator<Annotation>(
 function createDictionaryHoverTextGenerator<Annotation>(
     name: string,
     onToken: OnTokenHoverText<Annotation>,
-): db5api.DictionaryHandler<Annotation> {
+): streamVal.DictionaryHandler<Annotation> {
     return {
         onClose: $ => {
-            onToken($.annotation, () => {
+            onToken($.annotation.annotation, () => {
                 return name
             })
         },
@@ -190,15 +191,15 @@ function createDictionaryHoverTextGenerator<Annotation>(
 function createShorthandTypeHoverTextGenerator<Annotation>(
     componentName: string | null,
     onToken: OnTokenHoverText<Annotation>,
-): db5api.ShorthandTypeHandler<Annotation> {
+): streamVal.ShorthandTypeHandler<Annotation> {
     return {
         onProperty: $ => {
-            return createPropertyHoverTextGenerator($.propKey, onToken)
+            return createPropertyHoverTextGenerator($.annotation.propKey, onToken)
         },
         onShorthandTypeClose: $ => {
             if (componentName !== null) {
                 const cn = componentName
-                onToken($.annotation, () => {
+                onToken($.annotation.annotation, () => {
                     return cn
                 })
             }
@@ -209,7 +210,7 @@ function createShorthandTypeHoverTextGenerator<Annotation>(
 function createNodeHoverTextGenerator<Annotation>(
     componentName: string | null,
     onToken: OnTokenHoverText<Annotation>,
-): db5api.NodeHandler<Annotation> {
+): streamVal.NodeHandler<Annotation> {
 
     function addOnToken(annotation: Annotation) {
 
@@ -224,11 +225,11 @@ function createNodeHoverTextGenerator<Annotation>(
     return {
 
         onShorthandTypeOpen: $ => {
-            addOnToken($.annotation)
+            addOnToken($.annotation.annotation)
             return createShorthandTypeHoverTextGenerator(componentName, onToken)
         },
         onTypeOpen: $ => {
-            addOnToken($.annotation)
+            addOnToken($.annotation.annotation)
             return createTypeHoverTextGenerator(componentName, onToken)
         },
     }
@@ -238,26 +239,21 @@ function createNodeHoverTextGenerator<Annotation>(
 function createTypeHoverTextGenerator<Annotation>(
     componentName: string | null,
     onToken: OnTokenHoverText<Annotation>,
-): db5api.TypeHandler<Annotation> {
-    function addOnToken(annotation: Annotation) {
-
-        if (componentName !== null) {
-            const cn = componentName
-            onToken(annotation, () => {
-                return cn
-            })
-        }
-        //
-    }
+): streamVal.TypeHandler<Annotation> {
     return {
         onProperty: $ => {
             return createPropertyHoverTextGenerator($.data.key, onToken)
         },
-        onUnexpectedProperty: () => {
-            //
-        },
+        // onUnexpectedProperty: () => {
+        //     //
+        // },
         onTypeClose: $ => {
-            addOnToken($.annotation)
+            if (componentName !== null) {
+                const cn = componentName
+                onToken($.annotation.annotation, () => {
+                    return cn
+                })
+            }
         },
     }
 }
@@ -265,6 +261,6 @@ function createTypeHoverTextGenerator<Annotation>(
 export function createHoverTextsGenerator<Annotation>(
     onToken: OnTokenHoverText<Annotation>,
     onEnd: () => void,
-): db5api.RootHandler<Annotation> {
+): streamVal.RootHandler<Annotation> {
     return createHoverTextGenerator(onToken, onEnd)
 }

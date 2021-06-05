@@ -1,4 +1,4 @@
-import * as db5api from "../../db5api"
+import * as streamVal from "../../interfaces/streamingValidationAPI"
 import { RootErrorsAggregator } from "./implementation/ErrorManager"
 import { Global } from "./Global"
 import { Node } from "./implementation/Node"
@@ -7,10 +7,10 @@ import { initializeNode } from "./initializeNode"
 export class RootImp {
     public readonly errorsAggregator = new RootErrorsAggregator()
     public readonly global = new Global()
-    public readonly schema: db5api.Schema
+    public readonly schema: streamVal.Schema
     public readonly rootNode: Node
 
-    constructor(schema: db5api.Schema) {
+    constructor(schema: streamVal.Schema) {
         this.rootNode = new Node(
             null,
             node => {

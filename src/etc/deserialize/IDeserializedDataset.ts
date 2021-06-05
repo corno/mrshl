@@ -1,4 +1,4 @@
-import { IDataset } from "../dataset";
+import { IDataset } from "../interfaces/dataset";
 import { InternalSchemaSpecification } from "../interfaces/IDataset";
 
 

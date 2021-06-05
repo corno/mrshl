@@ -1,6 +1,6 @@
-import * as g from "../../../generic"
+import * as g from "../../generic"
 import * as asyncAPI from "../../asyncAPI"
-import * as db5api from "../../../db5api"
+import * as streamVal from "../../../interfaces/streamingValidationAPI"
 import { IParentErrorsAggregator, PotentialError, ErrorManager } from "./ErrorManager"
 import { Comments } from "./Comments"
 
@@ -20,7 +20,7 @@ export class Value {
     public readonly initialValue: string
 
     constructor(
-        definition: db5api.ValueDefinition,
+        definition: streamVal.ValueDefinition,
         errorsAggregator: IParentErrorsAggregator,
         createdInNewContext: boolean,
         errorManager: ErrorManager,

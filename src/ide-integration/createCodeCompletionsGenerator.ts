@@ -2,7 +2,7 @@
     "max-classes-per-file": off,
 */
 
-import * as db5api from "../db5api"
+import * as streamVal from "../interfaces/streamingValidationAPI"
 import * as fp from "fountain-pen"
 
 function assertUnreachable<RT>(_x: never): RT {
@@ -11,7 +11,7 @@ function assertUnreachable<RT>(_x: never): RT {
 
 type GetCodeCompletions = () => string[]
 
-function createCodeCompletionForProperty(prop: db5api.PropertyDefinition, shorthand: boolean): fp.InlineSegment {
+function createCodeCompletionForProperty(prop: streamVal.PropertyDefinition, shorthand: boolean): fp.InlineSegment {
     switch (prop.type[0]) {
         case "collection": {
             const $ = prop.type[1]
@@ -52,7 +52,7 @@ function createCodeCompletionForProperty(prop: db5api.PropertyDefinition, shorth
     }
 }
 
-function createCodeCompletionForShorthandProperties(node: db5api.NodeDefinition, keyProperty: db5api.PropertyDefinition | null): fp.InlineSegment {
+function createCodeCompletionForShorthandProperties(node: streamVal.NodeDefinition, keyProperty: streamVal.PropertyDefinition | null): fp.InlineSegment {
     const x: fp.InlineSegment[] = []
     node.properties.mapSorted((prop, _propKey) => {
         if (prop === keyProperty) {
@@ -64,7 +64,7 @@ function createCodeCompletionForShorthandProperties(node: db5api.NodeDefinition,
     return x
 }
 
-function createCodeCompletionForVerboseProperties(node: db5api.NodeDefinition, keyProperty: db5api.PropertyDefinition | null): fp.Block {
+function createCodeCompletionForVerboseProperties(node: streamVal.NodeDefinition, keyProperty: streamVal.PropertyDefinition | null): fp.Block {
     const x: fp.Block[] = []
     node.properties.mapSorted((prop, propKey) => {
         if (prop === keyProperty) {
@@ -78,7 +78,7 @@ function createCodeCompletionForVerboseProperties(node: db5api.NodeDefinition, k
     return x
 }
 
-function createCodeCompletionForNode(node: db5api.NodeDefinition, keyProperty: db5api.PropertyDefinition | null, shorthand: boolean): fp.InlineSegment {
+function createCodeCompletionForNode(node: streamVal.NodeDefinition, keyProperty: streamVal.PropertyDefinition | null, shorthand: boolean): fp.InlineSegment {
     if (shorthand) {
         return [
             '<', createCodeCompletionForShorthandProperties(node, keyProperty), ' >',
@@ -104,7 +104,7 @@ export type OnToken<Annotation> = (
 function createCodeCompletionGenerator<Annotation>(
     onToken: OnToken<Annotation>,
     onEnd2: () => void,
-): db5api.RootHandler<Annotation> {
+): streamVal.RootHandler<Annotation> {
     return {
         node: createCodeCompletionForNodeGenerator<Annotation>(onToken),
         onEnd: () => {
@@ -116,27 +116,27 @@ function createCodeCompletionGenerator<Annotation>(
 
 function createStateGroupCodeCompletionGenerator<Annotation>(
     onToken: OnToken<Annotation>,
-): db5api.StateGroupHandler<Annotation> {
+): streamVal.TaggedUnionHandler<Annotation> {
     return {
-        onState: () => {
+        onOption: () => {
             return createCodeCompletionForNodeGenerator(onToken)
         },
-        onUnexpectedState: $ => {
-            onToken(
-                $.annotation,
-                () => {
-                    return Object.keys($.stateGroupDefinition.states.mapSorted(s => s))
-                },
-                null
-            )
-        },
+        // onUnexpectedOption: $ => {
+        //     onToken(
+        //         $.annotation.annotation,
+        //         () => {
+        //             return Object.keys($.annotation.stateGroupDefinition.states.mapSorted(s => s))
+        //         },
+        //         null
+        //     )
+        // },
     }
 }
 
 function createCodeCompletionForPropertyGenerator<Annotation>(
     onToken: OnToken<Annotation>,
 
-): db5api.PropertyHandler<Annotation> {
+): streamVal.PropertyHandler<Annotation> {
     return {
 
         onDictionary: () => {
@@ -153,10 +153,10 @@ function createCodeCompletionForPropertyGenerator<Annotation>(
         },
         onScalarValue: $ => {
             onToken(
-                $.annotation,
+                $.annotation.annotation,
                 () => {
-                    return $.syncValue.getSuggestions().map(sugg => {
-                        return $.definition.quoted ? `"${sugg}"` : sugg
+                    return $.annotation.syncValue.getSuggestions().map(sugg => {
+                        return $.annotation.definition.quoted ? `"${sugg}"` : sugg
                     })
                 },
                 null,
@@ -171,7 +171,7 @@ function createCodeCompletionForPropertyGenerator<Annotation>(
 function createCodeCompletionForListGenerator<Annotation>(
     onToken: OnToken<Annotation>,
 
-): db5api.ListHandler<Annotation> {
+): streamVal.ListHandler<Annotation> {
     return {
         onClose: () => {
             //
@@ -184,14 +184,14 @@ function createCodeCompletionForListGenerator<Annotation>(
 
 function createCodeCompletionForDictionaryGenerator<Annotation>(
     onToken: OnToken<Annotation>,
-): db5api.DictionaryHandler<Annotation> {
+): streamVal.DictionaryHandler<Annotation> {
     return {
         onClose: () => {
             //
         },
         onEntry: $ => {
             onToken(
-                $.annotation,
+                $.annotation.annotation,
                 null,
                 () => {
                     function create(shorthand: boolean) {
@@ -200,7 +200,7 @@ function createCodeCompletionForDictionaryGenerator<Annotation>(
                             [
                                 fp.line([
                                     " ",
-                                    createCodeCompletionForNode($.nodeDefinition, $.keyProperty, shorthand),
+                                    createCodeCompletionForNode($.annotation.nodeDefinition, $.annotation.keyProperty, shorthand),
                                 ]),
                             ],
                             "    ",
@@ -231,7 +231,7 @@ function createCodeCompletionForDictionaryGenerator<Annotation>(
 
 function createCodeCompletionForShorthandTypeGenerator<Annotation>(
     onToken: OnToken<Annotation>,
-): db5api.ShorthandTypeHandler<Annotation> {
+): streamVal.ShorthandTypeHandler<Annotation> {
     return {
         onProperty: () => {
             return createCodeCompletionForPropertyGenerator(onToken)
@@ -244,48 +244,61 @@ function createCodeCompletionForShorthandTypeGenerator<Annotation>(
 
 function createCodeCompletionForVerboseTypeGenerator<Annotation>(
     onToken: OnToken<Annotation>,
-): db5api.TypeHandler<Annotation> {
+): streamVal.TypeHandler<Annotation> {
     return {
         onProperty: $ => {
-            onToken(
-                $.annotation,
-                null,
-                () => {
-                    const out: string[] = []
-                    fp.serialize(
-                        [
-                            fp.line([
-                                " ",
-                                createCodeCompletionForProperty($.propDefinition, false),
-                            ]),
-                        ],
-                        "    ",
-                        true,
-                        codeCompletion => {
-                            out.push(codeCompletion)
-                        }
-                    )
-                    return [out.map((line, index) => {
-                        //don't indent the first line
-                        if (index === 0) {
+            const propDefinition = $.annotation.nodeDefinition.properties.get($.annotation.key)
+            if (propDefinition === null) {
+                onToken(
+                    $.annotation.annotation,
+                    () => {
+                        return $.annotation.nodeDefinition.properties.getKeys()
+                    },
+                    null
+                )
+                throw new Error("IMPLEMENT ME")
+            } else {
+                onToken(
+                    $.annotation.annotation,
+                    null,
+                    () => {
+                        const out: string[] = []
+                        fp.serialize(
+                            [
+                                fp.line([
+                                    " ",
+                                    createCodeCompletionForProperty(propDefinition, false),
+                                ]),
+                            ],
+                            "    ",
+                            true,
+                            codeCompletion => {
+                                out.push(codeCompletion)
+                            }
+                        )
+                        return [out.map((line, index) => {
+                            //don't indent the first line
+                            if (index === 0) {
+                                return line
+                            }
                             return line
-                        }
-                        return line
-                        //return contextData.indentation + line
-                    }).join("\n")]
-                },
-            )
-            return createCodeCompletionForPropertyGenerator(onToken)
+                            //return contextData.indentation + line
+                        }).join("\n")]
+                    },
+                )
+                return createCodeCompletionForPropertyGenerator(onToken)
+            }
         },
-        onUnexpectedProperty: $ => {
-            onToken(
-                $.annotation,
-                () => {
-                    return $.expectedProperties
-                },
-                null
-            )
-        },
+        // onUnexpectedProperty: () => {
+        //     //FIXME
+        //     // onToken(
+        //     //     $.annotation.annotation,
+        //     //     () => {
+        //     //         return $.annotation.expectedProperties
+        //     //     },
+        //     //     null
+        //     // )
+        // },
         onTypeClose: () => {
             //
         },
@@ -294,18 +307,18 @@ function createCodeCompletionForVerboseTypeGenerator<Annotation>(
 
 function createCodeCompletionForNodeGenerator<Annotation>(
     onToken: OnToken<Annotation>,
-): db5api.NodeHandler<Annotation> {
+): streamVal.NodeHandler<Annotation> {
 
     return {
         onShorthandTypeOpen: $ => {
             onToken(
-                $.annotation,
+                $.annotation.annotation,
                 null,
                 () => {
                     const out: string[] = []
                     fp.serialize(
                         [
-                            fp.line(createCodeCompletionForShorthandProperties($.nodeDefinition, $.keyPropertyDefinition)),
+                            fp.line(createCodeCompletionForShorthandProperties($.annotation.nodeDefinition, $.annotation.keyPropertyDefinition)),
                         ],
                         "    ",
                         true,
@@ -322,7 +335,7 @@ function createCodeCompletionForNodeGenerator<Annotation>(
         },
         onTypeOpen: $ => {
             onToken(
-                $.annotation,
+                $.annotation.annotation,
                 null,
                 () => {
                     const out: string[] = []
@@ -330,7 +343,7 @@ function createCodeCompletionForNodeGenerator<Annotation>(
                         [
                             '',
                             () => {
-                                return createCodeCompletionForVerboseProperties($.nodeDefinition, $.keyPropertyDefinition)
+                                return createCodeCompletionForVerboseProperties($.annotation.nodeDefinition, $.annotation.keyPropertyDefinition)
                             },
                             '',
                         ],
@@ -353,6 +366,6 @@ function createCodeCompletionForNodeGenerator<Annotation>(
 export function createCodeCompletionsGenerator<Annotation>(
     onToken: OnToken<Annotation>,
     onEnd: () => void,
-): db5api.RootHandler<Annotation> {
+): streamVal.RootHandler<Annotation> {
     return createCodeCompletionGenerator(onToken, onEnd)
 }

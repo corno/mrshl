@@ -2,7 +2,7 @@
     "max-classes-per-file": off,
 */
 
-import * as db5api from "../../db5api"
+import * as buildAPI from "../../interfaces/buildAPI"
 import * as imp from "./implementation"
 import { Global } from "./Global"
 import { initializeNode } from "./initializeNode"
@@ -11,14 +11,14 @@ function assertUnreachable<RT>(_x: never): RT {
     throw new Error("unreachable")
 }
 
-export class Component implements db5api.Component, db5api.BSEComponent {
+export class Component implements buildAPI.Component {
     public node: Node
     public readonly comments: imp.Comments
     constructor(
-        definition: db5api.ComponentDefinition,
+        definition: buildAPI.ComponentDefinition,
         component: imp.Component,
         global: Global,
-        keyProperty: db5api.PropertyDefinition | null,
+        keyProperty: buildAPI.PropertyDefinition | null,
     ) {
         this.node = new Node(
             component.node,
@@ -30,17 +30,17 @@ export class Component implements db5api.Component, db5api.BSEComponent {
     }
 }
 
-class Property implements db5api.Property, db5api.BSEProperty {
-    public readonly type: db5api.PropertyType
+class Property implements buildAPI.Property {
+    public readonly type: buildAPI.PropertyType
     public readonly isKeyProperty: boolean
     constructor(
         propertyKey: string,
-        definition: db5api.PropertyDefinition,
+        definition: buildAPI.PropertyDefinition,
         nodeImp: imp.Node,
         global: Global,
-        keyProperty: db5api.PropertyDefinition | null,
+        keyProperty: buildAPI.PropertyDefinition | null,
     ) {
-        this.type = ((): db5api.PropertyType => {
+        this.type = ((): buildAPI.PropertyType => {
             switch (definition.type[0]) {
                 case "component": {
                     const $ = definition.type[1]
@@ -99,16 +99,16 @@ class Property implements db5api.Property, db5api.BSEProperty {
     }
 }
 
-export class Node implements db5api.Node, db5api.BSENode {
+export class Node implements buildAPI.Node {
     private readonly imp: imp.Node
-    private readonly definition: db5api.NodeDefinition
+    private readonly definition: buildAPI.NodeDefinition
     private readonly global: Global
-    private readonly keyProperty: db5api.PropertyDefinition | null
+    private readonly keyProperty: buildAPI.PropertyDefinition | null
     constructor(
         node: imp.Node,
-        definition: db5api.NodeDefinition,
+        definition: buildAPI.NodeDefinition,
         global: Global,
-        keyProperty: db5api.PropertyDefinition | null,
+        keyProperty: buildAPI.PropertyDefinition | null,
     ) {
         this.definition = definition
         this.imp = node
@@ -168,7 +168,7 @@ export class Node implements db5api.Node, db5api.BSENode {
         }
         return new Value(this.imp.values.getUnsafe(key), propDef.type[1])
     }
-    public forEachProperty(callback: (property: db5api.Property, key: string) => void): void {
+    public forEachProperty(callback: (property: buildAPI.Property, key: string) => void): void {
         this.definition.properties.forEach((p, pKey) => {
             callback(
                 new Property(
@@ -185,12 +185,12 @@ export class Node implements db5api.Node, db5api.BSENode {
 }
 
 
-export class StateGroup implements db5api.StateGroup, db5api.BSEStateGroup {
+export class StateGroup implements buildAPI.StateGroup {
     private readonly imp: imp.StateGroup
     public readonly comments: imp.Comments
     private readonly global: Global
-    public readonly definition: db5api.StateGroupDefinition
-    constructor(stateGroup: imp.StateGroup, definition: db5api.StateGroupDefinition, global: Global) {
+    public readonly definition: buildAPI.StateGroupDefinition
+    constructor(stateGroup: imp.StateGroup, definition: buildAPI.StateGroupDefinition, global: Global) {
         this.imp = stateGroup
         this.global = global
         this.definition = definition
@@ -224,10 +224,10 @@ export class StateGroup implements db5api.StateGroup, db5api.BSEStateGroup {
     }
 }
 
-export class State implements db5api.State, db5api.BSEState {
+export class State implements buildAPI.State {
     public readonly node: Node
     private readonly imp: imp.State
-    constructor(stateImp: imp.State, definition: db5api.StateDefinition, global: Global) {
+    constructor(stateImp: imp.State, definition: buildAPI.StateDefinition, global: Global) {
         this.node = new Node(stateImp.node, definition.node, global, null)
         this.imp = stateImp
     }
@@ -236,7 +236,7 @@ export class State implements db5api.State, db5api.BSEState {
     }
 }
 
-export class Entry implements db5api.Entry, db5api.BSEEntry {
+export class Entry implements buildAPI.Entry {
     public readonly node: Node
     public readonly comments: imp.Comments
     constructor(
@@ -265,14 +265,14 @@ export class Entry implements db5api.Entry, db5api.BSEEntry {
     // }
 }
 
-export class Dictionary implements db5api.Dictionary, db5api.BSEDictionary {
+export class Dictionary implements buildAPI.Dictionary {
     readonly comments: imp.Comments
     public readonly imp: imp.Collection
-    private readonly definition: db5api.DictionaryDefinition
+    private readonly definition: buildAPI.DictionaryDefinition
     private readonly global: Global
     constructor(
         collectionImp: imp.Collection,
-        definition: db5api.DictionaryDefinition,
+        definition: buildAPI.DictionaryDefinition,
         global: Global,
     ) {
         this.imp = collectionImp
@@ -312,7 +312,7 @@ export class Dictionary implements db5api.Dictionary, db5api.BSEDictionary {
 }
 
 
-export class List implements db5api.List, db5api.BSEList {
+export class List implements buildAPI.List {
     readonly comments: imp.Comments
 
     private readonly imp: imp.Collection
@@ -338,7 +338,7 @@ export class List implements db5api.List, db5api.BSEList {
         imp.addEntry(this.imp, entryPlaceHolder)
         return entry
     }
-    public forEachEntry(callback: (entry: db5api.Entry) => void): void {
+    public forEachEntry(callback: (entry: buildAPI.Entry) => void): void {
         this.imp.entries.forEach(e => {
             if (e.status.get()[0] !== "inactive") {
                 callback(new Entry(
@@ -351,12 +351,12 @@ export class List implements db5api.List, db5api.BSEList {
     }
 }
 
-export class Value implements db5api.Value, db5api.BSEValue {
+export class Value implements buildAPI.Value {
     public readonly comments: imp.Comments
     private readonly imp: imp.Value
     public readonly isQuoted: boolean
-    public readonly definition: db5api.ValueDefinition
-    constructor(valueImp: imp.Value, definition: db5api.ValueDefinition) {
+    public readonly definition: buildAPI.ValueDefinition
+    constructor(valueImp: imp.Value, definition: buildAPI.ValueDefinition) {
         this.imp = valueImp
         this.comments = valueImp.comments
         this.isQuoted = definition.quoted

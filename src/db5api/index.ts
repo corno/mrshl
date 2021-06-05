@@ -1,4 +1,3 @@
-export * from "./generics"
+export * from "../interfaces/definitions/generics"
 export * from "./buildingSideEffects"
-export * from "./syncAPI"
-export * from "./definitions"
+export * from "../interfaces/definitions"

@@ -2,14 +2,14 @@
     "max-classes-per-file": off,
 */
 
-import * as db5api from "../../../db5api"
+import * as streamVal from "../../../interfaces/streamingValidationAPI"
 
-export function createNOPSideEffects<Annotation>(): db5api.RootHandler<Annotation> {
+export function createNOPSideEffects<Annotation>(): streamVal.RootHandler<Annotation> {
     return new NOPSideEffects()
 }
 
-class NOPSideEffects<Annotation> implements db5api.RootHandler<Annotation> {
-    node: db5api.NodeHandler<Annotation>
+class NOPSideEffects<Annotation> implements streamVal.RootHandler<Annotation> {
+    node: streamVal.NodeHandler<Annotation>
     constructor() {
         this.node = new NodeNOPSideEffects()
     }
@@ -18,7 +18,7 @@ class NOPSideEffects<Annotation> implements db5api.RootHandler<Annotation> {
     }
 }
 
-class NodeNOPSideEffects<Annotation> implements db5api.NodeHandler<Annotation> {
+class NodeNOPSideEffects<Annotation> implements streamVal.NodeHandler<Annotation> {
     constructor() {
         //
     }
@@ -28,9 +28,9 @@ class NodeNOPSideEffects<Annotation> implements db5api.NodeHandler<Annotation> {
     onProperty() {
         return new PropertyNOPSideEffects()
     }
-    onUnexpectedProperty() {
-        //
-    }
+    // onUnexpectedProperty() {
+    //     //
+    // }
     onTypeOpen() {
         return new NodeNOPSideEffects()
     }
@@ -39,7 +39,7 @@ class NodeNOPSideEffects<Annotation> implements db5api.NodeHandler<Annotation> {
     }
 }
 
-class ShorthandTypeNOPSideEffects<Annotation> implements db5api.ShorthandTypeHandler<Annotation> {
+class ShorthandTypeNOPSideEffects<Annotation> implements streamVal.ShorthandTypeHandler<Annotation> {
     constructor() {
         //
     }
@@ -51,19 +51,19 @@ class ShorthandTypeNOPSideEffects<Annotation> implements db5api.ShorthandTypeHan
     }
 }
 
-class StateGroupNOPSideEffects<Annotation> implements db5api.StateGroupHandler<Annotation> {
+class StateGroupNOPSideEffects<Annotation> implements streamVal.TaggedUnionHandler<Annotation> {
     constructor() {
         //
     }
-    onUnexpectedState() {
-        //
-    }
-    onState() {
+    // onUnexpectedOption() {
+    //     //
+    // }
+    onOption() {
         return new NodeNOPSideEffects()
     }
 }
 
-class PropertyNOPSideEffects<Annotation> implements db5api.PropertyHandler<Annotation> {
+class PropertyNOPSideEffects<Annotation> implements streamVal.PropertyHandler<Annotation> {
     constructor() {
         //
     }
@@ -87,7 +87,7 @@ class PropertyNOPSideEffects<Annotation> implements db5api.PropertyHandler<Annot
     }
 }
 
-class DictionaryNOPSideEffects<Annotation> implements db5api.DictionaryHandler<Annotation> {
+class DictionaryNOPSideEffects<Annotation> implements streamVal.DictionaryHandler<Annotation> {
     constructor() {
         //
     }
@@ -99,7 +99,7 @@ class DictionaryNOPSideEffects<Annotation> implements db5api.DictionaryHandler<A
     }
 }
 
-class ListNOPSideEffects<Annotation> implements db5api.ListHandler<Annotation> {
+class ListNOPSideEffects<Annotation> implements streamVal.ListHandler<Annotation> {
     constructor() {
         //
     }

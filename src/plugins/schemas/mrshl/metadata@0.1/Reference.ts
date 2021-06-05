@@ -1,4 +1,4 @@
-import * as db5api from "../../../../db5api"
+import * as streamVal from "../../../../interfaces/streamingValidationAPI"
 
 type Resolve = () => boolean
 
@@ -19,7 +19,7 @@ export class ResolveRegistry {
     }
 }
 
-export function createReference<T>(name: string, lookup: db5api.IReadonlyLookup<T>, resolver: ResolveRegistry, onError: (keys: string[]) => void): db5api.IReference<T> {
+export function createReference<T>(name: string, lookup: streamVal.IReadonlyLookup<T>, resolver: ResolveRegistry, onError: (keys: string[]) => void): streamVal.IReference<T> {
     let t: T | null = null
     resolver.register(() => {
         t = lookup.get(name)

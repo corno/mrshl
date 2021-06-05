@@ -1,6 +1,6 @@
 import * as astncore from "astn-core"
 import * as p from "pareto-20"
-import { InternalSchemaError } from "../../interfaces/SchemaErrors"
+import { InternalSchemaError } from "../../../plugins/api/internalSchemaDerializationError"
 
 export function createInternalSchemaHandler<Annotation, Result>(
     onSchemaError: (error: InternalSchemaError, annotation: Annotation) => void,

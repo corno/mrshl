@@ -7,11 +7,10 @@ import * as p from "pareto"
 import * as astncore from "astn-core"
 import * as astn from "astn"
 
-import * as db5api from "../db5api"
+import * as streamVal from "../interfaces/streamingValidationAPI"
 
 import { InternalSchemaSpecification, InternalSchemaSpecificationType } from "../etc/interfaces/IDataset"
-import { SchemaAndSideEffects } from "../etc/interfaces/SchemaAndSideEffects"
-import { InternalSchemaDeserializationError } from "../etc/interfaces/SchemaErrors"
+import { SchemaAndSideEffects } from "../plugins/api/SchemaAndSideEffects"
 
 import { createDeserializer as createMetaDataDeserializer } from "../plugins/schemas/mrshl/metadata@0.1/deserialize"
 
@@ -22,69 +21,13 @@ import { createInternalSchemaHandler } from "../etc/deserialize/implementation/c
 import { createNOPSideEffects } from "../etc/deserialize/implementation/NOPSideEffects"
 import { DeserializationDiagnostic, DeserializationDiagnosticType } from "./DeserializationDiagnostic"
 import { IDeserializedDataset } from "../etc/deserialize/IDeserializedDataset"
-import { IDataset } from "../etc/dataset"
+import { IDataset } from "../etc/interfaces/dataset"
 import { ResolveExternalSchema } from "../etc/deserialize/DeserializeTextSupportTypes"
 import { createSchemaAndSideEffectsFromStream } from "./createSchemaAndSideEffectsFromStream"
+import { InternalSchemaDeserializationError } from "../plugins/api/internalSchemaDerializationError"
 
 function assertUnreachable<RT>(_x: never): RT {
     throw new Error("unreachable")
-}
-
-function createNoOperationValueHandler<Annotation>(): astncore.ValueHandler<Annotation, null> {
-    return {
-        array: () => {
-            return {
-                element: () => createNoOperationValueHandler(),
-                arrayEnd: () => {
-                    //registerCodeCompletionGenerators.register(endData.range, null, null)
-                    return p.value(null)
-                },
-            }
-        },
-        object: () => {
-            return {
-                property: () => {
-                    //registerCodeCompletionGenerators.register(keyData.keyRange, null, null)
-                    return p.value(createNoOperationRequiredValueHandler())
-                },
-                objectEnd: () => {
-                    //registerCodeCompletionGenerators.register(endData.range, null, null)
-                    return p.value(null)
-                },
-            }
-        },
-        string: () => {
-            //registerCodeCompletionGenerators.register(stringData.range, null, null)
-            return p.value(false)
-        },
-        taggedUnion: () => {
-            //registerCodeCompletionGenerators.register(tuData.startRange, null, null)
-            //registerCodeCompletionGenerators.register(tuData.optionRange, null, null)
-            return {
-                option: () => createNoOperationRequiredValueHandler(),
-                missingOption: () => {
-                    //
-                },
-                end: () => {
-                    //
-                },
-            }
-        },
-    }
-}
-
-function createNoOperationRequiredValueHandler<Annotation>(): astncore.RequiredValueHandler<Annotation, null> {
-    return {
-        missing: () => {
-            //
-        },
-        exists: createNoOperationValueHandler(),
-    }
-}
-
-type InternalSchema<Annotation> = {
-    specification: InternalSchemaSpecification
-    schemaAndSideEffects: SchemaAndSideEffects<Annotation>
 }
 
 /**
@@ -108,7 +51,7 @@ export function deserializeDataset(
     onNoInternalSchema: () => IDataset | null,
     onError: (diagnostic: DeserializationDiagnostic, range: astn.Range) => void,
     onWarning: (diagnostic: DeserializationDiagnostic, range: astn.Range) => void,
-    sideEffectsHandlers: db5api.RootHandler<astn.ParserAnnotationData>[],
+    sideEffectsHandlers: streamVal.RootHandler<astn.ParserAnnotationData>[],
 ): p.IUnsafeValue<IDeserializedDataset, ExternalSchemaDeserializationError> {
 
     /*
@@ -125,7 +68,13 @@ export function deserializeDataset(
 
     let internalSchemaSpecificationStart: null | astn.Range = null
     let foundSchemaErrors = false
-    let internalSchema: InternalSchema<astn.ParserAnnotationData> | null = null
+
+    type InternalSchema = {
+        specification: InternalSchemaSpecification
+        schemaAndSideEffects: SchemaAndSideEffects<astn.ParserAnnotationData>
+    }
+
+    let internalSchema: InternalSchema | null = null
     const overheadComments: astn.CommentData[] = []
     const parserStack = astn.createParserStack<IDeserializedDataset, ExternalSchemaDeserializationError>(
         schemaStart => {
@@ -146,7 +95,8 @@ export function deserializeDataset(
                             internalSchema = {
                                 schemaAndSideEffects: {
                                     schema: schema,
-                                    createAdditionalValidator: () => createNOPSideEffects(),
+                                    createStreamingValidator: () => createNOPSideEffects(),
+                                    //createAsyncValidator: () => createNOPBuilder(),
                                 },
                                 specification: [InternalSchemaSpecificationType.Embedded],
                             }
@@ -240,8 +190,8 @@ export function deserializeDataset(
             const expectContext = astncore.createExpectContext<astn.ParserAnnotationData, null>(
                 $ => onError(createDiagnostic(["expect", $.issue]), $.annotation.range),
                 $ => onWarning(createDiagnostic(["expect", $.issue]), $.annotation.range),
-                () => createNoOperationValueHandler(),
-                () => createNoOperationValueHandler(),
+                () => astncore.createDummyValueHandler(),
+                () => astncore.createDummyValueHandler(),
                 astncore.Severity.warning,
                 astncore.OnDuplicateEntry.ignore
             )

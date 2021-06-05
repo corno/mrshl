@@ -1,6 +1,7 @@
 import * as p from "pareto"
 import * as astncore from "astn-core"
-import * as db5api from "../../../db5api"
+import * as buildAPI from "../../../interfaces/buildAPI"
+import * as sideEffectAPI from "../../../interfaces/streamingValidationAPI"
 import * as id from "../../interfaces/IDataset"
 
 function assertUnreachable<RT>(_x: never): RT {
@@ -9,7 +10,7 @@ function assertUnreachable<RT>(_x: never): RT {
 
 type OnError<TokenAnnotation> = (message: string, annotation: TokenAnnotation) => void
 
-function addComments<TokenAnnotation>(_target: db5api.Comments, _annotation: TokenAnnotation) {
+function addComments<TokenAnnotation>(_target: buildAPI.Comments, _annotation: TokenAnnotation) {
     // contextData.before.comments.forEach(c => {
     //     target.addComment(c.text, c.type === "block" ? ["block"] : ["line"])
     // })
@@ -20,10 +21,10 @@ function addComments<TokenAnnotation>(_target: db5api.Comments, _annotation: Tok
 
 function createPropertyDeserializer<TokenAnnotation, NonTokenAnnotation>(
     context: astncore.IExpectContext<TokenAnnotation, NonTokenAnnotation>,
-    propDefinition: db5api.PropertyDefinition,
+    propDefinition: buildAPI.PropertyDefinition,
     propKey: string,
-    nodeBuilder: db5api.Node,
-    sideEffectsAPIs: db5api.PropertyHandler<TokenAnnotation>[],
+    nodeBuilder: buildAPI.Node,
+    sideEffectsAPIs: sideEffectAPI.PropertyHandler<TokenAnnotation>[],
     onError: OnError<TokenAnnotation>,
     flagNonDefaultPropertiesFound: () => void,
     nullAllowed: boolean,
@@ -42,14 +43,19 @@ function createPropertyDeserializer<TokenAnnotation, NonTokenAnnotation>(
                     const $$ = $.type[1]
                     const dictionary = nodeBuilder.getDictionary(propKey)
                     let hasEntries = false
-                    let dictionarySideEffects: null | db5api.DictionaryHandler<TokenAnnotation>[] = null
+                    let dictionarySideEffects: null | sideEffectAPI.DictionaryHandler<TokenAnnotation>[] = null
 
                     return wrap(context.expectDictionary({
                         onBegin: data => {
                             addComments(dictionary.comments, data.annotation)
 
                             dictionarySideEffects = sideEffectsAPIs.map(s => {
-                                return s.onDictionary(data)
+                                return s.onDictionary({
+                                    data: data.data,
+                                    annotation: {
+                                        annotation: data.annotation,
+                                    },
+                                })
                             })
                         },
                         onProperty: $ => {
@@ -66,10 +72,12 @@ function createPropertyDeserializer<TokenAnnotation, NonTokenAnnotation>(
                             const propertySideEffects = dictionarySideEffects.map(s => {
                                 return s.onEntry({
                                     data: $.data,
-                                    annotation: $.annotation,
-                                    nodeDefinition: $$.node,
-                                    keyProperty: $$["key property"].get(),
-                                    entry: entry,
+                                    annotation: {
+                                        annotation: $.annotation,
+                                        nodeDefinition: $$.node,
+                                        keyProperty: $$["key property"].get(),
+                                        entry: entry,
+                                    },
                                 })
                             })
                             return wrap(
@@ -94,7 +102,10 @@ function createPropertyDeserializer<TokenAnnotation, NonTokenAnnotation>(
                             }
                             dictionarySideEffects.forEach(s => {
                                 s.onClose({
-                                    annotation: $.annotation,
+
+                                    annotation: {
+                                        annotation: $.annotation,
+                                    },
                                 })
                             })
                             if (hasEntries) {
@@ -108,7 +119,7 @@ function createPropertyDeserializer<TokenAnnotation, NonTokenAnnotation>(
                 case "list": {
                     const $$ = $.type[1]
                     const list = nodeBuilder.getList(propKey)
-                    let listSideEffects: null | db5api.ListHandler<TokenAnnotation>[] = null
+                    let listSideEffects: null | sideEffectAPI.ListHandler<TokenAnnotation>[] = null
 
                     let hasEntries = false
                     return wrap(context.expectList({
@@ -116,7 +127,12 @@ function createPropertyDeserializer<TokenAnnotation, NonTokenAnnotation>(
                             addComments(list.comments, data.annotation)
 
                             listSideEffects = sideEffectsAPIs.map(s => {
-                                return s.onList(data)
+                                return s.onList({
+                                    data: data.data,
+                                    annotation: {
+                                        annotation: data.annotation,
+                                    },
+                                })
                             })
 
                         },
@@ -155,7 +171,9 @@ function createPropertyDeserializer<TokenAnnotation, NonTokenAnnotation>(
                             }
                             listSideEffects.forEach(s => {
                                 s.onClose({
-                                    annotation: $.annotation,
+                                    annotation: {
+                                        annotation: $.annotation,
+                                    },
                                 })
                             })
                             addComments(list.comments, $.annotation)
@@ -192,15 +210,23 @@ function createPropertyDeserializer<TokenAnnotation, NonTokenAnnotation>(
             return wrap(context.expectTaggedUnion({
                 options: $.states.mapSorted((stateDef, stateName) => {
                     return (tuData, optionData) => {
-                        addComments(stateGroup.comments, tuData.annotation)
                         const stateSideEffects = sideEffectsAPIs.map(s => {
-                            return s.onStateGroup(tuData).onState(optionData)
+                            return s.onStateGroup({
+                                annotation: {
+                                    annotation: tuData.annotation,
+                                },
+                            }).onOption({
+                                data: optionData.data,
+                                annotation: {
+                                    annotation: optionData.annotation,
+                                },
+                            })
                         })
 
+
+                        addComments(stateGroup.comments, tuData.annotation)
                         const state = stateGroup.setState(stateName, errorMessage => onError(errorMessage, optionData.annotation))
                         addComments(stateGroup.comments, optionData.annotation)
-
-
                         if ($["default state"].get() !== stateDef) {
                             flagNonDefaultPropertiesFound()
                         }
@@ -222,17 +248,26 @@ function createPropertyDeserializer<TokenAnnotation, NonTokenAnnotation>(
                 onUnexpectedOption: $$ => {
                     sideEffectsAPIs.forEach(s => {
                         s.onStateGroup({
-                            annotation: $$.tuAnnotation,
-                        }).onUnexpectedState({
+                            annotation: {
+                                annotation: $$.tuAnnotation,
+                            },
+                        }).onOption({
                             data: $$.data,
-                            annotation: $$.optionAnnotation,
-                            stateGroupDefinition: $,
+                            annotation: {
+                                annotation: $$.optionAnnotation,
+                                //stateGroupDefinition: $,
+                            },
                         })
                     })
                 },
                 onNull: data => { //onNull
                     sideEffectsAPIs.map(s => {
-                        return s.onNull(data)
+                        return s.onNull({
+                            data: data.data,
+                            annotation: {
+                                annotation: data.annotation,
+                            },
+                        })
                     })
                     defaultInitializeProperty(
                         data.annotation,
@@ -276,12 +311,14 @@ function createPropertyDeserializer<TokenAnnotation, NonTokenAnnotation>(
                             sideEffectsAPIs.forEach(s => {
                                 s.onScalarValue({
                                     value: $$$.value,
-                                    definition: $,
                                     data: $$.data,
-                                    syncValue: valueBuilder,
-                                    annotation: $$.annotation,
-                                    //  valueBuilder:   valueBuilder,
-                                    //     $
+                                    annotation: {
+                                        definition: $,
+                                        syncValue: valueBuilder,
+                                        annotation: $$.annotation,
+                                        //  valueBuilder:   valueBuilder,
+                                        //     $
+                                    },
                                 })
                             })
                             break
@@ -299,12 +336,15 @@ function createPropertyDeserializer<TokenAnnotation, NonTokenAnnotation>(
                             sideEffectsAPIs.forEach(s => {
                                 s.onScalarValue({
                                     value: $$$.value,
-                                    definition: $,
                                     data: $$.data,
-                                    syncValue: valueBuilder,
-                                    annotation: $$.annotation,
-                                    //  valueBuilder:   valueBuilder,
-                                    //     $
+                                    annotation: {
+                                        definition: $,
+
+                                        syncValue: valueBuilder,
+                                        annotation: $$.annotation,
+                                        //  valueBuilder:   valueBuilder,
+                                        //     $
+                                    },
                                 })
                             })
                             break
@@ -321,7 +361,9 @@ function createPropertyDeserializer<TokenAnnotation, NonTokenAnnotation>(
                     sideEffectsAPIs.map(s => {
                         return s.onNull({
                             data: $.data,
-                            annotation: $.annotation,
+                            annotation: {
+                                annotation: $.annotation,
+                            },
                         })
                     })
                     defaultInitializeProperty(
@@ -345,8 +387,8 @@ function createPropertyDeserializer<TokenAnnotation, NonTokenAnnotation>(
 
 function defaultInitializeNode<TokenAnnotation>(
     annotation: TokenAnnotation,
-    nodeDefinition: db5api.NodeDefinition,
-    nodeBuilder: db5api.Node,
+    nodeDefinition: buildAPI.NodeDefinition,
+    nodeBuilder: buildAPI.Node,
     onError: OnError<TokenAnnotation>,
 ) {
     nodeDefinition.properties.forEach((propDef, propKey) => {
@@ -363,9 +405,9 @@ function defaultInitializeNode<TokenAnnotation>(
 
 function defaultInitializeProperty<TokenAnnotation>(
     annotation: TokenAnnotation,
-    propDefinition: db5api.PropertyDefinition,
+    propDefinition: buildAPI.PropertyDefinition,
     propKey: string,
-    nodeBuilder: db5api.Node,
+    nodeBuilder: buildAPI.Node,
     onError: OnError<TokenAnnotation>,
 ) {
 
@@ -399,7 +441,7 @@ function defaultInitializeProperty<TokenAnnotation>(
     }
 }
 
-function getPropertyComments(node: db5api.Node, propertyName: string, propertyDefinition: db5api.PropertyDefinition): db5api.Comments {
+function getPropertyComments(node: buildAPI.Node, propertyName: string, propertyDefinition: buildAPI.PropertyDefinition): buildAPI.Comments {
     switch (propertyDefinition.type[0]) {
         case "component": {
             return node.getComponent(propertyName).comments
@@ -430,19 +472,19 @@ function getPropertyComments(node: db5api.Node, propertyName: string, propertyDe
 
 function createNodeDeserializer<TokenAnnotation, NonTokenAnnotation>(
     context: astncore.IExpectContext<TokenAnnotation, NonTokenAnnotation>,
-    nodeDefinition: db5api.NodeDefinition,
-    keyPropertyDefinition: db5api.PropertyDefinition | null,
-    nodeBuilder: db5api.Node,
-    keyProperty: db5api.PropertyDefinition | null,
-    sideEffectsAPI: db5api.NodeHandler<TokenAnnotation>[],
+    nodeDefinition: buildAPI.NodeDefinition,
+    keyPropertyDefinition: buildAPI.PropertyDefinition | null,
+    nodeBuilder: buildAPI.Node,
+    keyProperty: buildAPI.PropertyDefinition | null,
+    sideEffectsAPI: sideEffectAPI.NodeHandler<TokenAnnotation>[],
     onError: OnError<TokenAnnotation>,
     flagNonDefaultPropertiesFound: () => void,
-    targetComments: db5api.Comments,
+    targetComments: buildAPI.Comments,
 ): astncore.ValueHandler<TokenAnnotation, NonTokenAnnotation> {
 
 
-    let shorthandTypeSideEffects: db5api.ShorthandTypeHandler<TokenAnnotation>[] | null = null
-    let typeSideEffects: db5api.TypeHandler<TokenAnnotation>[] | null = null
+    let shorthandTypeSideEffects: sideEffectAPI.ShorthandTypeHandler<TokenAnnotation>[] | null = null
+    let typeSideEffects: sideEffectAPI.TypeHandler<TokenAnnotation>[] | null = null
 
     const expectedElements: astncore.ExpectedElements<TokenAnnotation, NonTokenAnnotation> = []
     nodeDefinition.properties.forEach((propDefinition, propKey) => {
@@ -462,9 +504,11 @@ function createNodeDeserializer<TokenAnnotation, NonTokenAnnotation>(
                     nodeBuilder,
                     shorthandTypeSideEffects.map(s => {
                         return s.onProperty({
-                            propKey: propKey,
-                            propDefinition: propDefinition,
-                            nodeBuilder: nodeBuilder,
+                            annotation: {
+                                propKey: propKey,
+                                propDefinition: propDefinition,
+                                nodeBuilder: nodeBuilder,
+                            },
                         })
                     }),
                     onError,
@@ -507,9 +551,12 @@ function createNodeDeserializer<TokenAnnotation, NonTokenAnnotation>(
                     typeSideEffects.map(s => {
                         return s.onProperty({
                             data: $.data,
-                            propDefinition: propDefinition,
-                            nodeBuilder: nodeBuilder,
-                            annotation: $.annotation,
+                            annotation: {
+                                nodeDefinition: nodeDefinition,
+                                key: propKey,
+                                nodeBuilder: nodeBuilder,
+                                annotation: $.annotation,
+                            },
                         })
                     }),
                     onError,
@@ -540,11 +587,12 @@ function createNodeDeserializer<TokenAnnotation, NonTokenAnnotation>(
             typeSideEffects = sideEffectsAPI.map(s => {
                 return s.onTypeOpen({
                     data: $.data,
-                    annotation: $.annotation,
-                    nodeDefinition: nodeDefinition,
-                    keyPropertyDefinition: keyPropertyDefinition,
-                    nodeBuilder: nodeBuilder,
-
+                    annotation: {
+                        annotation: $.annotation,
+                        nodeDefinition: nodeDefinition,
+                        keyPropertyDefinition: keyPropertyDefinition,
+                        nodeBuilder: nodeBuilder,
+                    },
                 })
             })
         },
@@ -569,7 +617,9 @@ function createNodeDeserializer<TokenAnnotation, NonTokenAnnotation>(
             }
             typeSideEffects.forEach(s => {
                 s.onTypeClose({
-                    annotation: $.annotation,
+                    annotation: {
+                        annotation: $.annotation,
+                    },
                 })
             })
         },
@@ -578,10 +628,15 @@ function createNodeDeserializer<TokenAnnotation, NonTokenAnnotation>(
                 throw new Error("missing type side effects")
             }
             typeSideEffects.forEach(s => {
-                s.onUnexpectedProperty({
+                s.onProperty({
                     data: $.data,
-                    annotation: $.annotation,
-                    expectedProperties: Object.keys(expectedProperties),
+                    annotation: {
+                        nodeDefinition: nodeDefinition,
+                        key: $.data.key,
+                        nodeBuilder: nodeBuilder,
+                        annotation: $.annotation,
+                        //expectedProperties: Object.keys(expectedProperties),
+                    },
                 })
             })
             return astncore.createDummyRequiredValueHandler()
@@ -590,11 +645,12 @@ function createNodeDeserializer<TokenAnnotation, NonTokenAnnotation>(
             shorthandTypeSideEffects = sideEffectsAPI.map(s => {
                 return s.onShorthandTypeOpen({
                     data: $.data,
-                    annotation: $.annotation,
-                    nodeDefinition: nodeDefinition,
-                    keyPropertyDefinition: keyPropertyDefinition,
-                    nodeBuilder: nodeBuilder,
-
+                    annotation: {
+                        annotation: $.annotation,
+                        nodeDefinition: nodeDefinition,
+                        keyPropertyDefinition: keyPropertyDefinition,
+                        nodeBuilder: nodeBuilder,
+                    },
                 })
             })
 
@@ -605,7 +661,9 @@ function createNodeDeserializer<TokenAnnotation, NonTokenAnnotation>(
             }
             shorthandTypeSideEffects.forEach(s => {
                 s.onShorthandTypeClose({
-                    annotation: $.annotation,
+                    annotation: {
+                        annotation: $.annotation,
+                    },
                 })
             })
             addComments(targetComments, $.annotation)
@@ -617,7 +675,7 @@ function createNodeDeserializer<TokenAnnotation, NonTokenAnnotation>(
 export function createDatasetDeserializer<TokenAnnotation, NonTokenAnnotation>(
     context: astncore.IExpectContext<TokenAnnotation, NonTokenAnnotation>,
     dataset: id.IDataset,
-    sideEffectsHandlers: db5api.NodeHandler<TokenAnnotation>[],
+    sideEffectsHandlers: sideEffectAPI.NodeHandler<TokenAnnotation>[],
     onError: OnError<TokenAnnotation>,
 ): astncore.TreeHandler<TokenAnnotation, NonTokenAnnotation> {
 

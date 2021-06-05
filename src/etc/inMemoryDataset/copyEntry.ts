@@ -1,10 +1,11 @@
-import * as db5api from "../../db5api"
+import * as streamVal from "../../interfaces/streamingValidationAPI"
+import * as buildAPI from "../../interfaces/buildAPI"
 
 export { Entry } from "./syncAPIImplementation"
 
 function copyNode(
-    sourceNode: db5api.BSENode,
-    targetNode: db5api.Node
+    sourceNode: streamVal.BSENode,
+    targetNode: buildAPI.Node,
 ) {
     sourceNode.forEachProperty((property, pKey) => {
         if (property.type[0] !== "dictionary") {
@@ -64,8 +65,8 @@ function copyNode(
 }
 
 export function copyEntry(
-    sourceEntry: db5api.BSEEntry,
-    targetEntry: db5api.Entry
+    sourceEntry: streamVal.BSEEntry,
+    targetEntry: buildAPI.Entry
 ): void {
     copyNode(sourceEntry.node, targetEntry.node)
 }

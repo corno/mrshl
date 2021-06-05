@@ -1,9 +1,9 @@
 import * as p from "pareto"
 
-import * as db5api from "../db5api"
+import * as streamVal from "../interfaces/streamingValidationAPI"
 import * as astn from "astn"
 
-import { IDataset } from "../etc/dataset"
+import { IDataset } from "../etc/interfaces/dataset"
 import { IDeserializedDataset } from "../etc/deserialize/IDeserializedDataset"
 import { RetrievalError, ResolveExternalSchema } from "../etc/deserialize/DeserializeTextSupportTypes"
 import { DiagnosticCallback } from "./deserializeTextIntoDataset"
@@ -21,8 +21,8 @@ export type DeserializeASTNTextIntoDataset = (
 	astnText: string,
 	resolveExternalSchema: ResolveExternalSchema,
 	diagnosticCallback: DiagnosticCallback,
-	sideEffectHandlers: db5api.RootHandler<astn.ParserAnnotationData>[],
+	sideEffectHandlers: streamVal.RootHandler<astn.ParserAnnotationData>[],
 	createInitialDataset: (
-		schema: db5api.Schema,
+		schema: streamVal.Schema,
 	) => IDataset,
 ) => p.IUnsafeValue<IDeserializedDataset, null>

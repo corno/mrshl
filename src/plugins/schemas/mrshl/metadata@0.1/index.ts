@@ -2,9 +2,8 @@ import * as astncore from "astn-core"
 import * as p from "pareto-20"
 import { createDeserializer } from "./deserialize"
 import { createNOPSideEffects } from "./NOPSideEffects"
-import { SchemaAndSideEffects } from "../../../../etc/interfaces/SchemaAndSideEffects"
-import { InternalSchemaDeserializationError } from "../../../../etc/interfaces/SchemaErrors"
-import { InternalSchemaError } from "../../../../etc/interfaces/SchemaErrors"
+import { SchemaAndSideEffects } from "../../../api/SchemaAndSideEffects"
+import { InternalSchemaDeserializationError, InternalSchemaError } from "../../../api/internalSchemaDerializationError"
 
 export function createSchemaAndSideEffects<Annotation> (
     onSchemaError: (error: InternalSchemaDeserializationError, annotation: Annotation) => void,
@@ -79,7 +78,8 @@ export function createSchemaAndSideEffects<Annotation> (
                     ? null
                     : {
                         schema: md2,
-                        createAdditionalValidator: () => createNOPSideEffects(),
+                        createStreamingValidator: () => createNOPSideEffects(),
+                        //createAsyncValidator: () => createNOPSideEffects(),
                     }
             }
         ),

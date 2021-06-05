@@ -1,5 +1,5 @@
 import * as astncore from "astn-core"
-import * as def from "../interfaces/definitions"
+import * as def from "../definitions"
 
 export type DictOpen<Annotation> = {
     annotation: Annotation

@@ -2,10 +2,10 @@ import * as p from "pareto"
 import * as path from "path"
 import * as astn from "astn"
 
-import * as db5api from "../db5api"
+import * as streamVal from "../interfaces/streamingValidationAPI"
 import { DiagnosticSeverity } from "../etc/interfaces/DiagnosticSeverity"
 
-import { IDataset } from "../etc/dataset"
+import { IDataset } from "../etc/interfaces/dataset"
 
 import { ResolveExternalSchema } from "../etc/deserialize/DeserializeTextSupportTypes"
 import { IDeserializedDataset } from "../etc/deserialize/IDeserializedDataset"
@@ -13,7 +13,7 @@ import { IDeserializedDataset } from "../etc/deserialize/IDeserializedDataset"
 import { deserializeDataset } from "./deserializeDataset"
 import { deserializeSchemaFromStream } from "./deserializeSchemaFromStream"
 import { ContextSchemaData } from "./DeserializeASTNTextIntoDataset"
-import { SchemaAndSideEffects } from "../etc/interfaces/SchemaAndSideEffects"
+import { SchemaAndSideEffects } from "../plugins/api/SchemaAndSideEffects"
 import { ExternalSchemaDeserializationError } from "../etc/deserialize/ExternalSchemaDeserializationError"
 
 
@@ -58,12 +58,12 @@ export type DiagnosticCallback = (diagnostic: LoadDocumentDiagnostic) => void
 
 function validateDocumentAfterContextSchemaResolution(
 	documentText: string,
-	contextSchema: db5api.Schema | null,
+	contextSchema: streamVal.Schema | null,
 	resolveExternalSchema: ResolveExternalSchema,
 	diagnosticCallback: DiagnosticCallback,
-	sideEffectHandlers: db5api.RootHandler<astn.ParserAnnotationData>[],
+	sideEffectHandlers: streamVal.RootHandler<astn.ParserAnnotationData>[],
 	createDataset: (
-		schema: db5api.Schema,
+		schema: streamVal.Schema,
 	) => IDataset,
 ): p.IUnsafeValue<IDeserializedDataset, ExternalSchemaDeserializationError> {
 
@@ -85,7 +85,7 @@ function validateDocumentAfterContextSchemaResolution(
 		(internalSchemaSpecification, schemaAndSideEffects): IDeserializedDataset => {
 
 			function createDeserializedDataset(
-				schema: db5api.Schema,
+				schema: streamVal.Schema,
 			): IDeserializedDataset {
 				return {
 					dataset: createDataset(schema),
@@ -95,7 +95,7 @@ function validateDocumentAfterContextSchemaResolution(
 			if (contextSchema === null) {
 
 
-				allSideEffects.push(schemaAndSideEffects.createAdditionalValidator((
+				allSideEffects.push(schemaAndSideEffects.createStreamingValidator((
 					message,
 					annotation,
 					severity,
@@ -158,9 +158,9 @@ export function deserializeTextIntoDataset(
 	documentText: string,
 	resolveExternalSchema: ResolveExternalSchema,
 	diagnosticCallback: DiagnosticCallback,
-	sideEffectHandlers: db5api.RootHandler<astn.ParserAnnotationData>[],
+	sideEffectHandlers: streamVal.RootHandler<astn.ParserAnnotationData>[],
 	createInitialDataset: (
-		schema: db5api.Schema,
+		schema: streamVal.Schema,
 	) => IDataset,
 ): p.IUnsafeValue<IDeserializedDataset, null> {
 	let diagnosticFound = false
@@ -202,7 +202,7 @@ export function deserializeTextIntoDataset(
 			schemaAndSideEffects !== null ? schemaAndSideEffects.schema : null,
 			resolveExternalSchema,
 			dc,
-			schemaAndSideEffects === null ? sideEffectHandlers : sideEffectHandlers.concat([schemaAndSideEffects.createAdditionalValidator(
+			schemaAndSideEffects === null ? sideEffectHandlers : sideEffectHandlers.concat([schemaAndSideEffects.createStreamingValidator(
 				(
 					message,
 					annotation,

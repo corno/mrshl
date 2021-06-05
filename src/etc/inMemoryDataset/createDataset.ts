@@ -1,13 +1,13 @@
-import * as db5api from "../../db5api"
+import * as streamVal from "../../interfaces/streamingValidationAPI"
 import * as sync from "./syncAPIImplementation"
 import { RootImp } from "./Root"
-import { IDataset } from "../dataset"
+import { IDataset } from "../interfaces/dataset"
 import * as id from "../interfaces/IDataset"
 import * as asyncAPIImp from "./asyncAPIImplementation"
 import { Comments } from "./implementation"
 
 class SyncDataset implements id.IDataset {
-    public readonly schema: db5api.Schema
+    public readonly schema: streamVal.Schema
     public readonly root: sync.Node
     public readonly documentComments = new Comments()
     public readonly rootComments = new Comments()
@@ -22,7 +22,7 @@ class SyncDataset implements id.IDataset {
     }
 }
 
-export function createInMemoryDataset(schema: db5api.Schema): IDataset {
+export function createInMemoryDataset(schema: streamVal.Schema): IDataset {
     const rootImp = new RootImp(schema)
     const syncDataset = new SyncDataset(rootImp)
     return {

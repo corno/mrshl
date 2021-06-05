@@ -1,1 +1,1 @@
-export * from "./createDataset"
+export { createInMemoryDataset } from "./createDataset"

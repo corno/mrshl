@@ -5,9 +5,8 @@ import { convertToGenericSchema } from "./convert"
 import * as p from "pareto-20"
 import * as sideEffects from "./sideEffects"
 import { DiagnosticSeverity } from "../../../../etc/interfaces/DiagnosticSeverity"
-import { SchemaAndSideEffects } from "../../../../etc/interfaces/SchemaAndSideEffects"
-import { InternalSchemaDeserializationError } from "../../../../etc/interfaces/SchemaErrors"
-import { InternalSchemaError } from "../../../../etc/interfaces/SchemaErrors"
+import { SchemaAndSideEffects } from "../../../api/SchemaAndSideEffects"
+import { InternalSchemaDeserializationError, InternalSchemaError } from "../../../api/internalSchemaDerializationError"
 
 export function createSchemaAndSideEffects<Annotation> (
     onSchemaError: (error: InternalSchemaDeserializationError, annotation: Annotation) => void,
@@ -21,7 +20,7 @@ export function createSchemaAndSideEffects<Annotation> (
             return isb.onEnd(aborted, endAnnotation).mapResult(schema => {
                 return p.value({
                     schema: convertToGenericSchema(schema),
-                    createAdditionalValidator: (
+                    createStreamingValidator: (
                         onValidationError: (message: string, annotation: Annotation, severity: DiagnosticSeverity) => void,
                     ) => sideEffects.createRoot<Annotation>(schema, onValidationError),
                 })

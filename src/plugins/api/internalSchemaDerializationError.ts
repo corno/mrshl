@@ -1,5 +1,6 @@
 import * as astncore from "astn-core"
 
+
 export type InternalSchemaError =
     | ["unexpected schema format", {
         found:
@@ -18,9 +19,9 @@ export type ExternalSchemaResolvingError =
     }]
 
 export type InternalSchemaDeserializationError =
-    | ["validation", {
-        "message": string
-    }]
-    | ["expect", astncore.ExpectError]
-    | ["schema reference resolving", ExternalSchemaResolvingError]
-    | ["internal schema", InternalSchemaError]
+| ["validation", {
+    "message": string
+}]
+| ["expect", astncore.ExpectError]
+| ["schema reference resolving", ExternalSchemaResolvingError]
+| ["internal schema", InternalSchemaError]

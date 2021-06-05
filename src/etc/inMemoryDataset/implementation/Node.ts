@@ -1,5 +1,5 @@
-import * as g from "../../../generic"
-import * as db5api from "../../../db5api"
+import * as g from "../../generic"
+import * as streamVal from "../../../interfaces/streamingValidationAPI"
 import { Collection } from "./Collection"
 import { Component } from "./Component"
 import { StateGroup } from "./StateGroup"
@@ -10,10 +10,10 @@ export class Node {
     public readonly components = new g.Dictionary<Component>({})
     public readonly stateGroups = new g.Dictionary<StateGroup>({})
     public readonly values = new g.Dictionary<Value>({})
-    public readonly keyProperty: db5api.PropertyDefinition | null
+    public readonly keyProperty: streamVal.PropertyDefinition | null
 
     constructor(
-        keyProperty: null | db5api.PropertyDefinition,
+        keyProperty: null | streamVal.PropertyDefinition,
         initialize: (node: Node) => void,
     ) {
         this.keyProperty = keyProperty

@@ -1,4 +1,4 @@
-import * as db5api from "../../db5api"
+import * as buildAPI from "../../interfaces/buildAPI"
 
 export enum InternalSchemaSpecificationType {
     Reference,
@@ -12,8 +12,8 @@ export type InternalSchemaSpecification =
     | [InternalSchemaSpecificationType.None]
 
 export interface IDataset {
-    readonly schema: db5api.Schema
-    readonly root: db5api.Node
-    readonly documentComments: db5api.Comments
-    readonly rootComments: db5api.Comments
+    readonly schema: buildAPI.Schema
+    readonly root: buildAPI.Node
+    readonly documentComments: buildAPI.Comments
+    readonly rootComments: buildAPI.Comments
 }

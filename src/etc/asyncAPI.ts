@@ -1,5 +1,5 @@
 // tslint:disable: interface-name
-import * as g from "../generic"
+import * as g from "./generic"
 import { InternalSchemaSpecification } from "./interfaces/IDataset"
 
 export interface IFocussable {
@@ -29,7 +29,6 @@ export interface Dataset {
     readonly hasUnserializedChanges: g.ISubscribableValue<boolean>
     readonly rootNode: Node
     serialize(
-
         internalSchemaSpecification: InternalSchemaSpecification,
         callback: (data: string) => void,
     ): void

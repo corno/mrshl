@@ -1,6 +1,6 @@
-import * as g from "../../../generic"
+import * as g from "../../generic"
 import * as asyncAPI from "../../asyncAPI"
-import * as db5api from "../../../db5api"
+import * as streamVal from "../../../interfaces/streamingValidationAPI"
 import { FlexibleErrorsAggregator, IParentErrorsAggregator, ErrorManager } from "./ErrorManager"
 import { Node } from "./Node"
 import { Comments } from "./Comments"
@@ -50,7 +50,7 @@ export class StateGroup {
 
     public readonly focussable: g.ReactiveValue<g.Maybe<asyncAPI.IFocussable>>
     constructor(
-        definition: db5api.StateGroupDefinition,
+        definition: streamVal.StateGroupDefinition,
         errorManager: ErrorManager,
         thisEntryErrorsAggregator: IParentErrorsAggregator,
         subentriesErrorsAggregator: IParentErrorsAggregator,

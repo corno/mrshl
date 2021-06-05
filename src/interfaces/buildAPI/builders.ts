@@ -2,7 +2,7 @@
  "@typescript-eslint/no-empty-interface": off
 */
 
-import * as t from "./definitions"
+import * as t from "../definitions"
 
 export type CommentType =
     | ["block"]
@@ -84,4 +84,8 @@ export interface Value {
     readonly comments: Comments
     getValue(): string
     getSuggestions(): string[]
+}
+
+export interface Root {
+    readonly node: Node
 }
