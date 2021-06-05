@@ -1,6 +1,6 @@
 import * as cc from "./ChangeController"
 import { Collection, EntryPlaceholder, addEntry } from "../implementation"
-import * as g from "../../../interfaces/asyncAPI/genericimp"
+import * as g from "../genericimp"
 
 function attachKey(collection: Collection, entry: EntryPlaceholder) {
     if (collection.dictionary !== null) {

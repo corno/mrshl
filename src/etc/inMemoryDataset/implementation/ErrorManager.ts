@@ -3,7 +3,7 @@
 */
 
 import { ISubscribableValue } from "../../../interfaces/asyncAPI/generic"
-import * as g from "../../../interfaces/asyncAPI/genericimp"
+import * as g from "../genericimp"
 import { IFocussable } from "./IFocussable"
 
 export class ValidationError {

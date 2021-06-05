@@ -1,5 +1,5 @@
 import { IDataset } from "../interfaces/dataset";
-import { InternalSchemaSpecification } from "../interfaces/IDataset";
+import { InternalSchemaSpecification } from "../interfaces/InternalSchemaSpecification";
 
 
 /**

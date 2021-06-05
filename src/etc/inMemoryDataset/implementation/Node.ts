@@ -1,4 +1,4 @@
-import * as g from "../../../interfaces/asyncAPI/genericimp"
+import * as g from "../genericimp"
 import * as streamVal from "../../../interfaces/streamingValidationAPI"
 import { Collection } from "./Collection"
 import { Component } from "./Component"

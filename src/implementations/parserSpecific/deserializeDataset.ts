@@ -9,7 +9,7 @@ import * as astn from "astn"
 
 import * as streamVal from "../../interfaces/streamingValidationAPI"
 
-import { InternalSchemaSpecification, InternalSchemaSpecificationType } from "../../etc/interfaces/IDataset"
+import { InternalSchemaSpecification, InternalSchemaSpecificationType } from "../../etc/interfaces/InternalSchemaSpecification"
 import { SchemaAndSideEffects } from "../../interfaces/schemaPlugin/SchemaAndSideEffects"
 
 import { createDeserializer as createMetaDataDeserializer } from "../../plugins/schemas/mrshl/metadata@0.1/deserialize"

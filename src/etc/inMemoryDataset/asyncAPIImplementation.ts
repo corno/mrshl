@@ -5,10 +5,11 @@
 import * as asyncAPI from "../../interfaces/asyncAPI/asyncAPI"
 import * as cc from "./changeControl"
 import * as streamVal from "../../interfaces/streamingValidationAPI"
-import * as g from "../../interfaces/asyncAPI/genericimp"
+import * as g from "./genericimp"
 //import * as s from "../serialize"
-import * as id from "../interfaces/IDataset"
-import * as syncAPIImp from "./syncAPIImplementation"
+import * as id from "../../interfaces/buildAPI/IDataset"
+import * as iss from "../interfaces/InternalSchemaSpecification"
+import * as syncAPIImp from "./buildAPIImplementation"
 import { copyEntry } from "./copyEntry"
 import { Global } from "./Global"
 import { Command, RootImp } from "./Root"
@@ -153,7 +154,7 @@ export class Dataset implements asyncAPI.Dataset {
         })
     }
     public serialize(
-        _internalSchemaSpecification: id.InternalSchemaSpecification,
+        _internalSchemaSpecification: iss.InternalSchemaSpecification,
         _callback: (data: string) => void,
     ): void {
         //const out: string[] = []

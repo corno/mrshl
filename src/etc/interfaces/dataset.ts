@@ -1,5 +1,5 @@
 import * as async from "../../interfaces/asyncAPI/asyncAPI"
-import * as foo from "./IDataset"
+import * as foo from "../../interfaces/buildAPI/IDataset"
 
 export type IDataset = {
 	sync: foo.IDataset

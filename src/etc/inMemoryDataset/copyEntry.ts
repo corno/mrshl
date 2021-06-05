@@ -1,7 +1,7 @@
 import * as buildAPI from "../../interfaces/buildAPI"
 
-import { Node, Entry } from "./syncAPIImplementation"
-export { Entry } from "./syncAPIImplementation"
+import { Node, Entry } from "./buildAPIImplementation"
+export { Entry } from "./buildAPIImplementation"
 
 function copyNode(
     sourceNode: Node,

@@ -2,7 +2,7 @@
     "max-classes-per-file": off,
 */
 
-import * as g from "../../../interfaces/asyncAPI/genericimp"
+import * as g from "../genericimp"
 import * as streamVal from "../../../interfaces/streamingValidationAPI"
 import { FlexibleErrorsAggregator, IParentErrorsAggregator, ErrorManager } from "./ErrorManager"
 import { Node } from "./Node"

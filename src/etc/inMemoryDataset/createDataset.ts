@@ -1,8 +1,8 @@
 import * as streamVal from "../../interfaces/streamingValidationAPI"
-import * as sync from "./syncAPIImplementation"
+import * as sync from "./buildAPIImplementation"
 import { RootImp } from "./Root"
 import { IDataset } from "../interfaces/dataset"
-import * as id from "../interfaces/IDataset"
+import * as id from "../../interfaces/buildAPI/IDataset"
 import * as asyncAPIImp from "./asyncAPIImplementation"
 import { Comments } from "./implementation"
 

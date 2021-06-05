@@ -2,7 +2,7 @@ import * as p from "pareto"
 import * as astncore from "astn-core"
 import * as buildAPI from "../../../interfaces/buildAPI"
 import * as sideEffectAPI from "../../../interfaces/streamingValidationAPI"
-import * as id from "../../interfaces/IDataset"
+import * as id from "../../../interfaces/buildAPI/IDataset"
 
 function assertUnreachable<RT>(_x: never): RT {
     throw new Error("Unreachable")

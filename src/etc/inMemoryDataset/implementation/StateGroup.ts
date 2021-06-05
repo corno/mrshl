@@ -1,4 +1,4 @@
-import * as g from "../../../interfaces/asyncAPI/genericimp"
+import * as g from "../genericimp"
 import * as asyncAPI from "../../../interfaces/asyncAPI/asyncAPI"
 import * as streamVal from "../../../interfaces/streamingValidationAPI"
 import { FlexibleErrorsAggregator, IParentErrorsAggregator, ErrorManager } from "./ErrorManager"
