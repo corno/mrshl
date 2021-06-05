@@ -1,4 +1,4 @@
-import { State, StateGroup, setState } from "../implementation/internals"
+import { State, StateGroup, setState } from "../internals"
 import { IStateChange } from "./ChangeController"
 
 function attachState(state: State, stateGroup: StateGroup) {

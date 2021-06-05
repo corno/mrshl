@@ -1,5 +1,5 @@
-import { ISubscribableValue } from "../../../interfaces/asyncAPI/generic"
-import * as g from "../implementation/genericimp"
+import { ISubscribableValue } from "../../../../interfaces/asyncAPI/generic"
+import * as g from "../genericimp"
 
 function assertUnreachable(_x: never) {
     throw new Error("Unreachable")

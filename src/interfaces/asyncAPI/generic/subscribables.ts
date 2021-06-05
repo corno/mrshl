@@ -12,10 +12,10 @@ export interface ISubscribableValue<T> {
     map<NewT>(callback: (t: T) => NewT): ISubscribableValue<NewT>
 }
 
-export interface ReactiveEntry {
+export interface ISubscribableEntry {
     subscribeToDeletion(subscriber: () => void): Unsubscriber
 }
 
 export interface ISubscribableArray {
-    subscribeToEntries(subscriber: (newEntry: ReactiveEntry) => void): Unsubscriber
+    subscribeToEntries(subscriber: (newEntry: ISubscribableEntry) => void): Unsubscriber
 }

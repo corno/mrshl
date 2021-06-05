@@ -1,4 +1,4 @@
-import { createChangeController } from "../changeControl/ChangeController"
+import { createChangeController } from "./changeControl/ChangeController"
 import { ErrorManager } from "./internals/ErrorManager"
 
 export class Global {

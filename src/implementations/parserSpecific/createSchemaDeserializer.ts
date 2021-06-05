@@ -1,7 +1,7 @@
 import * as astncore from "astn-core"
 import * as astn from "astn"
 import * as p from "pareto"
-import { getSchemaSchemaBuilder, SchemaSchemaBuilder } from "../../etc/getSchemaSchemaBuilder"
+import { getSchemaSchemaBuilder, SchemaSchemaBuilder } from "../getSchemaSchemaBuilder"
 import { createInternalSchemaHandler } from "../../etc/deserialize/implementation/createInternalSchemaHandler"
 import { SchemaAndSideEffects } from "../../interfaces/schemaPlugin/SchemaAndSideEffects"
 import { SchemaSchemaError } from "./SchemaSchemaError"

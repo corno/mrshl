@@ -1,4 +1,4 @@
-import { ISubscribableArray, Unsubscriber } from "../../../../interfaces/asyncAPI/generic/ISubscribableArray"
+import { ISubscribableArray, Unsubscriber } from "../../../../interfaces/asyncAPI/generic/subscribables"
 import { findInArray } from "./Array"
 import { Subscribers } from "./Subscribers"
 

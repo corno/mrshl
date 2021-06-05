@@ -1,5 +1,5 @@
 import { IValue } from "./ChangeController"
-import * as imp from "../implementation/internals"
+import * as imp from "../internals"
 
 
 export class ValueUpdate implements IValue {

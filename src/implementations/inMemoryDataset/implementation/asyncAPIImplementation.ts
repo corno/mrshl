@@ -3,12 +3,12 @@
 */
 
 import * as asyncAPI from "../../../interfaces/asyncAPI/asyncAPI"
-import * as cc from "../changeControl"
+import * as cc from "./changeControl"
 import * as streamVal from "../../../interfaces/streamingValidationAPI"
 import * as g from "./genericimp"
 //import * as s from "../serialize"
 import * as id from "../../../interfaces/buildAPI/IDataset"
-import * as iss from "../../interfaces/InternalSchemaSpecification"
+import * as iss from "../../../etc/interfaces/InternalSchemaSpecification"
 import * as syncAPIImp from "./buildAPIImplementation"
 import { copyEntry } from "./copyEntry"
 import { Global } from "./Global"

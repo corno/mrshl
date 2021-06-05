@@ -1,3 +1,3 @@
 export * from "./deserialize"
-export * from "./inMemoryDataset"
-export * from "./errorPrinters"
+export * from "../implementations/inMemoryDataset"
+export * from "../implementations/errorPrinters"

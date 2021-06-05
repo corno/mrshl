@@ -1,6 +1,16 @@
 // tslint:disable: interface-name
 import * as g from "./generic"
-import { InternalSchemaSpecification } from "../../etc/interfaces/InternalSchemaSpecification"
+
+export enum InternalSchemaSpecificationType {
+    Reference,
+    None,
+    Embedded
+}
+
+export type InternalSchemaSpecification =
+    | [InternalSchemaSpecificationType.Embedded]
+    | [InternalSchemaSpecificationType.Reference, { name: string }]
+    | [InternalSchemaSpecificationType.None]
 
 export interface IFocussable {
     setFocus(): void
@@ -58,7 +68,7 @@ export type EntryStatus =
         | ["moved"]
     }]
 
-export interface PotentialError {
+export type PotentialError = {
     readonly isInErrorState: g.ISubscribableValue<boolean>
 }
 

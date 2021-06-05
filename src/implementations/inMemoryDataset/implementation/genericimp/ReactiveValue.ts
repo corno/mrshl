@@ -2,7 +2,7 @@
    "max-classes-per-file" : "off",
 */
 
-import { ISubscribableValue, Unsubscriber } from "../../../../interfaces/asyncAPI/generic/ISubscribableArray"
+import { ISubscribableValue, Unsubscriber } from "../../../../interfaces/asyncAPI/generic/subscribables"
 import { Subscribers } from "./Subscribers"
 
 export class ReactiveValue<T> implements ISubscribableValue<T> {

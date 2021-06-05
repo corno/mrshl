@@ -1,1 +1,1 @@
-export * from "./ISubscribableArray"
+export * from "./subscribables"
