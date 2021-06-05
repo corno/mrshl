@@ -1,5 +1,6 @@
+import { ISubscribableArray, Unsubscriber } from "../generic/ISubscribableArray"
 import { findInArray } from "./Array"
-import { Subscribers, Unsubscriber } from "./Subscribers"
+import { Subscribers } from "./Subscribers"
 
 class PrivateReactiveEntry<T> {
     public readonly entry: T
@@ -21,11 +22,7 @@ export class ReactiveEntry<T> {
     }
 }
 
-export interface ISubscribableArray<T> {
-    subscribeToEntries(subscriber: (newEntry: ReactiveEntry<T>) => void): Unsubscriber
-}
-
-export class ReactiveArray<T> implements ISubscribableArray<T> {
+export class ReactiveArray<T> implements ISubscribableArray {
     private readonly entriesSubscribers = new Subscribers<ReactiveEntry<T>>()
     private readonly entries: PrivateReactiveEntry<T>[] = []
     private inForeachLoop = false

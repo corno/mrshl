@@ -1,8 +1,9 @@
-import * as g from "../../generic"
+import * as g from "../../../interfaces/asyncAPI/genericimp"
 import * as asyncAPI from "../../../interfaces/asyncAPI/asyncAPI"
 import * as streamVal from "../../../interfaces/streamingValidationAPI"
 import { IParentErrorsAggregator, PotentialError, ErrorManager } from "./ErrorManager"
 import { Comments } from "./Comments"
+import { ISubscribableValue } from "../../../interfaces/asyncAPI/generic"
 
 export type ChangeSubscriber = (oldValue: string, newValue: string) => void
 
@@ -30,7 +31,7 @@ export class Value {
         this.value = new g.ReactiveValue<string>(this.initialValue)
         this.isDuplicate = new PotentialError(this.isDuplicateImp, errorsAggregator, errorManager, this.focussable)
         this.valueIsInvalid = new PotentialError(
-            ((): g.ISubscribableValue<boolean> => {
+            ((): ISubscribableValue<boolean> => {
 
                 return new g.FixedReactiveValue(false)
                 //FIXME

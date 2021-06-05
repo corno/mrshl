@@ -1,5 +1,5 @@
 // tslint:disable: interface-name
-import * as g from "../../etc/generic"
+import * as g from "./generic"
 import { InternalSchemaSpecification } from "../../etc/interfaces/IDataset"
 
 export interface IFocussable {
@@ -7,7 +7,7 @@ export interface IFocussable {
 }
 
 export interface Collection {
-    readonly entries: g.ISubscribableArray<Entry>
+    readonly entries: g.ISubscribableArray
     addEntry(): void
     copyEntriesToHere(forEach: (callback: (entry: Entry) => void) => void): void
 }
@@ -23,7 +23,7 @@ export interface Component {
 export interface Dataset {
     readonly errorManager: ErrorManager
     readonly errorAmount: g.ISubscribableValue<number>
-    readonly commands: g.Dictionary<Command>
+    //readonly commands: g.IDictionary<Command>
     readonly hasUndoActions: g.ISubscribableValue<boolean>
     readonly hasRedoActions: g.ISubscribableValue<boolean>
     readonly hasUnserializedChanges: g.ISubscribableValue<boolean>
@@ -47,7 +47,7 @@ export interface Entry {
 }
 
 export interface ErrorManager {
-    readonly validationErrors: g.ISubscribableArray<ValidationError>
+    readonly validationErrors: g.ISubscribableArray
 }
 
 export type EntryStatus =
@@ -87,7 +87,7 @@ export interface State {
 }
 
 export interface StateGroup {
-    readonly statesOverTime: g.ISubscribableArray<State>
+    readonly statesOverTime: g.ISubscribableArray
     readonly changeStatus: g.ISubscribableValue<StateGroupChangeStatus>
     readonly createdInNewContext: g.ISubscribableValue<boolean>
     readonly currentStateKey: g.ISubscribableValue<string>
@@ -102,7 +102,7 @@ export type StateGroupChangeStatus =
     }]
 
 export interface ValidationError {
-    readonly focussable: g.ISubscribableValue<g.Maybe<IFocussable>>
+    readonly focussable: g.ISubscribableValue<g.IMaybe<IFocussable>>
 }
 
 export interface Value {

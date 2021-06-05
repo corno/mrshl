@@ -1,4 +1,5 @@
-import * as g from "../../generic"
+import { ISubscribableValue } from "../../../interfaces/asyncAPI/generic"
+import * as g from "../../../interfaces/asyncAPI/genericimp"
 
 function assertUnreachable(_x: never) {
     throw new Error("Unreachable")
@@ -53,7 +54,7 @@ type Change = {
 }
 
 export interface IChanges {
-    readonly hasChanges: g.ISubscribableValue<boolean>
+    readonly hasChanges: g.ReactiveValue<boolean>
 }
 
 class Changes implements IChanges {
@@ -79,7 +80,7 @@ class Changes implements IChanges {
 }
 
 export interface IChangeController {
-    readonly amountOfChangesSinceLastSerialization: g.ISubscribableValue<number | null>
+    readonly amountOfChangesSinceLastSerialization: ISubscribableValue<number | null>
     readonly executedChanges: IChanges
     readonly revertedChanges: IChanges
     resetSerializationPosition(): void

@@ -2,7 +2,8 @@
     "max-classes-per-file": off,
 */
 
-import * as g from "../../generic"
+import { ISubscribableValue } from "../../../interfaces/asyncAPI/generic"
+import * as g from "../../../interfaces/asyncAPI/genericimp"
 import { IFocussable } from "./IFocussable"
 
 export class ValidationError {
@@ -13,14 +14,14 @@ export class ValidationError {
 }
 
 export class PotentialError {
-    public readonly isInErrorState: g.ISubscribableValue<boolean>
+    public readonly isInErrorState: ISubscribableValue<boolean>
     private currentError: null | ValidationError = null
     //private readonly error: g.ReactiveValue<g.Maybe<ValidationError>>
     private readonly errorsAggregator: IParentErrorsAggregator
     private readonly errorManager: ErrorManager
     private readonly focussable: g.ReactiveValue<g.Maybe<IFocussable>>
     constructor(
-        isInErrorState: g.ISubscribableValue<boolean>,
+        isInErrorState: ISubscribableValue<boolean>,
         errorsAggregator: IParentErrorsAggregator,
         errorManager: ErrorManager,
         focussable: g.ReactiveValue<g.Maybe<IFocussable>>,
@@ -62,7 +63,7 @@ export class PotentialError {
 }
 
 export interface IParentErrorsAggregator {
-    isAttached: g.ISubscribableValue<boolean>
+    isAttached: g.ReactiveValue<boolean>
     add(amount: number): void
 }
 

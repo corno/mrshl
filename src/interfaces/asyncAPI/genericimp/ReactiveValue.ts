@@ -2,12 +2,8 @@
    "max-classes-per-file" : "off",
 */
 
-import { Subscribers, Unsubscriber } from "./Subscribers"
-
-export interface ISubscribableValue<T> {
-    subscribeToValue(callback: (value: T) => void): Unsubscriber
-    map<NewT>(callback: (t: T) => NewT): ISubscribableValue<NewT>
-}
+import { ISubscribableValue, Unsubscriber } from "../generic/ISubscribableArray"
+import { Subscribers } from "./Subscribers"
 
 export class ReactiveValue<T> implements ISubscribableValue<T> {
     private value: T

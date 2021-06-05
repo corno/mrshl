@@ -5,7 +5,7 @@
 import * as asyncAPI from "../../interfaces/asyncAPI/asyncAPI"
 import * as cc from "./changeControl"
 import * as streamVal from "../../interfaces/streamingValidationAPI"
-import * as g from "../generic"
+import * as g from "../../interfaces/asyncAPI/genericimp"
 //import * as s from "../serialize"
 import * as id from "../interfaces/IDataset"
 import * as syncAPIImp from "./syncAPIImplementation"
@@ -15,6 +15,7 @@ import { Command, RootImp } from "./Root"
 import * as imp from "./implementation"
 import { IFocussable } from "./implementation/IFocussable"
 import { initializeNode } from "./initializeNode"
+import { ISubscribableValue } from "../../interfaces/asyncAPI/generic"
 
 function assertUnreachable<RT>(_x: never): RT {
     throw new Error("unreachable")
@@ -54,7 +55,7 @@ function purgeChanges(node: imp.Node): void {
 }
 
 export class Collection implements asyncAPI.Collection {
-    public readonly entries: g.ISubscribableArray<asyncAPI.Entry>
+    public readonly entries: g.ReactiveArray<Entry>
     private readonly global: Global
     private readonly imp: imp.Collection
     constructor(collectionImp: imp.Collection, nodeDefinition: streamVal.NodeDefinition, global: Global) {
@@ -120,9 +121,9 @@ export class Dataset implements asyncAPI.Dataset {
     public readonly errorManager: imp.ErrorManager
 
     public readonly commands: g.Dictionary<Command>
-    public readonly hasUndoActions: g.ISubscribableValue<boolean>
-    public readonly hasRedoActions: g.ISubscribableValue<boolean>
-    public readonly hasUnserializedChanges: g.ISubscribableValue<boolean>
+    public readonly hasUndoActions: g.ReactiveValue<boolean>
+    public readonly hasRedoActions: g.ReactiveValue<boolean>
+    public readonly hasUnserializedChanges: ISubscribableValue<boolean>
     public readonly rootNode: Node
 
     private readonly imp: RootImp
@@ -192,10 +193,10 @@ export class Dataset implements asyncAPI.Dataset {
 
 export class Entry implements asyncAPI.Entry {
     public readonly node: Node
-    public readonly hasSubEntryErrors: g.ISubscribableValue<boolean>
-    public readonly tempSubEntryErrorsCount: g.ISubscribableValue<number>
-    public readonly isAdded: g.ISubscribableValue<boolean>
-    public readonly status: g.ISubscribableValue<asyncAPI.EntryStatus>
+    public readonly hasSubEntryErrors: ISubscribableValue<boolean>
+    public readonly tempSubEntryErrorsCount: g.ReactiveValue<number>
+    public readonly isAdded: g.ReactiveValue<boolean>
+    public readonly status: g.ReactiveValue<asyncAPI.EntryStatus>
     private readonly imp: imp.EntryPlaceholder
     private readonly global: Global
     constructor(entryImp: imp.EntryPlaceholder, nodeDefinition: streamVal.NodeDefinition, global: Global) {
@@ -339,7 +340,7 @@ export class Node implements asyncAPI.Node {
 
 export class State implements asyncAPI.State {
     public node: Node
-    public readonly isCurrentState: g.ISubscribableValue<boolean>
+    public readonly isCurrentState: g.ReactiveValue<boolean>
     public readonly key: string
     //private readonly imp: imp.State
     constructor(stateImp: imp.State, definition: streamVal.StateDefinition, global: Global) {
@@ -351,10 +352,10 @@ export class State implements asyncAPI.State {
 }
 
 export class StateGroup implements asyncAPI.StateGroup {
-    public readonly statesOverTime: g.ISubscribableArray<State>
-    public readonly changeStatus: g.ISubscribableValue<asyncAPI.StateGroupChangeStatus>
-    public readonly createdInNewContext: g.ISubscribableValue<boolean>
-    public readonly currentStateKey: g.ISubscribableValue<string>
+    public readonly statesOverTime: g.ReactiveArray<State>
+    public readonly changeStatus: g.ReactiveValue<asyncAPI.StateGroupChangeStatus>
+    public readonly createdInNewContext: g.ReactiveValue<boolean>
+    public readonly currentStateKey: g.ReactiveValue<string>
     private readonly global: Global
     private readonly imp: imp.StateGroup
     private readonly definition: streamVal.StateGroupDefinition

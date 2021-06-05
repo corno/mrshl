@@ -2,12 +2,13 @@
     "max-classes-per-file": off,
 */
 
-import * as g from "../../generic"
+import * as g from "../../../interfaces/asyncAPI/genericimp"
 import * as streamVal from "../../../interfaces/streamingValidationAPI"
 import { FlexibleErrorsAggregator, IParentErrorsAggregator, ErrorManager } from "./ErrorManager"
 import { Node } from "./Node"
 import { Comments } from "./Comments"
 import { initializeNode } from "../initializeNode"
+import { ISubscribableValue } from "../../../interfaces/asyncAPI/generic"
 
 function assertUnreachable<RT>(_x: never): RT {
     throw new Error("unreachable")
@@ -54,7 +55,7 @@ export class EntryPlaceholder {
     public readonly entry: Entry
     public readonly node: Node
     public readonly parent: Collection
-    public readonly hasSubEntryErrors: g.ISubscribableValue<boolean>
+    public readonly hasSubEntryErrors: ISubscribableValue<boolean>
     public readonly tempSubEntryErrorsCount: g.ReactiveValue<number>
     constructor(
         entry: Entry,

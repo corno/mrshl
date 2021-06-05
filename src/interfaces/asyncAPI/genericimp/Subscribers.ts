@@ -1,3 +1,4 @@
+import { Unsubscriber } from "../generic/ISubscribableArray"
 import { removeFromArray } from "./Array"
 
 export class Subscribers<S> {
@@ -13,5 +14,3 @@ export class Subscribers<S> {
         this.subscribers.forEach(s => s(value))
     }
 }
-
-export type Unsubscriber = () => void
