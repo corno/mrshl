@@ -1,5 +1,5 @@
 import { createChangeController } from "./changeControl/ChangeController"
-import { ErrorManager } from "./implementation/ErrorManager"
+import { ErrorManager } from "./implementation/internals/ErrorManager"
 
 export class Global {
     public readonly changeController = createChangeController()

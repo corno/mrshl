@@ -3,7 +3,7 @@
 */
 
 import * as buildAPI from "../../interfaces/buildAPI"
-import * as imp from "./implementation"
+import * as imp from "./implementation/internals"
 import { Global } from "./Global"
 import { initializeNode } from "./initializeNode"
 

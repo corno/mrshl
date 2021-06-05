@@ -1,4 +1,4 @@
-import { Unsubscriber } from "../../../interfaces/asyncAPI/generic/ISubscribableArray"
+import { Unsubscriber } from "../../../../interfaces/asyncAPI/generic/ISubscribableArray"
 import { removeFromArray } from "./Array"
 
 export class Subscribers<S> {

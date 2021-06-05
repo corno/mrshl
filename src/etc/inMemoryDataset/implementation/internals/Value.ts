@@ -1,9 +1,9 @@
 import * as g from "../genericimp"
-import * as asyncAPI from "../../../interfaces/asyncAPI/asyncAPI"
-import * as streamVal from "../../../interfaces/streamingValidationAPI"
+import * as asyncAPI from "../../../../interfaces/asyncAPI/asyncAPI"
+import * as streamVal from "../../../../interfaces/streamingValidationAPI"
 import { IParentErrorsAggregator, PotentialError, ErrorManager } from "./ErrorManager"
 import { Comments } from "./Comments"
-import { ISubscribableValue } from "../../../interfaces/asyncAPI/generic"
+import { ISubscribableValue } from "../../../../interfaces/asyncAPI/generic"
 
 export type ChangeSubscriber = (oldValue: string, newValue: string) => void
 

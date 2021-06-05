@@ -2,9 +2,9 @@
     "max-classes-per-file": off,
 */
 
-import { ISubscribableValue } from "../../../interfaces/asyncAPI/generic"
+import { IFocussable } from "../../../../interfaces/asyncAPI/asyncAPI"
+import { ISubscribableValue } from "../../../../interfaces/asyncAPI"
 import * as g from "../genericimp"
-import { IFocussable } from "./IFocussable"
 
 export class ValidationError {
     public readonly focussable: g.ReactiveValue<g.Maybe<IFocussable>>

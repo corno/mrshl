@@ -5,7 +5,7 @@
 import * as asyncAPI from "../../interfaces/asyncAPI/asyncAPI"
 import * as cc from "./changeControl"
 import * as streamVal from "../../interfaces/streamingValidationAPI"
-import * as g from "./genericimp"
+import * as g from "./implementation/genericimp"
 //import * as s from "../serialize"
 import * as id from "../../interfaces/buildAPI/IDataset"
 import * as iss from "../interfaces/InternalSchemaSpecification"
@@ -13,8 +13,7 @@ import * as syncAPIImp from "./buildAPIImplementation"
 import { copyEntry } from "./copyEntry"
 import { Global } from "./Global"
 import { Command, RootImp } from "./Root"
-import * as imp from "./implementation"
-import { IFocussable } from "./implementation/IFocussable"
+import * as imp from "./implementation/internals"
 import { initializeNode } from "./initializeNode"
 import { ISubscribableValue } from "../../interfaces/asyncAPI/generic"
 
@@ -334,7 +333,7 @@ export class Node implements asyncAPI.Node {
         }
         return new StateGroup(this.imp.stateGroups.getUnsafe(key), propDef.type[1], this.global)
     }
-    public getValue(key: string):Value {
+    public getValue(key: string): Value {
         return new Value(this.imp.values.getUnsafe(key), this.global)
     }
 }
@@ -371,10 +370,10 @@ export class StateGroup implements asyncAPI.StateGroup {
         this.currentStateKey = stateGroupImp.currentStateKey
         this.global = global
     }
-    public setMainFocussableRepresentation(focussable: IFocussable) {
+    public setMainFocussableRepresentation(focussable: asyncAPI.IFocussable): void {
         this.imp.focussable.update(new g.Maybe(focussable))
     }
-    public updateState(stateName: string) {
+    public updateState(stateName: string): void {
         this.global.changeController.updateState(
             new cc.StateChange(
                 this.imp,
@@ -418,10 +417,10 @@ export class Value implements asyncAPI.Value {
         this.createdInNewContext = valueImp.createdInNewContext
         this.global = global
     }
-    public updateValue(v: string) {
+    public updateValue(v: string): void {
         this.global.changeController.updateValue(new cc.ValueUpdate(this.imp), v)
     }
-    public setMainFocussableRepresentation(f: asyncAPI.IFocussable) {
+    public setMainFocussableRepresentation(f: asyncAPI.IFocussable): void {
         this.focussable.update(new g.Maybe(f))
     }
 }

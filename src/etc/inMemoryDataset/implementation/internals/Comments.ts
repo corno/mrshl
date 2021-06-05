@@ -1,4 +1,4 @@
-import * as streamVal from "../../../interfaces/streamingValidationAPI"
+import * as streamVal from "../../../../interfaces/streamingValidationAPI"
 
 export type CommentType =
     | ["block"]

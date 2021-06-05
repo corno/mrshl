@@ -3,12 +3,12 @@
 */
 
 import * as g from "../genericimp"
-import * as streamVal from "../../../interfaces/streamingValidationAPI"
+import * as streamVal from "../../../../interfaces/streamingValidationAPI"
 import { FlexibleErrorsAggregator, IParentErrorsAggregator, ErrorManager } from "./ErrorManager"
 import { Node } from "./Node"
 import { Comments } from "./Comments"
-import { initializeNode } from "../initializeNode"
-import { ISubscribableValue } from "../../../interfaces/asyncAPI/generic"
+import { initializeNode } from "../../initializeNode"
+import { ISubscribableValue } from "../../../../interfaces/asyncAPI/generic"
 
 function assertUnreachable<RT>(_x: never): RT {
     throw new Error("unreachable")

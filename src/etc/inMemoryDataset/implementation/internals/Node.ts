@@ -1,5 +1,5 @@
 import * as g from "../genericimp"
-import * as streamVal from "../../../interfaces/streamingValidationAPI"
+import * as streamVal from "../../../../interfaces/streamingValidationAPI"
 import { Collection } from "./Collection"
 import { Component } from "./Component"
 import { StateGroup } from "./StateGroup"
