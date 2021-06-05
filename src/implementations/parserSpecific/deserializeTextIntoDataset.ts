@@ -2,19 +2,19 @@ import * as p from "pareto"
 import * as path from "path"
 import * as astn from "astn"
 
-import * as streamVal from "../interfaces/streamingValidationAPI"
-import { DiagnosticSeverity } from "../etc/interfaces/DiagnosticSeverity"
+import * as streamVal from "../../interfaces/streamingValidationAPI"
+import { DiagnosticSeverity } from "../../interfaces/DiagnosticSeverity"
 
-import { IDataset } from "../etc/interfaces/dataset"
+import { IDataset } from "../../etc/interfaces/dataset"
 
-import { ResolveExternalSchema } from "../etc/deserialize/DeserializeTextSupportTypes"
-import { IDeserializedDataset } from "../etc/deserialize/IDeserializedDataset"
+import { ResolveExternalSchema } from "../../etc/deserialize/DeserializeTextSupportTypes"
+import { IDeserializedDataset } from "../../etc/deserialize/IDeserializedDataset"
 
 import { deserializeDataset } from "./deserializeDataset"
 import { deserializeSchemaFromStream } from "./deserializeSchemaFromStream"
 import { ContextSchemaData } from "./DeserializeASTNTextIntoDataset"
-import { SchemaAndSideEffects } from "../plugins/api/SchemaAndSideEffects"
-import { ExternalSchemaDeserializationError } from "../etc/deserialize/ExternalSchemaDeserializationError"
+import { SchemaAndSideEffects } from "../../interfaces/schemaPlugin/SchemaAndSideEffects"
+import { ExternalSchemaDeserializationError } from "../../interfaces/ExternalSchemaDeserializationError"
 
 
 import { SchemaSchemaError } from "./SchemaSchemaError"

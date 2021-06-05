@@ -1,10 +1,10 @@
-import * as streamVal from "../../interfaces/streamingValidationAPI"
 import * as buildAPI from "../../interfaces/buildAPI"
 
+import { Node, Entry } from "./syncAPIImplementation"
 export { Entry } from "./syncAPIImplementation"
 
 function copyNode(
-    sourceNode: streamVal.BSENode,
+    sourceNode: Node,
     targetNode: buildAPI.Node,
 ) {
     sourceNode.forEachProperty((property, pKey) => {
@@ -65,7 +65,7 @@ function copyNode(
 }
 
 export function copyEntry(
-    sourceEntry: streamVal.BSEEntry,
+    sourceEntry: Entry,
     targetEntry: buildAPI.Entry
 ): void {
     copyNode(sourceEntry.node, targetEntry.node)

@@ -1,6 +1,6 @@
 import * as astn from "astn"
-import { printInternalSchemaError } from "../etc/errorPrinters/printInternalSchemaError"
-import { printInternalSchemaDeserializationError } from "../etc/errorPrinters/printInternalSchemaDeserializationError"
+import { printInternalSchemaError } from "../../etc/errorPrinters/printInternalSchemaError"
+import { printInternalSchemaDeserializationError } from "../../etc/errorPrinters/printInternalSchemaDeserializationError"
 import { SchemaSchemaError } from "./SchemaSchemaError"
 
 function assertUnreachable<RT>(_x: never): RT {

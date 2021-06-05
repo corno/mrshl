@@ -4,7 +4,7 @@
 
 import * as astncore from "astn-core"
 import * as astn from "astn"
-import { printInternalSchemaDeserializationError } from "../etc/errorPrinters/printInternalSchemaDeserializationError"
+import { printInternalSchemaDeserializationError } from "../../etc/errorPrinters/printInternalSchemaDeserializationError"
 import { DeserializationDiagnostic } from "./DeserializationDiagnostic"
 
 function assertUnreachable<RT>(_x: never): RT {

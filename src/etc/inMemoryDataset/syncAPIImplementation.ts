@@ -30,8 +30,15 @@ export class Component implements buildAPI.Component {
     }
 }
 
+type PropertyType =
+    | ["list", List]
+    | ["dictionary", Dictionary]
+    | ["component", Component]
+    | ["state group", StateGroup]
+    | ["value", Value]
+
 class Property implements buildAPI.Property {
-    public readonly type: buildAPI.PropertyType
+    public readonly type: PropertyType
     public readonly isKeyProperty: boolean
     constructor(
         propertyKey: string,
@@ -40,7 +47,7 @@ class Property implements buildAPI.Property {
         global: Global,
         keyProperty: buildAPI.PropertyDefinition | null,
     ) {
-        this.type = ((): buildAPI.PropertyType => {
+        this.type = ((): PropertyType => {
             switch (definition.type[0]) {
                 case "component": {
                     const $ = definition.type[1]
@@ -168,7 +175,7 @@ export class Node implements buildAPI.Node {
         }
         return new Value(this.imp.values.getUnsafe(key), propDef.type[1])
     }
-    public forEachProperty(callback: (property: buildAPI.Property, key: string) => void): void {
+    public forEachProperty(callback: (property: Property, key: string) => void): void {
         this.definition.properties.forEach((p, pKey) => {
             callback(
                 new Property(
@@ -338,7 +345,7 @@ export class List implements buildAPI.List {
         imp.addEntry(this.imp, entryPlaceHolder)
         return entry
     }
-    public forEachEntry(callback: (entry: buildAPI.Entry) => void): void {
+    public forEachEntry(callback: (entry: Entry) => void): void {
         this.imp.entries.forEach(e => {
             if (e.status.get()[0] !== "inactive") {
                 callback(new Entry(

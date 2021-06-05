@@ -1,6 +1,6 @@
 // tslint:disable: interface-name
-import * as g from "./generic"
-import { InternalSchemaSpecification } from "./interfaces/IDataset"
+import * as g from "../../etc/generic"
+import { InternalSchemaSpecification } from "../../etc/interfaces/IDataset"
 
 export interface IFocussable {
     setFocus(): void

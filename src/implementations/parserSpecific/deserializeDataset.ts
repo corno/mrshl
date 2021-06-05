@@ -7,24 +7,24 @@ import * as p from "pareto"
 import * as astncore from "astn-core"
 import * as astn from "astn"
 
-import * as streamVal from "../interfaces/streamingValidationAPI"
+import * as streamVal from "../../interfaces/streamingValidationAPI"
 
-import { InternalSchemaSpecification, InternalSchemaSpecificationType } from "../etc/interfaces/IDataset"
-import { SchemaAndSideEffects } from "../plugins/api/SchemaAndSideEffects"
+import { InternalSchemaSpecification, InternalSchemaSpecificationType } from "../../etc/interfaces/IDataset"
+import { SchemaAndSideEffects } from "../../interfaces/schemaPlugin/SchemaAndSideEffects"
 
-import { createDeserializer as createMetaDataDeserializer } from "../plugins/schemas/mrshl/metadata@0.1/deserialize"
+import { createDeserializer as createMetaDataDeserializer } from "../../plugins/schemas/mrshl/metadata@0.1/deserialize"
 
-import { createDatasetDeserializer } from "../etc/deserialize/implementation/createDatasetDeserializer"
+import { createDatasetDeserializer } from "../../etc/deserialize/implementation/createDatasetDeserializer"
 
-import { ExternalSchemaDeserializationError } from "../etc/deserialize/ExternalSchemaDeserializationError"
-import { createInternalSchemaHandler } from "../etc/deserialize/implementation/createInternalSchemaHandler"
-import { createNOPSideEffects } from "../etc/deserialize/implementation/NOPSideEffects"
+import { ExternalSchemaDeserializationError } from "../../interfaces/ExternalSchemaDeserializationError"
+import { createInternalSchemaHandler } from "../../etc/deserialize/implementation/createInternalSchemaHandler"
+import { createNOPSideEffects } from "../../etc/deserialize/implementation/NOPSideEffects"
 import { DeserializationDiagnostic, DeserializationDiagnosticType } from "./DeserializationDiagnostic"
-import { IDeserializedDataset } from "../etc/deserialize/IDeserializedDataset"
-import { IDataset } from "../etc/interfaces/dataset"
-import { ResolveExternalSchema } from "../etc/deserialize/DeserializeTextSupportTypes"
+import { IDeserializedDataset } from "../../etc/deserialize/IDeserializedDataset"
+import { IDataset } from "../../etc/interfaces/dataset"
+import { ResolveExternalSchema } from "../../etc/deserialize/DeserializeTextSupportTypes"
 import { createSchemaAndSideEffectsFromStream } from "./createSchemaAndSideEffectsFromStream"
-import { InternalSchemaDeserializationError } from "../plugins/api/internalSchemaDerializationError"
+import { InternalSchemaDeserializationError } from "../../interfaces/schemaPlugin/internalSchemaDerializationError"
 
 function assertUnreachable<RT>(_x: never): RT {
     throw new Error("unreachable")

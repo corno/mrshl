@@ -1,6 +1,5 @@
-import { DiagnosticSeverity } from "../../etc/interfaces/DiagnosticSeverity"
-import * as streamVal from "../../interfaces/streamingValidationAPI"
-//import * as buildAPI from "../../buildAPI"
+import { DiagnosticSeverity } from "../DiagnosticSeverity"
+import * as streamVal from "../streamingValidationAPI"
 
 
 /**

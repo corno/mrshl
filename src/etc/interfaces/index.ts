@@ -1,1 +1,1 @@
-export * from "./DiagnosticSeverity"
+export * from "../../interfaces/DiagnosticSeverity"

@@ -1,11 +1,11 @@
 import * as p from "pareto"
 
-import * as streamVal from "../interfaces/streamingValidationAPI"
+import * as streamVal from "../../interfaces/streamingValidationAPI"
 import * as astn from "astn"
 
-import { IDataset } from "../etc/interfaces/dataset"
-import { IDeserializedDataset } from "../etc/deserialize/IDeserializedDataset"
-import { RetrievalError, ResolveExternalSchema } from "../etc/deserialize/DeserializeTextSupportTypes"
+import { IDataset } from "../../etc/interfaces/dataset"
+import { IDeserializedDataset } from "../../etc/deserialize/IDeserializedDataset"
+import { RetrievalError, ResolveExternalSchema } from "../../etc/deserialize/DeserializeTextSupportTypes"
 import { DiagnosticCallback } from "./deserializeTextIntoDataset"
 
 export type ContextSchemaData = {

@@ -4,7 +4,7 @@
 
 import * as t from "./types"
 import * as streamVal from "../../../../interfaces/streamingValidationAPI"
-import { DiagnosticSeverity } from "../../../../etc/interfaces/DiagnosticSeverity"
+import { DiagnosticSeverity } from "../../../../interfaces/DiagnosticSeverity"
 
 export * from "./types"
 

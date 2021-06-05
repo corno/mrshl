@@ -155,7 +155,6 @@ export interface BSEValue {
     readonly definition: def.ValueDefinition
     readonly isQuoted: boolean
     readonly comments: BSEComments
-    getValue(): string
     getSuggestions(): string[]
 }
 

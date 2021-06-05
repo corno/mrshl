@@ -2,7 +2,7 @@
     "max-classes-per-file": off
 */
 
-import * as asyncAPI from "../asyncAPI"
+import * as asyncAPI from "../../interfaces/asyncAPI/asyncAPI"
 import * as cc from "./changeControl"
 import * as streamVal from "../../interfaces/streamingValidationAPI"
 import * as g from "../generic"
@@ -53,7 +53,7 @@ function purgeChanges(node: imp.Node): void {
     })
 }
 
-class Collection implements asyncAPI.Collection {
+export class Collection implements asyncAPI.Collection {
     public readonly entries: g.ISubscribableArray<asyncAPI.Entry>
     private readonly global: Global
     private readonly imp: imp.Collection
@@ -64,7 +64,7 @@ class Collection implements asyncAPI.Collection {
             return new Entry(e, nodeDefinition, global)
         })
     }
-    public copyEntriesToHere(forEach: (callback: (entry: asyncAPI.Entry) => void) => void) {
+    public copyEntriesToHere(forEach: (callback: (entry: asyncAPI.Entry) => void) => void): void {
         this.global.changeController.copyEntriesToCollection(callback => {
             forEach(sourceEntryImp => {
                 if (!(sourceEntryImp instanceof imp.EntryPlaceholder)) {
@@ -105,7 +105,7 @@ class Collection implements asyncAPI.Collection {
     }
 }
 
-class Component implements asyncAPI.Component {
+export class Component implements asyncAPI.Component {
     public readonly node: Node
     //private readonly imp: imp.Component
     constructor(componentImp: imp.Component, definition: streamVal.ComponentDefinition, global: Global) {
@@ -190,7 +190,7 @@ export class Dataset implements asyncAPI.Dataset {
 }
 
 
-class Entry implements asyncAPI.Entry {
+export class Entry implements asyncAPI.Entry {
     public readonly node: Node
     public readonly hasSubEntryErrors: g.ISubscribableValue<boolean>
     public readonly tempSubEntryErrorsCount: g.ISubscribableValue<number>
@@ -217,7 +217,7 @@ class Entry implements asyncAPI.Entry {
 
 }
 
-class Property implements asyncAPI.Property {
+export class Property implements asyncAPI.Property {
     public readonly type: asyncAPI.PropertyType
 
     //public readonly isKeyProperty: boolean
@@ -233,7 +233,7 @@ class Property implements asyncAPI.Property {
     }
 }
 
-class Node implements asyncAPI.Node {
+export class Node implements asyncAPI.Node {
     public readonly imp: imp.Node
     private readonly global: Global
     private readonly definition: streamVal.NodeDefinition
@@ -242,7 +242,7 @@ class Node implements asyncAPI.Node {
         this.definition = definition
         this.global = global
     }
-    public forEachProperty(callback: (property: asyncAPI.Property, key: string) => void) {
+    public forEachProperty(callback: (property: asyncAPI.Property, key: string) => void): void {
         this.definition.properties.forEach((p, pKey) => {
             //const isKeyProperty = this.imp.keyProperty === null ? false : p === this.imp.keyProperty
             switch (p.type[0]) {
@@ -296,7 +296,7 @@ class Node implements asyncAPI.Node {
             }
         })
     }
-    public getCollection(key: string) {
+    public getCollection(key: string): Collection {
         const propDef = this.definition.properties.getUnsafe(key)
         if (propDef.type[0] !== "collection") {
             throw new Error("unexpected")
@@ -318,26 +318,26 @@ class Node implements asyncAPI.Node {
         })()
         return new Collection(this.imp.collections.getUnsafe(key), nodeDefinition, this.global)
     }
-    public getComponent(key: string) {
+    public getComponent(key: string): Component {
         const propDef = this.definition.properties.getUnsafe(key)
         if (propDef.type[0] !== "component") {
             throw new Error("unexpected")
         }
         return new Component(this.imp.components.getUnsafe(key), propDef.type[1], this.global)
     }
-    public getStateGroup(key: string) {
+    public getStateGroup(key: string): StateGroup {
         const propDef = this.definition.properties.getUnsafe(key)
         if (propDef.type[0] !== "state group") {
             throw new Error("unexpected")
         }
         return new StateGroup(this.imp.stateGroups.getUnsafe(key), propDef.type[1], this.global)
     }
-    public getValue(key: string) {
+    public getValue(key: string):Value {
         return new Value(this.imp.values.getUnsafe(key), this.global)
     }
 }
 
-class State implements asyncAPI.State {
+export class State implements asyncAPI.State {
     public node: Node
     public readonly isCurrentState: g.ISubscribableValue<boolean>
     public readonly key: string
@@ -350,7 +350,7 @@ class State implements asyncAPI.State {
     }
 }
 
-class StateGroup implements asyncAPI.StateGroup {
+export class StateGroup implements asyncAPI.StateGroup {
     public readonly statesOverTime: g.ISubscribableArray<State>
     public readonly changeStatus: g.ISubscribableValue<asyncAPI.StateGroupChangeStatus>
     public readonly createdInNewContext: g.ISubscribableValue<boolean>
@@ -397,7 +397,7 @@ class StateGroup implements asyncAPI.StateGroup {
 }
 
 
-class Value implements asyncAPI.Value {
+export class Value implements asyncAPI.Value {
     public readonly isDuplicate: imp.PotentialError
     public readonly valueIsInvalid: imp.PotentialError
     public readonly focussable: g.ReactiveValue<g.Maybe<asyncAPI.IFocussable>>

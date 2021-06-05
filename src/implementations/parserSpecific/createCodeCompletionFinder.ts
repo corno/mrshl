@@ -1,5 +1,5 @@
 import * as astn from "astn"
-import * as streamVal from "../interfaces/streamingValidationAPI"
+import * as streamVal from "../../interfaces/streamingValidationAPI"
 import { createCodeCompletionsGenerator } from "../ide-integration/createCodeCompletionsGenerator"
 import { isPositionBeforeLocation } from "./isPositionBeforeLocation"
 

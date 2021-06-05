@@ -1,9 +1,9 @@
 import * as astn from "astn"
 import { createSchemaDeserializer } from "./createSchemaDeserializer"
 import * as p from "pareto"
-import { SchemaAndSideEffects } from "../plugins/api/SchemaAndSideEffects"
+import { SchemaAndSideEffects } from "../../interfaces/schemaPlugin/SchemaAndSideEffects"
 import { SchemaSchemaError } from "./SchemaSchemaError"
-import { ExternalSchemaDeserializationError } from "../etc/deserialize/ExternalSchemaDeserializationError"
+import { ExternalSchemaDeserializationError } from "../../interfaces/ExternalSchemaDeserializationError"
 
 
 export function deserializeSchemaFromStream(

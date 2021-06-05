@@ -1,5 +1,5 @@
 import * as g from "../../generic"
-import * as asyncAPI from "../../asyncAPI"
+import * as asyncAPI from "../../../interfaces/asyncAPI/asyncAPI"
 import * as streamVal from "../../../interfaces/streamingValidationAPI"
 import { IParentErrorsAggregator, PotentialError, ErrorManager } from "./ErrorManager"
 import { Comments } from "./Comments"

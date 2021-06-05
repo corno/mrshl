@@ -2,7 +2,7 @@
     "max-classes-per-file": off,
 */
 
-import * as streamVal from "../interfaces/streamingValidationAPI"
+import * as streamVal from "../../interfaces/streamingValidationAPI"
 import * as fp from "fountain-pen"
 
 function assertUnreachable<RT>(_x: never): RT {

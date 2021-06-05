@@ -4,9 +4,9 @@ import * as t from "./types"
 import { convertToGenericSchema } from "./convert"
 import * as p from "pareto-20"
 import * as sideEffects from "./sideEffects"
-import { DiagnosticSeverity } from "../../../../etc/interfaces/DiagnosticSeverity"
-import { SchemaAndSideEffects } from "../../../api/SchemaAndSideEffects"
-import { InternalSchemaDeserializationError, InternalSchemaError } from "../../../api/internalSchemaDerializationError"
+import { DiagnosticSeverity } from "../../../../interfaces/DiagnosticSeverity"
+import { SchemaAndSideEffects } from "../../../../interfaces/schemaPlugin/SchemaAndSideEffects"
+import { InternalSchemaDeserializationError, InternalSchemaError } from "../../../../interfaces/schemaPlugin/internalSchemaDerializationError"
 
 export function createSchemaAndSideEffects<Annotation> (
     onSchemaError: (error: InternalSchemaDeserializationError, annotation: Annotation) => void,

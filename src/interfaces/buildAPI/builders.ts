@@ -82,7 +82,6 @@ export interface Value {
     readonly isQuoted: boolean
     setValue(value: string, onError: (message: string) => void): void
     readonly comments: Comments
-    getValue(): string
     getSuggestions(): string[]
 }
 
