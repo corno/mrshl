@@ -5,7 +5,7 @@ import * as astn from "astn"
 
 import { IDataset } from "../../etc/interfaces/dataset"
 import { IDeserializedDataset } from "../../etc/deserialize/IDeserializedDataset"
-import { RetrievalError, ResolveExternalSchema } from "../../etc/deserialize/DeserializeTextSupportTypes"
+import { RetrievalError, ResolveExternalSchema } from "./ResolveExternalSchema"
 import { DiagnosticCallback } from "./deserializeTextIntoDataset"
 
 export type ContextSchemaData = {

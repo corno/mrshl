@@ -18,11 +18,11 @@ import { createDatasetDeserializer } from "../../etc/deserialize/implementation/
 
 import { ExternalSchemaDeserializationError } from "../../interfaces/ExternalSchemaDeserializationError"
 import { createInternalSchemaHandler } from "../../etc/deserialize/implementation/createInternalSchemaHandler"
-import { createNOPSideEffects } from "../../etc/deserialize/implementation/NOPSideEffects"
+import { createNOPSideEffects } from "./NOPSideEffects"
 import { DeserializationDiagnostic, DeserializationDiagnosticType } from "./DeserializationDiagnostic"
 import { IDeserializedDataset } from "../../etc/deserialize/IDeserializedDataset"
 import { IDataset } from "../../etc/interfaces/dataset"
-import { ResolveExternalSchema } from "../../etc/deserialize/DeserializeTextSupportTypes"
+import { ResolveExternalSchema } from "./ResolveExternalSchema"
 import { createSchemaAndSideEffectsFromStream } from "./createSchemaAndSideEffectsFromStream"
 import { InternalSchemaDeserializationError } from "../../interfaces/schemaPlugin/internalSchemaDerializationError"
 

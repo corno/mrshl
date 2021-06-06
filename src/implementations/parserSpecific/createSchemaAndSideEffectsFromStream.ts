@@ -2,7 +2,7 @@ import { createSchemaDeserializer } from "./createSchemaDeserializer"
 import * as p from "pareto"
 import * as astn from "astn"
 import { SchemaAndSideEffects } from "../../interfaces/schemaPlugin/SchemaAndSideEffects"
-import { RetrievalError } from "../../etc/deserialize/DeserializeTextSupportTypes"
+import { RetrievalError } from "./ResolveExternalSchema"
 import { ExternalSchemaResolvingError } from "../../interfaces/schemaPlugin/internalSchemaDerializationError"
 
 function assertUnreachable<RT>(_x: never): RT {

@@ -7,7 +7,7 @@ import { DiagnosticSeverity } from "../../interfaces/DiagnosticSeverity"
 
 import { IDataset } from "../../etc/interfaces/dataset"
 
-import { ResolveExternalSchema } from "../../etc/deserialize/DeserializeTextSupportTypes"
+import { ResolveExternalSchema } from "./ResolveExternalSchema"
 import { IDeserializedDataset } from "../../etc/deserialize/IDeserializedDataset"
 
 import { deserializeDataset } from "./deserializeDataset"

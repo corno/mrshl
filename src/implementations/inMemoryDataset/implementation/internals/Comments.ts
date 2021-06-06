@@ -1,10 +1,8 @@
-import * as streamVal from "../../../../interfaces/streamingValidationAPI"
-
 export type CommentType =
     | ["block"]
     | ["line"]
 
-export class Comment implements streamVal.BSEComment {
+export class Comment {
     readonly value: string
     readonly type: CommentType
     constructor(value: string, type: CommentType) {
@@ -13,7 +11,7 @@ export class Comment implements streamVal.BSEComment {
     }
 }
 
-export class Comments implements streamVal.BSEComments {
+export class Comments {
     private readonly imp: Comment[] = []
     addComment(comment: string, type: CommentType): void {
         this.imp.push(new Comment(comment, type))

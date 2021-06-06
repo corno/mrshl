@@ -2,7 +2,7 @@
     "max-classes-per-file": off,
 */
 
-import * as streamVal from "../../../interfaces/streamingValidationAPI"
+import * as streamVal from "../../interfaces/streamingValidationAPI"
 
 export function createNOPSideEffects<Annotation>(): streamVal.RootHandler<Annotation> {
     return new NOPSideEffects()

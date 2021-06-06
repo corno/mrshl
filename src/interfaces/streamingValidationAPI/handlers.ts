@@ -1,7 +1,7 @@
 
 import * as h from "../handlers"
 import * as def from "../definitions"
-import { BSEEntry, BSENode, BSEValue } from "./buildingSideEffects"
+import { BSEValue } from "./buildingSideEffects"
 
 
 export type DictOpen<Annotation>  = {
@@ -12,7 +12,7 @@ export type Entr<Annotation>  = {
     annotation: Annotation
     nodeDefinition: def.NodeDefinition
     keyProperty: def.PropertyDefinition
-    entry: BSEEntry
+    //entry: BSEEntry
 }
 
 export type DictClose<Annotation>  = {
@@ -49,14 +49,12 @@ export type Val<Annotation>  = {
 export type VProp<Annotation>  = {
     nodeDefinition: def.NodeDefinition
     key: string
-    nodeBuilder: BSENode
     annotation: Annotation
 }
 
 export type SHTProp  = {
     propKey: string
     propDefinition: def.PropertyDefinition
-    nodeBuilder: BSENode
     //annotation: Annotation
 }
 
@@ -71,14 +69,12 @@ export type VTClose<Annotation>  = {
 export type VTOpen<Annotation>  = {
     nodeDefinition: def.NodeDefinition
     keyPropertyDefinition: def.PropertyDefinition | null
-    nodeBuilder: BSENode
     annotation: Annotation
 }
 
 export type SHTOpen<Annotation>  = {
     nodeDefinition: def.NodeDefinition
     keyPropertyDefinition: def.PropertyDefinition | null
-    nodeBuilder: BSENode
     annotation: Annotation
 }
 

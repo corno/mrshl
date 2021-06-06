@@ -76,7 +76,6 @@ function createPropertyDeserializer<TokenAnnotation, NonTokenAnnotation>(
                                         annotation: $.annotation,
                                         nodeDefinition: $$.node,
                                         keyProperty: $$["key property"].get(),
-                                        entry: entry,
                                     },
                                 })
                             })
@@ -507,7 +506,6 @@ function createNodeDeserializer<TokenAnnotation, NonTokenAnnotation>(
                             annotation: {
                                 propKey: propKey,
                                 propDefinition: propDefinition,
-                                nodeBuilder: nodeBuilder,
                             },
                         })
                     }),
@@ -554,7 +552,6 @@ function createNodeDeserializer<TokenAnnotation, NonTokenAnnotation>(
                             annotation: {
                                 nodeDefinition: nodeDefinition,
                                 key: propKey,
-                                nodeBuilder: nodeBuilder,
                                 annotation: $.annotation,
                             },
                         })
@@ -591,7 +588,6 @@ function createNodeDeserializer<TokenAnnotation, NonTokenAnnotation>(
                         annotation: $.annotation,
                         nodeDefinition: nodeDefinition,
                         keyPropertyDefinition: keyPropertyDefinition,
-                        nodeBuilder: nodeBuilder,
                     },
                 })
             })
@@ -633,7 +629,6 @@ function createNodeDeserializer<TokenAnnotation, NonTokenAnnotation>(
                     annotation: {
                         nodeDefinition: nodeDefinition,
                         key: $.data.key,
-                        nodeBuilder: nodeBuilder,
                         annotation: $.annotation,
                         //expectedProperties: Object.keys(expectedProperties),
                     },
@@ -649,7 +644,6 @@ function createNodeDeserializer<TokenAnnotation, NonTokenAnnotation>(
                         annotation: $.annotation,
                         nodeDefinition: nodeDefinition,
                         keyPropertyDefinition: keyPropertyDefinition,
-                        nodeBuilder: nodeBuilder,
                     },
                 })
             })

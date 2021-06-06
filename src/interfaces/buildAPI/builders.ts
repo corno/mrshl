@@ -17,7 +17,6 @@ export interface Comment {
 
 export interface Comments {
     addComment(comment: string, type: CommentType): void
-    getComments(): Comment[]
 }
 
 export type PropertyType =
