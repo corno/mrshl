@@ -187,17 +187,8 @@ export function deserializeDataset(
                 }
             }
 
-            const expectContext = astncore.createExpectContext<astn.ParserAnnotationData, null>(
-                $ => onError(createDiagnostic(["expect", $.issue]), $.annotation.range),
-                $ => onWarning(createDiagnostic(["expect", $.issue]), $.annotation.range),
-                () => astncore.createDummyValueHandler(),
-                () => astncore.createDummyValueHandler(),
-                astncore.Severity.warning,
-                astncore.OnDuplicateEntry.ignore
-            )
             return astncore.createStackedParser(
                 createDatasetDeserializer(
-                    expectContext,
                     dataset.dataset.sync,
                     sideEffectsHandlers.map(h => h.node),
                     (message, annotation) => onError(createDiagnostic(["deserializer", { message: message }]), annotation.range),

@@ -1,7 +1,6 @@
 
 import * as h from "../handlers"
 import * as def from "../definitions"
-import { BSEValue } from "./buildingSideEffects"
 
 
 export type DictOpen<Annotation>  = {
@@ -31,17 +30,14 @@ export type TU<Annotation>  = {
     annotation: Annotation
 }
 
-export type UnknownOpt<Annotation>  = {
-    stateGroupDefinition: def.StateGroupDefinition
-    annotation: Annotation
-}
-
 export type LOpen<Annotation>  = {
     annotation: Annotation
 }
 
 export type Val<Annotation>  = {
-    syncValue: BSEValue
+    syncValue: {
+        getSuggestions(): string[]
+    }
     definition: def.ValueDefinition
     annotation: Annotation
 }

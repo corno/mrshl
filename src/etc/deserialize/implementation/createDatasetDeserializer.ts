@@ -10,6 +10,17 @@ function assertUnreachable<RT>(_x: never): RT {
 
 type OnError<TokenAnnotation> = (message: string, annotation: TokenAnnotation) => void
 
+function wrap<TokenAnnotation, NonTokenAnnotation>(
+    handler: astncore.ValueHandler<TokenAnnotation, NonTokenAnnotation>
+) {
+    return {
+        exists: handler,
+        missing: (): void => {
+            //onerror("missing",)
+        },
+    }
+}
+
 function addComments<TokenAnnotation>(_target: buildAPI.Comments, _annotation: TokenAnnotation) {
     // contextData.before.comments.forEach(c => {
     //     target.addComment(c.text, c.type === "block" ? ["block"] : ["line"])
@@ -19,22 +30,78 @@ function addComments<TokenAnnotation>(_target: buildAPI.Comments, _annotation: T
     // }
 }
 
+function createUnexpectedArrayHandler<TokenAnnotation, NonTokenAnnotation>(
+    message: string,
+    annotation: TokenAnnotation,
+    onError: OnError<TokenAnnotation>,
+): astncore.ArrayHandler<TokenAnnotation, NonTokenAnnotation> {
+    onError(message, annotation)
+
+    return {
+        element: () => {
+            return astncore.createDummyValueHandler()
+        },
+        arrayEnd: () => {
+            return p.value(null)
+        },
+    }
+}
+
+function createUnexpectedObjectHandler<TokenAnnotation, NonTokenAnnotation>(
+    message: string,
+    annotation: TokenAnnotation,
+    onError: OnError<TokenAnnotation>
+): astncore.ObjectHandler<TokenAnnotation, NonTokenAnnotation> {
+    onError(message, annotation)
+
+    return {
+        property: () => {
+            return p.value(astncore.createDummyRequiredValueHandler())
+        },
+        objectEnd: () => {
+            return p.value(null)
+        },
+    }
+}
+
+function createUnexpectedTaggedUnionHandler<TokenAnnotation, NonTokenAnnotation>(
+    message: string,
+    annotation: TokenAnnotation,
+    onError: OnError<TokenAnnotation>,
+): astncore.TaggedUnionHandler<TokenAnnotation, NonTokenAnnotation> {
+    onError(message, annotation)
+
+    return {
+        option: () => {
+            return astncore.createDummyRequiredValueHandler()
+        },
+        missingOption: () => {
+            //
+        },
+        end: () => {
+            //
+        },
+    }
+}
+
+function createUnexpectedStringHandler<TokenAnnotation>(
+    message: string,
+    annotation: TokenAnnotation,
+    onError: OnError<TokenAnnotation>,
+): p.IValue<boolean> {
+    onError(message, annotation)
+    return p.value(false)
+}
+
 function createPropertyDeserializer<TokenAnnotation, NonTokenAnnotation>(
-    context: astncore.IExpectContext<TokenAnnotation, NonTokenAnnotation>,
     propDefinition: buildAPI.PropertyDefinition,
     propKey: string,
     nodeBuilder: buildAPI.Node,
     sideEffectsAPIs: sideEffectAPI.PropertyHandler<TokenAnnotation>[],
     onError: OnError<TokenAnnotation>,
     flagNonDefaultPropertiesFound: () => void,
-    nullAllowed: boolean,
-): astncore.RequiredValueHandler<TokenAnnotation, NonTokenAnnotation> {
+): astncore.ValueHandler<TokenAnnotation, NonTokenAnnotation> {
 
-    function wrap(handler: astncore.ValueHandler<TokenAnnotation, NonTokenAnnotation>) {
-        return context.expectValue({
-            handler: handler,
-        })
-    }
     switch (propDefinition.type[0]) {
         case "collection": {
             const $ = propDefinition.type[1]
@@ -42,143 +109,162 @@ function createPropertyDeserializer<TokenAnnotation, NonTokenAnnotation>(
                 case "dictionary": {
                     const $$ = $.type[1]
                     const dictionary = nodeBuilder.getDictionary(propKey)
-                    let hasEntries = false
-                    let dictionarySideEffects: null | sideEffectAPI.DictionaryHandler<TokenAnnotation>[] = null
 
-                    return wrap(context.expectDictionary({
-                        onBegin: data => {
-                            addComments(dictionary.comments, data.annotation)
 
-                            dictionarySideEffects = sideEffectsAPIs.map(s => {
-                                return s.onDictionary({
-                                    data: data.data,
-                                    annotation: {
-                                        annotation: data.annotation,
-                                    },
-                                })
-                            })
+                    return {
+                        array: $ => {
+                            return createUnexpectedArrayHandler(`expected a dictionary`, $.annotation, onError)
                         },
-                        onProperty: $ => {
-                            hasEntries = true
-                            const entry = dictionary.createEntry()
-                            //const entry = collBuilder.createEntry(errorMessage => onError(errorMessage, propertyData.keyRange))
-                            entry.node.getValue($$["key property"].name).setValue($.data.key, errorMessage => onError(errorMessage, $.annotation))
-                            addComments(entry.comments, $.annotation)
+                        object: $ => {
 
-
-                            if (dictionarySideEffects === null) {
-                                throw new Error("UNEXPECTED")
-                            }
-                            const propertySideEffects = dictionarySideEffects.map(s => {
-                                return s.onEntry({
-                                    data: $.data,
-                                    annotation: {
-                                        annotation: $.annotation,
-                                        nodeDefinition: $$.node,
-                                        keyProperty: $$["key property"].get(),
-                                    },
-                                })
-                            })
-                            return wrap(
-                                createNodeDeserializer(
-                                    context,
-                                    $$.node,
-                                    $$["key property"].get(),
-                                    entry.node,
-                                    $$["key property"].get(),
-                                    propertySideEffects,
-                                    onError,
-                                    () => {
-                                        //
-                                    },
-                                    entry.comments,
-                                ),
-                            )
-                        },
-                        onEnd: $ => {
-                            if (dictionarySideEffects === null) {
-                                throw new Error("UNEXPECTED")
-                            }
-                            dictionarySideEffects.forEach(s => {
-                                s.onClose({
-
-                                    annotation: {
-                                        annotation: $.annotation,
-                                    },
-                                })
-                            })
-                            if (hasEntries) {
-                                flagNonDefaultPropertiesFound()
+                            const foundKeys: string[] = []
+                            if ($.data.type[0] !== "dictionary") {
+                                onError("not a dictionary", $.annotation)
                             }
                             addComments(dictionary.comments, $.annotation)
 
+                            const dictionarySideEffects = sideEffectsAPIs.map(s => {
+                                return s.onDictionary({
+                                    data: $.data,
+                                    annotation: {
+                                        annotation: $.annotation,
+                                    },
+                                })
+                            })
+                            return {
+                                property: $ => {
+
+                                    if (foundKeys.includes($.data.key)) {
+                                        onError("double key", $.annotation)
+                                    }
+                                    foundKeys.push($.data.key)
+                                    const entry = dictionary.createEntry()
+                                    //const entry = collBuilder.createEntry(errorMessage => onError(errorMessage, propertyData.keyRange))
+                                    entry.node.getValue($$["key property"].name).setValue($.data.key, errorMessage => onError(errorMessage, $.annotation))
+                                    addComments(entry.comments, $.annotation)
+
+
+                                    const propertySideEffects = dictionarySideEffects.map(s => {
+                                        return s.onEntry({
+                                            data: $.data,
+                                            annotation: {
+                                                annotation: $.annotation,
+                                                nodeDefinition: $$.node,
+                                                keyProperty: $$["key property"].get(),
+                                            },
+                                        })
+                                    })
+                                    return p.value(wrap(
+                                        createNodeDeserializer(
+                                            $$.node,
+                                            $$["key property"].get(),
+                                            entry.node,
+                                            $$["key property"].get(),
+                                            propertySideEffects,
+                                            onError,
+                                            () => {
+                                                //
+                                            },
+                                            entry.comments,
+                                        ),
+                                    ))
+                                },
+                                objectEnd: $ => {
+
+                                    dictionarySideEffects.forEach(s => {
+                                        s.onClose({
+                                            annotation: {
+                                                annotation: $.annotation,
+                                            },
+                                        })
+                                    })
+                                    if (foundKeys.length !== 0) {
+                                        flagNonDefaultPropertiesFound()
+                                    }
+                                    addComments(dictionary.comments, $.annotation)
+                                    return p.value(null)
+
+                                },
+                            }
                         },
-                    }))
+                        taggedUnion: $ => {
+                            return createUnexpectedTaggedUnionHandler(`expected a dictionary`, $.annotation, onError)
+                        },
+                        string: $ => {
+                            return createUnexpectedStringHandler(`expected a dictionary`, $.annotation, onError)
+                        },
+                    }
+
                 }
                 case "list": {
                     const $$ = $.type[1]
                     const list = nodeBuilder.getList(propKey)
-                    let listSideEffects: null | sideEffectAPI.ListHandler<TokenAnnotation>[] = null
 
                     let hasEntries = false
-                    return wrap(context.expectList({
-                        onBegin: data => {
-                            addComments(list.comments, data.annotation)
-
-                            listSideEffects = sideEffectsAPIs.map(s => {
+                    return {
+                        array: $ => {
+                            if ($.data.type[0] !== "list") {
+                                onError("not a list", $.annotation)
+                            }
+                            addComments(list.comments, $.annotation)
+                            const listSideEffects = sideEffectsAPIs.map(s => {
                                 return s.onList({
-                                    data: data.data,
-                                    annotation: {
-                                        annotation: data.annotation,
-                                    },
-                                })
-                            })
-
-                        },
-                        onElement: () => {
-                            hasEntries = true
-                            const entry = list.createEntry()
-                            // const entry = collBuilder.createEntry(_errorMessage => {
-                            //     //onError(errorMessage, svData)
-                            // })
-                            if (listSideEffects === null) {
-                                throw new Error("UNEXPECTED")
-                            }
-                            const elementSideEffects = listSideEffects.map(s => {
-                                return s.onEntry()
-                            })
-                            return createNodeDeserializer(
-                                context,
-                                $$.node,
-                                null,
-                                entry.node,
-                                null,
-                                elementSideEffects,
-                                onError,
-                                () => {
-                                    //
-                                },
-                                entry.comments,
-                            )
-                        },
-                        onEnd: $ => {
-                            if (hasEntries) {
-                                flagNonDefaultPropertiesFound()
-                            }
-                            if (listSideEffects === null) {
-                                throw new Error("UNEXPECTED")
-                            }
-                            listSideEffects.forEach(s => {
-                                s.onClose({
+                                    data: $.data,
                                     annotation: {
                                         annotation: $.annotation,
                                     },
                                 })
                             })
-                            addComments(list.comments, $.annotation)
+                            return {
+                                element: () => {
+                                    hasEntries = true
+                                    const entry = list.createEntry()
+                                    // const entry = collBuilder.createEntry(_errorMessage => {
+                                    //     //onError(errorMessage, svData)
+                                    // })
+                                    const elementSideEffects = listSideEffects.map(s => {
+                                        return s.onEntry()
+                                    })
+                                    return createNodeDeserializer(
+                                        $$.node,
+                                        null,
+                                        entry.node,
+                                        null,
+                                        elementSideEffects,
+                                        onError,
+                                        () => {
+                                            //
+                                        },
+                                        entry.comments,
+                                    )
+                                },
+                                arrayEnd: $ => {
+                                    if (hasEntries) {
+                                        flagNonDefaultPropertiesFound()
+                                    }
+                                    listSideEffects.forEach(s => {
+                                        s.onClose({
+                                            annotation: {
+                                                annotation: $.annotation,
+                                            },
+                                        })
+                                    })
+                                    addComments(list.comments, $.annotation)
+                                    return p.value(null)
+                                },
+                            }
+                        },
+                        object: $ => {
+                            return createUnexpectedObjectHandler(`expected a list`, $.annotation, onError)
+                        },
+                        taggedUnion: $ => {
+                            return createUnexpectedTaggedUnionHandler(`expected a list`, $.annotation, onError)
+                        },
+                        string: $ => {
+                            return createUnexpectedStringHandler(`expected a list`, $.annotation, onError)
 
                         },
-                    }))
+                    }
                 }
                 default:
                     return assertUnreachable($.type[0])
@@ -187,108 +273,105 @@ function createPropertyDeserializer<TokenAnnotation, NonTokenAnnotation>(
         case "component": {
             const $ = propDefinition.type[1]
             const componentBuilder = nodeBuilder.getComponent(propKey)
-            return wrap(
-                createNodeDeserializer(
-                    context,
-                    $.type.get().node,
-                    null,
-                    componentBuilder.node,
-                    null,
-                    sideEffectsAPIs.map(s => {
-                        return s.onComponent()
-                    }),
-                    onError,
-                    flagNonDefaultPropertiesFound,
-                    componentBuilder.comments,
-                ),
+            return createNodeDeserializer(
+                $.type.get().node,
+                null,
+                componentBuilder.node,
+                null,
+                sideEffectsAPIs.map(s => {
+                    return s.onComponent()
+                }),
+                onError,
+                flagNonDefaultPropertiesFound,
+                componentBuilder.comments,
             )
         }
         case "state group": {
             const $ = propDefinition.type[1]
             const stateGroup = nodeBuilder.getStateGroup(propKey)
-            return wrap(context.expectTaggedUnion({
-                options: $.states.mapSorted((stateDef, stateName) => {
-                    return (tuData, optionData) => {
-                        const stateSideEffects = sideEffectsAPIs.map(s => {
-                            return s.onStateGroup({
-                                annotation: {
-                                    annotation: tuData.annotation,
-                                },
-                            }).onOption({
-                                data: optionData.data,
-                                annotation: {
-                                    annotation: optionData.annotation,
-                                },
+
+            return {
+                array: $ => {
+                    return createUnexpectedArrayHandler(`expected a tagged union`, $.annotation, onError)
+                },
+                object: $ => {
+                    return createUnexpectedObjectHandler(`expected a tagged union`, $.annotation, onError)
+                },
+                taggedUnion: $$ => {
+                    const sgse = sideEffectsAPIs.map(s => {
+                        return s.onStateGroup({
+                            annotation: {
+                                annotation: $$.annotation,
+                            },
+                        })
+                    })
+                    addComments(stateGroup.comments, $$.annotation)
+
+                    return {
+                        option: $$$ => {
+                            const optionName = $$$.data.option
+                            const option = $.states.get($$$.data.option)
+                            const sse = sgse.map(s => {
+                                return s.onOption({
+                                    data: $$$.data,
+                                    annotation: {
+                                        annotation: $$$.annotation,
+                                        //stateGroupDefinition: $,
+                                    },
+                                })
                             })
-                        })
+                            if (option === null) {
+                                return astncore.createDummyRequiredValueHandler()
+                            } else {
 
-
-                        addComments(stateGroup.comments, tuData.annotation)
-                        const state = stateGroup.setState(stateName, errorMessage => onError(errorMessage, optionData.annotation))
-                        addComments(stateGroup.comments, optionData.annotation)
-                        if ($["default state"].get() !== stateDef) {
-                            flagNonDefaultPropertiesFound()
-                        }
-                        return wrap(
-                            createNodeDeserializer(
-                                context,
-                                stateDef.node,
-                                null,
-                                state.node,
-                                null,
-                                stateSideEffects,
-                                onError,
-                                flagNonDefaultPropertiesFound,
-                                stateGroup.comments,
-                            ),
-                        )
+                                const state = stateGroup.setState(optionName, errorMessage => onError(errorMessage, $$$.annotation))
+                                addComments(stateGroup.comments, $$$.annotation)
+                                if ($["default state"].get() !== option) {
+                                    flagNonDefaultPropertiesFound()
+                                }
+                                return wrap(
+                                    createNodeDeserializer(
+                                        option.node,
+                                        null,
+                                        state.node,
+                                        null,
+                                        sse,
+                                        onError,
+                                        flagNonDefaultPropertiesFound,
+                                        stateGroup.comments,
+                                    ),
+                                )
+                            }
+                        },
+                        missingOption: () => {
+                            onError("missing option", $$.annotation)
+                        },
+                        end: () => {
+                            //
+                        },
                     }
-                }),
-                onUnexpectedOption: $$ => {
-                    sideEffectsAPIs.forEach(s => {
-                        s.onStateGroup({
-                            annotation: {
-                                annotation: $$.tuAnnotation,
-                            },
-                        }).onOption({
-                            data: $$.data,
-                            annotation: {
-                                annotation: $$.optionAnnotation,
-                                //stateGroupDefinition: $,
-                            },
-                        })
-                    })
                 },
-                onNull: data => { //onNull
-                    sideEffectsAPIs.map(s => {
-                        return s.onNull({
-                            data: data.data,
-                            annotation: {
-                                annotation: data.annotation,
-                            },
-                        })
-                    })
-                    defaultInitializeProperty(
-                        data.annotation,
-                        propDefinition,
-                        propKey,
-                        nodeBuilder,
-                        onError
-                    )
-                    if (!nullAllowed) {
-                        onError(`value may not be null`, data.annotation)
-                    }
+                string: $ => {
+                    return createUnexpectedStringHandler(`expected a tagged union`, $.annotation, onError)
 
-                    return p.value(false)
                 },
-            }))
+            }
         }
         case "value": {
             const $ = propDefinition.type[1]
             const valueBuilder = nodeBuilder.getValue(propKey)
 
-            return wrap(context.expectString({
-                callback: $$ => {
+            return {
+                array: $ => {
+                    return createUnexpectedArrayHandler(`expected a string`, $.annotation, onError)
+                },
+                object: $ => {
+                    return createUnexpectedObjectHandler(`expected a string`, $.annotation, onError)
+                },
+                taggedUnion: $ => {
+                    return createUnexpectedTaggedUnionHandler(`expected a string`, $.annotation, onError)
+                },
+                string: $$ => {
                     addComments(valueBuilder.comments, $$.annotation)
 
                     switch ($$.data.type[0]) {
@@ -353,31 +436,7 @@ function createPropertyDeserializer<TokenAnnotation, NonTokenAnnotation>(
                     }
                     return p.value(false)
                 },
-                onInvalidType: $ => {
-                    onError(`expected a simple value`, $.annotation)
-                },
-                onNull: $ => { //onNull
-                    sideEffectsAPIs.map(s => {
-                        return s.onNull({
-                            data: $.data,
-                            annotation: {
-                                annotation: $.annotation,
-                            },
-                        })
-                    })
-                    defaultInitializeProperty(
-                        $.annotation,
-                        propDefinition,
-                        propKey,
-                        nodeBuilder,
-                        onError
-                    )
-                    if (!nullAllowed) {
-                        onError(`value may not be null`, $.annotation)
-                    }
-                    return p.value(false)
-                },
-            }))
+            }
         }
         default:
             return assertUnreachable(propDefinition.type[0])
@@ -470,7 +529,6 @@ function getPropertyComments(node: buildAPI.Node, propertyName: string, property
 }
 
 function createNodeDeserializer<TokenAnnotation, NonTokenAnnotation>(
-    context: astncore.IExpectContext<TokenAnnotation, NonTokenAnnotation>,
     nodeDefinition: buildAPI.NodeDefinition,
     keyPropertyDefinition: buildAPI.PropertyDefinition | null,
     nodeBuilder: buildAPI.Node,
@@ -480,164 +538,21 @@ function createNodeDeserializer<TokenAnnotation, NonTokenAnnotation>(
     flagNonDefaultPropertiesFound: () => void,
     targetComments: buildAPI.Comments,
 ): astncore.ValueHandler<TokenAnnotation, NonTokenAnnotation> {
-
-
-    let shorthandTypeSideEffects: sideEffectAPI.ShorthandTypeHandler<TokenAnnotation>[] | null = null
-    let typeSideEffects: sideEffectAPI.TypeHandler<TokenAnnotation>[] | null = null
-
-    const expectedElements: astncore.ExpectedElements<TokenAnnotation, NonTokenAnnotation> = []
-    nodeDefinition.properties.forEach((propDefinition, propKey) => {
-        if (propDefinition === keyPropertyDefinition) {
-            return
-        }
-        expectedElements.push({
-            name: propKey,
-            getHandler: () => {
-                if (shorthandTypeSideEffects === null) {
-                    throw new Error("missing shorthand side effects")
-                }
-                return createPropertyDeserializer(
-                    context,
-                    propDefinition,
-                    propKey,
-                    nodeBuilder,
-                    shorthandTypeSideEffects.map(s => {
-                        return s.onProperty({
-                            annotation: {
-                                propKey: propKey,
-                                propDefinition: propDefinition,
-                            },
-                        })
-                    }),
-                    onError,
-                    () => {
-                        //
-                    },
-                    true,
-                )
-            },
-        })
-    })
-
-    const processedProperties: {
-        [key: string]: {
-            annotation: TokenAnnotation
-            isNonDefault: boolean
-        }
-    } = {}
-    const expectedProperties: astncore.ExpectedProperties<TokenAnnotation, NonTokenAnnotation> = {}
-    nodeDefinition.properties.forEach((propDefinition, propKey) => {
-        if (keyProperty === propDefinition) {
-            return
-        }
-        expectedProperties[propKey] = {
-            onExists: $ => {
-                addComments(getPropertyComments(nodeBuilder, propKey, propDefinition), $.annotation)
-                const processedProperty = {
-                    annotation: $.annotation,
-                    isNonDefault: false,
-                }
-                processedProperties[propKey] = processedProperty
-                if (typeSideEffects === null) {
-                    throw new Error("missing type side effects")
-                }
-                return createPropertyDeserializer(
-                    context,
-                    propDefinition,
-                    propKey,
-                    nodeBuilder,
-                    typeSideEffects.map(s => {
-                        return s.onProperty({
-                            data: $.data,
-                            annotation: {
-                                nodeDefinition: nodeDefinition,
-                                key: propKey,
-                                annotation: $.annotation,
-                            },
-                        })
-                    }),
-                    onError,
-                    () => {
-                        processedProperty.isNonDefault = true
-                    },
-                    false,
-                )
-            },
-            onNotExists: $ => {
-                defaultInitializeProperty(
-                    $.beginAnnotation,
-                    propDefinition,
-                    propKey,
-                    nodeBuilder,
-                    onError,
-                )
-            },
-        }
-    })
-
-    return context.expectTypeOrShorthandType({
-        properties: expectedProperties,
-        elements: expectedElements,
-        onTypeBegin: $ => { //onTypeBegin
-            addComments(targetComments, $.annotation)
-
-            typeSideEffects = sideEffectsAPI.map(s => {
-                return s.onTypeOpen({
-                    data: $.data,
-                    annotation: {
-                        annotation: $.annotation,
-                        nodeDefinition: nodeDefinition,
-                        keyPropertyDefinition: keyPropertyDefinition,
-                    },
-                })
-            })
-        },
-        onTypeEnd: $ => { //onTypeEnd
-            let hadNonDefaultProperties = false
-            addComments(targetComments, $.annotation)
-            nodeDefinition.properties.forEach((_prop, propKey) => {
-                const processedProperty = processedProperties[propKey]
-                if (processedProperty !== undefined) {
-                    if (!processedProperty.isNonDefault) {
-                        onError(`property '${propKey}' has default value, remove`, processedProperty.annotation)
-                    } else {
-                        hadNonDefaultProperties = true
-                    }
-                }
-            })
-            if (hadNonDefaultProperties) {
-                flagNonDefaultPropertiesFound()
+    return {
+        array: $ => {
+            if ($.data.type[0] !== "shorthand type") {
+                onError("not a list", $.annotation)
             }
-            if (typeSideEffects === null) {
-                throw new Error("missing type side effects")
+            type ExpectedElement = {
+                name: string
+                propDefinition: buildAPI.PropertyDefinition
+                getHandler: () => astncore.ValueHandler<TokenAnnotation, NonTokenAnnotation>
             }
-            typeSideEffects.forEach(s => {
-                s.onTypeClose({
-                    annotation: {
-                        annotation: $.annotation,
-                    },
-                })
-            })
-        },
-        onUnexpectedProperty: $ => { //onUnexpectedProperty
-            if (typeSideEffects === null) {
-                throw new Error("missing type side effects")
-            }
-            typeSideEffects.forEach(s => {
-                s.onProperty({
-                    data: $.data,
-                    annotation: {
-                        nodeDefinition: nodeDefinition,
-                        key: $.data.key,
-                        annotation: $.annotation,
-                        //expectedProperties: Object.keys(expectedProperties),
-                    },
-                })
-            })
-            return astncore.createDummyRequiredValueHandler()
-        },
-        onShorthandTypeBegin: $ => { //shorthand open
-            shorthandTypeSideEffects = sideEffectsAPI.map(s => {
+
+            type ExpectedElements = ExpectedElement[]
+
+
+            const shorthandTypeSideEffects = sideEffectsAPI.map(s => {
                 return s.onShorthandTypeOpen({
                     data: $.data,
                     annotation: {
@@ -648,40 +563,236 @@ function createNodeDeserializer<TokenAnnotation, NonTokenAnnotation>(
                 })
             })
 
-        },
-        onShorthandTypeEnd: $ => { //shorthand close
-            if (shorthandTypeSideEffects === null) {
-                throw new Error("unexpected: no shorthand type side effect handlers")
-            }
-            shorthandTypeSideEffects.forEach(s => {
-                s.onShorthandTypeClose({
-                    annotation: {
-                        annotation: $.annotation,
+            const expectedElements: ExpectedElements = []
+
+            nodeDefinition.properties.forEach((propDefinition, propKey) => {
+                if (keyProperty === propDefinition) {
+                    return
+                }
+                expectedElements.push({
+                    name: propKey,
+                    propDefinition: propDefinition,
+                    getHandler: () => {
+                        return createPropertyDeserializer(
+                            propDefinition,
+                            propKey,
+                            nodeBuilder,
+                            shorthandTypeSideEffects.map(s => {
+                                return s.onProperty({
+                                    annotation: {
+                                        propKey: propKey,
+                                        propDefinition: propDefinition,
+                                    },
+                                })
+                            }),
+                            onError,
+                            () => { //flagNondefaultPropertiesFound
+                                //
+                            },
+                        )
                     },
                 })
             })
-            addComments(targetComments, $.annotation)
-        },
-    })
+            if ($.data.type[0] !== "shorthand type") {
+                onError("array is not a shorthand type", $.annotation)
+            }
+            let index = 0
+            return {
+                element: () => {
+                    const ee = expectedElements[index]
+                    index++
+                    if (ee === undefined) {
+                        const dvh = astncore.createDummyValueHandler()
+                        return {
+                            object: data => {
+                                onError("superfluous element", data.annotation)
+                                return dvh.object(data)
+                            },
+                            array: data => {
+                                onError("superfluous element", data.annotation)
+                                return dvh.array(data)
+                            },
+                            string: data => {
+                                onError("superfluous element", data.annotation)
+                                return dvh.string(data)
+                            },
+                            taggedUnion: data => {
+                                onError("superfluous element", data.annotation)
+                                return dvh.taggedUnion(data)
+                            },
+                        }
+                    } else {
+                        return ee.getHandler()
+                    }
+                },
+                arrayEnd: $$ => {
 
+                    addComments(targetComments, $$.annotation)
+                    const missing = expectedElements.length - index
+                    if (missing > 0) {
+                        onError('elements missing', $$.annotation)
+                        for (let i = index; i !== expectedElements.length; i += 1) {
+                            const ee = expectedElements[i]
+
+                            defaultInitializeProperty(
+                                $.annotation,
+                                ee.propDefinition,
+                                ee.name,
+                                nodeBuilder,
+                                onError,
+                            )
+                        }
+                    }
+
+                    shorthandTypeSideEffects.forEach(s => {
+                        s.onShorthandTypeClose({
+                            annotation: {
+                                annotation: $$.annotation,
+                            },
+                        })
+                    })
+                    return p.value(null)
+                },
+            }
+        },
+        object: $ => {
+
+            if ($.data.type[0] !== "verbose type") {
+                onError("not a type", $.annotation)
+            }
+
+
+            addComments(targetComments, $.annotation)
+
+            const typeSideEffects = sideEffectsAPI.map(s => {
+                return s.onTypeOpen({
+                    data: $.data,
+                    annotation: {
+                        annotation: $.annotation,
+                        nodeDefinition: nodeDefinition,
+                        keyPropertyDefinition: keyPropertyDefinition,
+                    },
+                })
+            })
+
+            const processedProperties: {
+                [key: string]: {
+                    annotation: TokenAnnotation
+                    isNonDefault: boolean
+                }
+            } = {}
+            return {
+                property: $$ => {
+                    const key = $$.data.key
+                    const propertyDefinition = nodeDefinition.properties.get(key)
+                    if (propertyDefinition === null) {
+                        onError("superfluous property", $$.annotation)
+                        return p.value(astncore.createDummyRequiredValueHandler())
+                    } else {
+
+                        const pp = {
+                            annotation: $$.annotation,
+                            isNonDefault: true,
+                        }
+                        processedProperties[key] = pp
+
+                        if (propertyDefinition === keyProperty) {
+                            onError("unexpected identifying property", $$.annotation)
+                            typeSideEffects.forEach(s => {
+                                s.onProperty({
+                                    data: $$.data,
+                                    annotation: {
+                                        nodeDefinition: nodeDefinition,
+                                        key: $$.data.key,
+                                        annotation: $.annotation,
+                                    },
+                                })
+                            })
+                            return p.value(astncore.createDummyRequiredValueHandler())
+                        } else {
+
+                            addComments(getPropertyComments(nodeBuilder, key, propertyDefinition), $.annotation)
+                            return p.value(wrap(createPropertyDeserializer(
+                                propertyDefinition,
+                                key,
+                                nodeBuilder,
+                                typeSideEffects.map(s => {
+                                    return s.onProperty({
+                                        data: $$.data,
+                                        annotation: {
+                                            nodeDefinition: nodeDefinition,
+                                            key: key,
+                                            annotation: $.annotation,
+                                        },
+                                    })
+                                }),
+                                onError,
+                                () => {
+                                    pp.isNonDefault = true
+                                },
+                            )))
+                        }
+                    }
+
+                },
+                objectEnd: $$ => {
+                    addComments(targetComments, $$.annotation)
+                    let hadNonDefaultProperties = false
+
+                    nodeDefinition.properties.forEach((propDefinition, propKey) => {
+                        if (propDefinition === keyProperty) {
+                            return
+                        }
+                        const pp = processedProperties[propKey]
+                        if (pp === undefined) {
+                            defaultInitializeProperty(
+                                $.annotation,
+                                propDefinition,
+                                propKey,
+                                nodeBuilder,
+                                onError,
+                            )
+                        } else {
+                            if (!pp.isNonDefault) {
+                                onError(`property '${propKey}' has default value, remove`, pp.annotation)
+                            } else {
+                                hadNonDefaultProperties = true
+                            }
+                        }
+                    })
+                    if (hadNonDefaultProperties) {
+                        flagNonDefaultPropertiesFound()
+                    }
+                    typeSideEffects.forEach(s => {
+                        s.onTypeClose({
+                            annotation: {
+                                annotation: $$.annotation,
+                            },
+                        })
+                    })
+                    return p.value(null)
+                },
+            }
+        },
+        taggedUnion: $ => {
+            return createUnexpectedTaggedUnionHandler(`expected a type`, $.annotation, onError)
+        },
+        string: $ => {
+            return createUnexpectedStringHandler(`expected a type`, $.annotation, onError)
+
+        },
+    }
 }
 
 export function createDatasetDeserializer<TokenAnnotation, NonTokenAnnotation>(
-    context: astncore.IExpectContext<TokenAnnotation, NonTokenAnnotation>,
     dataset: id.IDataset,
     sideEffectsHandlers: sideEffectAPI.NodeHandler<TokenAnnotation>[],
     onError: OnError<TokenAnnotation>,
 ): astncore.TreeHandler<TokenAnnotation, NonTokenAnnotation> {
 
-    function wrap(handler: astncore.ValueHandler<TokenAnnotation, NonTokenAnnotation>) {
-        return context.expectValue({
-            handler: handler,
-        })
-    }
     return {
         root: wrap(
             createNodeDeserializer(
-                context,
                 dataset.schema["root type"].get().node,
                 null,
                 dataset.root,
