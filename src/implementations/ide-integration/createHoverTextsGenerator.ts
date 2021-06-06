@@ -239,7 +239,7 @@ function createNodeHoverTextGenerator<Annotation>(
 function createTypeHoverTextGenerator<Annotation>(
     componentName: string | null,
     onToken: OnTokenHoverText<Annotation>,
-): streamVal.TypeHandler<Annotation> {
+): streamVal.VerboseTypeHandler<Annotation> {
     return {
         onProperty: $ => {
             return createPropertyHoverTextGenerator($.data.key, onToken)

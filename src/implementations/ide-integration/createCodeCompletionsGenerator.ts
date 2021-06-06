@@ -244,7 +244,7 @@ function createCodeCompletionForShorthandTypeGenerator<Annotation>(
 
 function createCodeCompletionForVerboseTypeGenerator<Annotation>(
     onToken: OnToken<Annotation>,
-): streamVal.TypeHandler<Annotation> {
+): streamVal.VerboseTypeHandler<Annotation> {
     return {
         onProperty: $ => {
             const propDefinition = $.annotation.nodeDefinition.properties.get($.annotation.key)

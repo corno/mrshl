@@ -166,7 +166,7 @@ function createShorthandType<Annotation>(
 function createType<Annotation>(
     definition: t.Node,
     onError: (message: string, annotation: Annotation, severity: DiagnosticSeverity) => void,
-): streamVal.TypeHandler<Annotation> {
+): streamVal.VerboseTypeHandler<Annotation> {
     return {
         onProperty: $ => {
             return createProp($.data.key, definition, onError)
