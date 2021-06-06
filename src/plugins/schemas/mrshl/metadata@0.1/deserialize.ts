@@ -98,7 +98,7 @@ function createNodeHandler<TokenAnnotation, NonTokenAnnotation>(
                                                                                                 },
                                                                                             },
                                                                                         },
-                                                                                        onEnd: () => {
+                                                                                        onTypeEnd: () => {
 
                                                                                             const assertedTargetNode = assertNotNull(targetNode)
                                                                                             const assertedKeyPropertyName = assertNotNull(keyPropertyName)
@@ -132,7 +132,7 @@ function createNodeHandler<TokenAnnotation, NonTokenAnnotation>(
                                                                                                 resolveRegistry
                                                                                             ),
                                                                                         },
-                                                                                        onEnd: () => {
+                                                                                        onTypeEnd: () => {
                                                                                             const asserted = assertNotNull(targetNode)
 
                                                                                             targetCollectionType = ["list", {
@@ -152,7 +152,7 @@ function createNodeHandler<TokenAnnotation, NonTokenAnnotation>(
                                                                         },
                                                                     },
                                                                 },
-                                                                onEnd: () => {
+                                                                onTypeEnd: () => {
                                                                     const asserted = assertNotNull(targetCollectionType)
                                                                     targetPropertyType = ["collection", {
                                                                         "type": asserted,
@@ -184,7 +184,7 @@ function createNodeHandler<TokenAnnotation, NonTokenAnnotation>(
                                                                         },
                                                                     },
                                                                 },
-                                                                onEnd: () => {
+                                                                onTypeEnd: () => {
                                                                     const assertedTargetComponentTypeName = assertNotNull(targetComponentTypeName)
                                                                     targetPropertyType = ["component", {
                                                                         "type": createReference(
@@ -223,7 +223,7 @@ function createNodeHandler<TokenAnnotation, NonTokenAnnotation>(
                                                                                             resolveRegistry,
                                                                                         ),
                                                                                     },
-                                                                                    onEnd: () => {
+                                                                                    onTypeEnd: () => {
                                                                                         const asserted = assertNotNull(targetNode)
                                                                                         states.add(stateData.data.key, {
                                                                                             node: asserted,
@@ -254,7 +254,7 @@ function createNodeHandler<TokenAnnotation, NonTokenAnnotation>(
                                                                         },
                                                                     },
                                                                 },
-                                                                onEnd: () => {
+                                                                onTypeEnd: () => {
 
                                                                     const assertedDefaultStateName = assertNotNull(defaultStateName)
                                                                     targetPropertyType = ["state group", {
@@ -306,7 +306,7 @@ function createNodeHandler<TokenAnnotation, NonTokenAnnotation>(
                                                                             },
                                                                         },
                                                                     },
-                                                                    onEnd: () => {
+                                                                    onTypeEnd: () => {
                                                                         const assertedQuoted = assertNotNull(quoted)
                                                                         const assertedDefaultValue = assertNotNull(defaultValue)
                                                                         targetPropertyType = ["value", {
@@ -334,13 +334,13 @@ function createNodeHandler<TokenAnnotation, NonTokenAnnotation>(
                                             },
                                         },
                                     },
-                                    onEnd: () => {
+                                    onTypeEnd: () => {
                                         //HERE BE DRAGONS
                                         const asserted = assertNotNull(targetPropertyType)
                                         properties.add(propertyData.data.key, {
                                             type: asserted,
                                         })
-                                    }
+                                    },
                                 }))
                             },
                         }),
@@ -350,7 +350,7 @@ function createNodeHandler<TokenAnnotation, NonTokenAnnotation>(
                         },
                     },
                 },
-                onEnd: () => {
+                onTypeEnd: () => {
                     callback({ properties: properties })
                 },
             }))
@@ -383,7 +383,8 @@ export function createDeserializer<TokenAnnotation, NonTokenAnnotation>(
         () => astncore.createDummyValueHandler(),
         () => astncore.createDummyValueHandler(),
         astncore.Severity.warning,
-        astncore.OnDuplicateEntry.ignore
+        astncore.OnDuplicateEntry.ignore,
+        astncore.createSerializedString,
     )
     const resolveRegistry = new ResolveRegistry()
 
@@ -410,7 +411,7 @@ export function createDeserializer<TokenAnnotation, NonTokenAnnotation>(
                                     resolveRegistry
                                 ),
                             },
-                            onEnd: () => {
+                            onTypeEnd: () => {
                                 const asserted = assertNotNull(targetNode)
                                 componentTypes.add(propertyData.data.key, {
                                     node: asserted,
@@ -437,7 +438,7 @@ export function createDeserializer<TokenAnnotation, NonTokenAnnotation>(
                 },
             },
         },
-        onEnd: () => {
+        onTypeEnd: () => {
             let schema: streamVal.Schema | null = null
             const assertedRootName = assertNotNull(rootName)
             const assertedRange = assertNotNull(rootNameAnnotation)

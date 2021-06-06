@@ -49,13 +49,13 @@ function createExpectedNodeHandler<TokenAnnotation, NonTokenAnnotation>(
     return {
         onExists: () => {
             const properties = new Dictionary<t.Property>({})
-            return wrap(context.expectType({
+            return wrap(context.expectVerboseType({
                 properties: {
                     "properties": {
                         onExists: () => wrap(context.expectDictionary({
                             onProperty: propertyData => {
                                 let targetPropertyType: t.PropertyType | null = null
-                                return wrap(context.expectType({
+                                return wrap(context.expectVerboseType({
                                     properties: {
                                         "type": {
                                             onExists: () => wrap(context.expectTaggedUnion({
@@ -64,7 +64,7 @@ function createExpectedNodeHandler<TokenAnnotation, NonTokenAnnotation>(
                                                         let targetCollectionType: t.CollectionType | null = null
                                                         let targetNode: t.Node | null = null
 
-                                                        return wrap(context.expectType({
+                                                        return wrap(context.expectVerboseType({
                                                             properties: {
                                                                 "node": createExpectedNodeHandler(
                                                                     context,
@@ -80,7 +80,7 @@ function createExpectedNodeHandler<TokenAnnotation, NonTokenAnnotation>(
                                                                         options: {
                                                                             "dictionary": () => {
                                                                                 let targetKeyProperty: AnnotatedString<TokenAnnotation> | null = null
-                                                                                return wrap(context.expectType({
+                                                                                return wrap(context.expectVerboseType({
                                                                                     properties: {
                                                                                         "key property": {
                                                                                             onExists: () => wrap(context.expectQuotedString({
@@ -124,7 +124,7 @@ function createExpectedNodeHandler<TokenAnnotation, NonTokenAnnotation>(
                                                                             "list": () => {
                                                                                 targetCollectionType = ["list", {
                                                                                 }]
-                                                                                return wrap(context.expectType({}))
+                                                                                return wrap(context.expectVerboseType({}))
                                                                             },
                                                                         },
                                                                     })),
@@ -145,7 +145,7 @@ function createExpectedNodeHandler<TokenAnnotation, NonTokenAnnotation>(
                                                     },
                                                     "component": () => {
                                                         let targetComponentTypeName: AnnotatedString<TokenAnnotation> | null = null
-                                                        return wrap(context.expectType({
+                                                        return wrap(context.expectVerboseType({
                                                             properties: {
                                                                 "type": {
                                                                     onExists: () => wrap(context.expectQuotedString({
@@ -186,13 +186,13 @@ function createExpectedNodeHandler<TokenAnnotation, NonTokenAnnotation>(
                                                     "state group": () => {
                                                         const states = new Dictionary<t.State>({})
                                                         let targetDefaultState: null | AnnotatedString<TokenAnnotation> = null
-                                                        return wrap(context.expectType({
+                                                        return wrap(context.expectVerboseType({
                                                             properties: {
                                                                 "states": {
                                                                     onExists: () => wrap(context.expectDictionary({
                                                                         onProperty: stateData => {
                                                                             let targetNode: t.Node | null = null
-                                                                            return wrap(context.expectType({
+                                                                            return wrap(context.expectVerboseType({
                                                                                 properties: {
                                                                                     "node": createExpectedNodeHandler(
                                                                                         context,
@@ -258,18 +258,18 @@ function createExpectedNodeHandler<TokenAnnotation, NonTokenAnnotation>(
                                                     "value": () => {
                                                         let targetValueType: t.ValueType | null = null
                                                         let defaultValue: string | null = null
-                                                        return wrap(context.expectType({
+                                                        return wrap(context.expectVerboseType({
                                                             properties: {
                                                                 "type": {
                                                                     onExists: () => wrap(context.expectTaggedUnion({
                                                                         options: {
                                                                             "number": () => {
                                                                                 targetValueType = ["number", {}]
-                                                                                return wrap(context.expectType({}))
+                                                                                return wrap(context.expectVerboseType({}))
                                                                             },
                                                                             "text": () => {
                                                                                 targetValueType = ["string", {}]
-                                                                                return wrap(context.expectType({}))
+                                                                                return wrap(context.expectVerboseType({}))
                                                                             },
                                                                         },
                                                                     })),
@@ -354,7 +354,8 @@ export function createDeserializer<TokenAnnotation, NonTokenAnnotation>(
         () => astncore.createDummyValueHandler(),
         () => astncore.createDummyValueHandler(),
         astncore.Severity.warning,
-        astncore.OnDuplicateEntry.ignore
+        astncore.OnDuplicateEntry.ignore,
+        astncore.createSerializedString,
     )
     const resolveRegistry = new ResolveRegistry()
 
@@ -363,7 +364,7 @@ export function createDeserializer<TokenAnnotation, NonTokenAnnotation>(
             handler: handler,
         })
     }
-    return context.expectType({
+    return context.expectVerboseType({
         properties: {
             "component types": {
                 onExists: _propertyData => wrap(context.expectDictionary({
@@ -372,7 +373,7 @@ export function createDeserializer<TokenAnnotation, NonTokenAnnotation>(
                     },
                     onProperty: propertyData => {
                         let targetNode: t.Node | null = null
-                        return wrap(context.expectType({
+                        return wrap(context.expectVerboseType({
                             properties: {
                                 "node": createExpectedNodeHandler(
                                     context,

@@ -201,7 +201,8 @@ export function deserializeDataset(
                         h.onEnd({})
                     })
                     return p.success(dataset)
-                }
+                },
+                astncore.createDummyValueHandler
             )
         },
         (error, range) => {
