@@ -101,6 +101,9 @@ function createStateGroupHoverTextGenerator<Annotation>(
 ): streamVal.TaggedUnionHandler<Annotation> {
 
     return {
+        onUnexpectedOption: () => {
+            //
+        },
         onOption: $ => {
             onToken($.annotation.annotation, () => {
                 return name

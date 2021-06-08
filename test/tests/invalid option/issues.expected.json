@@ -1,0 +1,4 @@
+[
+    [ "deserialization", "error", "unknown option: 'c'", 2, 12, 2, 15 ],
+    [ "deserialization", "warning", "property 'y' has default value, remove", 2, 5, 2, 8 ]
+]

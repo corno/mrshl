@@ -313,19 +313,30 @@ function createPropertyDeserializer<TokenAnnotation, NonTokenAnnotation>(
                         option: $$$ => {
                             const optionName = $$$.data.option
                             const option = $.options.get($$$.data.option)
-                            const sse = sgse.map(s => {
-                                return s.onOption({
-                                    data: $$$.data,
-                                    annotation: {
-                                        annotation: $$$.annotation,
-                                        //stateGroupDefinition: $,
-                                    },
-                                })
-                            })
                             if (option === null) {
+                                onError(`unknown option: '${optionName}'`, $$$.annotation, DiagnosticSeverity.error)
+                                sgse.forEach(s => {
+                                    return s.onUnexpectedOption({
+                                        data: $$$.data,
+                                        annotation: {
+                                            annotation: $$$.annotation,
+                                            //stateGroupDefinition: $,
+                                        },
+                                    })
+                                })
                                 return astncore.createDummyRequiredValueHandler()
                             } else {
 
+                                const sse = sgse.map(s => {
+                                    return s.onOption({
+                                        data: $$$.data,
+                                        annotation: {
+                                            annotation: $$$.annotation,
+                                            definition: option,
+                                            //stateGroupDefinition: $,
+                                        },
+                                    })
+                                })
                                 const state = stateGroup.setState(optionName, errorMessage => onError(errorMessage, $$$.annotation, DiagnosticSeverity.error))
                                 addComments(stateGroup.comments, $$$.annotation)
                                 if ($["default option"].get() !== option) {
@@ -583,7 +594,7 @@ function createNodeDeserializer<TokenAnnotation, NonTokenAnnotation>(
                                 return s.onProperty({
                                     annotation: {
                                         propKey: propKey,
-                                        propDefinition: propDefinition,
+                                        definition: propDefinition,
                                     },
                                 })
                             }),
@@ -688,7 +699,7 @@ function createNodeDeserializer<TokenAnnotation, NonTokenAnnotation>(
                     const key = $$.data.key
                     const propertyDefinition = nodeDefinition.properties.get(key)
                     if (propertyDefinition === null) {
-                        onError(`unexpected property: '${key}'. Choose from ${nodeDefinition.properties.getKeys().map(k => `'${k}'`).join(", ")}`, $$.annotation, DiagnosticSeverity.error)
+                        onError(`unknown property: '${key}'. Choose from ${nodeDefinition.properties.getKeys().map(k => `'${k}'`).join(", ")}`, $$.annotation, DiagnosticSeverity.error)
                         typeSideEffects.forEach(s => {
                             s.onUnexpectedProperty({
                                 data: $$.data,

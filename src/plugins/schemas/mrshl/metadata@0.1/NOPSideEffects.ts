@@ -65,6 +65,9 @@ class StateGroupNOPSideEffects<Annotation> implements streamVal.TaggedUnionHandl
     // onUnexpectedOption() {
     //     //
     // }
+    onUnexpectedOption() {
+        //
+    }
     onOption() {
         return createNodeNOPSideEffects()
     }

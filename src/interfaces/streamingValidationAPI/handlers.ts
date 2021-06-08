@@ -39,9 +39,16 @@ export interface TaggedUnionHandler<Annotation> {
     onOption($: {
         data: astncore.OptionData
         annotation: {
+            definition: def.OptionDefinition
             annotation: Annotation
         }
     }): NodeHandler<Annotation>
+    onUnexpectedOption($: {
+        data: astncore.OptionData
+        annotation: {
+            annotation: Annotation
+        }
+    }): void
 }
 
 export interface PropertyHandler<Annotation> {
@@ -86,7 +93,7 @@ export interface ShorthandTypeHandler<Annotation> {
     onProperty($: {
         annotation: {
             propKey: string
-            propDefinition: def.PropertyDefinition
+            definition: def.PropertyDefinition
         }
     }): PropertyHandler<Annotation>
     onShorthandTypeClose($: {

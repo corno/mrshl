@@ -133,6 +133,9 @@ function createCodeCompletionsForPropertyGenerator<Annotation>(
                 //"onTaggedUnion",
             )
             return {
+                onUnexpectedOption: () => {
+                    //
+                },
                 onOption: () => {
                     return createCodeCompletionForNodeGenerator(onToken)
                 },

@@ -47,6 +47,9 @@ function createStateGroup<Annotation>(
     onError: (message: string, annotation: Annotation, severity: DiagnosticSeverity) => void,
 ): streamVal.TaggedUnionHandler<Annotation> {
     return {
+        onUnexpectedOption: () => {
+            //
+        },
         onOption: $ => {
             const state = definition.states.getUnsafe($.data.option)
             return createNode(state.node, onError)

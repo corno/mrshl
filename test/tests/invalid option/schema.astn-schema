@@ -1,0 +1,20 @@
+! "mrshl/schemaschema@0.1" (
+    'component types': {
+        'x': (
+            'node': (
+                'properties': {
+                    'y': (
+                        'type': | 'state group' (
+                            'default state': "a"
+                            'states': { 
+								"a": ()
+								"b": ()
+							}
+                        )
+                    )
+                }
+            )
+        )
+    }
+    'root type': 'x'
+)

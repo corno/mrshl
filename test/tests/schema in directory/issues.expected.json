@@ -1,4 +1,4 @@
 [
     [ "deserialization", "warning", "expected a verbose type: ( )", 1, 1, 1, 2],
-    [ "deserialization", "error", "unexpected property: 'a'. Choose from 'a24', 'b', 'c'", 5, 5, 5, 8]
+    [ "deserialization", "error", "unknown property: 'a'. Choose from 'a24', 'b', 'c'", 5, 5, 5, 8]
 ]

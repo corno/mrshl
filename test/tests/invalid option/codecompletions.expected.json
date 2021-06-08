@@ -1,0 +1,22 @@
+{
+	"1:1-2": {
+		"inToken": null,
+		"afterToken": [
+			"\n    'y': | 'a' (\n    )\n"
+		]
+	},
+	"2:5-8": {
+		"inToken": null,
+		"afterToken": [
+			" | 'a' (\n)"
+		]
+	},
+	"2:10-11": {
+		"inToken": null,
+		"afterToken": null
+	},
+	"3:1-2": {
+		"inToken": null,
+		"afterToken": null
+	}
+}
