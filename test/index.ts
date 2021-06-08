@@ -37,7 +37,7 @@ function readFileFromFileSystem(
                     } else if (err.code === "EISDIR") {
                         //the path is a directory
                         onError(["not found", {}])
-                    } else{
+                    } else {
                         console.log(err.code)
                         onError(["other", { description: err.message }])
                     }
@@ -115,7 +115,7 @@ function deepEqualJSON(
 }
 
 
-type Event = [string, string?]
+//type Event = [string, string?]
 
 // function subscribeToNode(node: async.Node, actualEvents: Event[]) {
 //     node.forEachProperty((prop, propKey) => {
@@ -134,7 +134,7 @@ type Event = [string, string?]
 //                 subscribeToNode($.node, actualEvents)
 //                 break
 //             }
-//             case "state group": {
+//             case "tagged union": {
 //                 const $ = prop.type[1]
 //                 $.currentStateKey.subscribeToValue(state => {
 //                     actualEvents.push(["current state", state])
@@ -145,7 +145,7 @@ type Event = [string, string?]
 //                 })
 //                 break
 //             }
-//             case "value": {
+//             case "string": {
 //                 const $ = prop.type[1]
 //                 $.value.subscribeToValue(value => {
 //                     actualEvents.push(["value", value])
@@ -162,14 +162,12 @@ export function directoryTests(): void {
 
     describe("'tests' directory", () => {
         fs.readdirSync(testsDir).forEach(dir => {
-            //console.log("test:", dir)
             const testDirPath = path.join(testsDir, dir)
             const serializedDatasetPath = path.join(testDirPath, "data.astn.test")
             //const expectedOutputPath = path.join(testDirPath, "expected.astn.test")
 
 
             const actualIssues: Issues = []
-            const actualEvents: Event[] = []
             const actualCodeCompletions: CodeCompletions = {}
             const actualHoverTexts: HoverTexts = {}
             const out: string[] = []
@@ -305,27 +303,11 @@ export function directoryTests(): void {
                     schema => {
                         return db5.createInMemoryDataset(schema)
                     }
-                ).mapResult<null>(_dataset => {
-                    console.error("IMPLEMENT ME: SERIALIZE")
-
-                    // return db5.serialize(
-                    //     dataset.dataset.sync,
-                    //     dataset.internalSchemaSpecification,
-                    // ).consume<null>(
-                    //     null,
-                    //     {
-                    //         onData: $ => {
-                    //             out.push($)
-                    //             return p.value(false)
-                    //         },
-                    //         onEnd: () => {
-                    //             subscribeToNode(dataset.dataset.async.rootNode, actualEvents)
-
-                    //             return p.value(null)
-                    //         },
-                    //     }
-                    // )
-                    return p.value(null)
+                ).mapResult<null>(dataset => {
+                    return dataset.dataset.serialize(
+                        dataset.internalSchemaSpecification,
+                        $ => out.push($),
+                    )
                 }).catch(
                     _e => {
                         if (actualIssues.length === 0) {
@@ -348,7 +330,6 @@ export function directoryTests(): void {
                     )
                     deepEqualJSON(testDirPath, "codecompletions", actualCodeCompletions)
                     deepEqualJSON(testDirPath, "hovertexts", actualHoverTexts)
-                    deepEqualJSON(testDirPath, "events", actualEvents)
                     deepEqualJSON(testDirPath, "issues", actualIssues)
                 })
             })

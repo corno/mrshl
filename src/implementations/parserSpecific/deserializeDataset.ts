@@ -25,6 +25,7 @@ import { IDataset } from "../../etc/interfaces/dataset"
 import { ResolveExternalSchema } from "./ResolveExternalSchema"
 import { createSchemaAndSideEffectsFromStream } from "./createSchemaAndSideEffectsFromStream"
 import { InternalSchemaDeserializationError } from "../../interfaces/schemaPlugin/internalSchemaDerializationError"
+import { DiagnosticSeverity } from "../../interfaces/DiagnosticSeverity"
 
 function assertUnreachable<RT>(_x: never): RT {
     throw new Error("unreachable")
@@ -49,8 +50,7 @@ export function deserializeDataset(
         schemaAndSideEffects: SchemaAndSideEffects<astn.ParserAnnotationData>,
     ) => IDeserializedDataset,
     onNoInternalSchema: () => IDataset | null,
-    onError: (diagnostic: DeserializationDiagnostic, range: astn.Range) => void,
-    onWarning: (diagnostic: DeserializationDiagnostic, range: astn.Range) => void,
+    onError: (diagnostic: DeserializationDiagnostic, range: astn.Range, severity: DiagnosticSeverity) => void,
     sideEffectsHandlers: streamVal.RootHandler<astn.ParserAnnotationData>[],
 ): p.IUnsafeValue<IDeserializedDataset, ExternalSchemaDeserializationError> {
 
@@ -176,25 +176,26 @@ export function deserializeDataset(
             }
             if (internalSchemaSpecificationStart) {
                 if (internalSchema === null) {
-                    onWarning(
+                    onError(
                         createDiagnostic(
                             ["structure", {
                                 message: "ignoring invalid internal schema",
                             }],
                         ),
                         internalSchemaSpecificationStart,
+                        DiagnosticSeverity.warning,
                     )
                 }
             }
 
             return astncore.createStackedParser(
                 createDatasetDeserializer(
-                    dataset.dataset.sync,
+                    dataset.dataset.build,
                     sideEffectsHandlers.map(h => h.node),
-                    (message, annotation) => onError(createDiagnostic(["deserializer", { message: message }]), annotation.range),
+                    (message, annotation, severity) => onError(createDiagnostic(["deserializer", { message: message }]), annotation.range, severity),
                 ),
-                (error, annotation) => {
-                    onError(createDiagnostic(["stacked", error]), annotation.range)
+                error => {
+                    onError(createDiagnostic(["stacked", error.type]), error.annotation.range, DiagnosticSeverity.error)
                 },
                 () => {
                     sideEffectsHandlers.forEach(h => {
@@ -206,7 +207,7 @@ export function deserializeDataset(
             )
         },
         (error, range) => {
-            onError(createDiagnostic(["parsing", error]), range)
+            onError(createDiagnostic(["parsing", error]), range, DiagnosticSeverity.error)
         },
         overheadToken => {
             switch (overheadToken.type[0]) {
@@ -228,7 +229,7 @@ export function deserializeDataset(
         }
     )
     function onSchemaError(error: InternalSchemaDeserializationError, range: astn.Range) {
-        onError(createDiagnostic(["schema error", error]), range)
+        onError(createDiagnostic(["schema error", error]), range, DiagnosticSeverity.error)
         foundSchemaErrors = true
     }
 
@@ -237,7 +238,7 @@ export function deserializeDataset(
         parserStack,
     ).mapResult(res => {
         overheadComments.forEach(ohc => {
-            res.dataset.sync.documentComments.addComment(ohc.comment, ohc.type === "block" ? ["block"] : ["line"])
+            res.dataset.build.documentComments.addComment(ohc.comment, ohc.type === "block" ? ["block"] : ["line"])
         })
         return p.value(res)
     })

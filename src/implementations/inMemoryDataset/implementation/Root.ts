@@ -1,4 +1,4 @@
-import * as streamVal from "../../../interfaces/streamingValidationAPI"
+import * as def from "../../../interfaces/typedParserDefinitions"
 import { RootErrorsAggregator } from "./internals/ErrorManager"
 import { Global } from "./Global"
 import { Node } from "./internals/Node"
@@ -7,10 +7,10 @@ import { initializeNode } from "./initializeNode"
 export class RootImp {
     public readonly errorsAggregator = new RootErrorsAggregator()
     public readonly global = new Global()
-    public readonly schema: streamVal.Schema
+    public readonly schema: def.Schema
     public readonly rootNode: Node
 
-    constructor(schema: streamVal.Schema) {
+    constructor(schema: def.Schema) {
         this.rootNode = new Node(
             null,
             node => {

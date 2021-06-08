@@ -2,7 +2,7 @@
  "@typescript-eslint/no-empty-interface": off
 */
 
-import * as t from "../definitions"
+import * as t from "../typedParserDefinitions"
 
 export type CommentType =
     | ["block"]
@@ -59,12 +59,12 @@ export interface Node {
     getDictionary(name: string): Dictionary
     getList(name: string): List
     getComponent(name: string): Component
-    getStateGroup(name: string): StateGroup
+    getTaggedUnion(name: string): StateGroup
     getValue(name: string): Value
-    forEachProperty(callback: (entry: Property, key: string) => void): void
+    //forEachProperty(callback: (entry: Property, key: string) => void): void
 }
 export interface StateGroup {
-    readonly definition: t.StateGroupDefinition
+    readonly definition: t.TaggedUnionDefinition
     setState(stateName: string, onError: (message: string) => void): State
     readonly comments: Comments
     getCurrentState(): State
@@ -77,7 +77,7 @@ export interface State {
 }
 
 export interface Value {
-    readonly definition: t.ValueDefinition
+    readonly definition: t.StringValueDefinition
     readonly isQuoted: boolean
     setValue(value: string, onError: (message: string) => void): void
     readonly comments: Comments

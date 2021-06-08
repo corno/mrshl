@@ -3,6 +3,7 @@
 */
 
 import * as streamVal from "../../interfaces/streamingValidationAPI"
+import * as def from "../../interfaces/typedParserDefinitions"
 import * as fp from "fountain-pen"
 
 function assertUnreachable<RT>(_x: never): RT {
@@ -11,7 +12,7 @@ function assertUnreachable<RT>(_x: never): RT {
 
 type GetCodeCompletions = () => string[]
 
-function createCodeCompletionForProperty(prop: streamVal.PropertyDefinition, shorthand: boolean): fp.InlineSegment {
+function createCodeCompletionForProperty(prop: def.PropertyDefinition, shorthand: boolean): fp.InlineSegment {
     switch (prop.type[0]) {
         case "collection": {
             const $ = prop.type[1]
@@ -31,14 +32,14 @@ function createCodeCompletionForProperty(prop: streamVal.PropertyDefinition, sho
 
             return createCodeCompletionForNode($.type.get().node, null, shorthand)
         }
-        case "state group": {
+        case "tagged union": {
             const $ = prop.type[1]
             return [
-                `| '${$["default state"].name}' `,
-                createCodeCompletionForNode($["default state"].get().node, null, shorthand),
+                `| '${$["default option"].name}' `,
+                createCodeCompletionForNode($["default option"].get().node, null, shorthand),
             ]
         }
-        case "value": {
+        case "string": {
             const $ = prop.type[1]
             if ($.quoted) {
                 return `"${$["default value"]}"`
@@ -52,7 +53,7 @@ function createCodeCompletionForProperty(prop: streamVal.PropertyDefinition, sho
     }
 }
 
-function createCodeCompletionForShorthandProperties(node: streamVal.NodeDefinition, keyProperty: streamVal.PropertyDefinition | null): fp.InlineSegment {
+function createCodeCompletionForShorthandProperties(node: def.NodeDefinition, keyProperty: def.PropertyDefinition | null): fp.InlineSegment {
     const x: fp.InlineSegment[] = []
     node.properties.mapSorted((prop, _propKey) => {
         if (prop === keyProperty) {
@@ -64,7 +65,7 @@ function createCodeCompletionForShorthandProperties(node: streamVal.NodeDefiniti
     return x
 }
 
-function createCodeCompletionForVerboseProperties(node: streamVal.NodeDefinition, keyProperty: streamVal.PropertyDefinition | null): fp.Block {
+function createCodeCompletionForVerboseProperties(node: def.NodeDefinition, keyProperty: def.PropertyDefinition | null): fp.Block {
     const x: fp.Block[] = []
     node.properties.mapSorted((prop, propKey) => {
         if (prop === keyProperty) {
@@ -78,7 +79,7 @@ function createCodeCompletionForVerboseProperties(node: streamVal.NodeDefinition
     return x
 }
 
-function createCodeCompletionForNode(node: streamVal.NodeDefinition, keyProperty: streamVal.PropertyDefinition | null, shorthand: boolean): fp.InlineSegment {
+function createCodeCompletionForNode(node: def.NodeDefinition, keyProperty: def.PropertyDefinition | null, shorthand: boolean): fp.InlineSegment {
     if (shorthand) {
         return [
             '<', createCodeCompletionForShorthandProperties(node, keyProperty), ' >',
@@ -97,61 +98,64 @@ function createCodeCompletionForNode(node: streamVal.NodeDefinition, keyProperty
 export type OnToken<Annotation> = (
     annotation: Annotation,
     getCodeCompletionsInToken: GetCodeCompletions | null,
-    getCodeCompletionsAfterToken: GetCodeCompletions | null
+    getCodeCompletionsAfterToken: GetCodeCompletions | null,
+    //description: string
 ) => void
 
 
-function createCodeCompletionGenerator<Annotation>(
+function createCodeCompletionsForPropertyGenerator<Annotation>(
     onToken: OnToken<Annotation>,
-    onEnd2: () => void,
-): streamVal.RootHandler<Annotation> {
-    return {
-        node: createCodeCompletionForNodeGenerator<Annotation>(onToken),
-        onEnd: () => {
-            onEnd2()
-        },
-    }
-}
-
-
-function createStateGroupCodeCompletionGenerator<Annotation>(
-    onToken: OnToken<Annotation>,
-): streamVal.TaggedUnionHandler<Annotation> {
-    return {
-        onOption: () => {
-            return createCodeCompletionForNodeGenerator(onToken)
-        },
-        // onUnexpectedOption: $ => {
-        //     onToken(
-        //         $.annotation.annotation,
-        //         () => {
-        //             return Object.keys($.annotation.stateGroupDefinition.states.mapSorted(s => s))
-        //         },
-        //         null
-        //     )
-        // },
-    }
-}
-
-function createCodeCompletionForPropertyGenerator<Annotation>(
-    onToken: OnToken<Annotation>,
-
 ): streamVal.PropertyHandler<Annotation> {
     return {
-
-        onDictionary: () => {
+        onDictionary: $ => {
+            onToken(
+                $.annotation.annotation,
+                null,
+                null,
+                //"onDictionary",
+            )
             return createCodeCompletionForDictionaryGenerator(onToken)
         },
-        onList: () => {
+        onList: $ => {
+            onToken(
+                $.annotation.annotation,
+                null,
+                null,
+                //"onList",
+            )
             return createCodeCompletionForListGenerator(onToken)
         },
-        onStateGroup: () => {
-            return createStateGroupCodeCompletionGenerator(onToken)
+        onTaggedUnion: $ => {
+            onToken(
+                $.annotation.annotation,
+                null,
+                null,
+                //"onTaggedUnion",
+            )
+            return {
+                onOption: () => {
+                    return createCodeCompletionForNodeGenerator(onToken)
+                },
+                // onUnexpectedOption: $ => {
+                //     onToken(
+                //         $.annotation.annotation,
+                //         () => {
+                //             return Object.keys($.annotation.stateGroupDefinition.states.mapSorted(s => s))
+                //         },
+                //         null
+                //     )
+                // },
+            }
         },
-        onNull: () => {
-            //
+        onNull: $ => {
+            onToken(
+                $.annotation.annotation,
+                null,
+                null,
+                //"onNull",
+            )
         },
-        onScalarValue: $ => {
+        onString: $ => {
             onToken(
                 $.annotation.annotation,
                 () => {
@@ -160,6 +164,7 @@ function createCodeCompletionForPropertyGenerator<Annotation>(
                     })
                 },
                 null,
+                //"onString",
             )
         },
         onComponent: () => {
@@ -173,8 +178,13 @@ function createCodeCompletionForListGenerator<Annotation>(
 
 ): streamVal.ListHandler<Annotation> {
     return {
-        onClose: () => {
-            //
+        onClose: $ => {
+            onToken(
+                $.annotation.annotation,
+                null,
+                null,
+                //"onLIstClose",
+            )
         },
         onEntry: () => {
             return createCodeCompletionForNodeGenerator(onToken)
@@ -186,15 +196,20 @@ function createCodeCompletionForDictionaryGenerator<Annotation>(
     onToken: OnToken<Annotation>,
 ): streamVal.DictionaryHandler<Annotation> {
     return {
-        onClose: () => {
-            //
+        onClose: $ => {
+            onToken(
+                $.annotation.annotation,
+                null,
+                null,
+                //"onDictionaryClose",
+            )
         },
         onEntry: $ => {
             onToken(
                 $.annotation.annotation,
                 null,
                 () => {
-                    function create(shorthand: boolean) {
+                    function createCompForNode(shorthand: boolean) {
                         const out: string[] = []
                         fp.serialize(
                             [
@@ -219,10 +234,11 @@ function createCodeCompletionForDictionaryGenerator<Annotation>(
                         }).join("\n")
                     }
                     return [
-                        create(false),
-                        create(true),
+                        createCompForNode(false),
+                        createCompForNode(true),
                     ]
-                }
+                },
+                //"onEntry",
             )
             return createCodeCompletionForNodeGenerator(onToken)
         },
@@ -234,10 +250,15 @@ function createCodeCompletionForShorthandTypeGenerator<Annotation>(
 ): streamVal.ShorthandTypeHandler<Annotation> {
     return {
         onProperty: () => {
-            return createCodeCompletionForPropertyGenerator(onToken)
+            return createCodeCompletionsForPropertyGenerator(onToken)
         },
-        onShorthandTypeClose: () => {
-            //
+        onShorthandTypeClose: $ => {
+            onToken(
+                $.annotation.annotation,
+                null,
+                null,
+                //"onShorthandTypeClose",
+            )
         },
     }
 }
@@ -246,48 +267,48 @@ function createCodeCompletionForVerboseTypeGenerator<Annotation>(
     onToken: OnToken<Annotation>,
 ): streamVal.VerboseTypeHandler<Annotation> {
     return {
+        onUnexpectedProperty: $ => {
+            onToken(
+                $.annotation.annotation,
+                () => {
+                    return $.annotation.nodeDefinition.properties.getKeys()
+                },
+                null,
+                //"onUnknownProperty",
+            )
+
+        },
         onProperty: $ => {
-            const propDefinition = $.annotation.nodeDefinition.properties.get($.annotation.key)
-            if (propDefinition === null) {
-                onToken(
-                    $.annotation.annotation,
-                    () => {
-                        return $.annotation.nodeDefinition.properties.getKeys()
-                    },
-                    null
-                )
-                throw new Error("IMPLEMENT ME")
-            } else {
-                onToken(
-                    $.annotation.annotation,
-                    null,
-                    () => {
-                        const out: string[] = []
-                        fp.serialize(
-                            [
-                                fp.line([
-                                    " ",
-                                    createCodeCompletionForProperty(propDefinition, false),
-                                ]),
-                            ],
-                            "    ",
-                            true,
-                            codeCompletion => {
-                                out.push(codeCompletion)
-                            }
-                        )
-                        return [out.map((line, index) => {
-                            //don't indent the first line
-                            if (index === 0) {
-                                return line
-                            }
+            onToken(
+                $.annotation.annotation,
+                null,
+                () => {
+                    const out: string[] = []
+                    fp.serialize(
+                        [
+                            fp.line([
+                                " ",
+                                createCodeCompletionForProperty($.annotation.definition, false),
+                            ]),
+                        ],
+                        "    ",
+                        true,
+                        codeCompletion => {
+                            out.push(codeCompletion)
+                        }
+                    )
+                    return [out.map((line, index) => {
+                        //don't indent the first line
+                        if (index === 0) {
                             return line
-                            //return contextData.indentation + line
-                        }).join("\n")]
-                    },
-                )
-                return createCodeCompletionForPropertyGenerator(onToken)
-            }
+                        }
+                        return line
+                        //return contextData.indentation + line
+                    }).join("\n")]
+                },
+                //"onProperty",
+            )
+            return createCodeCompletionsForPropertyGenerator(onToken)
         },
         // onUnexpectedProperty: () => {
         //     //FIXME
@@ -299,8 +320,13 @@ function createCodeCompletionForVerboseTypeGenerator<Annotation>(
         //     //     null
         //     // )
         // },
-        onTypeClose: () => {
-            //
+        onVerboseTypeClose: $ => {
+            onToken(
+                $.annotation.annotation,
+                null,
+                null,
+                //"onVerboseTypeClose",
+            )
         },
     }
 }
@@ -330,10 +356,11 @@ function createCodeCompletionForNodeGenerator<Annotation>(
                         out.join("\n"),
                     ]
                 },
+                //"onShorthandTypeOpen",
             )
             return createCodeCompletionForShorthandTypeGenerator(onToken)
         },
-        onTypeOpen: $ => {
+        onVerboseTypeOpen: $ => {
             onToken(
                 $.annotation.annotation,
                 null,
@@ -357,6 +384,7 @@ function createCodeCompletionForNodeGenerator<Annotation>(
                         out.join("\n"),
                     ]
                 },
+                //"onVerboseTypeClose",
             )
             return createCodeCompletionForVerboseTypeGenerator(onToken)
         },
@@ -367,5 +395,18 @@ export function createCodeCompletionsGenerator<Annotation>(
     onToken: OnToken<Annotation>,
     onEnd: () => void,
 ): streamVal.RootHandler<Annotation> {
+
+    function createCodeCompletionGenerator<Annotation>(
+        onToken: OnToken<Annotation>,
+        onEnd2: () => void,
+    ): streamVal.RootHandler<Annotation> {
+        return {
+            node: createCodeCompletionForNodeGenerator<Annotation>(onToken),
+            onEnd: () => {
+                onEnd2()
+            },
+        }
+    }
+
     return createCodeCompletionGenerator(onToken, onEnd)
 }

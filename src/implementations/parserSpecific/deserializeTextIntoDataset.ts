@@ -3,6 +3,7 @@ import * as path from "path"
 import * as astn from "astn"
 
 import * as streamVal from "../../interfaces/streamingValidationAPI"
+import * as def from "../../interfaces/typedParserDefinitions"
 import { DiagnosticSeverity } from "../../interfaces/DiagnosticSeverity"
 
 import { IDataset } from "../../etc/interfaces/dataset"
@@ -58,12 +59,12 @@ export type DiagnosticCallback = (diagnostic: LoadDocumentDiagnostic) => void
 
 function validateDocumentAfterContextSchemaResolution(
 	documentText: string,
-	contextSchema: streamVal.Schema | null,
+	contextSchema: def.Schema | null,
 	resolveExternalSchema: ResolveExternalSchema,
 	diagnosticCallback: DiagnosticCallback,
 	sideEffectHandlers: streamVal.RootHandler<astn.ParserAnnotationData>[],
 	createDataset: (
-		schema: streamVal.Schema,
+		schema: def.Schema,
 	) => IDataset,
 ): p.IUnsafeValue<IDeserializedDataset, ExternalSchemaDeserializationError> {
 
@@ -85,7 +86,7 @@ function validateDocumentAfterContextSchemaResolution(
 		(internalSchemaSpecification, schemaAndSideEffects): IDeserializedDataset => {
 
 			function createDeserializedDataset(
-				schema: streamVal.Schema,
+				schema: def.Schema,
 			): IDeserializedDataset {
 				return {
 					dataset: createDataset(schema),
@@ -129,22 +130,13 @@ function validateDocumentAfterContextSchemaResolution(
 			return createDataset(contextSchema)
 
 		},
-		(errorDiagnostic, range) => {
+		(errorDiagnostic, range, severity) => {
 			addDiagnostic(
 				["deserialization", {
 					data: errorDiagnostic,
 					range: range,
 				}],
-				DiagnosticSeverity.error,
-			)
-		},
-		(warningDiagnostic, range) => {
-			addDiagnostic(
-				["deserialization", {
-					data: warningDiagnostic,
-					range: range,
-				}],
-				DiagnosticSeverity.warning,
+				severity,
 			)
 		},
 		allSideEffects,
@@ -160,7 +152,7 @@ export function deserializeTextIntoDataset(
 	diagnosticCallback: DiagnosticCallback,
 	sideEffectHandlers: streamVal.RootHandler<astn.ParserAnnotationData>[],
 	createInitialDataset: (
-		schema: streamVal.Schema,
+		schema: def.Schema,
 	) => IDataset,
 ): p.IUnsafeValue<IDeserializedDataset, null> {
 	let diagnosticFound = false

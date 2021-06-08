@@ -3,7 +3,7 @@
         'root': (
             'node': (
                 'properties': {
-                    'a1': (
+                    'a23': (
                         'type': | 'value' (
                             'type': | 'number' (
                             )

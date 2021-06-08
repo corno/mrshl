@@ -3,7 +3,7 @@
 */
 
 import * as g from "../genericimp"
-import * as streamVal from "../../../../interfaces/streamingValidationAPI"
+import * as def from "../../../../interfaces/typedParserDefinitions"
 import { FlexibleErrorsAggregator, IParentErrorsAggregator, ErrorManager } from "./ErrorManager"
 import { Node } from "./Node"
 import { Comments } from "./Comments"
@@ -20,7 +20,7 @@ export class Entry {
     public readonly node: Node
     public readonly comments = new Comments()
     constructor(
-        nodeDefinition: streamVal.NodeDefinition,
+        nodeDefinition: def.NodeDefinition,
         errorManager: ErrorManager,
         dictionary: Dictionary | null
     ) {
@@ -96,7 +96,7 @@ export class EntryPlaceholder {
 export class Dictionary {
     public readonly duplicatesCheckFunction: (oldValue: string, newValue: string) => void
     public readonly keyPropertyName: string
-    public readonly keyProperty: streamVal.PropertyDefinition
+    public readonly keyProperty: def.PropertyDefinition
     /**
      *
      * @param keyPropertyName
@@ -105,7 +105,7 @@ export class Dictionary {
      */
     constructor(
         keyPropertyName: string,
-        keyProperty: streamVal.PropertyDefinition,
+        keyProperty: def.PropertyDefinition,
         duplicatesCheckFunction: (oldValue: string, newValue: string) => void,
     ) {
         this.duplicatesCheckFunction = duplicatesCheckFunction
@@ -117,17 +117,17 @@ export class Dictionary {
 export class Collection {
     public readonly errorsAggregator: IParentErrorsAggregator
     public readonly entries = new g.ReactiveArray<EntryPlaceholder>()
-    public readonly nodeDefinition: streamVal.NodeDefinition
+    public readonly nodeDefinition: def.NodeDefinition
     public readonly dictionary: Dictionary | null
     public readonly comments = new Comments()
     constructor(
-        definition: streamVal.CollectionDefinition,
+        definition: def.CollectionDefinition,
         errorsAggregator: IParentErrorsAggregator,
         dictionary: Dictionary | null,
     ) {
         this.errorsAggregator = errorsAggregator
         this.dictionary = dictionary
-        this.nodeDefinition = ((): streamVal.NodeDefinition => {
+        this.nodeDefinition = ((): def.NodeDefinition => {
             switch (definition.type[0]) {
                 case "dictionary": {
                     const $ = definition.type[1]

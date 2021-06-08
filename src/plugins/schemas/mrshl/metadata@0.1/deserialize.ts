@@ -4,12 +4,15 @@
 */
 import * as p from "pareto"
 import * as astncore from "astn-core"
-import * as streamVal from "../../../../interfaces/streamingValidationAPI"
+import * as def from "./definitions"
+import * as g2 from "../../../../interfaces/typedParserDefinitions/generics"
+import * as extDef from "../../../../interfaces/typedParserDefinitions"
 import {
     createReference,
     ResolveRegistry,
 } from "./Reference"
 import * as g from "./Dictionary"
+import { convertToGenericSchema } from "./createTypedParserDefinitions"
 
 /**
  * this function is only calls back if the value is not null
@@ -32,8 +35,8 @@ type AnnotatedString<TokenAnnotation> = {
 function createNodeHandler<TokenAnnotation, NonTokenAnnotation>(
     context: astncore.IExpectContext<TokenAnnotation, NonTokenAnnotation>,
     raiseValidationError: (message: string, annotation: TokenAnnotation) => void,
-    componentTypes: streamVal.IReadonlyDictionary<streamVal.ComponentTypeDefinition>,
-    callback: (node: streamVal.NodeDefinition) => void,
+    componentTypes: g2.IReadonlyDictionary<def.ComponentTypeDefinition>,
+    callback: (node: def.NodeDefinition) => void,
     resolveRegistry: ResolveRegistry
 ): astncore.ExpectedProperty<TokenAnnotation, NonTokenAnnotation> {
 
@@ -45,13 +48,13 @@ function createNodeHandler<TokenAnnotation, NonTokenAnnotation>(
     return {
         onExists: () => {
 
-            const properties = new g.Dictionary<streamVal.PropertyDefinition>({})
+            const properties = new g.Dictionary<def.PropertyDefinition>({})
             return wrap(context.expectType({
                 properties: {
                     "properties": {
                         onExists: () => wrap(context.expectDictionary({
                             onProperty: propertyData => {
-                                let targetPropertyType: streamVal.PropertyTypeDefinition | null = null
+                                let targetPropertyType: def.PropertyTypeDefinition | null = null
                                 return wrap(context.expectType({
                                     properties: {
                                         "type": {
@@ -59,14 +62,14 @@ function createNodeHandler<TokenAnnotation, NonTokenAnnotation>(
                                                 context.expectTaggedUnion({
                                                     options: {
                                                         "collection": () => {
-                                                            let targetCollectionType: streamVal.CollectionTypeDefinition | null = null
+                                                            let targetCollectionType: def.CollectionTypeDefinition | null = null
                                                             return wrap(context.expectType({
                                                                 properties: {
                                                                     "type": {
                                                                         onExists: () => wrap(context.expectTaggedUnion({
                                                                             options: {
                                                                                 "dictionary": () => {
-                                                                                    let targetNode: streamVal.NodeDefinition | null = null
+                                                                                    let targetNode: def.NodeDefinition | null = null
                                                                                     let keyPropertyName: AnnotatedString<TokenAnnotation> | null = null
                                                                                     return wrap(context.expectType({
                                                                                         properties: {
@@ -121,7 +124,7 @@ function createNodeHandler<TokenAnnotation, NonTokenAnnotation>(
                                                                                     }))
                                                                                 },
                                                                                 "list": () => {
-                                                                                    let targetNode: streamVal.NodeDefinition | null = null
+                                                                                    let targetNode: def.NodeDefinition | null = null
                                                                                     return wrap(context.expectType({
                                                                                         properties: {
                                                                                             "node": createNodeHandler(
@@ -203,14 +206,14 @@ function createNodeHandler<TokenAnnotation, NonTokenAnnotation>(
                                                             }))
                                                         },
                                                         "state group": () => {
-                                                            const states = new g.Dictionary<streamVal.StateDefinition>({})
+                                                            const states = new g.Dictionary<def.StateDefinition>({})
                                                             let defaultStateName: null | AnnotatedString<TokenAnnotation> = null
                                                             return wrap(context.expectType({
                                                                 properties: {
                                                                     "states": {
                                                                         onExists: () => wrap(context.expectDictionary({
                                                                             onProperty: stateData => {
-                                                                                let targetNode: streamVal.NodeDefinition | null = null
+                                                                                let targetNode: def.NodeDefinition | null = null
                                                                                 return wrap(context.expectType({
                                                                                     properties: {
                                                                                         "node": createNodeHandler(
@@ -367,9 +370,9 @@ function createNodeHandler<TokenAnnotation, NonTokenAnnotation>(
 export function createDeserializer<TokenAnnotation, NonTokenAnnotation>(
     onExpectError: (error: astncore.ExpectError, annotation: TokenAnnotation) => void,
     onValidationError: (message: string, annotation: TokenAnnotation) => void,
-    callback: (metaData: streamVal.Schema | null) => void
+    callback: (metaData: extDef.Schema | null) => void
 ): astncore.OnObject<TokenAnnotation, NonTokenAnnotation> {
-    const componentTypes = new g.Dictionary<streamVal.ComponentTypeDefinition>({})
+    const componentTypes = new g.Dictionary<def.ComponentTypeDefinition>({})
     let rootName: string | null = null
     let rootNameAnnotation: TokenAnnotation | null = null
 
@@ -398,7 +401,7 @@ export function createDeserializer<TokenAnnotation, NonTokenAnnotation>(
             "component types": {
                 onExists: (): astncore.RequiredValueHandler<TokenAnnotation, NonTokenAnnotation> => wrap(context.expectDictionary({
                     onProperty: propertyData => {
-                        let targetNode: streamVal.NodeDefinition | null = null
+                        let targetNode: def.NodeDefinition | null = null
                         return wrap(context.expectType({
                             properties: {
                                 "node": createNodeHandler(
@@ -439,7 +442,7 @@ export function createDeserializer<TokenAnnotation, NonTokenAnnotation>(
             },
         },
         onTypeEnd: () => {
-            let schema: streamVal.Schema | null = null
+            let schema: def.Schema | null = null
             const assertedRootName = assertNotNull(rootName)
             const assertedRange = assertNotNull(rootNameAnnotation)
             schema = {
@@ -455,7 +458,7 @@ export function createDeserializer<TokenAnnotation, NonTokenAnnotation>(
             }
             const success = resolveRegistry.resolve()
             if (success) {
-                callback(schema)
+                callback(convertToGenericSchema(schema))
             } else {
                 callback(null)
             }

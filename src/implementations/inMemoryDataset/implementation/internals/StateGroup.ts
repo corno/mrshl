@@ -1,6 +1,6 @@
 import * as g from "../genericimp"
 import * as asyncAPI from "../../../../interfaces/asyncAPI/asyncAPI"
-import * as streamVal from "../../../../interfaces/streamingValidationAPI"
+import * as def from "../../../../interfaces/typedParserDefinitions"
 import { FlexibleErrorsAggregator, IParentErrorsAggregator, ErrorManager } from "./ErrorManager"
 import { Node } from "./Node"
 import { Comments } from "./Comments"
@@ -50,18 +50,18 @@ export class StateGroup {
 
     public readonly focussable: g.ReactiveValue<g.Maybe<asyncAPI.IFocussable>>
     constructor(
-        definition: streamVal.StateGroupDefinition,
+        definition: def.TaggedUnionDefinition,
         errorManager: ErrorManager,
         thisEntryErrorsAggregator: IParentErrorsAggregator,
         subentriesErrorsAggregator: IParentErrorsAggregator,
         createdInNewContext: boolean,
     ) {
         this.initialState = new State(
-            definition["default state"].name,
+            definition["default option"].name,
             (stateNode, errorsAggregator, stateSubentriesErrorsAggregator) => {
                 initializeNode(
                     stateNode,
-                    definition["default state"].get().node,
+                    definition["default option"].get().node,
                     errorManager,
                     errorsAggregator,
                     stateSubentriesErrorsAggregator,
@@ -70,7 +70,7 @@ export class StateGroup {
             }
         )
         this.currentState = new g.Mutable<State>(this.initialState)
-        this.currentStateKey = new g.ReactiveValue(definition["default state"].name)
+        this.currentStateKey = new g.ReactiveValue(definition["default option"].name)
         this.focussable = new g.ReactiveValue(new g.Maybe<asyncAPI.IFocussable>(null))
         this.thisEntryErrorsAggregator = thisEntryErrorsAggregator
         this.subentriesErrorsAggregator = subentriesErrorsAggregator

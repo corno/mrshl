@@ -14,7 +14,7 @@ export type DeserializationDiagnosticType =
     | ["deserializer", {
         message: string
     }]
-    | ["stacked", astncore.StackedDataError]
+    | ["stacked", astncore.StackedDataErrorType]
     | ["parsing", astn.ParsingError]
     | ["schema error", InternalSchemaDeserializationError]
 

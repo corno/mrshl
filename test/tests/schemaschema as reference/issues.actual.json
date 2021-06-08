@@ -1,0 +1,416 @@
+[
+	[
+		"deserialization",
+		"warning",
+		"property 'type' has default value, remove",
+		19,
+		69,
+		19,
+		75
+	],
+	[
+		"deserialization",
+		"warning",
+		"property 'type' has default value, remove",
+		18,
+		65,
+		18,
+		71
+	],
+	[
+		"deserialization",
+		"warning",
+		"property 'default value' has default value, remove",
+		30,
+		93,
+		30,
+		108
+	],
+	[
+		"deserialization",
+		"warning",
+		"property 'type' has default value, remove",
+		29,
+		89,
+		29,
+		95
+	],
+	[
+		"deserialization",
+		"warning",
+		"property 'properties' has default value, remove",
+		27,
+		81,
+		27,
+		93
+	],
+	[
+		"deserialization",
+		"warning",
+		"property 'node' has default value, remove",
+		26,
+		77,
+		26,
+		83
+	],
+	[
+		"deserialization",
+		"warning",
+		"property 'default state' has default value, remove",
+		38,
+		69,
+		38,
+		84
+	],
+	[
+		"deserialization",
+		"warning",
+		"property 'states' has default value, remove",
+		24,
+		69,
+		24,
+		77
+	],
+	[
+		"deserialization",
+		"warning",
+		"property 'type' has default value, remove",
+		23,
+		65,
+		23,
+		71
+	],
+	[
+		"deserialization",
+		"warning",
+		"property 'properties' has default value, remove",
+		16,
+		57,
+		16,
+		69
+	],
+	[
+		"deserialization",
+		"warning",
+		"property 'node' has default value, remove",
+		15,
+		53,
+		15,
+		59
+	],
+	[
+		"deserialization",
+		"warning",
+		"property 'properties' has default value, remove",
+		46,
+		57,
+		46,
+		69
+	],
+	[
+		"deserialization",
+		"warning",
+		"property 'node' has default value, remove",
+		45,
+		53,
+		45,
+		59
+	],
+	[
+		"deserialization",
+		"warning",
+		"property 'type' has default value, remove",
+		61,
+		85,
+		61,
+		91
+	],
+	[
+		"deserialization",
+		"warning",
+		"property 'type' has default value, remove",
+		60,
+		81,
+		60,
+		87
+	],
+	[
+		"deserialization",
+		"warning",
+		"property 'properties' has default value, remove",
+		57,
+		73,
+		57,
+		85
+	],
+	[
+		"deserialization",
+		"warning",
+		"property 'node' has default value, remove",
+		56,
+		69,
+		56,
+		75
+	],
+	[
+		"deserialization",
+		"warning",
+		"property 'type' has default value, remove",
+		66,
+		69,
+		66,
+		75
+	],
+	[
+		"deserialization",
+		"warning",
+		"property 'type' has default value, remove",
+		55,
+		65,
+		55,
+		71
+	],
+	[
+		"deserialization",
+		"warning",
+		"property 'properties' has default value, remove",
+		53,
+		57,
+		53,
+		69
+	],
+	[
+		"deserialization",
+		"warning",
+		"property 'node' has default value, remove",
+		52,
+		53,
+		52,
+		59
+	],
+	[
+		"deserialization",
+		"warning",
+		"property 'default state' has default value, remove",
+		83,
+		69,
+		83,
+		84
+	],
+	[
+		"deserialization",
+		"warning",
+		"property 'states' has default value, remove",
+		79,
+		69,
+		79,
+		77
+	],
+	[
+		"deserialization",
+		"warning",
+		"property 'type' has default value, remove",
+		78,
+		65,
+		78,
+		71
+	],
+	[
+		"deserialization",
+		"warning",
+		"property 'properties' has default value, remove",
+		75,
+		57,
+		75,
+		69
+	],
+	[
+		"deserialization",
+		"warning",
+		"property 'node' has default value, remove",
+		74,
+		53,
+		74,
+		59
+	],
+	[
+		"deserialization",
+		"warning",
+		"property 'default state' has default value, remove",
+		90,
+		45,
+		90,
+		60
+	],
+	[
+		"deserialization",
+		"warning",
+		"property 'states' has default value, remove",
+		13,
+		45,
+		13,
+		53
+	],
+	[
+		"deserialization",
+		"warning",
+		"property 'type' has default value, remove",
+		12,
+		41,
+		12,
+		47
+	],
+	[
+		"deserialization",
+		"warning",
+		"property 'properties' has default value, remove",
+		9,
+		33,
+		9,
+		45
+	],
+	[
+		"deserialization",
+		"warning",
+		"property 'node' has default value, remove",
+		8,
+		29,
+		8,
+		35
+	],
+	[
+		"deserialization",
+		"warning",
+		"property 'type' has default value, remove",
+		95,
+		29,
+		95,
+		35
+	],
+	[
+		"deserialization",
+		"warning",
+		"property 'type' has default value, remove",
+		7,
+		25,
+		7,
+		31
+	],
+	[
+		"deserialization",
+		"warning",
+		"property 'properties' has default value, remove",
+		5,
+		17,
+		5,
+		29
+	],
+	[
+		"deserialization",
+		"warning",
+		"property 'node' has default value, remove",
+		4,
+		13,
+		4,
+		19
+	],
+	[
+		"deserialization",
+		"warning",
+		"property 'type' has default value, remove",
+		111,
+		45,
+		111,
+		51
+	],
+	[
+		"deserialization",
+		"warning",
+		"property 'type' has default value, remove",
+		110,
+		41,
+		110,
+		47
+	],
+	[
+		"deserialization",
+		"warning",
+		"property 'properties' has default value, remove",
+		107,
+		33,
+		107,
+		45
+	],
+	[
+		"deserialization",
+		"warning",
+		"property 'node' has default value, remove",
+		106,
+		29,
+		106,
+		35
+	],
+	[
+		"deserialization",
+		"warning",
+		"property 'type' has default value, remove",
+		116,
+		29,
+		116,
+		35
+	],
+	[
+		"deserialization",
+		"warning",
+		"property 'type' has default value, remove",
+		105,
+		25,
+		105,
+		31
+	],
+	[
+		"deserialization",
+		"warning",
+		"property 'default value' has default value, remove",
+		121,
+		29,
+		121,
+		44
+	],
+	[
+		"deserialization",
+		"warning",
+		"property 'type' has default value, remove",
+		120,
+		25,
+		120,
+		31
+	],
+	[
+		"deserialization",
+		"warning",
+		"property 'properties' has default value, remove",
+		103,
+		17,
+		103,
+		29
+	],
+	[
+		"deserialization",
+		"warning",
+		"property 'node' has default value, remove",
+		102,
+		13,
+		102,
+		19
+	],
+	[
+		"deserialization",
+		"warning",
+		"property 'component types' has default value, remove",
+		2,
+		5,
+		2,
+		22
+	]
+]

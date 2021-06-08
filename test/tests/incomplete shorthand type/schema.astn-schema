@@ -1,0 +1,29 @@
+! "metadata@0.1" (
+    'component types': {
+        'root': (
+            'node': (
+                'properties': {
+                    'a12': (
+                        'type': | 'value' (
+                            'quoted': true
+                            'default value': ""
+                        )
+                    )
+                    'b': (
+                        'type': | 'value' (
+                            'quoted': true
+                            'default value': ""
+                        )
+                    )
+                    'c': (
+                        'type': | 'value' (
+                            'quoted': false
+                            'default value': ""
+                        )
+                    )
+                }
+            )
+        )
+    }
+    'root type': "root"
+)

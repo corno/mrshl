@@ -46,8 +46,8 @@ export function createInternalSchemaHandler<Annotation, Result>(
                 },
             },
         },
-        (error, annotation) => {
-            onSchemaError(["stacked", error], annotation)
+        error => {
+            onSchemaError(["stacked", error.type], error.annotation)
         },
         onEnd,
         astncore.createDummyValueHandler

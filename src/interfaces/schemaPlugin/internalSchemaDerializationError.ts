@@ -9,7 +9,7 @@ export type InternalSchemaError =
         | ["simple value"]
         | ["tagged union"]
     }]
-    | ["stacked", astncore.StackedDataError]
+    | ["stacked", astncore.StackedDataErrorType]
 
 export type ExternalSchemaResolvingError =
     | ["schema id cannot be an empty string"]

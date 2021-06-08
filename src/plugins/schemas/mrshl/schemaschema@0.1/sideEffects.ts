@@ -85,7 +85,7 @@ function createProp<Annotation>(
             }
             return createList($.type[1], $, onError)
         },
-        onStateGroup: () => {
+        onTaggedUnion: () => {
 
             const prop = nodedefinition.properties.getUnsafe(name)
             if (prop.type[0] !== "state group") {
@@ -105,7 +105,7 @@ function createProp<Annotation>(
         onNull: () => {
             //
         },
-        onScalarValue: $ => {
+        onString: $ => {
             const prop = nodedefinition.properties.getUnsafe(name)
             if (prop.type[0] !== "value") {
                 throw new Error("unexpected")
@@ -168,13 +168,16 @@ function createType<Annotation>(
     onError: (message: string, annotation: Annotation, severity: DiagnosticSeverity) => void,
 ): streamVal.VerboseTypeHandler<Annotation> {
     return {
+        onUnexpectedProperty: () => {
+            //
+        },
         onProperty: $ => {
             return createProp($.data.key, definition, onError)
         },
         // onUnexpectedProperty: () => {
         //     //
         // },
-        onTypeClose: () => {
+        onVerboseTypeClose: () => {
             //
         },
     }
@@ -188,7 +191,7 @@ function createNode<Annotation>(
         onShorthandTypeOpen: () => {
             return createShorthandType(definition, onError)
         },
-        onTypeOpen: () => {
+        onVerboseTypeOpen: () => {
             return createType(definition, onError)
         },
     }

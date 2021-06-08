@@ -46,7 +46,7 @@ function copyNode(
         }
         const $ = property.type[1]
         const sourceState = $.getCurrentState()
-        const targetState = targetNode.getStateGroup(pKey).setState(sourceState.getStateKey(), () => {
+        const targetState = targetNode.getTaggedUnion(pKey).setState(sourceState.getStateKey(), () => {
             //FIXME
         })
         copyNode(

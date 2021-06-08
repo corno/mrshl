@@ -1,14 +1,14 @@
 import * as astncore from "astn-core"
 import { createDeserializer } from "./createDeserializer"
 import * as t from "./types"
-import { convertToGenericSchema } from "./convert"
+import { convertToGenericSchema } from "./createTypedParserDefinitions"
 import * as p from "pareto-20"
 import * as sideEffects from "./sideEffects"
 import { DiagnosticSeverity } from "../../../../interfaces/DiagnosticSeverity"
 import { SchemaAndSideEffects } from "../../../../interfaces/schemaPlugin/SchemaAndSideEffects"
 import { InternalSchemaDeserializationError, InternalSchemaError } from "../../../../interfaces/schemaPlugin/internalSchemaDerializationError"
 
-export function createSchemaAndSideEffects<Annotation> (
+export function createSchemaAndSideEffects<Annotation>(
     onSchemaError: (error: InternalSchemaDeserializationError, annotation: Annotation) => void,
 ): astncore.ITreeBuilder<Annotation, SchemaAndSideEffects<Annotation>, null> {
     const isb = createInternalSchemaBuilder(onSchemaError)
@@ -54,8 +54,8 @@ export function createInternalSchemaBuilder<Annotation>(
                     },
                 },
             },
-            (error, annotation) => {
-                onSchemaError(["stacked", error], annotation)
+            error => {
+                onSchemaError(["stacked", error.type], error.annotation)
             },
             onEnd,
             astncore.createDummyValueHandler

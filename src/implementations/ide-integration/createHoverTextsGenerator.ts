@@ -3,6 +3,7 @@
 */
 
 import * as streamVal from "../../interfaces/streamingValidationAPI"
+import * as def from "../../interfaces/typedParserDefinitions"
 import * as fp from "fountain-pen"
 
 function assertUnreachable<RT>(_x: never): RT {
@@ -11,7 +12,7 @@ function assertUnreachable<RT>(_x: never): RT {
 
 type GetHoverText = () => string
 
-function createPropertyHoverText(prop: streamVal.PropertyDefinition): fp.InlineSegment {
+function createPropertyHoverText(prop: def.PropertyDefinition): fp.InlineSegment {
     switch (prop.type[0]) {
         case "collection": {
             const $ = prop.type[1]
@@ -31,14 +32,14 @@ function createPropertyHoverText(prop: streamVal.PropertyDefinition): fp.InlineS
 
             return createHoverTextsForNode($.type.get().node, null)
         }
-        case "state group": {
+        case "tagged union": {
             const $ = prop.type[1]
             return [
-                `| '${$["default state"].name}' `,
-                createHoverTextsForNode($["default state"].get().node, null),
+                `| '${$["default option"].name}' `,
+                createHoverTextsForNode($["default option"].get().node, null),
             ]
         }
-        case "value": {
+        case "string": {
             const $ = prop.type[1]
             if ($.quoted) {
                 return `"${$["default value"]}"`
@@ -52,7 +53,7 @@ function createPropertyHoverText(prop: streamVal.PropertyDefinition): fp.InlineS
     }
 }
 
-function createHoverTextsForProperties(node: streamVal.NodeDefinition, keyProperty: streamVal.PropertyDefinition | null): fp.Block {
+function createHoverTextsForProperties(node: def.NodeDefinition, keyProperty: def.PropertyDefinition | null): fp.Block {
     const x: fp.Block[] = []
     node.properties.mapSorted((prop, propKey) => {
         if (prop === keyProperty) {
@@ -66,7 +67,7 @@ function createHoverTextsForProperties(node: streamVal.NodeDefinition, keyProper
     return x
 }
 
-function createHoverTextsForNode(node: streamVal.NodeDefinition, keyProperty: streamVal.PropertyDefinition | null): fp.InlineSegment {
+function createHoverTextsForNode(node: def.NodeDefinition, keyProperty: def.PropertyDefinition | null): fp.InlineSegment {
     return [
         '(',
         () => {
@@ -132,7 +133,7 @@ function createPropertyHoverTextGenerator<Annotation>(
             })
             return createListHoverTextGenerator(name, onToken)
         },
-        onStateGroup: $ => {
+        onTaggedUnion: $ => {
             onToken($.annotation.annotation, () => {
                 return name
             })
@@ -144,7 +145,7 @@ function createPropertyHoverTextGenerator<Annotation>(
             //     return name
             // })
         },
-        onScalarValue: $ => {
+        onString: $ => {
             onToken($.annotation.annotation, () => {
                 return name
             })
@@ -228,7 +229,7 @@ function createNodeHoverTextGenerator<Annotation>(
             addOnToken($.annotation.annotation)
             return createShorthandTypeHoverTextGenerator(componentName, onToken)
         },
-        onTypeOpen: $ => {
+        onVerboseTypeOpen: $ => {
             addOnToken($.annotation.annotation)
             return createTypeHoverTextGenerator(componentName, onToken)
         },
@@ -241,13 +242,16 @@ function createTypeHoverTextGenerator<Annotation>(
     onToken: OnTokenHoverText<Annotation>,
 ): streamVal.VerboseTypeHandler<Annotation> {
     return {
+        onUnexpectedProperty: () => {
+            //
+        },
         onProperty: $ => {
             return createPropertyHoverTextGenerator($.data.key, onToken)
         },
         // onUnexpectedProperty: () => {
         //     //
         // },
-        onTypeClose: $ => {
+        onVerboseTypeClose: $ => {
             if (componentName !== null) {
                 const cn = componentName
                 onToken($.annotation.annotation, () => {

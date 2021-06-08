@@ -1,13 +1,14 @@
-import * as streamVal from "../../../interfaces/streamingValidationAPI"
+import * as def from "../../../interfaces/typedParserDefinitions"
 import * as sync from "./buildAPIImplementation"
 import { RootImp } from "./Root"
 import { IDataset } from "../../../etc/interfaces/dataset"
 import * as id from "../../../interfaces/buildAPI/IDataset"
 import * as asyncAPIImp from "./asyncAPIImplementation"
 import { Comments } from "./internals"
+import { serialize } from "./serialize/serialize"
 
 class SyncDataset implements id.IDataset {
-    public readonly schema: streamVal.Schema
+    public readonly schema: def.Schema
     public readonly root: sync.Node
     public readonly documentComments = new Comments()
     public readonly rootComments = new Comments()
@@ -22,11 +23,18 @@ class SyncDataset implements id.IDataset {
     }
 }
 
-export function createInMemoryDataset(schema: streamVal.Schema): IDataset {
+export function createInMemoryDataset(schema: def.Schema): IDataset {
     const rootImp = new RootImp(schema)
     const syncDataset = new SyncDataset(rootImp)
     return {
-        sync: syncDataset,
-        async: new asyncAPIImp.Dataset(rootImp, rootImp.global, syncDataset),
+        build: syncDataset,
+        async: asyncAPIImp.createDataset(rootImp, rootImp.global, syncDataset),
+        serialize: (internalSchemaSpecification, writer) => {
+            return serialize(
+                rootImp,
+                internalSchemaSpecification,
+                writer,
+            )
+        },
     }
 }

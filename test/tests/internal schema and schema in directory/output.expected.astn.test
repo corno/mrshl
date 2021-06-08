@@ -3,10 +3,21 @@
         "root": (
             'node': (
                 'properties': {
-                    "a1": ( )
-                    "b": ( )
+                    "a26": (
+                        'type': | 'string' (
+                            'default value': ""
+                            'quoted': true
+                        )
+                    )
+                    "b": (
+                        'type': | 'string' (
+                            'default value': ""
+                            'quoted': true
+                        )
+                    )
                     "c": (
-                        'type': | 'value' (
+                        'type': | 'string' (
+                            'default value': ""
                             'quoted': false
                         )
                     )
@@ -14,6 +25,7 @@
             )
         )
     }
+    'root type': "root"
 )
 (
     'b': "X"

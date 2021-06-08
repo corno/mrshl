@@ -1,4 +1,4 @@
-import * as streamVal from "../../../interfaces/streamingValidationAPI"
+import * as def from "../../../interfaces/typedParserDefinitions"
 import * as cc from "./changeControl"
 import { Collection, Dictionary, Node } from "./internals"
 import { Component } from "./internals/Component"
@@ -12,7 +12,7 @@ function assertUnreachable<RT>(_x: never): RT {
 
 export function initializeNode(
     node: Node,
-    definition: streamVal.NodeDefinition,
+    definition: def.NodeDefinition,
     errorManager: ErrorManager,
     errorsAggregator: IParentErrorsAggregator,
     subEntriesErrorsAggregator: IParentErrorsAggregator,
@@ -56,7 +56,7 @@ export function initializeNode(
                 node.components.add(key, comp)
                 break
             }
-            case "state group": {
+            case "tagged union": {
                 const $ = property.type[1]
                 const sg = new StateGroup(
                     $,
@@ -65,10 +65,10 @@ export function initializeNode(
                     subEntriesErrorsAggregator,
                     createdInNewContext,
                 )
-                node.stateGroups.add(key, sg)
+                node.taggedUnions.add(key, sg)
                 break
             }
-            case "value": {
+            case "string": {
                 const $ = property.type[1]
                 node.values.add(key, new Value($, errorsAggregator, createdInNewContext, errorManager))
                 break

@@ -4,7 +4,7 @@
 */
 import * as p from "pareto"
 import * as astncore from "astn-core"
-import * as streamVal from "../../../../interfaces/streamingValidationAPI"
+import * as def from "../../../../interfaces/typedParserDefinitions"
 import {
     Dictionary,
 } from "./Dictionary"
@@ -35,7 +35,7 @@ type AnnotatedString<TokenAnnotation> = {
 function createExpectedNodeHandler<TokenAnnotation, NonTokenAnnotation>(
     context: astncore.IExpectContext<TokenAnnotation, NonTokenAnnotation>,
     raiseValidationError: (message: string, annotation: TokenAnnotation) => void,
-    componentTypes: streamVal.IReadonlyDictionary<t.ComponentType>,
+    componentTypes: def.IReadonlyDictionary<t.ComponentType>,
     callback: (node: t.Node) => void,
     resolveRegistry: ResolveRegistry,
 ): astncore.ExpectedProperty<TokenAnnotation, NonTokenAnnotation> {
@@ -105,7 +105,7 @@ function createExpectedNodeHandler<TokenAnnotation, NonTokenAnnotation>(
 
                                                                                         const assertedTargetKeyProperty = assertNotNull(targetKeyProperty)
                                                                                         targetCollectionType = ["dictionary", {
-                                                                                            "key property": createReference(
+                                                                                            "key propertyx": createReference(
                                                                                                 assertedTargetKeyProperty.value,
                                                                                                 assertedTargetNode.properties,
                                                                                                 resolveRegistry,

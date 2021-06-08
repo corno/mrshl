@@ -3,6 +3,9 @@
 */
 
 import * as streamVal from "../../interfaces/streamingValidationAPI"
+/* eslint
+    "max-classes-per-file": off,
+*/
 
 export function createNOPSideEffects<Annotation>(): streamVal.RootHandler<Annotation> {
     return new NOPSideEffects()
@@ -11,31 +14,38 @@ export function createNOPSideEffects<Annotation>(): streamVal.RootHandler<Annota
 class NOPSideEffects<Annotation> implements streamVal.RootHandler<Annotation> {
     node: streamVal.NodeHandler<Annotation>
     constructor() {
-        this.node = new NodeNOPSideEffects()
+        this.node = createNodeNOPSideEffects()
     }
     onEnd() {
         //
     }
 }
 
-class NodeNOPSideEffects<Annotation> implements streamVal.NodeHandler<Annotation> {
-    constructor() {
-        //
+function createNodeNOPSideEffects<Annotation>(): streamVal.NodeHandler<Annotation> {
+    return {
+        onShorthandTypeOpen:() => {
+            return new ShorthandTypeNOPSideEffects()
+        },
+        onVerboseTypeOpen:() => {
+            return createVerboseTypeNOPSideEffects()
+        },
     }
-    onShorthandTypeOpen() {
-        return new ShorthandTypeNOPSideEffects()
-    }
-    onProperty() {
-        return new PropertyNOPSideEffects()
-    }
-    // onUnexpectedProperty() {
-    //     //
-    // }
-    onTypeOpen() {
-        return new NodeNOPSideEffects()
-    }
-    onTypeClose() {
-        //
+}
+
+function createVerboseTypeNOPSideEffects<Annotation>(): streamVal.VerboseTypeHandler<Annotation> {
+    return {
+        onUnexpectedProperty: () => {
+            //
+        },
+        onProperty:() =>{
+            return new PropertyNOPSideEffects()
+        },
+        // onUnexpectedProperty() {
+        //     //
+        // }
+        onVerboseTypeClose:() => {
+            //
+        },
     }
 }
 
@@ -59,7 +69,7 @@ class StateGroupNOPSideEffects<Annotation> implements streamVal.TaggedUnionHandl
     //     //
     // }
     onOption() {
-        return new NodeNOPSideEffects()
+        return createNodeNOPSideEffects()
     }
 }
 
@@ -73,17 +83,17 @@ class PropertyNOPSideEffects<Annotation> implements streamVal.PropertyHandler<An
     onList() {
         return new ListNOPSideEffects()
     }
-    onStateGroup() {
+    onTaggedUnion() {
         return new StateGroupNOPSideEffects()
     }
-    onScalarValue() {
+    onString() {
         //
     }
     onNull() {
         //
     }
     onComponent() {
-        return new NodeNOPSideEffects()
+        return createNodeNOPSideEffects()
     }
 }
 
@@ -95,7 +105,7 @@ class DictionaryNOPSideEffects<Annotation> implements streamVal.DictionaryHandle
         //
     }
     onEntry() {
-        return new NodeNOPSideEffects()
+        return createNodeNOPSideEffects()
     }
 }
 
@@ -107,6 +117,6 @@ class ListNOPSideEffects<Annotation> implements streamVal.ListHandler<Annotation
         //
     }
     onEntry() {
-        return new NodeNOPSideEffects()
+        return createNodeNOPSideEffects()
     }
 }

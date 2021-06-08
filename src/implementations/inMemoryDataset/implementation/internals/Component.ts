@@ -1,4 +1,4 @@
-import * as streamVal from "../../../../interfaces/streamingValidationAPI"
+import * as def from "../../../../interfaces/typedParserDefinitions"
 import { Node } from "./Node"
 import { Comments } from "./Comments"
 import { IParentErrorsAggregator, ErrorManager } from "./ErrorManager"
@@ -8,7 +8,7 @@ export class Component {
     public readonly node: Node
     public readonly comments = new Comments()
     constructor(
-        definition: streamVal.ComponentDefinition,
+        definition: def.ComponentDefinition,
         errorManager: ErrorManager,
         errorsAggregator: IParentErrorsAggregator,
         subEntriesErrorsAggregator: IParentErrorsAggregator,

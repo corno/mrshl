@@ -1,14 +1,16 @@
 import * as p from "pareto"
 import * as astncore from "astn-core"
 import * as buildAPI from "../../../interfaces/buildAPI"
+import * as def from "../../../interfaces/typedParserDefinitions"
 import * as sideEffectAPI from "../../../interfaces/streamingValidationAPI"
 import * as id from "../../../interfaces/buildAPI/IDataset"
+import { DiagnosticSeverity } from "../../../interfaces/DiagnosticSeverity"
 
 function assertUnreachable<RT>(_x: never): RT {
     throw new Error("Unreachable")
 }
 
-type OnError<TokenAnnotation> = (message: string, annotation: TokenAnnotation) => void
+type OnError<TokenAnnotation> = (message: string, annotation: TokenAnnotation, severity: DiagnosticSeverity) => void
 
 function wrap<TokenAnnotation, NonTokenAnnotation>(
     handler: astncore.ValueHandler<TokenAnnotation, NonTokenAnnotation>
@@ -35,7 +37,7 @@ function createUnexpectedArrayHandler<TokenAnnotation, NonTokenAnnotation>(
     annotation: TokenAnnotation,
     onError: OnError<TokenAnnotation>,
 ): astncore.ArrayHandler<TokenAnnotation, NonTokenAnnotation> {
-    onError(message, annotation)
+    onError(message, annotation, DiagnosticSeverity.error)
 
     return {
         element: () => {
@@ -52,7 +54,7 @@ function createUnexpectedObjectHandler<TokenAnnotation, NonTokenAnnotation>(
     annotation: TokenAnnotation,
     onError: OnError<TokenAnnotation>
 ): astncore.ObjectHandler<TokenAnnotation, NonTokenAnnotation> {
-    onError(message, annotation)
+    onError(message, annotation, DiagnosticSeverity.error)
 
     return {
         property: () => {
@@ -69,7 +71,7 @@ function createUnexpectedTaggedUnionHandler<TokenAnnotation, NonTokenAnnotation>
     annotation: TokenAnnotation,
     onError: OnError<TokenAnnotation>,
 ): astncore.TaggedUnionHandler<TokenAnnotation, NonTokenAnnotation> {
-    onError(message, annotation)
+    onError(message, annotation, DiagnosticSeverity.error)
 
     return {
         option: () => {
@@ -89,12 +91,12 @@ function createUnexpectedStringHandler<TokenAnnotation>(
     annotation: TokenAnnotation,
     onError: OnError<TokenAnnotation>,
 ): p.IValue<boolean> {
-    onError(message, annotation)
+    onError(message, annotation, DiagnosticSeverity.error)
     return p.value(false)
 }
 
 function createPropertyDeserializer<TokenAnnotation, NonTokenAnnotation>(
-    propDefinition: buildAPI.PropertyDefinition,
+    propDefinition: def.PropertyDefinition,
     propKey: string,
     nodeBuilder: buildAPI.Node,
     sideEffectsAPIs: sideEffectAPI.PropertyHandler<TokenAnnotation>[],
@@ -119,7 +121,7 @@ function createPropertyDeserializer<TokenAnnotation, NonTokenAnnotation>(
 
                             const foundKeys: string[] = []
                             if ($.data.type[0] !== "dictionary") {
-                                onError("not a dictionary", $.annotation)
+                                onError("expected a dictionary: { }", $.annotation, DiagnosticSeverity.warning)
                             }
                             addComments(dictionary.comments, $.annotation)
 
@@ -135,12 +137,12 @@ function createPropertyDeserializer<TokenAnnotation, NonTokenAnnotation>(
                                 property: $ => {
 
                                     if (foundKeys.includes($.data.key)) {
-                                        onError("double key", $.annotation)
+                                        onError("double key", $.annotation, DiagnosticSeverity.error)
                                     }
                                     foundKeys.push($.data.key)
                                     const entry = dictionary.createEntry()
                                     //const entry = collBuilder.createEntry(errorMessage => onError(errorMessage, propertyData.keyRange))
-                                    entry.node.getValue($$["key property"].name).setValue($.data.key, errorMessage => onError(errorMessage, $.annotation))
+                                    entry.node.getValue($$["key property"].name).setValue($.data.key, errorMessage => onError(errorMessage, $.annotation, DiagnosticSeverity.error))
                                     addComments(entry.comments, $.annotation)
 
 
@@ -204,7 +206,7 @@ function createPropertyDeserializer<TokenAnnotation, NonTokenAnnotation>(
                     return {
                         array: $ => {
                             if ($.data.type[0] !== "list") {
-                                onError("not a list", $.annotation)
+                                onError("not a list", $.annotation, DiagnosticSeverity.error)
                             }
                             addComments(list.comments, $.annotation)
                             const listSideEffects = sideEffectsAPIs.map(s => {
@@ -286,9 +288,9 @@ function createPropertyDeserializer<TokenAnnotation, NonTokenAnnotation>(
                 componentBuilder.comments,
             )
         }
-        case "state group": {
+        case "tagged union": {
             const $ = propDefinition.type[1]
-            const stateGroup = nodeBuilder.getStateGroup(propKey)
+            const stateGroup = nodeBuilder.getTaggedUnion(propKey)
 
             return {
                 array: $ => {
@@ -299,7 +301,7 @@ function createPropertyDeserializer<TokenAnnotation, NonTokenAnnotation>(
                 },
                 taggedUnion: $$ => {
                     const sgse = sideEffectsAPIs.map(s => {
-                        return s.onStateGroup({
+                        return s.onTaggedUnion({
                             annotation: {
                                 annotation: $$.annotation,
                             },
@@ -310,7 +312,7 @@ function createPropertyDeserializer<TokenAnnotation, NonTokenAnnotation>(
                     return {
                         option: $$$ => {
                             const optionName = $$$.data.option
-                            const option = $.states.get($$$.data.option)
+                            const option = $.options.get($$$.data.option)
                             const sse = sgse.map(s => {
                                 return s.onOption({
                                     data: $$$.data,
@@ -324,9 +326,9 @@ function createPropertyDeserializer<TokenAnnotation, NonTokenAnnotation>(
                                 return astncore.createDummyRequiredValueHandler()
                             } else {
 
-                                const state = stateGroup.setState(optionName, errorMessage => onError(errorMessage, $$$.annotation))
+                                const state = stateGroup.setState(optionName, errorMessage => onError(errorMessage, $$$.annotation, DiagnosticSeverity.error))
                                 addComments(stateGroup.comments, $$$.annotation)
-                                if ($["default state"].get() !== option) {
+                                if ($["default option"].get() !== option) {
                                     flagNonDefaultPropertiesFound()
                                 }
                                 return wrap(
@@ -344,7 +346,7 @@ function createPropertyDeserializer<TokenAnnotation, NonTokenAnnotation>(
                             }
                         },
                         missingOption: () => {
-                            onError("missing option", $$.annotation)
+                            onError("missing option", $$.annotation, DiagnosticSeverity.error)
                         },
                         end: () => {
                             //
@@ -357,7 +359,7 @@ function createPropertyDeserializer<TokenAnnotation, NonTokenAnnotation>(
                 },
             }
         }
-        case "value": {
+        case "string": {
             const $ = propDefinition.type[1]
             const valueBuilder = nodeBuilder.getValue(propKey)
 
@@ -386,12 +388,12 @@ function createPropertyDeserializer<TokenAnnotation, NonTokenAnnotation>(
                             if ($$$.value !== $["default value"]) {
                                 flagNonDefaultPropertiesFound()
                             }
-                            valueBuilder.setValue($$$.value, errorMessage => onError(errorMessage, $$.annotation))
+                            valueBuilder.setValue($$$.value, errorMessage => onError(errorMessage, $$.annotation, DiagnosticSeverity.error))
                             if ($.quoted) {
-                                onError(`value '${$$$.value}' must be quoted`, $$.annotation)
+                                onError(`value '${$$$.value}' must be quoted`, $$.annotation, DiagnosticSeverity.error)
                             }
                             sideEffectsAPIs.forEach(s => {
-                                s.onScalarValue({
+                                s.onString({
                                     value: $$$.value,
                                     data: $$.data,
                                     annotation: {
@@ -411,12 +413,12 @@ function createPropertyDeserializer<TokenAnnotation, NonTokenAnnotation>(
                             if ($$$.value !== $["default value"]) {
                                 flagNonDefaultPropertiesFound()
                             }
-                            valueBuilder.setValue($$$.value, errorMessage => onError(errorMessage, $$.annotation))
+                            valueBuilder.setValue($$$.value, errorMessage => onError(errorMessage, $$.annotation, DiagnosticSeverity.error))
                             if (!$.quoted) {
-                                onError(`value '${$$$.value}' must be unquoted`, $$.annotation)
+                                onError(`value '${$$$.value}' must be unquoted`, $$.annotation, DiagnosticSeverity.error)
                             }
                             sideEffectsAPIs.forEach(s => {
-                                s.onScalarValue({
+                                s.onString({
                                     value: $$$.value,
                                     data: $$.data,
                                     annotation: {
@@ -445,7 +447,7 @@ function createPropertyDeserializer<TokenAnnotation, NonTokenAnnotation>(
 
 function defaultInitializeNode<TokenAnnotation>(
     annotation: TokenAnnotation,
-    nodeDefinition: buildAPI.NodeDefinition,
+    nodeDefinition: def.NodeDefinition,
     nodeBuilder: buildAPI.Node,
     onError: OnError<TokenAnnotation>,
 ) {
@@ -463,7 +465,7 @@ function defaultInitializeNode<TokenAnnotation>(
 
 function defaultInitializeProperty<TokenAnnotation>(
     annotation: TokenAnnotation,
-    propDefinition: buildAPI.PropertyDefinition,
+    propDefinition: def.PropertyDefinition,
     propKey: string,
     nodeBuilder: buildAPI.Node,
     onError: OnError<TokenAnnotation>,
@@ -484,14 +486,14 @@ function defaultInitializeProperty<TokenAnnotation>(
             )
             break
         }
-        case "state group": {
+        case "tagged union": {
             const $ = propDefinition.type[1]
-            nodeBuilder.getStateGroup(propKey).setState($["default state"].name, errorMessage => onError(errorMessage, annotation))
+            nodeBuilder.getTaggedUnion(propKey).setState($["default option"].name, errorMessage => onError(errorMessage, annotation, DiagnosticSeverity.error))
             break
         }
-        case "value": {
+        case "string": {
             const $ = propDefinition.type[1]
-            nodeBuilder.getValue(propKey).setValue($["default value"], errorMessage => onError(errorMessage, annotation))
+            nodeBuilder.getValue(propKey).setValue($["default value"], errorMessage => onError(errorMessage, annotation, DiagnosticSeverity.error))
             break
         }
         default:
@@ -499,7 +501,7 @@ function defaultInitializeProperty<TokenAnnotation>(
     }
 }
 
-function getPropertyComments(node: buildAPI.Node, propertyName: string, propertyDefinition: buildAPI.PropertyDefinition): buildAPI.Comments {
+function getPropertyComments(node: buildAPI.Node, propertyName: string, propertyDefinition: def.PropertyDefinition): buildAPI.Comments {
     switch (propertyDefinition.type[0]) {
         case "component": {
             return node.getComponent(propertyName).comments
@@ -517,10 +519,10 @@ function getPropertyComments(node: buildAPI.Node, propertyName: string, property
                     return assertUnreachable($.type[0])
             }
         }
-        case "state group": {
-            return node.getStateGroup(propertyName).comments
+        case "tagged union": {
+            return node.getTaggedUnion(propertyName).comments
         }
-        case "value": {
+        case "string": {
             return node.getValue(propertyName).comments
         }
         default:
@@ -529,10 +531,10 @@ function getPropertyComments(node: buildAPI.Node, propertyName: string, property
 }
 
 function createNodeDeserializer<TokenAnnotation, NonTokenAnnotation>(
-    nodeDefinition: buildAPI.NodeDefinition,
-    keyPropertyDefinition: buildAPI.PropertyDefinition | null,
+    nodeDefinition: def.NodeDefinition,
+    keyPropertyDefinition: def.PropertyDefinition | null,
     nodeBuilder: buildAPI.Node,
-    keyProperty: buildAPI.PropertyDefinition | null,
+    keyProperty: def.PropertyDefinition | null,
     sideEffectsAPI: sideEffectAPI.NodeHandler<TokenAnnotation>[],
     onError: OnError<TokenAnnotation>,
     flagNonDefaultPropertiesFound: () => void,
@@ -541,11 +543,11 @@ function createNodeDeserializer<TokenAnnotation, NonTokenAnnotation>(
     return {
         array: $ => {
             if ($.data.type[0] !== "shorthand type") {
-                onError("not a list", $.annotation)
+                onError("not a list", $.annotation, DiagnosticSeverity.error)
             }
             type ExpectedElement = {
                 name: string
-                propDefinition: buildAPI.PropertyDefinition
+                propDefinition: def.PropertyDefinition
                 getHandler: () => astncore.ValueHandler<TokenAnnotation, NonTokenAnnotation>
             }
 
@@ -594,7 +596,7 @@ function createNodeDeserializer<TokenAnnotation, NonTokenAnnotation>(
                 })
             })
             if ($.data.type[0] !== "shorthand type") {
-                onError("array is not a shorthand type", $.annotation)
+                onError("array is not a shorthand type", $.annotation, DiagnosticSeverity.error)
             }
             let index = 0
             return {
@@ -605,19 +607,19 @@ function createNodeDeserializer<TokenAnnotation, NonTokenAnnotation>(
                         const dvh = astncore.createDummyValueHandler()
                         return {
                             object: data => {
-                                onError("superfluous element", data.annotation)
+                                onError("superfluous element", data.annotation, DiagnosticSeverity.error)
                                 return dvh.object(data)
                             },
                             array: data => {
-                                onError("superfluous element", data.annotation)
+                                onError("superfluous element", data.annotation, DiagnosticSeverity.error)
                                 return dvh.array(data)
                             },
                             string: data => {
-                                onError("superfluous element", data.annotation)
+                                onError("superfluous element", data.annotation, DiagnosticSeverity.error)
                                 return dvh.string(data)
                             },
                             taggedUnion: data => {
-                                onError("superfluous element", data.annotation)
+                                onError("superfluous element", data.annotation, DiagnosticSeverity.error)
                                 return dvh.taggedUnion(data)
                             },
                         }
@@ -630,7 +632,7 @@ function createNodeDeserializer<TokenAnnotation, NonTokenAnnotation>(
                     addComments(targetComments, $$.annotation)
                     const missing = expectedElements.length - index
                     if (missing > 0) {
-                        onError('elements missing', $$.annotation)
+                        onError(`${missing} missing element(s): ${expectedElements.slice(index).map(ee => `'${ee.name}'`).join(", ")}`, $$.annotation, DiagnosticSeverity.error)
                         for (let i = index; i !== expectedElements.length; i += 1) {
                             const ee = expectedElements[i]
 
@@ -658,14 +660,14 @@ function createNodeDeserializer<TokenAnnotation, NonTokenAnnotation>(
         object: $ => {
 
             if ($.data.type[0] !== "verbose type") {
-                onError("not a type", $.annotation)
+                onError("expected a verbose type: ( )", $.annotation, DiagnosticSeverity.warning)
             }
 
 
             addComments(targetComments, $.annotation)
 
             const typeSideEffects = sideEffectsAPI.map(s => {
-                return s.onTypeOpen({
+                return s.onVerboseTypeOpen({
                     data: $.data,
                     annotation: {
                         annotation: $.annotation,
@@ -686,25 +688,35 @@ function createNodeDeserializer<TokenAnnotation, NonTokenAnnotation>(
                     const key = $$.data.key
                     const propertyDefinition = nodeDefinition.properties.get(key)
                     if (propertyDefinition === null) {
-                        onError("superfluous property", $$.annotation)
+                        onError(`unexpected property: '${key}'. Choose from ${nodeDefinition.properties.getKeys().map(k => `'${k}'`).join(", ")}`, $$.annotation, DiagnosticSeverity.error)
+                        typeSideEffects.forEach(s => {
+                            s.onUnexpectedProperty({
+                                data: $$.data,
+                                annotation: {
+                                    nodeDefinition: nodeDefinition,
+                                    key: $$.data.key,
+                                    annotation: $$.annotation,
+                                },
+                            })
+                        })
                         return p.value(astncore.createDummyRequiredValueHandler())
                     } else {
 
                         const pp = {
                             annotation: $$.annotation,
-                            isNonDefault: true,
+                            isNonDefault: false,
                         }
                         processedProperties[key] = pp
 
                         if (propertyDefinition === keyProperty) {
-                            onError("unexpected identifying property", $$.annotation)
+                            onError("unexpected identifying property", $$.annotation, DiagnosticSeverity.error)
                             typeSideEffects.forEach(s => {
-                                s.onProperty({
+                                s.onUnexpectedProperty({
                                     data: $$.data,
                                     annotation: {
                                         nodeDefinition: nodeDefinition,
                                         key: $$.data.key,
-                                        annotation: $.annotation,
+                                        annotation: $$.annotation,
                                     },
                                 })
                             })
@@ -720,9 +732,9 @@ function createNodeDeserializer<TokenAnnotation, NonTokenAnnotation>(
                                     return s.onProperty({
                                         data: $$.data,
                                         annotation: {
-                                            nodeDefinition: nodeDefinition,
+                                            definition: propertyDefinition,
                                             key: key,
-                                            annotation: $.annotation,
+                                            annotation: $$.annotation,
                                         },
                                     })
                                 }),
@@ -754,7 +766,7 @@ function createNodeDeserializer<TokenAnnotation, NonTokenAnnotation>(
                             )
                         } else {
                             if (!pp.isNonDefault) {
-                                onError(`property '${propKey}' has default value, remove`, pp.annotation)
+                                onError(`property '${propKey}' has default value, remove`, pp.annotation, DiagnosticSeverity.warning)
                             } else {
                                 hadNonDefaultProperties = true
                             }
@@ -764,7 +776,7 @@ function createNodeDeserializer<TokenAnnotation, NonTokenAnnotation>(
                         flagNonDefaultPropertiesFound()
                     }
                     typeSideEffects.forEach(s => {
-                        s.onTypeClose({
+                        s.onVerboseTypeClose({
                             annotation: {
                                 annotation: $$.annotation,
                             },

@@ -3,6 +3,7 @@
 */
 
 import * as buildAPI from "../../../interfaces/buildAPI"
+import * as def from "../../../interfaces/typedParserDefinitions"
 import * as imp from "./internals"
 import { Global } from "./Global"
 import { initializeNode } from "./initializeNode"
@@ -11,14 +12,14 @@ function assertUnreachable<RT>(_x: never): RT {
     throw new Error("unreachable")
 }
 
-export class Component implements buildAPI.Component {
+class Component implements buildAPI.Component {
     public node: Node
     public readonly comments: imp.Comments
     constructor(
-        definition: buildAPI.ComponentDefinition,
+        definition: def.ComponentDefinition,
         component: imp.Component,
         global: Global,
-        keyProperty: buildAPI.PropertyDefinition | null,
+        keyProperty: def.PropertyDefinition | null,
     ) {
         this.node = new Node(
             component.node,
@@ -34,7 +35,7 @@ type PropertyType =
     | ["list", List]
     | ["dictionary", Dictionary]
     | ["component", Component]
-    | ["state group", StateGroup]
+    | ["state group", TaggedUnion]
     | ["value", Value]
 
 class Property implements buildAPI.Property {
@@ -42,10 +43,10 @@ class Property implements buildAPI.Property {
     public readonly isKeyProperty: boolean
     constructor(
         propertyKey: string,
-        definition: buildAPI.PropertyDefinition,
+        definition: def.PropertyDefinition,
         nodeImp: imp.Node,
         global: Global,
-        keyProperty: buildAPI.PropertyDefinition | null,
+        keyProperty: def.PropertyDefinition | null,
     ) {
         this.type = ((): PropertyType => {
             switch (definition.type[0]) {
@@ -83,15 +84,15 @@ class Property implements buildAPI.Property {
                             return assertUnreachable($.type[0])
                     }
                 }
-                case "state group": {
+                case "tagged union": {
                     const $ = definition.type[1]
-                    return ["state group", new StateGroup(
-                        nodeImp.stateGroups.getUnsafe(propertyKey),
+                    return ["state group", new TaggedUnion(
+                        nodeImp.taggedUnions.getUnsafe(propertyKey),
                         $,
                         global,
                     )]
                 }
-                case "value": {
+                case "string": {
                     const $ = definition.type[1]
                     return ["value", new Value(
                         nodeImp.values.getUnsafe(propertyKey),
@@ -108,14 +109,14 @@ class Property implements buildAPI.Property {
 
 export class Node implements buildAPI.Node {
     private readonly imp: imp.Node
-    private readonly definition: buildAPI.NodeDefinition
+    private readonly definition: def.NodeDefinition
     private readonly global: Global
-    private readonly keyProperty: buildAPI.PropertyDefinition | null
+    private readonly keyProperty: def.PropertyDefinition | null
     constructor(
         node: imp.Node,
-        definition: buildAPI.NodeDefinition,
+        definition: def.NodeDefinition,
         global: Global,
-        keyProperty: buildAPI.PropertyDefinition | null,
+        keyProperty: def.PropertyDefinition | null,
     ) {
         this.definition = definition
         this.imp = node
@@ -159,19 +160,19 @@ export class Node implements buildAPI.Node {
             this.keyProperty,
         )
     }
-    public getStateGroup(key: string): StateGroup {
+    public getTaggedUnion(key: string): TaggedUnion {
         const propDef = this.definition.properties.getUnsafe(key)
-        if (propDef.type[0] !== "state group") {
-            throw new Error("not a state group")
+        if (propDef.type[0] !== "tagged union") {
+            throw new Error("not a tagged union")
         }
-        const sg = this.imp.stateGroups.getUnsafe(key)
+        const sg = this.imp.taggedUnions.getUnsafe(key)
 
-        return new StateGroup(sg, propDef.type[1], this.global)
+        return new TaggedUnion(sg, propDef.type[1], this.global)
     }
     public getValue(key: string): Value {
         const propDef = this.definition.properties.getUnsafe(key)
-        if (propDef.type[0] !== "value") {
-            throw new Error("not a value")
+        if (propDef.type[0] !== "string") {
+            throw new Error("not a string")
         }
         return new Value(this.imp.values.getUnsafe(key), propDef.type[1])
     }
@@ -192,12 +193,12 @@ export class Node implements buildAPI.Node {
 }
 
 
-export class StateGroup implements buildAPI.StateGroup {
+class TaggedUnion implements buildAPI.StateGroup {
     private readonly imp: imp.StateGroup
     public readonly comments: imp.Comments
     private readonly global: Global
-    public readonly definition: buildAPI.StateGroupDefinition
-    constructor(stateGroup: imp.StateGroup, definition: buildAPI.StateGroupDefinition, global: Global) {
+    public readonly definition: def.TaggedUnionDefinition
+    constructor(stateGroup: imp.StateGroup, definition: def.TaggedUnionDefinition, global: Global) {
         this.imp = stateGroup
         this.global = global
         this.definition = definition
@@ -205,7 +206,7 @@ export class StateGroup implements buildAPI.StateGroup {
     }
     public setState(stateName: string, _onError: (errorMessage: string) => void): State {
 
-        const stateDefinition = this.definition.states.getUnsafe(stateName)
+        const stateDefinition = this.definition.options.getUnsafe(stateName)
         const stateImp = new imp.State(
             stateName,
             (stateNode, errorsAggregator, subEntriesErrorsAggregator) => {
@@ -227,14 +228,14 @@ export class StateGroup implements buildAPI.StateGroup {
         const currentStateImp = this.imp.currentState.get()
         const stateName = currentStateImp.key
         const stateImp = this.imp.currentState.get()
-        return new State(stateImp, this.definition.states.getUnsafe(stateName), this.global)
+        return new State(stateImp, this.definition.options.getUnsafe(stateName), this.global)
     }
 }
 
-export class State implements buildAPI.State {
+class State implements buildAPI.State {
     public readonly node: Node
     private readonly imp: imp.State
-    constructor(stateImp: imp.State, definition: buildAPI.StateDefinition, global: Global) {
+    constructor(stateImp: imp.State, definition: def.OptionDefinition, global: Global) {
         this.node = new Node(stateImp.node, definition.node, global, null)
         this.imp = stateImp
     }
@@ -272,14 +273,14 @@ export class Entry implements buildAPI.Entry {
     // }
 }
 
-export class Dictionary implements buildAPI.Dictionary {
+class Dictionary implements buildAPI.Dictionary {
     readonly comments: imp.Comments
     public readonly imp: imp.Collection
-    private readonly definition: buildAPI.DictionaryDefinition
+    private readonly definition: def.DictionaryDefinition
     private readonly global: Global
     constructor(
         collectionImp: imp.Collection,
-        definition: buildAPI.DictionaryDefinition,
+        definition: def.DictionaryDefinition,
         global: Global,
     ) {
         this.imp = collectionImp
@@ -319,7 +320,7 @@ export class Dictionary implements buildAPI.Dictionary {
 }
 
 
-export class List implements buildAPI.List {
+class List implements buildAPI.List {
     readonly comments: imp.Comments
 
     private readonly imp: imp.Collection
@@ -358,12 +359,12 @@ export class List implements buildAPI.List {
     }
 }
 
-export class Value implements buildAPI.Value {
+class Value implements buildAPI.Value {
     public readonly comments: imp.Comments
     private readonly imp: imp.Value
     public readonly isQuoted: boolean
-    public readonly definition: buildAPI.ValueDefinition
-    constructor(valueImp: imp.Value, definition: buildAPI.ValueDefinition) {
+    public readonly definition: def.StringValueDefinition
+    constructor(valueImp: imp.Value, definition: def.StringValueDefinition) {
         this.imp = valueImp
         this.comments = valueImp.comments
         this.isQuoted = definition.quoted

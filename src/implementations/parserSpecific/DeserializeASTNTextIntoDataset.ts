@@ -1,6 +1,7 @@
 import * as p from "pareto"
 
 import * as streamVal from "../../interfaces/streamingValidationAPI"
+import * as def from "../../interfaces/typedParserDefinitions"
 import * as astn from "astn"
 
 import { IDataset } from "../../etc/interfaces/dataset"
@@ -23,6 +24,6 @@ export type DeserializeASTNTextIntoDataset = (
 	diagnosticCallback: DiagnosticCallback,
 	sideEffectHandlers: streamVal.RootHandler<astn.ParserAnnotationData>[],
 	createInitialDataset: (
-		schema: streamVal.Schema,
+		schema: def.Schema,
 	) => IDataset,
 ) => p.IUnsafeValue<IDeserializedDataset, null>

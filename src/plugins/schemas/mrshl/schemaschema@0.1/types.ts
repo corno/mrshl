@@ -1,4 +1,4 @@
-import * as streamVal from "../../../../interfaces/streamingValidationAPI"
+import * as def from "../../../../interfaces/typedParserDefinitions"
 
 export interface X {
     x: string
@@ -14,7 +14,7 @@ export type Collection = {
 }
 
 export type Component = {
-    readonly "type": streamVal.IReference<ComponentType>
+    readonly "type": def.IReference<ComponentType>
 }
 
 export type ComponentType = {
@@ -22,14 +22,14 @@ export type ComponentType = {
 }
 
 export type Dictionary = {
-    readonly "key property": streamVal.IReference<Property>
+    readonly "key propertyx": def.IReference<Property>
 }
 
 export type List = {
 }
 
 export type Node = {
-    readonly "properties": streamVal.IReadonlyDictionary<Property>
+    readonly "properties": def.IReadonlyDictionary<Property>
 }
 
 export type Property = {
@@ -43,8 +43,8 @@ export type PropertyType =
     | ["state group", StateGroup]
 
 export type Schema = {
-    readonly "component types": streamVal.IReadonlyDictionary<ComponentType>
-    readonly "root type": streamVal.IReference<ComponentType>
+    readonly "component types": def.IReadonlyDictionary<ComponentType>
+    readonly "root type": def.IReference<ComponentType>
 }
 
 export type State = {
@@ -52,8 +52,8 @@ export type State = {
 }
 
 export type StateGroup = {
-    readonly "states": streamVal.IReadonlyDictionary<State>
-    readonly "default state": streamVal.IReference<State>
+    readonly "states": def.IReadonlyDictionary<State>
+    readonly "default state": def.IReference<State>
 }
 
 export type ValueType =

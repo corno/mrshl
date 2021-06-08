@@ -4,7 +4,7 @@
 
 import * as asyncAPI from "../../../interfaces/asyncAPI/asyncAPI"
 import * as cc from "./changeControl"
-import * as streamVal from "../../../interfaces/streamingValidationAPI"
+import * as def from "../../../interfaces/typedParserDefinitions"
 import * as g from "./genericimp"
 //import * as s from "../serialize"
 import * as id from "../../../interfaces/buildAPI/IDataset"
@@ -36,7 +36,7 @@ function purgeChanges(node: imp.Node): void {
     node.components.forEach(c => {
         purgeChanges(c.node)
     })
-    node.stateGroups.forEach(sg => {
+    node.taggedUnions.forEach(sg => {
         sg.statesOverTime.removeEntries(sot => {
             return !sot.isCurrentState.get()
         })
@@ -54,144 +54,152 @@ function purgeChanges(node: imp.Node): void {
     })
 }
 
-export class Collection implements asyncAPI.Collection {
-    public readonly entries: g.ReactiveArray<Entry>
-    private readonly global: Global
-    private readonly imp: imp.Collection
-    constructor(collectionImp: imp.Collection, nodeDefinition: streamVal.NodeDefinition, global: Global) {
-        this.imp = collectionImp
-        this.global = global
-        this.entries = collectionImp.entries.map(e => {
-            return new Entry(e, nodeDefinition, global)
-        })
-    }
-    public copyEntriesToHere(forEach: (callback: (entry: asyncAPI.Entry) => void) => void): void {
-        this.global.changeController.copyEntriesToCollection(callback => {
-            forEach(sourceEntryImp => {
-                if (!(sourceEntryImp instanceof imp.EntryPlaceholder)) {
-                    console.error(sourceEntryImp)
-                    throw new Error("Unexpected, entry is not an instance of Entry")
-                }
-                const newEntry = new imp.Entry(
-                    this.imp.nodeDefinition,
-                    this.global.errorManager,
-                    this.imp.dictionary
-                )
-                const source = new syncAPIImp.Entry(sourceEntryImp.entry, this.imp, this.global)
-                const target = new syncAPIImp.Entry(newEntry, this.imp, this.global)
-                copyEntry(source, target)
-
-                callback(new cc.EntryAddition(
-                    this.imp,
-                    new imp.EntryPlaceholder(
-                        newEntry,
-                        this.imp,
-                        true,
-                    )
-                ))
+export function createCollection(collectionImp: imp.Collection, nodeDefinition: def.NodeDefinition, global: Global): asyncAPI.Collection {
+    class Collection implements asyncAPI.Collection {
+        public readonly entries: g.ReactiveArray<Entry>
+        private readonly global: Global
+        private readonly imp: imp.Collection
+        constructor() {
+            this.imp = collectionImp
+            this.global = global
+            this.entries = collectionImp.entries.map(e => {
+                return new Entry(e, nodeDefinition, global)
             })
-        })
-    }
-    public addEntry(): void {
-        const entry = new imp.Entry(
-            this.imp.nodeDefinition,
-            this.global.errorManager,
-            this.imp.dictionary,
-        )
+        }
+        public copyEntriesToHere(forEach: (callback: (entry: asyncAPI.Entry) => void) => void): void {
+            this.global.changeController.copyEntriesToCollection(callback => {
+                forEach(sourceEntryImp => {
+                    if (!(sourceEntryImp instanceof imp.EntryPlaceholder)) {
+                        console.error(sourceEntryImp)
+                        throw new Error("Unexpected, entry is not an instance of Entry")
+                    }
+                    const newEntry = new imp.Entry(
+                        this.imp.nodeDefinition,
+                        this.global.errorManager,
+                        this.imp.dictionary
+                    )
+                    const source = new syncAPIImp.Entry(sourceEntryImp.entry, this.imp, this.global)
+                    const target = new syncAPIImp.Entry(newEntry, this.imp, this.global)
+                    copyEntry(source, target)
 
-        this.global.changeController.addEntry(new cc.EntryAddition(
-            this.imp,
-            new imp.EntryPlaceholder(entry, this.imp, true)
-        ))
+                    callback(new cc.EntryAddition(
+                        this.imp,
+                        new imp.EntryPlaceholder(
+                            newEntry,
+                            this.imp,
+                            true,
+                        )
+                    ))
+                })
+            })
+        }
+        public addEntry(): void {
+            const entry = new imp.Entry(
+                this.imp.nodeDefinition,
+                this.global.errorManager,
+                this.imp.dictionary,
+            )
+
+            this.global.changeController.addEntry(new cc.EntryAddition(
+                this.imp,
+                new imp.EntryPlaceholder(entry, this.imp, true)
+            ))
+        }
     }
+    return new Collection()
 }
 
-export class Component implements asyncAPI.Component {
+class Component implements asyncAPI.Component {
     public readonly node: Node
     //private readonly imp: imp.Component
-    constructor(componentImp: imp.Component, definition: streamVal.ComponentDefinition, global: Global) {
+    constructor(componentImp: imp.Component, definition: def.ComponentDefinition, global: Global) {
         //this.imp = componentImp
         this.node = new Node(componentImp.node, definition.type.get().node, global)
     }
 }
 
-export class Dataset implements asyncAPI.Dataset {
+export function createDataset(
+    rootImp: RootImp,
+    global: Global,
+    _syncDataset: id.IDataset,
+): asyncAPI.Dataset {
+    class Dataset implements asyncAPI.Dataset {
 
-    public readonly errorAmount: g.ReactiveValue<number>
-    public readonly errorManager: imp.ErrorManager
+        public readonly errorAmount: g.ReactiveValue<number>
+        public readonly errorManager: imp.ErrorManager
 
-    public readonly commands: g.Dictionary<Command>
-    public readonly hasUndoActions: g.ReactiveValue<boolean>
-    public readonly hasRedoActions: g.ReactiveValue<boolean>
-    public readonly hasUnserializedChanges: ISubscribableValue<boolean>
-    public readonly rootNode: Node
+        public readonly commands: g.Dictionary<Command>
+        public readonly hasUndoActions: g.ReactiveValue<boolean>
+        public readonly hasRedoActions: g.ReactiveValue<boolean>
+        public readonly hasUnserializedChanges: ISubscribableValue<boolean>
+        public readonly rootNode: Node
 
-    private readonly imp: RootImp
-    //private readonly syncDataset: id.IDataset
+        private readonly imp: RootImp
+        //private readonly syncDataset: id.IDataset
 
-    //public readonly rootNode: Node
-    constructor(
-        rootImp: RootImp,
-        global: Global,
-        _syncDataset: id.IDataset,
-    ) {
-        this.imp = rootImp
-        //this.syncDataset = syncDataset
-        this.commands = new g.Dictionary({})
-        this.rootNode = new Node(rootImp.rootNode, rootImp.schema["root type"].get().node, global)
-        this.hasUndoActions = rootImp.global.changeController.executedChanges.hasChanges
-        this.hasRedoActions = rootImp.global.changeController.revertedChanges.hasChanges
-        this.errorAmount = rootImp.errorsAggregator.errorCount
-        this.errorManager = rootImp.global.errorManager
+        //public readonly rootNode: Node
+        constructor(
+        ) {
+            this.imp = rootImp
+            //this.syncDataset = syncDataset
+            this.commands = new g.Dictionary({})
+            this.rootNode = new Node(rootImp.rootNode, rootImp.schema["root type"].get().node, global)
+            this.hasUndoActions = rootImp.global.changeController.executedChanges.hasChanges
+            this.hasRedoActions = rootImp.global.changeController.revertedChanges.hasChanges
+            this.errorAmount = rootImp.errorsAggregator.errorCount
+            this.errorManager = rootImp.global.errorManager
 
-        this.hasUnserializedChanges = new g.DerivedReactiveValue(rootImp.global.changeController.amountOfChangesSinceLastSerialization, position => {
-            if (position === null) {
-                return true
-            } else {
-                return position !== 0
-            }
-        })
+            this.hasUnserializedChanges = new g.DerivedReactiveValue(rootImp.global.changeController.amountOfChangesSinceLastSerialization, position => {
+                if (position === null) {
+                    return true
+                } else {
+                    return position !== 0
+                }
+            })
+        }
+        public serialize(
+            _internalSchemaSpecification: iss.InternalSchemaSpecification,
+            _callback: (data: string) => void,
+        ): void {
+            //const out: string[] = []
+
+            throw new Error("IMPLEMENT ME: SERIALIZE")
+            // s.serialize(
+            //     this.syncDataset,
+            //     internalSchemaSpecification,
+            // ).handle(
+            //     null,
+            //     {
+            //         onData: $ => {
+            //             out.push($.data)
+            //             return p.value(false)
+            //         },
+            //         onEnd: () => {
+            //             //
+            //             callback(out.join(""))
+            //             this.imp.global.changeController.resetSerializationPosition()
+            //         },
+            //     }
+            // )
+        }
+        public undo(): void {
+            this.imp.global.changeController.undo()
+        }
+        public redo(): void {
+            this.imp.global.changeController.redo()
+        }
+        public purgeChanges(): void {
+            this.imp.global.changeController.purgeChanges()
+            purgeChanges(this.rootNode.imp)
+        }
+
     }
-    public serialize(
-        _internalSchemaSpecification: iss.InternalSchemaSpecification,
-        _callback: (data: string) => void,
-    ): void {
-        //const out: string[] = []
-
-        throw new Error("IMPLEMENT ME: SERIALIZE")
-        // s.serialize(
-        //     this.syncDataset,
-        //     internalSchemaSpecification,
-        // ).handle(
-        //     null,
-        //     {
-        //         onData: $ => {
-        //             out.push($.data)
-        //             return p.value(false)
-        //         },
-        //         onEnd: () => {
-        //             //
-        //             callback(out.join(""))
-        //             this.imp.global.changeController.resetSerializationPosition()
-        //         },
-        //     }
-        // )
-    }
-    public undo(): void {
-        this.imp.global.changeController.undo()
-    }
-    public redo(): void {
-        this.imp.global.changeController.redo()
-    }
-    public purgeChanges(): void {
-        this.imp.global.changeController.purgeChanges()
-        purgeChanges(this.rootNode.imp)
-    }
-
+    return new Dataset()
 }
 
 
-export class Entry implements asyncAPI.Entry {
+
+class Entry implements asyncAPI.Entry {
     public readonly node: Node
     public readonly hasSubEntryErrors: ISubscribableValue<boolean>
     public readonly tempSubEntryErrorsCount: g.ReactiveValue<number>
@@ -199,7 +207,7 @@ export class Entry implements asyncAPI.Entry {
     public readonly status: g.ReactiveValue<asyncAPI.EntryStatus>
     private readonly imp: imp.EntryPlaceholder
     private readonly global: Global
-    constructor(entryImp: imp.EntryPlaceholder, nodeDefinition: streamVal.NodeDefinition, global: Global) {
+    constructor(entryImp: imp.EntryPlaceholder, nodeDefinition: def.NodeDefinition, global: Global) {
         this.imp = entryImp
         this.node = new Node(entryImp.node, nodeDefinition, global)
         this.hasSubEntryErrors = entryImp.hasSubEntryErrors
@@ -218,13 +226,13 @@ export class Entry implements asyncAPI.Entry {
 
 }
 
-export class Property implements asyncAPI.Property {
+class Property implements asyncAPI.Property {
     public readonly type: asyncAPI.PropertyType
 
     //public readonly isKeyProperty: boolean
     //private readonly definition: d.Property
     constructor(
-        _definition: streamVal.PropertyDefinition,
+        _definition: def.PropertyDefinition,
         type: asyncAPI.PropertyType,
         //isKeyProperty: boolean,
     ) {
@@ -234,11 +242,11 @@ export class Property implements asyncAPI.Property {
     }
 }
 
-export class Node implements asyncAPI.Node {
+class Node implements asyncAPI.Node {
     public readonly imp: imp.Node
     private readonly global: Global
-    private readonly definition: streamVal.NodeDefinition
-    constructor(nodeImp: imp.Node, definition: streamVal.NodeDefinition, global: Global) {
+    private readonly definition: def.NodeDefinition
+    constructor(nodeImp: imp.Node, definition: def.NodeDefinition, global: Global) {
         this.imp = nodeImp
         this.definition = definition
         this.global = global
@@ -270,18 +278,18 @@ export class Node implements asyncAPI.Node {
                     )
                     break
                 }
-                case "state group": {
+                case "tagged union": {
                     callback(
                         new Property(
                             p,
-                            ["state group", this.getStateGroup(pKey)],
+                            ["state group", this.getTaggedUnion(pKey)],
                             //isKeyProperty,
                         ),
                         pKey
                     )
                     break
                 }
-                case "value": {
+                case "string": {
                     callback(
                         new Property(
                             p,
@@ -297,13 +305,13 @@ export class Node implements asyncAPI.Node {
             }
         })
     }
-    public getCollection(key: string): Collection {
+    public getCollection(key: string): asyncAPI.Collection {
         const propDef = this.definition.properties.getUnsafe(key)
         if (propDef.type[0] !== "collection") {
             throw new Error("unexpected")
         }
         const $ = propDef.type[1]
-        const nodeDefinition = ((): streamVal.NodeDefinition => {
+        const nodeDefinition = ((): def.NodeDefinition => {
             switch ($.type[0]) {
                 case "dictionary": {
                     const $$ = $.type[1]
@@ -317,7 +325,7 @@ export class Node implements asyncAPI.Node {
                     return assertUnreachable($.type[0])
             }
         })()
-        return new Collection(this.imp.collections.getUnsafe(key), nodeDefinition, this.global)
+        return createCollection(this.imp.collections.getUnsafe(key), nodeDefinition, this.global)
     }
     public getComponent(key: string): Component {
         const propDef = this.definition.properties.getUnsafe(key)
@@ -326,24 +334,24 @@ export class Node implements asyncAPI.Node {
         }
         return new Component(this.imp.components.getUnsafe(key), propDef.type[1], this.global)
     }
-    public getStateGroup(key: string): StateGroup {
+    public getTaggedUnion(key: string): StateGroup {
         const propDef = this.definition.properties.getUnsafe(key)
-        if (propDef.type[0] !== "state group") {
+        if (propDef.type[0] !== "tagged union") {
             throw new Error("unexpected")
         }
-        return new StateGroup(this.imp.stateGroups.getUnsafe(key), propDef.type[1], this.global)
+        return new StateGroup(this.imp.taggedUnions.getUnsafe(key), propDef.type[1], this.global)
     }
     public getValue(key: string): Value {
         return new Value(this.imp.values.getUnsafe(key), this.global)
     }
 }
 
-export class State implements asyncAPI.State {
+class State implements asyncAPI.State {
     public node: Node
     public readonly isCurrentState: g.ReactiveValue<boolean>
     public readonly key: string
     //private readonly imp: imp.State
-    constructor(stateImp: imp.State, definition: streamVal.StateDefinition, global: Global) {
+    constructor(stateImp: imp.State, definition: def.OptionDefinition, global: Global) {
         //this.imp = stateImp
         this.node = new Node(stateImp.node, definition.node, global)
         this.isCurrentState = stateImp.isCurrentState
@@ -351,19 +359,19 @@ export class State implements asyncAPI.State {
     }
 }
 
-export class StateGroup implements asyncAPI.StateGroup {
+class StateGroup implements asyncAPI.StateGroup {
     public readonly statesOverTime: g.ReactiveArray<State>
     public readonly changeStatus: g.ReactiveValue<asyncAPI.StateGroupChangeStatus>
     public readonly createdInNewContext: g.ReactiveValue<boolean>
     public readonly currentStateKey: g.ReactiveValue<string>
     private readonly global: Global
     private readonly imp: imp.StateGroup
-    private readonly definition: streamVal.StateGroupDefinition
-    constructor(stateGroupImp: imp.StateGroup, definition: streamVal.StateGroupDefinition, global: Global) {
+    private readonly definition: def.TaggedUnionDefinition
+    constructor(stateGroupImp: imp.StateGroup, definition: def.TaggedUnionDefinition, global: Global) {
         this.imp = stateGroupImp
         this.definition = definition
         this.statesOverTime = this.imp.statesOverTime.map(stateImp => {
-            return new State(stateImp, definition.states.getUnsafe(stateImp.key), global)
+            return new State(stateImp, definition.options.getUnsafe(stateImp.key), global)
         })
         this.changeStatus = stateGroupImp.changeStatus
         this.createdInNewContext = stateGroupImp.createdInNewContext
@@ -383,7 +391,7 @@ export class StateGroup implements asyncAPI.StateGroup {
                     (stateNode, errorsAggregator, subentriesErrorsAggregator) => {
                         initializeNode(
                             stateNode,
-                            this.definition.states.getUnsafe(stateName).node,
+                            this.definition.options.getUnsafe(stateName).node,
                             this.global.errorManager,
                             errorsAggregator,
                             subentriesErrorsAggregator,
@@ -398,7 +406,7 @@ export class StateGroup implements asyncAPI.StateGroup {
 }
 
 
-export class Value implements asyncAPI.Value {
+class Value implements asyncAPI.Value {
     public readonly isDuplicate: imp.PotentialError
     public readonly valueIsInvalid: imp.PotentialError
     public readonly focussable: g.ReactiveValue<g.Maybe<asyncAPI.IFocussable>>

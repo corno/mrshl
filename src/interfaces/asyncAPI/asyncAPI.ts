@@ -85,7 +85,7 @@ export type PropertyType =
 export interface Node {
     getCollection(name: string): Collection
     getComponent(name: string): Component
-    getStateGroup(name: string): StateGroup
+    getTaggedUnion(name: string): StateGroup
     getValue(name: string): Value
     forEachProperty(callback: (property: Property, key: string) => void): void
 }

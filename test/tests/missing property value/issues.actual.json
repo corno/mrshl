@@ -1,0 +1,20 @@
+[
+	[
+		"deserialization",
+		"warning",
+		"property 'y' has default value, remove",
+		16,
+		5,
+		16,
+		8
+	],
+	[
+		"deserialization",
+		"error",
+		"missing property value",
+		17,
+		1,
+		17,
+		2
+	]
+]

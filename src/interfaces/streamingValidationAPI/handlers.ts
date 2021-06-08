@@ -1,5 +1,5 @@
 
-import * as def from "../definitions"
+import * as def from "../typedParserDefinitions"
 import * as astncore from "astn-core"
 
 export interface RootHandler<Annotation> {
@@ -58,26 +58,26 @@ export interface PropertyHandler<Annotation> {
         }
     }): DictionaryHandler<Annotation>
     onComponent(): NodeHandler<Annotation>
-    onStateGroup($: {
+    onTaggedUnion($: {
         annotation: {
             annotation: Annotation
         }
     }): TaggedUnionHandler<Annotation>
-    onScalarValue($: {
+    onString($: {
         value: string
         data: astncore.StringValueData
         annotation: {
             syncValue: {
                 getSuggestions(): string[]
             }
-            definition: def.ValueDefinition
+            definition: def.StringValueDefinition
             annotation: Annotation
         }
     }): void
     onNull($: {
         data: astncore.StringValueData
         annotation: {
-            //annotation: Annotation
+            annotation: Annotation
         }
     }): void
 }
@@ -87,7 +87,6 @@ export interface ShorthandTypeHandler<Annotation> {
         annotation: {
             propKey: string
             propDefinition: def.PropertyDefinition
-            //annotation: Annotation
         }
     }): PropertyHandler<Annotation>
     onShorthandTypeClose($: {
@@ -98,15 +97,23 @@ export interface ShorthandTypeHandler<Annotation> {
 }
 
 export interface VerboseTypeHandler<Annotation> {
-    onProperty($: {
+    onUnexpectedProperty($: {
         data: astncore.PropertyData
         annotation: {
             nodeDefinition: def.NodeDefinition
             key: string
             annotation: Annotation
         }
+    }): void
+    onProperty($: {
+        data: astncore.PropertyData
+        annotation: {
+            definition: def.PropertyDefinition
+            key: string
+            annotation: Annotation
+        }
     }): PropertyHandler<Annotation>
-    onTypeClose($: {
+    onVerboseTypeClose($: {
         annotation: {
             annotation: Annotation
         }
@@ -114,7 +121,7 @@ export interface VerboseTypeHandler<Annotation> {
 }
 
 export interface NodeHandler<Annotation> {
-    onTypeOpen($: {
+    onVerboseTypeOpen($: {
         data: astncore.ObjectData
         annotation: {
             nodeDefinition: def.NodeDefinition

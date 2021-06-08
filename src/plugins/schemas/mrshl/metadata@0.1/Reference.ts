@@ -1,4 +1,4 @@
-import * as streamVal from "../../../../interfaces/streamingValidationAPI"
+import * as def from "../../../../interfaces/typedParserDefinitions"
 
 type Resolve = () => boolean
 
@@ -19,7 +19,7 @@ export class ResolveRegistry {
     }
 }
 
-export function createReference<T>(name: string, lookup: streamVal.IReadonlyLookup<T>, resolver: ResolveRegistry, onError: (keys: string[]) => void): streamVal.IReference<T> {
+export function createReference<T>(name: string, lookup: def.IReadonlyLookup<T>, resolver: ResolveRegistry, onError: (keys: string[]) => void): def.IReference<T> {
     let t: T | null = null
     resolver.register(() => {
         t = lookup.get(name)

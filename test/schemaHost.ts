@@ -5,6 +5,6 @@ export type SchemaHost = {
 }
 
 export const schemaHost: SchemaHost = {
-    host: 'astncore.io',
+    host: 'astn.io',
     pathStart: '/dev/schemas/',
 }
