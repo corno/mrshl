@@ -5,6 +5,7 @@ export * from "./createHoverTextFinder"
 export * from "./printSchemaSchemaError"
 export * from "./printDeserializeDiagnostic"
 export * from "./SchemaSchemaError"
+export * from "./ResolveExternalSchema"
 
 import * as ld from "./deserializeTextIntoDataset"
 import { DeserializeASTNTextIntoDataset } from "./DeserializeASTNTextIntoDataset"
