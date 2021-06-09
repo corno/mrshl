@@ -314,7 +314,7 @@ function createPropertyDeserializer<TokenAnnotation, NonTokenAnnotation>(
                             const optionName = $$$.data.option
                             const option = $.options.get($$$.data.option)
                             if (option === null) {
-                                onError(`unknown option: '${optionName}'`, $$$.annotation, DiagnosticSeverity.error)
+                                onError(`unknown option: '${optionName}', choose from: ${$.options.getKeys().map(k => `'${k}'`).join(", ")}`, $$$.annotation, DiagnosticSeverity.error)
                                 sgse.forEach(s => {
                                     return s.onUnexpectedOption({
                                         data: $$$.data,
