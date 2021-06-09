@@ -237,8 +237,8 @@ function createCodeCompletionForDictionaryGenerator<Annotation>(
                         }).join("\n")
                     }
                     return [
-                        createCompForNode(false),
                         createCompForNode(true),
+                        createCompForNode(false),
                     ]
                 },
                 //"onEntry",
