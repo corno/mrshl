@@ -86,7 +86,10 @@ class PropertyNOPSideEffects<Annotation> implements streamVal.PropertyHandler<An
     onTaggedUnion() {
         return new StateGroupNOPSideEffects()
     }
-    onString() {
+    onSimpleString() {
+        //
+    }
+    onMultilineString() {
         //
     }
     onNull() {

@@ -75,8 +75,9 @@ export function serializeRoot(root: RootImp): astncore.TreeBuilderEvent<null>[] 
             if (propertyIsDefault(node, key, propDef)) {
                 return
             }
-            addEvent(["key", {
-                name: key,
+            addEvent(["simple string", {
+                value: key,
+                wrapping: ["apostrophe", {}],
             }])
             switch (propDef.type[0]) {
                 case "collection": {
@@ -92,12 +93,15 @@ export function serializeRoot(root: RootImp): astncore.TreeBuilderEvent<null>[] 
                                 type: ["dictionary"],
                             }])
                             collection.entries.forEach(e => {
-                                addEvent(["key", {
-                                    name: e.node.values.getUnsafe($$["key property"].name).value.get(),
+                                addEvent(["simple string", {
+                                    value: e.node.values.getUnsafe($$["key property"].name).value.get(),
+                                    wrapping: ["quote", {}],
                                 }])
                                 serializeNode(e.node, $$.node, $$["key property"].name)
                             })
-                            addEvent(["close object"])
+                            addEvent(["close object", {
+                                //
+                            }])
                             break
                         }
                         case "list": {
@@ -108,7 +112,9 @@ export function serializeRoot(root: RootImp): astncore.TreeBuilderEvent<null>[] 
                             collection.entries.forEach(e => {
                                 serializeNode(e.node, $$.node, null)
                             })
-                            addEvent(["close array"])
+                            addEvent(["close array", {
+                                //
+                            }])
                             break
                         }
                         default:
@@ -125,8 +131,9 @@ export function serializeRoot(root: RootImp): astncore.TreeBuilderEvent<null>[] 
                     const $ = propDef.type[1]
                     addEvent(["tagged union", {}])
                     const sg = node.taggedUnions.getUnsafe(key)
-                    addEvent(["option", {
-                        name: sg.currentStateKey.get(),
+                    addEvent(["simple string", {
+                        value: sg.currentStateKey.get(),
+                        wrapping: ["apostrophe", {}],
                     }])
                     serializeNode(node.taggedUnions.getUnsafe(key).currentState.get().node, $.options.getUnsafe(sg.currentStateKey.get()).node, null)
 
@@ -134,13 +141,12 @@ export function serializeRoot(root: RootImp): astncore.TreeBuilderEvent<null>[] 
                 }
                 case "string": {
                     const $ = propDef.type[1]
-                    addEvent(["string value", {
-                        type: $.quoted
-                            ? ["quoted", {
-                                value: node.values.getUnsafe(key).value.get(),
+                    addEvent(["simple string", {
+                        value: node.values.getUnsafe(key).value.get(),
+                        wrapping: $.quoted
+                            ? ["quote", {
                             }]
-                            : ["nonwrapped", {
-                                value: node.values.getUnsafe(key).value.get(),
+                            : ["none", {
                             }],
                     }])
                     break
@@ -149,7 +155,9 @@ export function serializeRoot(root: RootImp): astncore.TreeBuilderEvent<null>[] 
                     assertUnreachable(propDef.type[0])
             }
         })
-        addEvent(["close object"])
+        addEvent(["close object", {
+            //
+        }])
     }
     serializeNode(root.rootNode, root.schema["root type"].get().node, null)
     return events

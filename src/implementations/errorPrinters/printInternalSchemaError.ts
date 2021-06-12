@@ -15,8 +15,10 @@ export function printInternalSchemaError(error: InternalSchemaError): string {
             const $$$ = error[1]
             switch ($$$.found[0]) {
                 case "array": {
-
                     return "unexpected array as schema"
+                }
+                case "multiline string": {
+                    return "unexpected multiline string as schema"
                 }
                 case "simple value": {
                     return "unexpected simple value as schema"

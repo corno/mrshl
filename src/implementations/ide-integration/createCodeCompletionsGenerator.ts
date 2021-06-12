@@ -158,7 +158,7 @@ function createCodeCompletionsForPropertyGenerator<Annotation>(
                 //"onNull",
             )
         },
-        onString: $ => {
+        onSimpleString: $ => {
             onToken(
                 $.annotation.annotation,
                 () => {
@@ -166,6 +166,14 @@ function createCodeCompletionsForPropertyGenerator<Annotation>(
                         return $.annotation.definition.quoted ? `"${sugg}"` : sugg
                     })
                 },
+                null,
+                //"onString",
+            )
+        },
+        onMultilineString: $ => {
+            onToken(
+                $.annotation.annotation,
+                null,
                 null,
                 //"onString",
             )

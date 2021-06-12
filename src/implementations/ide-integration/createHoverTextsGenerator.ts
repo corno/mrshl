@@ -148,7 +148,12 @@ function createPropertyHoverTextGenerator<Annotation>(
             //     return name
             // })
         },
-        onString: $ => {
+        onSimpleString: $ => {
+            onToken($.annotation.annotation, () => {
+                return name
+            })
+        },
+        onMultilineString: $ => {
             onToken($.annotation.annotation, () => {
                 return name
             })
@@ -249,7 +254,7 @@ function createTypeHoverTextGenerator<Annotation>(
             //
         },
         onProperty: $ => {
-            return createPropertyHoverTextGenerator($.data.key, onToken)
+            return createPropertyHoverTextGenerator($.data.key.value, onToken)
         },
         // onUnexpectedProperty: () => {
         //     //

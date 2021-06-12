@@ -38,7 +38,7 @@ function createVerboseTypeNOPSideEffects<Annotation>(): streamVal.VerboseTypeHan
             //
         },
         onProperty:() =>{
-            return new PropertyNOPSideEffects()
+            return createPropertyNOPSideEffects()
         },
         // onUnexpectedProperty() {
         //     //
@@ -57,7 +57,7 @@ class ShorthandTypeNOPSideEffects<Annotation> implements streamVal.ShorthandType
         //
     }
     onProperty() {
-        return new PropertyNOPSideEffects()
+        return createPropertyNOPSideEffects()
     }
 }
 
@@ -73,29 +73,33 @@ class StateGroupNOPSideEffects<Annotation> implements streamVal.TaggedUnionHandl
     }
 }
 
-class PropertyNOPSideEffects<Annotation> implements streamVal.PropertyHandler<Annotation> {
-    constructor() {
-        //
-    }
-    onDictionary() {
-        return new DictionaryNOPSideEffects()
-    }
-    onList() {
-        return new ListNOPSideEffects()
-    }
-    onTaggedUnion() {
-        return new StateGroupNOPSideEffects()
-    }
-    onString() {
-        //
-    }
-    onNull() {
-        //
-    }
-    onComponent() {
-        return createNodeNOPSideEffects()
+function createPropertyNOPSideEffects<Annotation>(): streamVal.PropertyHandler<Annotation> {
+
+    return {
+        onDictionary: () => {
+            return new DictionaryNOPSideEffects()
+        },
+        onList: () => {
+            return new ListNOPSideEffects()
+        },
+        onTaggedUnion: () => {
+            return new StateGroupNOPSideEffects()
+        },
+        onSimpleString: () => {
+            //
+        },
+        onMultilineString: () => {
+            //
+        },
+        onNull: () => {
+            //
+        },
+        onComponent: () => {
+            return createNodeNOPSideEffects()
+        },
     }
 }
+
 
 class DictionaryNOPSideEffects<Annotation> implements streamVal.DictionaryHandler<Annotation> {
     constructor() {

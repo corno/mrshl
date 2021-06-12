@@ -34,52 +34,56 @@ export function serializeMetaData(
             type: ["dictionary"],
         }])
         dict.forEach((entry, key) => {
-            addEvent(["key", {
-                name: key,
+            addEvent(["simple string", {
+                value: key,
+                wrapping: ["quote", {}],
             }])
             entryCallback(entry)
         })
-        addEvent(["close object"])
+        addEvent(["close object", {
+            //
+        }])
     }
     function serializeVerboseType(properties: { [key: string]: () => void }) {
         addEvent(["open object", {
             type: ["verbose type"],
         }])
         Object.keys(properties).sort().forEach(key => {
-            addEvent(["key", {
-                name: key,
+            addEvent(["simple string", {
+                value: key,
+                wrapping: ["apostrophe", {}],
             }])
             properties[key]()
         })
-        addEvent(["close object"])
+        addEvent(["close object", {
+            //
+        }])
     }
     function serializeTaggedUnion(option: string, callback: () => void) {
         addEvent(["tagged union", {}])
-        addEvent(["option", {
-            name: option,
+        addEvent(["simple string", {
+            value: option,
+            wrapping: ["apostrophe", {}],
         }])
         callback()
     }
     function serializeQuotedString(value: string) {
-        addEvent(["string value", {
-            type: ["quoted", {
-                value: value,
-            }],
+        addEvent(["simple string", {
+            value: value,
+            wrapping: ["quote", {}],
         }])
     }
     function serializeReference<T>(reference: IReference<T>) {
-        addEvent(["string value", {
-            type: ["quoted", {
-                value: reference.name,
-            }],
+        addEvent(["simple string", {
+            value: reference.name,
+            wrapping: ["quote", {}],
         }])
     }
 
     function serializeNonWrappedString(value: string) {
-        addEvent(["string value", {
-            type: ["nonwrapped", {
-                value: value,
-            }],
+        addEvent(["simple string", {
+            value: value,
+            wrapping: ["none", {}],
         }])
     }
 

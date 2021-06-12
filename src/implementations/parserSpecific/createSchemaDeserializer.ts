@@ -6,10 +6,6 @@ import { createInternalSchemaHandler } from "../../etc/deserialize/implementatio
 import { SchemaAndSideEffects } from "../../interfaces/schemaPlugin/SchemaAndSideEffects"
 import { SchemaSchemaError } from "./SchemaSchemaError"
 
-function assertUnreachable<RT>(_x: never): RT {
-    throw new Error("unreachable")
-}
-
 export function createSchemaDeserializer(
     onError: (error: SchemaSchemaError, range: astn.Range) => void,
 ): p.IUnsafeStreamConsumer<string, null, SchemaAndSideEffects<astn.ParserAnnotationData>, null> {
@@ -34,25 +30,10 @@ export function createSchemaDeserializer(
                 },
                 null,
                 $ => {
-                    const value = ((): string => {
-                        switch ($.data.type[0]) {
-                            case "multiline": {
-                                throw new Error("IMPLEMENT ME")
-                            }
-                            case "nonwrapped": {
-                                return $.data.type[1].value
-                            }
-                            case "quoted": {
-                                return $.data.type[1].value
-                            }
-                            default:
-                                return assertUnreachable($.data.type[0])
-                        }
-                    })()
-                    schemaSchemaBuilder = getSchemaSchemaBuilder(value)
+                    schemaSchemaBuilder = getSchemaSchemaBuilder($.data.value)
                     if (schemaSchemaBuilder === null) {
-                        console.error(`unknown schema schema '${value},`)
-                        onSchemaError(["unknown schema schema", { name: value }], $.annotation.range)
+                        console.error(`unknown schema schema '${$.data.value},`)
+                        onSchemaError(["unknown schema schema", { name: $.data.value }], $.annotation.range)
                     }
                     return p.value(false)
                 },

@@ -70,9 +70,20 @@ export interface PropertyHandler<Annotation> {
             annotation: Annotation
         }
     }): TaggedUnionHandler<Annotation>
-    onString($: {
+    onSimpleString($: {
         value: string
-        data: astncore.StringValueData
+        data: astncore.SimpleStringData
+        annotation: {
+            syncValue: {
+                getSuggestions(): string[]
+            }
+            definition: def.StringValueDefinition
+            annotation: Annotation
+        }
+    }): void
+    onMultilineString($: {
+        value: string
+        data: astncore.MultilineStringValueData
         annotation: {
             syncValue: {
                 getSuggestions(): string[]
@@ -82,7 +93,7 @@ export interface PropertyHandler<Annotation> {
         }
     }): void
     onNull($: {
-        data: astncore.StringValueData
+        data: astncore.SimpleStringData
         annotation: {
             annotation: Annotation
         }

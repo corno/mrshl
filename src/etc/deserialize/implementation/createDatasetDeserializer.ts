@@ -136,13 +136,13 @@ function createPropertyDeserializer<TokenAnnotation, NonTokenAnnotation>(
                             return {
                                 property: $ => {
 
-                                    if (foundKeys.includes($.data.key)) {
+                                    if (foundKeys.includes($.data.key.value)) {
                                         onError("double key", $.annotation, DiagnosticSeverity.error)
                                     }
-                                    foundKeys.push($.data.key)
+                                    foundKeys.push($.data.key.value)
                                     const entry = dictionary.createEntry()
                                     //const entry = collBuilder.createEntry(errorMessage => onError(errorMessage, propertyData.keyRange))
-                                    entry.node.getValue($$["key property"].name).setValue($.data.key, errorMessage => onError(errorMessage, $.annotation, DiagnosticSeverity.error))
+                                    entry.node.getValue($$["key property"].name).setValue($.data.key.value, errorMessage => onError(errorMessage, $.annotation, DiagnosticSeverity.error))
                                     addComments(entry.comments, $.annotation)
 
 
@@ -192,7 +192,10 @@ function createPropertyDeserializer<TokenAnnotation, NonTokenAnnotation>(
                         taggedUnion: $ => {
                             return createUnexpectedTaggedUnionHandler(`expected a dictionary`, $.annotation, onError)
                         },
-                        string: $ => {
+                        simpleString: $ => {
+                            return createUnexpectedStringHandler(`expected a dictionary`, $.annotation, onError)
+                        },
+                        multilineString: $ => {
                             return createUnexpectedStringHandler(`expected a dictionary`, $.annotation, onError)
                         },
                     }
@@ -262,9 +265,11 @@ function createPropertyDeserializer<TokenAnnotation, NonTokenAnnotation>(
                         taggedUnion: $ => {
                             return createUnexpectedTaggedUnionHandler(`expected a list`, $.annotation, onError)
                         },
-                        string: $ => {
+                        simpleString: $ => {
                             return createUnexpectedStringHandler(`expected a list`, $.annotation, onError)
-
+                        },
+                        multilineString: $ => {
+                            return createUnexpectedStringHandler(`expected a list`, $.annotation, onError)
                         },
                     }
                 }
@@ -311,8 +316,8 @@ function createPropertyDeserializer<TokenAnnotation, NonTokenAnnotation>(
 
                     return {
                         option: $$$ => {
-                            const optionName = $$$.data.option
-                            const option = $.options.get($$$.data.option)
+                            const optionName = $$$.data.option.value
+                            const option = $.options.get($$$.data.option.value)
                             if (option === null) {
                                 onError(`unknown option: '${optionName}', choose from: ${$.options.getKeys().map(k => `'${k}'`).join(", ")}`, $$$.annotation, DiagnosticSeverity.error)
                                 sgse.forEach(s => {
@@ -364,9 +369,11 @@ function createPropertyDeserializer<TokenAnnotation, NonTokenAnnotation>(
                         },
                     }
                 },
-                string: $ => {
+                simpleString: $ => {
                     return createUnexpectedStringHandler(`expected a tagged union`, $.annotation, onError)
-
+                },
+                multilineString: $ => {
+                    return createUnexpectedStringHandler(`expected a tagged union`, $.annotation, onError)
                 },
             }
         }
@@ -384,68 +391,55 @@ function createPropertyDeserializer<TokenAnnotation, NonTokenAnnotation>(
                 taggedUnion: $ => {
                     return createUnexpectedTaggedUnionHandler(`expected a string`, $.annotation, onError)
                 },
-                string: $$ => {
+                multilineString: $$ => {
+                    addComments(valueBuilder.comments, $$.annotation)
+                    throw new Error("IMPLEMENT MULTILINE")
+
+                },
+                simpleString: $$ => {
                     addComments(valueBuilder.comments, $$.annotation)
 
-                    switch ($$.data.type[0]) {
-                        case "multiline": {
-                            //const $ = $$.data.type[1]
+                    const value = $$.data.value
 
-                            throw new Error("IMPLEMENT MULTILINE")
-                        }
-                        case "nonwrapped": {
-                            const $$$ = $$.data.type[1]
+                    if (value !== $["default value"]) {
+                        flagNonDefaultPropertiesFound()
+                    }
+                    valueBuilder.setValue(value, errorMessage => onError(errorMessage, $$.annotation, DiagnosticSeverity.error))
 
-                            if ($$$.value !== $["default value"]) {
-                                flagNonDefaultPropertiesFound()
-                            }
-                            valueBuilder.setValue($$$.value, errorMessage => onError(errorMessage, $$.annotation, DiagnosticSeverity.error))
+                    sideEffectsAPIs.forEach(s => {
+                        s.onSimpleString({
+                            value: value,
+                            data: $$.data,
+                            annotation: {
+                                definition: $,
+                                syncValue: valueBuilder,
+                                annotation: $$.annotation,
+                                //  valueBuilder:   valueBuilder,
+                                //     $
+                            },
+                        })
+                    })
+                    switch ($$.data.wrapping[0]) {
+                        case "none": {
                             if ($.quoted) {
-                                onError(`value '${$$$.value}' must be quoted`, $$.annotation, DiagnosticSeverity.error)
+                                onError(`value '${value}' must be quoted`, $$.annotation, DiagnosticSeverity.error)
                             }
-                            sideEffectsAPIs.forEach(s => {
-                                s.onString({
-                                    value: $$$.value,
-                                    data: $$.data,
-                                    annotation: {
-                                        definition: $,
-                                        syncValue: valueBuilder,
-                                        annotation: $$.annotation,
-                                        //  valueBuilder:   valueBuilder,
-                                        //     $
-                                    },
-                                })
-                            })
                             break
                         }
-                        case "quoted": {
-                            const $$$ = $$.data.type[1]
-
-                            if ($$$.value !== $["default value"]) {
-                                flagNonDefaultPropertiesFound()
-                            }
-                            valueBuilder.setValue($$$.value, errorMessage => onError(errorMessage, $$.annotation, DiagnosticSeverity.error))
+                        case "quote": {
                             if (!$.quoted) {
-                                onError(`value '${$$$.value}' must be unquoted`, $$.annotation, DiagnosticSeverity.error)
+                                onError(`value '${value}' must not be quoted`, $$.annotation, DiagnosticSeverity.error)
                             }
-                            sideEffectsAPIs.forEach(s => {
-                                s.onString({
-                                    value: $$$.value,
-                                    data: $$.data,
-                                    annotation: {
-                                        definition: $,
-
-                                        syncValue: valueBuilder,
-                                        annotation: $$.annotation,
-                                        //  valueBuilder:   valueBuilder,
-                                        //     $
-                                    },
-                                })
-                            })
+                            break
+                        }
+                        case "apostrophe": {
+                            if (!$.quoted) {
+                                onError(`value '${value}' must${$.quoted ? "" : " not"} be quoted`, $$.annotation, DiagnosticSeverity.error)
+                            }
                             break
                         }
                         default:
-                            assertUnreachable($$.data.type[0])
+                            assertUnreachable($$.data.wrapping[0])
                     }
                     return p.value(false)
                 },
@@ -625,9 +619,13 @@ function createNodeDeserializer<TokenAnnotation, NonTokenAnnotation>(
                                 onError("superfluous element", data.annotation, DiagnosticSeverity.error)
                                 return dvh.array(data)
                             },
-                            string: data => {
+                            simpleString: data => {
                                 onError("superfluous element", data.annotation, DiagnosticSeverity.error)
-                                return dvh.string(data)
+                                return dvh.simpleString(data)
+                            },
+                            multilineString: data => {
+                                onError("superfluous element", data.annotation, DiagnosticSeverity.error)
+                                return dvh.multilineString(data)
                             },
                             taggedUnion: data => {
                                 onError("superfluous element", data.annotation, DiagnosticSeverity.error)
@@ -696,7 +694,7 @@ function createNodeDeserializer<TokenAnnotation, NonTokenAnnotation>(
             } = {}
             return {
                 property: $$ => {
-                    const key = $$.data.key
+                    const key = $$.data.key.value
                     const propertyDefinition = nodeDefinition.properties.get(key)
                     if (propertyDefinition === null) {
                         onError(`unknown property: '${key}'. Choose from ${nodeDefinition.properties.getKeys().map(k => `'${k}'`).join(", ")}`, $$.annotation, DiagnosticSeverity.error)
@@ -705,7 +703,7 @@ function createNodeDeserializer<TokenAnnotation, NonTokenAnnotation>(
                                 data: $$.data,
                                 annotation: {
                                     nodeDefinition: nodeDefinition,
-                                    key: $$.data.key,
+                                    key: key,
                                     annotation: $$.annotation,
                                 },
                             })
@@ -726,7 +724,7 @@ function createNodeDeserializer<TokenAnnotation, NonTokenAnnotation>(
                                     data: $$.data,
                                     annotation: {
                                         nodeDefinition: nodeDefinition,
-                                        key: $$.data.key,
+                                        key: key,
                                         annotation: $$.annotation,
                                     },
                                 })
@@ -800,9 +798,11 @@ function createNodeDeserializer<TokenAnnotation, NonTokenAnnotation>(
         taggedUnion: $ => {
             return createUnexpectedTaggedUnionHandler(`expected a type`, $.annotation, onError)
         },
-        string: $ => {
+        simpleString: $ => {
             return createUnexpectedStringHandler(`expected a type`, $.annotation, onError)
-
+        },
+        multilineString: $ => {
+            return createUnexpectedStringHandler(`expected a type`, $.annotation, onError)
         },
     }
 }

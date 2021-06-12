@@ -104,21 +104,7 @@ export function deserializeDataset(
                     }
                 ),
                 $ => {
-                    const value = ((): string => {
-                        switch ($.data.type[0]) {
-                            case "multiline": {
-                                throw new Error("IMPLEMENT ME")
-                            }
-                            case "nonwrapped": {
-                                return $.data.type[1].value
-                            }
-                            case "quoted": {
-                                return $.data.type[1].value
-                            }
-                            default:
-                                return assertUnreachable($.data.type[0])
-                        }
-                    })()
+                    const value = $.data.value
                     return createSchemaAndSideEffectsFromStream(resolveExternalSchema(value)).reworkAndCatch(
                         error => {
                             onSchemaError(["schema reference resolving", error], $.annotation.range)

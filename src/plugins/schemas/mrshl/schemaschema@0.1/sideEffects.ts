@@ -51,7 +51,7 @@ function createStateGroup<Annotation>(
             //
         },
         onOption: $ => {
-            const state = definition.states.getUnsafe($.data.option)
+            const state = definition.states.getUnsafe($.data.option.value)
             return createNode(state.node, onError)
         },
         // onUnexpectedOption: () => {
@@ -108,7 +108,13 @@ function createProp<Annotation>(
         onNull: () => {
             //
         },
-        onString: $ => {
+        onMultilineString: _$ => {
+            const prop = nodedefinition.properties.getUnsafe(name)
+            if (prop.type[0] !== "value") {
+                throw new Error("unexpected")
+            }
+        },
+        onSimpleString: $ => {
             const prop = nodedefinition.properties.getUnsafe(name)
             if (prop.type[0] !== "value") {
                 throw new Error("unexpected")
@@ -117,10 +123,10 @@ function createProp<Annotation>(
 
             switch ($$.type[0]) {
                 case "boolean": {
-                    if ($.data.type[0] !== "nonwrapped") {
+                    if ($.data.wrapping[0] !== "none") {
                         onError(`expected a boolean, found a quoted string`, $.annotation.annotation, DiagnosticSeverity.error)
                     } else {
-                        const val = $.data.type[1].value
+                        const val = $.data.value
                         if (val !== "true" && val !== "false") {
                             onError(`value '${val}' is not a boolean`, $.annotation.annotation, DiagnosticSeverity.error)
                         }
@@ -128,10 +134,10 @@ function createProp<Annotation>(
                     break
                 }
                 case "number": {
-                    if ($.data.type[0] !== "nonwrapped") {
+                    if ($.data.wrapping[0] !== "none") {
                         onError(`expected a number, found a wrapped string`, $.annotation.annotation, DiagnosticSeverity.error)
                     } else {
-                        const val = $.data.type[1].value
+                        const val = $.data.value
                         //eslint-disable-next-line no-new-wrappers
                         if (isNaN(new Number(val).valueOf())) {
                             onError(`value '${val}' is not a number`, $.annotation.annotation, DiagnosticSeverity.error)
@@ -140,8 +146,8 @@ function createProp<Annotation>(
                     break
                 }
                 case "string": {
-                    if ($.data.type[0] === "nonwrapped") {
-                        onError(`expected a quoted string or a multiline string`, $.annotation.annotation, DiagnosticSeverity.error)
+                    if ($.data.wrapping[0] === "none") {
+                        onError(`expected a quoted string`, $.annotation.annotation, DiagnosticSeverity.error)
                     }
                     break
                 }
@@ -175,7 +181,7 @@ function createType<Annotation>(
             //
         },
         onProperty: $ => {
-            return createProp($.data.key, definition, onError)
+            return createProp($.data.key.value, definition, onError)
         },
         // onUnexpectedProperty: () => {
         //     //

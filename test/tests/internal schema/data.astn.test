@@ -1,21 +1,21 @@
 ! (
     'component types': {
-        'root': (
+        "root": (
             'node': (
                 'properties': {
-                    'a29': (
+                    "a29": (
                         'type': | 'value' (
                             'default value': ""
                             'quoted': true
                         )
                     )
-                    'b': (
+                    "b": (
                         'type': | 'value' (
                             'default value': ""
                             'quoted': true
                         )
                     )
-                    'c': (
+                    "c": (
                         'type': | 'value' (
                             'default value': ""
                             'quoted': false
@@ -25,7 +25,7 @@
             )
         )
     }
-    'root type': 'root'
+    'root type': "root"
 )
 {
     "a": "B"

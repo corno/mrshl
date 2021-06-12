@@ -5,7 +5,7 @@ import { createNOPSideEffects } from "./NOPSideEffects"
 import { SchemaAndSideEffects } from "../../../../interfaces/schemaPlugin/SchemaAndSideEffects"
 import { InternalSchemaDeserializationError, InternalSchemaError } from "../../../../interfaces/schemaPlugin/internalSchemaDerializationError"
 
-export function createSchemaAndSideEffects<Annotation> (
+export function createSchemaAndSideEffects<Annotation>(
     onSchemaError: (error: InternalSchemaDeserializationError, annotation: Annotation) => void,
 ): astncore.ITreeBuilder<Annotation, SchemaAndSideEffects<Annotation>, null> {
     let foundError = false
@@ -14,7 +14,7 @@ export function createSchemaAndSideEffects<Annotation> (
     function createInternalSchemaHandler<Result>(
         onSchemaError: (error: InternalSchemaError, annotation: Annotation) => void,
         onObject: astncore.OnObject<Annotation, null> | null,
-        onSimpleValue: astncore.OnString<Annotation> | null,
+        onSimpleValue: astncore.OnSimpleString<Annotation> | null,
         onEnd: () => p.IUnsafeValue<Result, null>
     ): astncore.ITreeBuilder<Annotation, Result, null> {
         return astncore.createStackedParser(
@@ -31,7 +31,11 @@ export function createSchemaAndSideEffects<Annotation> (
                                 onSchemaError(["unexpected schema format", { found: ["object"] }], data.annotation)
                                 return astncore.createDummyObjectHandler()
                             },
-                        string: onSimpleValue !== null
+                        multilineString: data => {
+                            onSchemaError(["unexpected schema format", { found: ["multiline string"] }], data.annotation)
+                            return p.value(false)
+                        },
+                        simpleString: onSimpleValue !== null
                             ? onSimpleValue
                             : data => {
                                 onSchemaError(["unexpected schema format", { found: ["simple value"] }], data.annotation)

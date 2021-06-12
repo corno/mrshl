@@ -40,10 +40,13 @@ function createExpectedNodeHandler<TokenAnnotation, NonTokenAnnotation>(
     resolveRegistry: ResolveRegistry,
 ): astncore.ExpectedProperty<TokenAnnotation, NonTokenAnnotation> {
 
-    function wrap(handler: astncore.ValueHandler<TokenAnnotation, NonTokenAnnotation>) {
-        return context.expectValue({
-            handler: handler,
-        })
+    function wrap(handler: astncore.ValueHandler<TokenAnnotation, NonTokenAnnotation>): astncore.RequiredValueHandler<TokenAnnotation, NonTokenAnnotation> {
+        return {
+            exists: handler,
+            missing: () => {
+                //
+            },
+        }
     }
 
     return {
@@ -84,6 +87,7 @@ function createExpectedNodeHandler<TokenAnnotation, NonTokenAnnotation>(
                                                                                     properties: {
                                                                                         "key property": {
                                                                                             onExists: () => wrap(context.expectQuotedString({
+                                                                                                warningOnly: true,
                                                                                                 callback: $ => {
                                                                                                     targetKeyProperty = {
                                                                                                         value: $.value,
@@ -149,6 +153,7 @@ function createExpectedNodeHandler<TokenAnnotation, NonTokenAnnotation>(
                                                             properties: {
                                                                 "type": {
                                                                     onExists: () => wrap(context.expectQuotedString({
+                                                                        warningOnly: true,
                                                                         callback: $ => {
                                                                             targetComponentTypeName = {
                                                                                 value: $.value,
@@ -206,7 +211,7 @@ function createExpectedNodeHandler<TokenAnnotation, NonTokenAnnotation>(
                                                                                 },
                                                                                 onEnd: () => {
                                                                                     const asserted = assertNotNull(targetNode)
-                                                                                    states.add(stateData.data.key, {
+                                                                                    states.add(stateData.data.key.value, {
                                                                                         node: asserted,
                                                                                     })
                                                                                 },
@@ -219,6 +224,7 @@ function createExpectedNodeHandler<TokenAnnotation, NonTokenAnnotation>(
                                                                 },
                                                                 "default state": {
                                                                     onExists: () => wrap(context.expectQuotedString({
+                                                                        warningOnly: true,
                                                                         callback: $ => {
                                                                             targetDefaultState = {
                                                                                 value: $.value,
@@ -279,6 +285,7 @@ function createExpectedNodeHandler<TokenAnnotation, NonTokenAnnotation>(
                                                                 },
                                                                 "default value": {
                                                                     onExists: () => wrap(context.expectQuotedString({
+                                                                        warningOnly: true,
                                                                         callback: $ => {
                                                                             defaultValue = $.value
                                                                             return p.value(false)
@@ -311,7 +318,7 @@ function createExpectedNodeHandler<TokenAnnotation, NonTokenAnnotation>(
                                     },
                                     onEnd: () => {
                                         const asserted = assertNotNull(targetPropertyType)
-                                        properties.add(propertyData.data.key, {
+                                        properties.add(propertyData.data.key.value, {
                                             type: asserted,
                                         })
                                     },
@@ -359,10 +366,13 @@ export function createDeserializer<TokenAnnotation, NonTokenAnnotation>(
     )
     const resolveRegistry = new ResolveRegistry()
 
-    function wrap(handler: astncore.ValueHandler<TokenAnnotation, NonTokenAnnotation>) {
-        return context.expectValue({
-            handler: handler,
-        })
+    function wrap(handler: astncore.ValueHandler<TokenAnnotation, NonTokenAnnotation>): astncore.RequiredValueHandler<TokenAnnotation, NonTokenAnnotation> {
+        return {
+            exists: handler,
+            missing: () => {
+                //
+            },
+        }
     }
     return context.expectVerboseType({
         properties: {
@@ -387,7 +397,7 @@ export function createDeserializer<TokenAnnotation, NonTokenAnnotation>(
                             },
                             onEnd: () => {
                                 const asserted = assertNotNull(targetNode)
-                                componentTypes.add(propertyData.data.key, {
+                                componentTypes.add(propertyData.data.key.value, {
                                     node: asserted,
                                 })
                             },
@@ -400,6 +410,7 @@ export function createDeserializer<TokenAnnotation, NonTokenAnnotation>(
             },
             "root type": {
                 onExists: _propertyData => wrap(context.expectQuotedString({
+                    warningOnly: true,
                     callback: $ => {
                         rootName = {
                             value: $.value,

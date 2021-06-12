@@ -19,13 +19,6 @@ import { convertToGenericSchema } from "./createTypedParserDefinitions"
  * @param value value
  * @param callback
  */
-function assertNotNull<T>(value: T | null) {
-    if (value !== null) {
-        return value
-    }
-    const err = new Error("unexpected null")
-    throw err
-}
 
 type AnnotatedString<TokenAnnotation> = {
     value: string
@@ -40,10 +33,20 @@ function createNodeHandler<TokenAnnotation, NonTokenAnnotation>(
     resolveRegistry: ResolveRegistry
 ): astncore.ExpectedProperty<TokenAnnotation, NonTokenAnnotation> {
 
+    function assertNotNull<T>(value: T | null, valueName: string, annotation: TokenAnnotation) {
+        if (value !== null) {
+            return value
+        }
+        raiseValidationError(`missing value '${valueName}'`, annotation)
+        throw new Error("missing value")
+    }
     function wrap(handler: astncore.ValueHandler<TokenAnnotation, NonTokenAnnotation>) {
-        return context.expectValue({
-            handler: handler,
-        })
+        return {
+            exists: handler,
+            missing: () => {
+                //
+            },
+        }
     }
     return {
         onExists: () => {
@@ -83,6 +86,7 @@ function createNodeHandler<TokenAnnotation, NonTokenAnnotation>(
                                                                                             "key property": {
                                                                                                 onExists: () => wrap(
                                                                                                     context.expectQuotedString({
+                                                                                                        warningOnly: true,
                                                                                                         callback: $ => {
                                                                                                             keyPropertyName = {
                                                                                                                 value: $.value,
@@ -101,10 +105,10 @@ function createNodeHandler<TokenAnnotation, NonTokenAnnotation>(
                                                                                                 },
                                                                                             },
                                                                                         },
-                                                                                        onTypeEnd: () => {
+                                                                                        onTypeEnd: $ => {
 
-                                                                                            const assertedTargetNode = assertNotNull(targetNode)
-                                                                                            const assertedKeyPropertyName = assertNotNull(keyPropertyName)
+                                                                                            const assertedTargetNode = assertNotNull(targetNode, "node", $.annotation)
+                                                                                            const assertedKeyPropertyName = assertNotNull(keyPropertyName, "key property", $.annotation)
 
                                                                                             targetCollectionType = ["dictionary", {
                                                                                                 "node": assertedTargetNode,
@@ -135,8 +139,8 @@ function createNodeHandler<TokenAnnotation, NonTokenAnnotation>(
                                                                                                 resolveRegistry
                                                                                             ),
                                                                                         },
-                                                                                        onTypeEnd: () => {
-                                                                                            const asserted = assertNotNull(targetNode)
+                                                                                        onTypeEnd: $ => {
+                                                                                            const asserted = assertNotNull(targetNode, "node", $.annotation)
 
                                                                                             targetCollectionType = ["list", {
                                                                                                 "node": asserted,
@@ -155,8 +159,8 @@ function createNodeHandler<TokenAnnotation, NonTokenAnnotation>(
                                                                         },
                                                                     },
                                                                 },
-                                                                onTypeEnd: () => {
-                                                                    const asserted = assertNotNull(targetCollectionType)
+                                                                onTypeEnd: $ => {
+                                                                    const asserted = assertNotNull(targetCollectionType, "type", $.annotation)
                                                                     targetPropertyType = ["collection", {
                                                                         "type": asserted,
                                                                     }]
@@ -170,6 +174,7 @@ function createNodeHandler<TokenAnnotation, NonTokenAnnotation>(
                                                                 properties: {
                                                                     "type": {
                                                                         onExists: () => wrap(context.expectQuotedString({
+                                                                            warningOnly: true,
                                                                             callback: $ => {
                                                                                 targetComponentTypeName = {
                                                                                     value: $.value,
@@ -187,8 +192,8 @@ function createNodeHandler<TokenAnnotation, NonTokenAnnotation>(
                                                                         },
                                                                     },
                                                                 },
-                                                                onTypeEnd: () => {
-                                                                    const assertedTargetComponentTypeName = assertNotNull(targetComponentTypeName)
+                                                                onTypeEnd: $ => {
+                                                                    const assertedTargetComponentTypeName = assertNotNull(targetComponentTypeName, "type", $.annotation)
                                                                     targetPropertyType = ["component", {
                                                                         "type": createReference(
                                                                             assertedTargetComponentTypeName.value,
@@ -226,9 +231,9 @@ function createNodeHandler<TokenAnnotation, NonTokenAnnotation>(
                                                                                             resolveRegistry,
                                                                                         ),
                                                                                     },
-                                                                                    onTypeEnd: () => {
-                                                                                        const asserted = assertNotNull(targetNode)
-                                                                                        states.add(stateData.data.key, {
+                                                                                    onTypeEnd: $ => {
+                                                                                        const asserted = assertNotNull(targetNode, "node", $.annotation)
+                                                                                        states.add(stateData.data.key.value, {
                                                                                             node: asserted,
                                                                                         })
                                                                                     },
@@ -241,6 +246,7 @@ function createNodeHandler<TokenAnnotation, NonTokenAnnotation>(
                                                                     },
                                                                     "default state": {
                                                                         onExists: () => wrap(context.expectQuotedString({
+                                                                            warningOnly: true,
                                                                             callback: $ => {
                                                                                 defaultStateName = {
                                                                                     value: $.value,
@@ -257,9 +263,9 @@ function createNodeHandler<TokenAnnotation, NonTokenAnnotation>(
                                                                         },
                                                                     },
                                                                 },
-                                                                onTypeEnd: () => {
+                                                                onTypeEnd: $ => {
 
-                                                                    const assertedDefaultStateName = assertNotNull(defaultStateName)
+                                                                    const assertedDefaultStateName = assertNotNull(defaultStateName, "default state", $.annotation)
                                                                     targetPropertyType = ["state group", {
                                                                         "states": states,
 
@@ -281,8 +287,8 @@ function createNodeHandler<TokenAnnotation, NonTokenAnnotation>(
                                                         "value": () => {
                                                             let quoted: null | boolean = null
                                                             let defaultValue: null | string = null
-                                                            return context.expectValue({
-                                                                handler: context.expectType({
+                                                            return {
+                                                                exists: context.expectType({
                                                                     properties: {
                                                                         "quoted": {
                                                                             onExists: () => wrap(context.expectBoolean({
@@ -298,6 +304,7 @@ function createNodeHandler<TokenAnnotation, NonTokenAnnotation>(
                                                                         },
                                                                         "default value": {
                                                                             onExists: () => wrap(context.expectQuotedString({
+                                                                                warningOnly: true,
                                                                                 callback: $ => {
                                                                                     defaultValue = $.value
                                                                                     return p.value(false)
@@ -309,22 +316,22 @@ function createNodeHandler<TokenAnnotation, NonTokenAnnotation>(
                                                                             },
                                                                         },
                                                                     },
-                                                                    onTypeEnd: () => {
-                                                                        const assertedQuoted = assertNotNull(quoted)
-                                                                        const assertedDefaultValue = assertNotNull(defaultValue)
+                                                                    onTypeEnd: $ => {
+                                                                        const assertedQuoted = assertNotNull(quoted, "quoted", $.annotation)
+                                                                        const assertedDefaultValue = assertNotNull(defaultValue, "default value", $.annotation)
                                                                         targetPropertyType = ["value", {
                                                                             "quoted": assertedQuoted,
                                                                             "default value": assertedDefaultValue,
                                                                         }]
                                                                     },
                                                                 }),
-                                                                onMissing: () => {
+                                                                missing: () => {
                                                                     targetPropertyType = ["value", {
                                                                         "default value": "",
                                                                         "quoted": true,
                                                                     }]
                                                                 },
-                                                            })
+                                                            }
                                                         },
                                                     },
                                                 })
@@ -337,10 +344,10 @@ function createNodeHandler<TokenAnnotation, NonTokenAnnotation>(
                                             },
                                         },
                                     },
-                                    onTypeEnd: () => {
+                                    onTypeEnd: $ => {
                                         //HERE BE DRAGONS
-                                        const asserted = assertNotNull(targetPropertyType)
-                                        properties.add(propertyData.data.key, {
+                                        const asserted = assertNotNull(targetPropertyType, "type", $.annotation)
+                                        properties.add(propertyData.data.key.value, {
                                             type: asserted,
                                         })
                                     },
@@ -373,15 +380,14 @@ export function createDeserializer<TokenAnnotation, NonTokenAnnotation>(
     callback: (metaData: extDef.Schema | null) => void
 ): astncore.OnObject<TokenAnnotation, NonTokenAnnotation> {
     const componentTypes = new g.Dictionary<def.ComponentTypeDefinition>({})
-    let rootName: string | null = null
-    let rootNameAnnotation: TokenAnnotation | null = null
+    let rootName: AnnotatedString<TokenAnnotation> | null = null
 
     const context = astncore.createExpectContext<TokenAnnotation, NonTokenAnnotation>(
         $ => {
             onExpectError($.issue, $.annotation)
         },
         _warningMessage => {
-            //ignore
+            //
         },
         () => astncore.createDummyValueHandler(),
         () => astncore.createDummyValueHandler(),
@@ -392,67 +398,85 @@ export function createDeserializer<TokenAnnotation, NonTokenAnnotation>(
     const resolveRegistry = new ResolveRegistry()
 
     function wrap(handler: astncore.ValueHandler<TokenAnnotation, NonTokenAnnotation>) {
-        return context.expectValue({
-            handler: handler,
-        })
+        return {
+            exists: handler,
+            missing: () => {
+                //
+            },
+        }
+    }
+    function assertNotNull<T>(value: T | null, valueName: string, annotation: TokenAnnotation) {
+        if (value !== null) {
+            return value
+        }
+        onValidationError(`missing value '${valueName}'`, annotation)
+        throw new Error("missing value")
     }
     return context.expectType({
         properties: {
             "component types": {
-                onExists: (): astncore.RequiredValueHandler<TokenAnnotation, NonTokenAnnotation> => wrap(context.expectDictionary({
-                    onProperty: propertyData => {
-                        let targetNode: def.NodeDefinition | null = null
-                        return wrap(context.expectType({
-                            properties: {
-                                "node": createNodeHandler(
-                                    context,
-                                    onValidationError,
-                                    componentTypes,
-                                    node => {
-                                        targetNode = node
-                                    },
-                                    resolveRegistry
-                                ),
-                            },
-                            onTypeEnd: () => {
-                                const asserted = assertNotNull(targetNode)
-                                componentTypes.add(propertyData.data.key, {
-                                    node: asserted,
-                                })
-                            },
-                        }))
-                    },
-                })),
+                onExists: () => {
+                    return wrap(context.expectDictionary({
+                        onProperty: propertyData => {
+                            let targetNode: def.NodeDefinition | null = null
+                            return wrap(context.expectType({
+                                properties: {
+                                    "node": createNodeHandler(
+                                        context,
+                                        onValidationError,
+                                        componentTypes,
+                                        node => {
+                                            targetNode = node
+                                        },
+                                        resolveRegistry
+                                    ),
+                                },
+                                onTypeEnd: $ => {
+                                    const asserted = assertNotNull(targetNode, "node", $.annotation)
+                                    componentTypes.add(propertyData.data.key.value, {
+                                        node: asserted,
+                                    })
+                                },
+                            }))
+                        },
+                    }))
+                },
                 onNotExists: (): void => {
                     //noting to do, componentTypes dictionary already initialized
                 },
             },
             "root type": {
-                onExists: () => wrap(context.expectQuotedString({
-                    callback: $ => {
-                        rootName = $.value
-                        rootNameAnnotation = $.annotation
-                        return p.value(false)
-                    },
-                })),
+                onExists: () => {
+                    return wrap(context.expectQuotedString({
+                        warningOnly: true,
+                        callback: $ => {
+                            rootName = {
+                                annotation: $.annotation,
+                                value: $.value,
+                            }
+                            return p.value(false)
+                        },
+                    }))
+                },
                 onNotExists: data => {
-                    rootName = "root"
-                    rootNameAnnotation = data.beginAnnotation
+                    rootName = {
+                        annotation: data.beginAnnotation,
+                        value: "root",
+                    }
                 },
             },
         },
-        onTypeEnd: () => {
+        onTypeEnd: $ => {
             let schema: def.Schema | null = null
-            const assertedRootName = assertNotNull(rootName)
-            const assertedRange = assertNotNull(rootNameAnnotation)
+            const assertedRootName = assertNotNull(rootName, "root type", $.annotation)
             schema = {
                 "component types": componentTypes,
                 "root type": createReference(
-                    assertedRootName,
+                    assertedRootName.value,
                     componentTypes,
                     resolveRegistry,
                     () => {
-                        onValidationError(`component type '${assertedRootName}' not found`, assertedRange)
+                        onValidationError(`component type '${assertedRootName.value}' not found`, assertedRootName.annotation)
                     }
                 ),
             }
