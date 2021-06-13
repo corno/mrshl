@@ -233,7 +233,7 @@ function createNodeHandler<TokenAnnotation, NonTokenAnnotation>(
                                                                                     },
                                                                                     onTypeEnd: $ => {
                                                                                         const asserted = assertNotNull(targetNode, "node", $.annotation)
-                                                                                        states.add(stateData.data.key.value, {
+                                                                                        states.add(stateData.data.keyString.value, {
                                                                                             node: asserted,
                                                                                         })
                                                                                     },
@@ -347,7 +347,7 @@ function createNodeHandler<TokenAnnotation, NonTokenAnnotation>(
                                     onTypeEnd: $ => {
                                         //HERE BE DRAGONS
                                         const asserted = assertNotNull(targetPropertyType, "type", $.annotation)
-                                        properties.add(propertyData.data.key.value, {
+                                        properties.add(propertyData.data.keyString.value, {
                                             type: asserted,
                                         })
                                     },
@@ -433,7 +433,7 @@ export function createDeserializer<TokenAnnotation, NonTokenAnnotation>(
                                 },
                                 onTypeEnd: $ => {
                                     const asserted = assertNotNull(targetNode, "node", $.annotation)
-                                    componentTypes.add(propertyData.data.key.value, {
+                                    componentTypes.add(propertyData.data.keyString.value, {
                                         node: asserted,
                                     })
                                 },

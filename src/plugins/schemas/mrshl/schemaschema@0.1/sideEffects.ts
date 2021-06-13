@@ -51,7 +51,7 @@ function createStateGroup<Annotation>(
             //
         },
         onOption: $ => {
-            const state = definition.states.getUnsafe($.data.option.value)
+            const state = definition.states.getUnsafe($.data.optionString.value)
             return createNode(state.node, onError)
         },
         // onUnexpectedOption: () => {
@@ -181,7 +181,7 @@ function createType<Annotation>(
             //
         },
         onProperty: $ => {
-            return createProp($.data.key.value, definition, onError)
+            return createProp($.data.keyString.value, definition, onError)
         },
         // onUnexpectedProperty: () => {
         //     //

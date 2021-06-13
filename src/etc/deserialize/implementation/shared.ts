@@ -123,13 +123,13 @@ export function createDictionaryDeserializer<TokenAnnotation, NonTokenAnnotation
         return {
             property: $ => {
 
-                if (foundKeys.includes($.data.key.value)) {
+                if (foundKeys.includes($.data.keyString.value)) {
                     onError("double key", $.annotation, DiagnosticSeverity.error)
                 }
-                foundKeys.push($.data.key.value)
+                foundKeys.push($.data.keyString.value)
                 const entry = dictionary.createEntry()
                 //const entry = collBuilder.createEntry(errorMessage => onError(errorMessage, propertyData.keyRange))
-                entry.node.getValue($$["key property"].name).setValue($.data.key.value, errorMessage => onError(errorMessage, $.annotation, DiagnosticSeverity.error))
+                entry.node.getValue($$["key property"].name).setValue($.data.keyString.value, errorMessage => onError(errorMessage, $.annotation, DiagnosticSeverity.error))
                 addComments(entry.comments, $.annotation)
 
 
@@ -263,7 +263,7 @@ export function doOption<TokenAnnotation, NonTokenAnnotation>(
         sgse.forEach(s => {
             return s.onUnexpectedOption({
                 data: {
-                    option: stringData,
+                    optionString: stringData,
                 },
                 annotation: {
                     annotation: annotation,
@@ -288,7 +288,7 @@ export function doOption<TokenAnnotation, NonTokenAnnotation>(
                 sgse.map(s => {
                     return s.onOption({
                         data: {
-                            option: stringData,
+                            optionString: stringData,
                         },
                         annotation: {
                             annotation: annotation,
@@ -320,7 +320,7 @@ export function createTaggedUnionDeserializer<TokenAnnotation, NonTokenAnnotatio
                     $,
                     propKey,
                     nodeBuilder,
-                    $$$.data.option,
+                    $$$.data.optionString,
                     $$$.annotation,
                     sideEffectsAPIs.map(s => {
                         return s.onTaggedUnion({

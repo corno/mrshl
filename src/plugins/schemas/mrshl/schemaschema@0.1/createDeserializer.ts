@@ -211,7 +211,7 @@ function createExpectedNodeHandler<TokenAnnotation, NonTokenAnnotation>(
                                                                                 },
                                                                                 onEnd: () => {
                                                                                     const asserted = assertNotNull(targetNode)
-                                                                                    states.add(stateData.data.key.value, {
+                                                                                    states.add(stateData.data.keyString.value, {
                                                                                         node: asserted,
                                                                                     })
                                                                                 },
@@ -318,7 +318,7 @@ function createExpectedNodeHandler<TokenAnnotation, NonTokenAnnotation>(
                                     },
                                     onEnd: () => {
                                         const asserted = assertNotNull(targetPropertyType)
-                                        properties.add(propertyData.data.key.value, {
+                                        properties.add(propertyData.data.keyString.value, {
                                             type: asserted,
                                         })
                                     },
@@ -397,7 +397,7 @@ export function createDeserializer<TokenAnnotation, NonTokenAnnotation>(
                             },
                             onEnd: () => {
                                 const asserted = assertNotNull(targetNode)
-                                componentTypes.add(propertyData.data.key.value, {
+                                componentTypes.add(propertyData.data.keyString.value, {
                                     node: asserted,
                                 })
                             },

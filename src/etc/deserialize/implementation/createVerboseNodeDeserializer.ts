@@ -70,7 +70,7 @@ export function createVerboseNodeDeserializer<TokenAnnotation, NonTokenAnnotatio
         } = {}
         return {
             property: $p => {
-                const key = $p.data.key.value
+                const key = $p.data.keyString.value
                 const propertyDefinition = nodeDefinition.properties.get(key)
                 if (propertyDefinition === null) {
                     onError(`unknown property: '${key}'. Choose from ${nodeDefinition.properties.getKeys().map(k => `'${k}'`).join(", ")}`, $p.annotation, DiagnosticSeverity.error)

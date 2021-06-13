@@ -429,7 +429,7 @@ export function createShorthandNodeDeserializer<TokenAnnotation, NonTokenAnnotat
                                                     },
                                                 }).onUnexpectedOption({
                                                     data: {
-                                                        option: $$.data,
+                                                        optionString: $$.data,
                                                     },
                                                     annotation: {
                                                         annotation: $$.annotation,

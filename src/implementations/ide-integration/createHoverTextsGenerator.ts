@@ -260,7 +260,7 @@ function createTypeHoverTextGenerator<Annotation>(
             //
         },
         onProperty: $ => {
-            return createPropertyHoverTextGenerator($.data.key.value, onToken)
+            return createPropertyHoverTextGenerator($.data.keyString.value, onToken)
         },
         // onUnexpectedProperty: () => {
         //     //
