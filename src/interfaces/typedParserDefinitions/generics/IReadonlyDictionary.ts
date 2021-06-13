@@ -8,6 +8,6 @@ export interface IReadonlyLookup<T> {
 
 export interface IReadonlyDictionary<T> extends IReadonlyLookup<T> {
     forEach(callback: (entry: T, key: string) => void): void
-    mapSorted<RT>(callback: (entry: T, key: string) => RT): RawObject<RT>
-    mapUnsorted<RT>(callback: (entry: T, key: string) => RT): RawObject<RT>
+    map<RT>(callback: (entry: T) => RT): RawObject<RT>
+    toArray<RT>(callback: (entry: T, key: string) => RT): RT[]
 }

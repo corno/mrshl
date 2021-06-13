@@ -6,7 +6,7 @@ import * as p from "pareto"
 import * as astncore from "astn-core"
 import * as def from "../../../../interfaces/typedParserDefinitions"
 import {
-    Dictionary,
+    createDictionary,
 } from "./Dictionary"
 import {
     ResolveRegistry,
@@ -51,7 +51,7 @@ function createExpectedNodeHandler<TokenAnnotation, NonTokenAnnotation>(
 
     return {
         onExists: () => {
-            const properties = new Dictionary<t.Property>({})
+            const properties = createDictionary<t.Property>({})
             return wrap(context.expectVerboseType({
                 properties: {
                     "properties": {
@@ -189,7 +189,7 @@ function createExpectedNodeHandler<TokenAnnotation, NonTokenAnnotation>(
                                                         }))
                                                     },
                                                     "state group": () => {
-                                                        const states = new Dictionary<t.State>({})
+                                                        const states = createDictionary<t.State>({})
                                                         let targetDefaultState: null | AnnotatedString<TokenAnnotation> = null
                                                         return wrap(context.expectVerboseType({
                                                             properties: {
@@ -337,7 +337,7 @@ function createExpectedNodeHandler<TokenAnnotation, NonTokenAnnotation>(
         },
         onNotExists: () => {
             callback({
-                properties: new Dictionary<t.Property>({}),
+                properties: createDictionary<t.Property>({}),
             })
         },
     }
@@ -348,7 +348,7 @@ export function createDeserializer<TokenAnnotation, NonTokenAnnotation>(
     onValidationError: (message: string, annotation: TokenAnnotation) => void,
     callback: (metaData: null | t.Schema) => void
 ): astncore.ValueHandler<TokenAnnotation, NonTokenAnnotation> {
-    const componentTypes = new Dictionary<t.ComponentType>({})
+    const componentTypes = createDictionary<t.ComponentType>({})
     let rootName: AnnotatedString<TokenAnnotation> | null = null
 
     const context = astncore.createExpectContext<TokenAnnotation, NonTokenAnnotation>(

@@ -55,7 +55,7 @@ function createPropertyHoverText(prop: def.PropertyDefinition): fp.InlineSegment
 
 function createHoverTextsForProperties(node: def.NodeDefinition, keyProperty: def.PropertyDefinition | null): fp.Block {
     const x: fp.Block[] = []
-    node.properties.mapSorted((prop, propKey) => {
+    node.properties.forEach((prop, propKey) => {
         if (prop === keyProperty) {
             return
         }
@@ -137,9 +137,11 @@ function createPropertyHoverTextGenerator<Annotation>(
             return createListHoverTextGenerator(name, onToken)
         },
         onTaggedUnion: $ => {
-            onToken($.annotation.annotation, () => {
-                return name
-            })
+            if ($.annotation.annotation !== null) {
+                onToken($.annotation.annotation, () => {
+                    return name
+                })
+            }
             return createStateGroupHoverTextGenerator(name, onToken)
         },
         onNull: () => {
@@ -208,9 +210,11 @@ function createShorthandTypeHoverTextGenerator<Annotation>(
         onShorthandTypeClose: $ => {
             if (componentName !== null) {
                 const cn = componentName
-                onToken($.annotation.annotation, () => {
-                    return cn
-                })
+                if ($.annotation.annotation !== null) {
+                    onToken($.annotation.annotation, () => {
+                        return cn
+                    })
+                }
             }
         },
     }
@@ -234,7 +238,9 @@ function createNodeHoverTextGenerator<Annotation>(
     return {
 
         onShorthandTypeOpen: $ => {
-            addOnToken($.annotation.annotation)
+            if ($.annotation.annotation) {
+                addOnToken($.annotation.annotation)
+            }
             return createShorthandTypeHoverTextGenerator(componentName, onToken)
         },
         onVerboseTypeOpen: $ => {

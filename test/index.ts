@@ -281,6 +281,9 @@ export function directoryTests(): void {
                     [
                         db5.createCodeCompletionsGenerator(
                             (annotation, getIntraCodeCompletions, getCodeCompletionsAfter) => {
+                                if (actualCodeCompletions[astn.printRange(annotation.range)] !== undefined) {
+                                    throw new Error(`double registration @ ${astn.printRange(annotation.range)}`)
+                                }
                                 actualCodeCompletions[astn.printRange(annotation.range)] = {
                                     inToken: getIntraCodeCompletions === null ? null : getIntraCodeCompletions(),
                                     afterToken: getCodeCompletionsAfter === null ? null : getCodeCompletionsAfter(),
@@ -320,6 +323,8 @@ export function directoryTests(): void {
             it(dir, async () => {
                 return myFunc().convertToNativePromise(
                 ).then(() => {
+                    //console.log(JSON.stringify(actualIssues))
+                    deepEqualJSON(testDirPath, "issues", actualIssues)
                     deepEqual(
                         testDirPath,
                         "output",
@@ -330,7 +335,6 @@ export function directoryTests(): void {
                     )
                     deepEqualJSON(testDirPath, "codecompletions", actualCodeCompletions)
                     deepEqualJSON(testDirPath, "hovertexts", actualHoverTexts)
-                    deepEqualJSON(testDirPath, "issues", actualIssues)
                 })
             })
         })

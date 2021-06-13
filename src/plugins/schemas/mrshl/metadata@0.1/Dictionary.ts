@@ -1,67 +1,68 @@
 import * as def from "../../../../interfaces/typedParserDefinitions"
 
-export class Dictionary<T> implements def.IReadonlyDictionary<T>, def.IReadonlyLookup<T> {
-    private readonly imp: { [key: string]: T } = {}
-    constructor(imp: { [key: string]: T }) {
-        this.imp = imp
-    }
-    public forEach(callback: (entry: T, key: string) => void): void {
-        Object.keys(this.imp).sort().forEach(key => callback(this.imp[key], key))
-    }
-    public map<RT>(callback: (entry: T, key: string) => RT): def.RawObject<RT> {
-        const rt: def.RawObject<RT> = {}
-        Object.keys(this.imp).sort().forEach(key => {
-            rt[key] = callback(this.imp[key], key)
-        })
-        return rt
-    }
-    public filter<RT>(callback: (entry: T, key: string) => null | RT): Dictionary<RT> {
-        const rt: def.RawObject<RT> = {}
-        Object.keys(this.imp).sort().forEach(key => {
-            const result = callback(this.imp[key], key)
-            if (result !== null) {
-                rt[key] = result
+export interface MutableDictionary<T> extends def.IReadonlyDictionary<T> {
+    add(key: string, value: T): void
+}
+
+export function createDictionary<T>(imp: { [key: string]: T }): MutableDictionary<T> {
+    class Dictionary implements def.IReadonlyDictionary<T>, def.IReadonlyLookup<T> {
+        private readonly imp: { [key: string]: T } = {}
+        constructor() {
+            this.imp = imp
+        }
+        public forEach(callback: (entry: T, key: string) => void): void {
+            Object.keys(this.imp).sort().forEach(key => callback(this.imp[key], key))
+        }
+        public map<RT>(callback: (entry: T, key: string) => RT): def.RawObject<RT> {
+            const rt: def.RawObject<RT> = {}
+            Object.keys(this.imp).sort().forEach(key => {
+                rt[key] = callback(this.imp[key], key)
+            })
+            return rt
+        }
+        public toArray<RT>(callback: (entry: T, key: string) => RT): RT[] {
+            const rt: RT[] = []
+            Object.keys(this.imp).sort().forEach(key => {
+                rt.push(callback(this.imp[key], key))
+            })
+            return rt
+        }
+        public filter<RT>(callback: (entry: T, key: string) => null | RT): def.IReadonlyDictionary<RT> {
+            const rt: def.RawObject<RT> = {}
+            Object.keys(this.imp).sort().forEach(key => {
+                const result = callback(this.imp[key], key)
+                if (result !== null) {
+                    rt[key] = result
+                }
+            })
+            return createDictionary(rt)
+        }
+        public add(key: string, value: T): void {
+            this.imp[key] = value
+        }
+        public getUnsafe(key: string): T {
+            const entry = this.imp[key]
+            if (entry === undefined) {
+                throw new Error(`no such entry: ${key}, options: ${Object.keys(this.imp).join(", ")}`)
             }
-        })
-        return new Dictionary(rt)
-    }
-    public add(key: string, value: T): void {
-        this.imp[key] = value
-    }
-    public getUnsafe(key: string): T {
-        const entry = this.imp[key]
-        if (entry === undefined) {
-            throw new Error(`no such entry: ${key}, options: ${Object.keys(this.imp).join(", ")}`)
+            return entry
         }
-        return entry
-    }
-    public get(key: string): T | null {
-        const entry = this.imp[key]
-        if (entry === undefined) {
-            return null
+        public get(key: string): T | null {
+            const entry = this.imp[key]
+            if (entry === undefined) {
+                return null
+            }
+            return entry
         }
-        return entry
+        public isEmpty(): boolean {
+            return Object.keys(this.imp).length === 0
+        }
+        public getKeys(): string[] {
+            return Object.keys(this.imp).sort()
+        }
     }
-    public mapSorted<RT>(callback: (entry: T, key: string) => RT): def.RawObject<RT> {
-        const rt: def.RawObject<RT> = {}
-        Object.keys(this.imp).sort().forEach(key => {
-            rt[key] = callback(this.imp[key], key)
-        })
-        return rt
-    }
-    public mapUnsorted<RT>(callback: (entry: T, key: string) => RT): def.RawObject<RT> {
-        const rt: def.RawObject<RT> = {}
-        Object.keys(this.imp).forEach(key => {
-            rt[key] = callback(this.imp[key], key)
-        })
-        return rt
-    }
-    public isEmpty(): boolean {
-        return Object.keys(this.imp).length === 0
-    }
-    public getKeys(): string[] {
-        return Object.keys(this.imp).sort()
-    }
+    return new Dictionary()
+
 }
 
 export class Lookup<T> {

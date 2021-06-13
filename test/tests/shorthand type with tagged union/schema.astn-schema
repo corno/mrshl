@@ -1,0 +1,71 @@
+! "metadata@0.1" (
+    'component types': {
+        "a component": (
+            'node': (
+                'properties': {
+                    'i': (
+                        'type': | 'value' (
+                            'quoted': true
+                            'default value': ""
+                        )
+                    )
+                }
+            )
+        )
+        'root': (
+            'node': (
+                'properties': {
+                    'a25': (
+                        'type': | 'value' (
+                            'quoted': true
+                            'default value': ""
+                        )
+                    )
+                    'b': (
+                        'type': | 'value' (
+                            'quoted': true
+                            'default value': "this is default"
+                        )
+                    )
+                    'c': (
+                        'type': | 'value' (
+                            'quoted': false
+                            'default value': ""
+                        )
+                    )
+                    'd': (
+                        'type': | 'state group' (
+                            'states': {
+                                "e": (
+                                    'node': (
+                                        'properties': {
+                                            "f": (
+                                                'type': | 'value' (
+                                                    'quoted': false
+                                                    'default value': ""
+                                                )
+                                            )
+                                            "g": (
+                                                'type': | 'value' (
+                                                    'quoted': true
+                                                    'default value': ""
+                                                )
+                                            )
+                                        }
+                                    )
+                                )
+                            }
+                            'default state': "e"
+                        )
+                    )
+                    "h": (
+                        'type': | 'component' (
+                            'type': "a component"
+                        )
+                    )
+                }
+            )
+        )
+    }
+    'root type': 'root'
+)

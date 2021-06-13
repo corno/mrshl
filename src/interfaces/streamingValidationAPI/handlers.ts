@@ -67,7 +67,7 @@ export interface PropertyHandler<Annotation> {
     onComponent(): NodeHandler<Annotation>
     onTaggedUnion($: {
         annotation: {
-            annotation: Annotation
+            annotation: Annotation | null //is null for shorthand notations
         }
     }): TaggedUnionHandler<Annotation>
     onSimpleString($: {
@@ -109,7 +109,7 @@ export interface ShorthandTypeHandler<Annotation> {
     }): PropertyHandler<Annotation>
     onShorthandTypeClose($: {
         annotation: {
-            annotation: Annotation
+            annotation: Annotation | null //null if the shorthand type is mixed in
         }
     }): void
 }
@@ -152,7 +152,7 @@ export interface NodeHandler<Annotation> {
         annotation: {
             nodeDefinition: def.NodeDefinition
             keyPropertyDefinition: def.PropertyDefinition | null
-            annotation: Annotation
+            annotation: Annotation | null //null if the shorthand type is mixed in
         }
     }): ShorthandTypeHandler<Annotation>
 }

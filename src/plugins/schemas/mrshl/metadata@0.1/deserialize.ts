@@ -51,7 +51,7 @@ function createNodeHandler<TokenAnnotation, NonTokenAnnotation>(
     return {
         onExists: () => {
 
-            const properties = new g.Dictionary<def.PropertyDefinition>({})
+            const properties = g.createDictionary<def.PropertyDefinition>({})
             return wrap(context.expectType({
                 properties: {
                     "properties": {
@@ -153,7 +153,7 @@ function createNodeHandler<TokenAnnotation, NonTokenAnnotation>(
                                                                         onNotExists: () => {
                                                                             targetCollectionType = ["list", {
                                                                                 "node": {
-                                                                                    properties: new g.Dictionary({}),
+                                                                                    properties: g.createDictionary({}),
                                                                                 },
                                                                             }]
                                                                         },
@@ -211,7 +211,7 @@ function createNodeHandler<TokenAnnotation, NonTokenAnnotation>(
                                                             }))
                                                         },
                                                         "state group": () => {
-                                                            const states = new g.Dictionary<def.StateDefinition>({})
+                                                            const states = g.createDictionary<def.StateDefinition>({})
                                                             let defaultStateName: null | AnnotatedString<TokenAnnotation> = null
                                                             return wrap(context.expectType({
                                                                 properties: {
@@ -367,7 +367,7 @@ function createNodeHandler<TokenAnnotation, NonTokenAnnotation>(
         },
         onNotExists: () => {
             callback({
-                properties: new g.Dictionary({}),
+                properties: g.createDictionary({}),
             })
         },
     }
@@ -379,7 +379,7 @@ export function createDeserializer<TokenAnnotation, NonTokenAnnotation>(
     onValidationError: (message: string, annotation: TokenAnnotation) => void,
     callback: (metaData: extDef.Schema | null) => void
 ): astncore.OnObject<TokenAnnotation, NonTokenAnnotation> {
-    const componentTypes = new g.Dictionary<def.ComponentTypeDefinition>({})
+    const componentTypes = g.createDictionary<def.ComponentTypeDefinition>({})
     let rootName: AnnotatedString<TokenAnnotation> | null = null
 
     const context = astncore.createExpectContext<TokenAnnotation, NonTokenAnnotation>(

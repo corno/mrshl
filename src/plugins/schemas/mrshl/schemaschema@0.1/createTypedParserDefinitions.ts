@@ -4,7 +4,7 @@ import {
     createReference,
 } from "./Reference"
 import {
-    Dictionary,
+    createDictionary, MutableDictionary,
 } from "./Dictionary"
 import { Schema, Node, Property } from "./types"
 
@@ -17,8 +17,8 @@ function convertToGenericNode(
     keyProperty: null | Property,
     resolveRegistry: ResolveRegistry,
 ): def.NodeDefinition {
-    const properties = new Dictionary<def.PropertyDefinition>({})
-    node.properties.mapSorted((prop, key) => {
+    const properties = createDictionary<def.PropertyDefinition>({})
+    node.properties.forEach((prop, key) => {
         if (prop === keyProperty) {
             //return
         }
@@ -64,7 +64,7 @@ function convertToGenericNode(
                     }
                     case "state group": {
                         const $ = prop.type[1]
-                        const states = new Dictionary($.states.mapSorted(state => {
+                        const states = createDictionary($.states.map(state => {
                             return {
                                 node: convertToGenericNode(state.node, componentTypes, null, resolveRegistry),
                             }
@@ -108,7 +108,7 @@ function convertToGenericNode(
 
 export function convertToGenericSchema(schema: Schema): def.Schema {
     const resolveRegistry = new ResolveRegistry()
-    const componentTypes: Dictionary<def.ComponentTypeDefinition> = new Dictionary({})
+    const componentTypes: MutableDictionary<def.ComponentTypeDefinition> = createDictionary({})
     schema["component types"].forEach((ct, ctName) => {
         componentTypes.add(ctName, {
             node: convertToGenericNode(ct.node, componentTypes, null, resolveRegistry),
