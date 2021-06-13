@@ -121,23 +121,23 @@ export function createDictionaryDeserializer<TokenAnnotation, NonTokenAnnotation
             })
         })
         return {
-            property: $ => {
+            property: $p => {
 
-                if (foundKeys.includes($.data.keyString.value)) {
-                    onError("double key", $.annotation, DiagnosticSeverity.error)
+                if (foundKeys.includes($p.data.keyString.value)) {
+                    onError("double key", $p.annotation, DiagnosticSeverity.error)
                 }
-                foundKeys.push($.data.keyString.value)
+                foundKeys.push($p.data.keyString.value)
                 const entry = dictionary.createEntry()
                 //const entry = collBuilder.createEntry(errorMessage => onError(errorMessage, propertyData.keyRange))
-                entry.node.getValue($$["key property"].name).setValue($.data.keyString.value, errorMessage => onError(errorMessage, $.annotation, DiagnosticSeverity.error))
-                addComments(entry.comments, $.annotation)
+                entry.node.getValue($$["key property"].name).setValue($p.data.keyString.value, errorMessage => onError(errorMessage, $p.annotation, DiagnosticSeverity.error))
+                addComments(entry.comments, $p.annotation)
 
 
                 const propertySideEffects = dictionarySideEffects.map(s => {
                     return s.onEntry({
-                        data: $.data,
+                        data: $p.data,
                         annotation: {
-                            annotation: $.annotation,
+                            annotation: $p.annotation,
                             nodeDefinition: $$.node,
                             keyProperty: $$["key property"].get(),
                         },
@@ -158,19 +158,19 @@ export function createDictionaryDeserializer<TokenAnnotation, NonTokenAnnotation
                     ),
                 ))
             },
-            objectEnd: $ => {
+            objectEnd: $e => {
 
                 dictionarySideEffects.forEach(s => {
                     s.onClose({
                         annotation: {
-                            annotation: $.annotation,
+                            annotation: $e.annotation,
                         },
                     })
                 })
                 if (foundKeys.length !== 0) {
                     flagNonDefaultPropertiesFound()
                 }
-                addComments(dictionary.comments, $.annotation)
+                addComments(dictionary.comments, $e.annotation)
                 return p.value(null)
 
             },
@@ -243,68 +243,6 @@ export function createListDeserializer<TokenAnnotation, NonTokenAnnotation>(
     }
 }
 
-export function doOption<TokenAnnotation, NonTokenAnnotation>(
-    $: def.TaggedUnionDefinition,
-    propKey: string,
-    nodeBuilder: buildAPI.Node,
-    stringData: astncore.SimpleStringData,
-    annotation: TokenAnnotation,
-    sgse: sideEffectAPI.TaggedUnionHandler<TokenAnnotation>[],
-    onError: OnError<TokenAnnotation>,
-    flagNonDefaultPropertiesFound: () => void,
-): astncore.RequiredValueHandler<TokenAnnotation, NonTokenAnnotation> {
-    const optionName = stringData.value
-    const option = $.options.get(stringData.value)
-    const stateGroup = nodeBuilder.getTaggedUnion(propKey)
-    addComments(stateGroup.comments, annotation)
-
-    if (option === null) {
-        onError(`unknown option: '${optionName}', choose from: ${$.options.getKeys().map(k => `'${k}'`).join(", ")}`, annotation, DiagnosticSeverity.error)
-        sgse.forEach(s => {
-            return s.onUnexpectedOption({
-                data: {
-                    optionString: stringData,
-                },
-                annotation: {
-                    annotation: annotation,
-                    //stateGroupDefinition: $,
-                },
-            })
-        })
-        return astncore.createDummyRequiredValueHandler()
-    } else {
-
-        const state = stateGroup.setState(optionName, errorMessage => onError(errorMessage, annotation, DiagnosticSeverity.error))
-        addComments(stateGroup.comments, annotation)
-        if ($["default option"].get() !== option) {
-            flagNonDefaultPropertiesFound()
-        }
-        return wrap(
-            createNodeDeserializer(
-                option.node,
-                null,
-                state.node,
-                null,
-                sgse.map(s => {
-                    return s.onOption({
-                        data: {
-                            optionString: stringData,
-                        },
-                        annotation: {
-                            annotation: annotation,
-                            definition: option,
-                            //stateGroupDefinition: $,
-                        },
-                    })
-                }),
-                onError,
-                flagNonDefaultPropertiesFound,
-                stateGroup.comments,
-            ),
-        )
-    }
-}
-
 export function createTaggedUnionDeserializer<TokenAnnotation, NonTokenAnnotation>(
     $: def.TaggedUnionDefinition,
     propKey: string,
@@ -316,6 +254,68 @@ export function createTaggedUnionDeserializer<TokenAnnotation, NonTokenAnnotatio
     return $$ => {
         return {
             option: $$$ => {
+
+                function doOption<TokenAnnotation, NonTokenAnnotation>(
+                    $: def.TaggedUnionDefinition,
+                    propKey: string,
+                    nodeBuilder: buildAPI.Node,
+                    stringData: astncore.SimpleStringData,
+                    annotation: TokenAnnotation,
+                    sgse: sideEffectAPI.TaggedUnionHandler<TokenAnnotation>[],
+                    onError: OnError<TokenAnnotation>,
+                    flagNonDefaultPropertiesFound: () => void,
+                ): astncore.RequiredValueHandler<TokenAnnotation, NonTokenAnnotation> {
+                    const optionName = stringData.value
+                    const option = $.options.get(stringData.value)
+                    const stateGroup = nodeBuilder.getTaggedUnion(propKey)
+                    addComments(stateGroup.comments, annotation)
+
+                    if (option === null) {
+                        onError(`unknown option: '${optionName}', choose from: ${$.options.getKeys().map(k => `'${k}'`).join(", ")}`, annotation, DiagnosticSeverity.error)
+                        sgse.forEach(s => {
+                            return s.onUnexpectedOption({
+                                data: {
+                                    optionString: stringData,
+                                },
+                                annotation: {
+                                    annotation: annotation,
+                                    //stateGroupDefinition: $,
+                                },
+                            })
+                        })
+                        return astncore.createDummyRequiredValueHandler()
+                    } else {
+
+                        const state = stateGroup.setState(optionName, errorMessage => onError(errorMessage, annotation, DiagnosticSeverity.error))
+                        addComments(stateGroup.comments, annotation)
+                        if ($["default option"].get() !== option) {
+                            flagNonDefaultPropertiesFound()
+                        }
+                        return wrap(
+                            createNodeDeserializer(
+                                option.node,
+                                null,
+                                state.node,
+                                null,
+                                sgse.map(s => {
+                                    return s.onOption({
+                                        data: {
+                                            optionString: stringData,
+                                        },
+                                        annotation: {
+                                            annotation: annotation,
+                                            definition: option,
+                                            //stateGroupDefinition: $,
+                                        },
+                                    })
+                                }),
+                                onError,
+                                flagNonDefaultPropertiesFound,
+                                stateGroup.comments,
+                            ),
+                        )
+                    }
+                }
                 return doOption(
                     $,
                     propKey,

@@ -1,0 +1,122 @@
+{
+	"2:24-25": {
+		"hoverText": "component types"
+	},
+	"3:18-19": {
+		"hoverText": "node"
+	},
+	"3:20-21": {
+		"hoverText": "properties"
+	},
+	"4:23-24": {
+		"hoverText": "type"
+	},
+	"4:25-37": {
+		"hoverText": "type"
+	},
+	"4:40-41": {
+		"hoverText": "node"
+	},
+	"4:42-43": {
+		"hoverText": "properties"
+	},
+	"4:44-45": {
+		"hoverText": "properties"
+	},
+	"4:46-47": {
+		"hoverText": "node"
+	},
+	"4:48-49": {
+		"hoverText": "type"
+	},
+	"4:50-56": {
+		"hoverText": "type"
+	},
+	"5:23-24": {
+		"hoverText": "type"
+	},
+	"5:25-37": {
+		"hoverText": "type"
+	},
+	"5:40-41": {
+		"hoverText": "properties"
+	},
+	"5:42-43": {
+		"hoverText": "properties"
+	},
+	"5:44-45": {
+		"hoverText": "type"
+	},
+	"5:46-52": {
+		"hoverText": "type"
+	},
+	"6:23-35": {
+		"hoverText": "type"
+	},
+	"6:38-39": {
+		"hoverText": "properties"
+	},
+	"6:40-41": {
+		"hoverText": "properties"
+	},
+	"6:42-43": {
+		"hoverText": "type"
+	},
+	"6:44-50": {
+		"hoverText": "type"
+	},
+	"7:23-35": {
+		"hoverText": "type"
+	},
+	"7:36-37": {
+		"hoverText": "properties"
+	},
+	"7:38-39": {
+		"hoverText": "properties"
+	},
+	"7:40-46": {
+		"hoverText": "type"
+	},
+	"8:23-35": {
+		"hoverText": "type"
+	},
+	"8:36-37": {
+		"hoverText": "properties"
+	},
+	"8:38-39": {
+		"hoverText": "properties"
+	},
+	"8:40-46": {
+		"hoverText": "type"
+	},
+	"9:23-35": {
+		"hoverText": "type"
+	},
+	"10:25-26": {
+		"hoverText": "type"
+	},
+	"10:27-39": {
+		"hoverText": "type"
+	},
+	"12:10-11": {
+		"hoverText": "properties"
+	},
+	"12:12-13": {
+		"hoverText": "node"
+	},
+	"14:21-22": {
+		"hoverText": "node"
+	},
+	"15:31-32": {
+		"hoverText": "properties"
+	},
+	"17:17-18": {
+		"hoverText": "properties"
+	},
+	"18:13-14": {
+		"hoverText": "node"
+	},
+	"20:5-6": {
+		"hoverText": "component types"
+	}
+}

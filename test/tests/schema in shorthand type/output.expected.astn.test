@@ -1,0 +1,37 @@
+(
+    'component types': {
+        "foo": (
+            'node': (
+                'properties': {
+                    "bar1": (
+                        'type': | 'collection' ( )
+                    )
+                    "bar2": (
+                        'type': | 'collection' ( )
+                    )
+                    "bar3": (
+                        'type': | 'collection' ( )
+                    )
+                    "bar4": (
+                        'type': | 'collection' ( )
+                    )
+                    "bar5": (
+                        'type': | 'collection' ( )
+                    )
+                    "bar6": (
+                        'type': | 'collection' (
+                            'type': | 'dictionary' ( )
+                        )
+                    )
+                }
+            )
+        )
+        "root": (
+            'node': (
+                'properties': {
+                    "": ( )
+                }
+            )
+        )
+    }
+)

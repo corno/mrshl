@@ -1,0 +1,21 @@
+(
+    'component types': {
+        "foo": < < {
+            "bar1": < | 'collection' < < { } > | 'list' < >  >  >
+            "bar2": < | 'collection' < { } | 'list' < >  >  >
+            "bar3": < 'collection' < { } | 'list' < >  >  >
+            "bar4": < 'collection' { } 'list'  >
+            "bar5": < 'collection' { } 'list' ( ) >
+            "bar6": < 'collection' (
+                'type': | 'dictionary' ( )
+            ) >
+         } > >
+        "root": (
+            'node': (
+                'properties': {
+                    "": ( )
+                }
+            )
+        )
+    }
+)
