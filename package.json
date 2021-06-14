@@ -45,6 +45,7 @@
     "typescript": "^4.3.2"
   },
   "bin": {
-    "astn-expand": "bin/astnExpand.mjs"
+    "astn-expand": "bin/astnExpand.mjs",
+    "astn-compact": "bin/astnCompact.mjs"
   }
 }
