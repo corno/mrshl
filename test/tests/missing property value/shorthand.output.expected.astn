@@ -1,0 +1,18 @@
+! (
+    'component types': {
+        "x": (
+            'node': (
+                'properties': {
+                    "y": (
+                        'type': | 'string' (
+                            'default value': ""
+                            'quoted': false
+                        )
+                    )
+                }
+            )
+        )
+    }
+    'root type': "x"
+)
+<  >

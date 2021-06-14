@@ -1,5 +1,29 @@
 [
-    [ "schema retrieval", "warning", "found both external and internal schema. ignoring internal schema", null, null, null, null],
-    [ "deserialization", "warning", "expected a verbose type: ( )", 18, 1, 18, 2],
-    [ "deserialization", "error", "unknown property: 'a'. Choose from 'a26', 'b', 'c'", 19, 5, 19, 8]
+	[
+		"schema retrieval",
+		"warning",
+		"found both external and internal schema. ignoring internal schema",
+		null,
+		null,
+		null,
+		null
+	],
+	[
+		"deserialization",
+		"warning",
+		"expected a verbose type: ( )",
+		18,
+		1,
+		18,
+		2
+	],
+	[
+		"deserialization",
+		"error",
+		"unknown property: 'a'. Choose from 'a26', 'b', 'c'",
+		19,
+		5,
+		19,
+		8
+	]
 ]

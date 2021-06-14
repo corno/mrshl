@@ -1,0 +1,30 @@
+! (
+    'component types': {
+        "root": (
+            'node': (
+                'properties': {
+                    "a29": (
+                        'type': | 'string' (
+                            'default value': ""
+                            'quoted': true
+                        )
+                    )
+                    "b": (
+                        'type': | 'string' (
+                            'default value': ""
+                            'quoted': true
+                        )
+                    )
+                    "c": (
+                        'type': | 'string' (
+                            'default value': ""
+                            'quoted': false
+                        )
+                    )
+                }
+            )
+        )
+    }
+    'root type': "root"
+)
+< "" "X" C >

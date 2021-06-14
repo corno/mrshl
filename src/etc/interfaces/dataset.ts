@@ -8,6 +8,7 @@ export type IDataset = {
 	async: async.Dataset
     serialize: (
         iss: InternalSchemaSpecification,
-        writer: (str: string) => void
+        style: ["verbose"] | ["shorthand"],
+        writer: (str: string) => void,
     ) => p.IValue<null>
 }

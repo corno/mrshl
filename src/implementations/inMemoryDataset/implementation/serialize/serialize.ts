@@ -15,6 +15,7 @@ function assertUnreachable<RT>(_x: never): RT {
 export function serialize(
     root: RootImp,
     internalSchemaSpecification: InternalSchemaSpecification,
+    style: ["verbose"] | ["shorthand"],
     writer: (str: string) => void,
 ): p.IValue<null> {
     // const rootComments = dataset.rootComments.getComments()
@@ -74,6 +75,6 @@ export function serialize(
         }
 
     })().mapResult(() => {
-        return serializeEvents(serializeRoot(root))
+        return serializeEvents(serializeRoot(root, style))
     })
 }

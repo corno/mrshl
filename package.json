@@ -45,6 +45,6 @@
     "typescript": "^4.3.2"
   },
   "bin": {
-    "astn-to-expanded-json": "bin/toExpandedJSON.mjs"
+    "astn-expand": "bin/astnExpand.mjs"
   }
 }

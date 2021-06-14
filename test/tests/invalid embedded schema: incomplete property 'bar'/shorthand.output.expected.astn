@@ -1,0 +1,24 @@
+! (
+    'component types': {
+        "x": (
+            'node': (
+                'properties': {
+                    "bar": (
+                        'type': | 'string' (
+                            'default value': ""
+                            'quoted': true
+                        )
+                    )
+                    "foo": (
+                        'type': | 'string' (
+                            'default value': ""
+                            'quoted': false
+                        )
+                    )
+                }
+            )
+        )
+    }
+    'root type': "x"
+)
+< ""  >

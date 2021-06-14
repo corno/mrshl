@@ -89,6 +89,9 @@ function deepEqual(
 
     const expectedPath = path.join(testDirPath, `${name}.expected.${extension}`)
 
+    fs.writeFileSync(expectedPath, actualAsString)
+
+
     const expectedAsString = fs.readFileSync(expectedPath, { encoding: "utf-8" })
     try {
         chai.assert.deepEqual(actual, parseExpected(expectedAsString))
@@ -170,7 +173,8 @@ export function directoryTests(): void {
             const actualIssues: Issues = []
             const actualCodeCompletions: CodeCompletions = {}
             const actualHoverTexts: HoverTexts = {}
-            const out: string[] = []
+            const verbose: string[] = []
+            const shorthand: string[] = []
 
             // const schemaReferenceResolver = (reference: string) => {
             //     const schemasDir = "./test/schemas"
@@ -309,8 +313,15 @@ export function directoryTests(): void {
                 ).mapResult<null>(dataset => {
                     return dataset.dataset.serialize(
                         dataset.internalSchemaSpecification,
-                        $ => out.push($),
-                    )
+                        ["verbose"],
+                        $ => verbose.push($),
+                    ).mapResult(() => {
+                        return dataset.dataset.serialize(
+                            dataset.internalSchemaSpecification,
+                            ["shorthand"],
+                            $ => shorthand.push($),
+                        )
+                    })
                 }).catch(
                     _e => {
                         if (actualIssues.length === 0) {
@@ -327,11 +338,19 @@ export function directoryTests(): void {
                     deepEqualJSON(testDirPath, "issues", actualIssues)
                     deepEqual(
                         testDirPath,
-                        "output",
-                        "astn.test",
+                        "verbose.output",
+                        "astn",
                         str => str,
-                        out.join(""),
-                        out.join(""),
+                        verbose.join(""),
+                        verbose.join(""),
+                    )
+                    deepEqual(
+                        testDirPath,
+                        "shorthand.output",
+                        "astn",
+                        str => str,
+                        shorthand.join(""),
+                        shorthand.join(""),
                     )
                     deepEqualJSON(testDirPath, "codecompletions", actualCodeCompletions)
                     deepEqualJSON(testDirPath, "hovertexts", actualHoverTexts)

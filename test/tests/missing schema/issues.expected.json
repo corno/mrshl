@@ -1,3 +1,11 @@
 [
-    [ "structure", "error", "missing (valid) schema", null, null, null, null]
+	[
+		"structure",
+		"error",
+		"missing (valid) schema",
+		null,
+		null,
+		null,
+		null
+	]
 ]

@@ -1,3 +1,11 @@
 [
-    [ "schema retrieval", "error", "error in external schema: missing schema schema definition", null, null, null, null]
+	[
+		"schema retrieval",
+		"error",
+		"error in external schema: missing schema schema definition",
+		null,
+		null,
+		null,
+		null
+	]
 ]

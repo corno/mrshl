@@ -1,0 +1,43 @@
+! "mrshl/schemaschema@0.1"
+< {
+    "node": < {
+        "properties": < 'collection' {
+            "name": < 'value' "" 'text' >
+            "type": < 'state group' "value" {
+                "collection": < {
+                    "node": < 'component' "node" >
+                    "type": < 'state group' "list" {
+                        "dictionary": < {
+                            "key property": < 'value' "name" 'text' >
+                        } >
+                        "list": < { } >
+                    } >
+                } >
+                "component": < {
+                    "type": < 'value' "" 'text' >
+                } >
+                "state group": < {
+                    "states": < 'collection' {
+                        "name": < 'value' "" 'text' >
+                        "node": < 'component' "node" >
+                    } 'dictionary' "name" >
+                    "default state": < 'value' "" 'text' >
+                } >
+                "value": < {
+                    "default value": < 'value' "" 'text' >
+                    "type": < 'state group' "text" {
+                        "number": < { } >
+                        "text": < { } >
+                    } >
+                } >
+            } >
+        } 'dictionary' "name" >
+    } >
+    "root": < {
+        "component types": < 'collection' {
+            "name": < 'value' "" 'text' >
+            "node": < 'component' "node" >
+        } 'dictionary' "name" >
+        "root type": < 'value' "root" 'text' >
+    } >
+} "root" >

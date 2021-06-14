@@ -29,10 +29,11 @@ export function createInMemoryDataset(schema: def.Schema): IDataset {
     return {
         build: syncDataset,
         async: asyncAPIImp.createDataset(rootImp, rootImp.global, syncDataset),
-        serialize: (internalSchemaSpecification, writer) => {
+        serialize: (internalSchemaSpecification, style, writer) => {
             return serialize(
                 rootImp,
                 internalSchemaSpecification,
+                style,
                 writer,
             )
         },
