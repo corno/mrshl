@@ -89,7 +89,7 @@ function deepEqual(
 
     const expectedPath = path.join(testDirPath, `${name}.expected.${extension}`)
 
-    fs.writeFileSync(expectedPath, actualAsString)
+    //fs.writeFileSync(expectedPath, actualAsString)
 
 
     const expectedAsString = fs.readFileSync(expectedPath, { encoding: "utf-8" })
@@ -338,16 +338,16 @@ export function directoryTests(): void {
                     deepEqualJSON(testDirPath, "issues", actualIssues)
                     deepEqual(
                         testDirPath,
-                        "verbose.output",
-                        "astn",
+                        "output",
+                        "verbose.astn",
                         str => str,
                         verbose.join(""),
                         verbose.join(""),
                     )
                     deepEqual(
                         testDirPath,
-                        "shorthand.output",
-                        "astn",
+                        "output",
+                        "compact.astn",
                         str => str,
                         shorthand.join(""),
                         shorthand.join(""),
