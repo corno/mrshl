@@ -4,8 +4,9 @@ import * as p from "pareto"
 import * as p20 from "pareto-20"
 import * as db5 from "../src"
 import * as path from "path"
+import { schemaHost } from "../schemaHost"
 
-export function serialize(style: ["verbose"] | ["shorthand"]) {
+export function serialize(style: ["verbose"] | ["shorthand"]): void {
 
     const [, , sourcePath, targetPath] = process.argv
 
@@ -58,12 +59,11 @@ export function serialize(style: ["verbose"] | ["shorthand"]) {
         },
         dataAsString,
         schemaID => {
-            // return makeNativeHTTPrequest(
-            //     schemaHost,
-            //     schemaID,
-            //     3000,
-            // )
-            return readFileFromFileSystem(__dirname + "/../../test/schemas", schemaID)
+            return db5.makeNativeHTTPrequest(
+                schemaHost,
+                schemaID,
+                3000,
+            )
         },
         diagnostic => {
             console.error(db5.printLoadDocumentDiagnostic(diagnostic))

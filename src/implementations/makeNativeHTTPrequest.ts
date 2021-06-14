@@ -1,8 +1,8 @@
 import * as http from "http"
 import * as p20 from "pareto-20"
 import * as p from "pareto"
-import { RetrievalError } from "../src"
-import { SchemaHost } from "./schemaHost"
+import { RetrievalError } from ".."
+import { SchemaHost } from "../../schemaHost"
 
 export function makeNativeHTTPrequest(
     schemaHost: SchemaHost,

@@ -13,10 +13,10 @@ import { describe } from "mocha"
 import * as db5 from "../src"
 import * as astn from "astn"
 //import * as async from "../src/asyncAPI"
-import { makeNativeHTTPrequest } from "./makeNativeHTTPrequest"
+import { makeNativeHTTPrequest } from "../src/implementations/makeNativeHTTPrequest"
 //import { deserializeSchemaFromString } from "../src"
 import * as p20 from "pareto-20"
-import { schemaHost } from "./schemaHost"
+import { schemaHost } from "../schemaHost"
 import { DiagnosticSeverity } from "../src/interfaces/DiagnosticSeverity"
 
 function readFileFromFileSystem(
