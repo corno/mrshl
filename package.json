@@ -28,7 +28,7 @@
     "dist/*"
   ],
   "dependencies": {
-    "astn": "^0.80.12",
+    "astn": "^0.80.15",
     "fountain-pen": "^3.5.4"
   },
   "devDependencies": {
