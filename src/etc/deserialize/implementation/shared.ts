@@ -1,4 +1,3 @@
-import * as p from "pareto"
 import * as astncore from "astn-core"
 import * as buildAPI from "../../../interfaces/buildAPI"
 import * as def from "../../../interfaces/typedParserDefinitions"
@@ -13,9 +12,9 @@ function assertUnreachable<RT>(_x: never): RT {
 
 export type OnError<TokenAnnotation> = (message: string, annotation: TokenAnnotation, severity: DiagnosticSeverity) => void
 
-export function wrap<TokenAnnotation, NonTokenAnnotation>(
-    handler: astncore.ValueHandler<TokenAnnotation, NonTokenAnnotation>
-): astncore.RequiredValueHandler<TokenAnnotation, NonTokenAnnotation> {
+export function wrap<TokenAnnotation, NonTokenAnnotation, ReturnType>(
+    handler: astncore.ValueHandler<TokenAnnotation, NonTokenAnnotation, ReturnType>
+): astncore.RequiredValueHandler<TokenAnnotation, NonTokenAnnotation, ReturnType> {
     return {
         exists: handler,
         missing: (): void => {
@@ -33,77 +32,82 @@ function addComments<TokenAnnotation>(_target: buildAPI.Comments, _annotation: T
     // }
 }
 
-export function createUnexpectedArrayHandler<TokenAnnotation, NonTokenAnnotation>(
+export function createUnexpectedArrayHandler<TokenAnnotation, NonTokenAnnotation, ReturnType>(
     message: string,
     annotation: TokenAnnotation,
     onError: OnError<TokenAnnotation>,
-): astncore.ArrayHandler<TokenAnnotation, NonTokenAnnotation> {
+    createReturnValue: () => ReturnType,
+): astncore.ArrayHandler<TokenAnnotation, NonTokenAnnotation, ReturnType> {
     onError(message, annotation, DiagnosticSeverity.error)
 
     return {
         element: () => {
-            return astncore.createDummyValueHandler()
+            return astncore.createDummyValueHandler(createReturnValue)
         },
         arrayEnd: () => {
-            return p.value(null)
+            return createReturnValue()
         },
     }
 }
 
-export function createUnexpectedObjectHandler<TokenAnnotation, NonTokenAnnotation>(
+export function createUnexpectedObjectHandler<TokenAnnotation, NonTokenAnnotation, ReturnType>(
     message: string,
     annotation: TokenAnnotation,
-    onError: OnError<TokenAnnotation>
-): astncore.ObjectHandler<TokenAnnotation, NonTokenAnnotation> {
+    onError: OnError<TokenAnnotation>,
+    createReturnValue: () => ReturnType,
+): astncore.ObjectHandler<TokenAnnotation, NonTokenAnnotation, ReturnType> {
     onError(message, annotation, DiagnosticSeverity.error)
 
     return {
         property: () => {
-            return p.value(astncore.createDummyRequiredValueHandler())
+            return astncore.createDummyRequiredValueHandler(createReturnValue)
         },
         objectEnd: () => {
-            return p.value(null)
+            return createReturnValue()
         },
     }
 }
 
-export function createUnexpectedTaggedUnionHandler<TokenAnnotation, NonTokenAnnotation>(
+export function createUnexpectedTaggedUnionHandler<TokenAnnotation, NonTokenAnnotation, ReturnType>(
     message: string,
     annotation: TokenAnnotation,
     onError: OnError<TokenAnnotation>,
-): astncore.TaggedUnionHandler<TokenAnnotation, NonTokenAnnotation> {
+    createReturnValue: () => ReturnType,
+): astncore.TaggedUnionHandler<TokenAnnotation, NonTokenAnnotation, ReturnType> {
     onError(message, annotation, DiagnosticSeverity.error)
 
     return {
         option: () => {
-            return astncore.createDummyRequiredValueHandler()
+            return astncore.createDummyRequiredValueHandler(createReturnValue)
         },
         missingOption: () => {
             //
         },
         end: () => {
-            //
+            return createReturnValue()
         },
     }
 }
 
-export function createUnexpectedStringHandler<TokenAnnotation>(
+export function createUnexpectedStringHandler<TokenAnnotation, ReturnType>(
     message: string,
     annotation: TokenAnnotation,
     onError: OnError<TokenAnnotation>,
-): p.IValue<boolean> {
+    createReturnValue: () => ReturnType
+): ReturnType {
     onError(message, annotation, DiagnosticSeverity.error)
-    return p.value(false)
+    return createReturnValue()
 }
 
-export function createDictionaryDeserializer<TokenAnnotation, NonTokenAnnotation>(
+export function createDictionaryDeserializer<TokenAnnotation, NonTokenAnnotation, ReturnType>(
     $$: def.DictionaryDefinition,
     propKey: string,
     nodeBuilder: buildAPI.Node,
     sideEffectsAPIs: sideEffectAPI.PropertyHandler<TokenAnnotation>[],
     onError: OnError<TokenAnnotation>,
     flagNonDefaultPropertiesFound: () => void,
-): astncore.OnObject<TokenAnnotation, NonTokenAnnotation> {
+    createReturnValue: () => ReturnType,
+): astncore.OnObject<TokenAnnotation, NonTokenAnnotation, ReturnType> {
     return $ => {
         const dictionary = nodeBuilder.getDictionary(propKey)
         const foundKeys: string[] = []
@@ -143,7 +147,7 @@ export function createDictionaryDeserializer<TokenAnnotation, NonTokenAnnotation
                         },
                     })
                 })
-                return p.value(wrap(
+                return wrap(
                     createNodeDeserializer(
                         $$.node,
                         $$["key property"].get(),
@@ -155,8 +159,9 @@ export function createDictionaryDeserializer<TokenAnnotation, NonTokenAnnotation
                             //
                         },
                         entry.comments,
+                        createReturnValue,
                     ),
-                ))
+                )
             },
             objectEnd: $e => {
 
@@ -171,21 +176,22 @@ export function createDictionaryDeserializer<TokenAnnotation, NonTokenAnnotation
                     flagNonDefaultPropertiesFound()
                 }
                 addComments(dictionary.comments, $e.annotation)
-                return p.value(null)
+                return createReturnValue()
 
             },
         }
     }
 }
 
-export function createListDeserializer<TokenAnnotation, NonTokenAnnotation>(
+export function createListDeserializer<TokenAnnotation, NonTokenAnnotation, ReturnType>(
     $$: def.ListDefinition,
     propKey: string,
     nodeBuilder: buildAPI.Node,
     sideEffectsAPIs: sideEffectAPI.PropertyHandler<TokenAnnotation>[],
     onError: OnError<TokenAnnotation>,
     flagNonDefaultPropertiesFound: () => void,
-): astncore.OnArray<TokenAnnotation, NonTokenAnnotation> {
+    createReturnValue: () => ReturnType,
+): astncore.OnArray<TokenAnnotation, NonTokenAnnotation, ReturnType> {
     return $ => {
         if ($.data.type[0] !== "list") {
             onError("not a list", $.annotation, DiagnosticSeverity.error)
@@ -223,6 +229,7 @@ export function createListDeserializer<TokenAnnotation, NonTokenAnnotation>(
                         //
                     },
                     entry.comments,
+                    createReturnValue,
                 )
             },
             arrayEnd: $ => {
@@ -237,25 +244,26 @@ export function createListDeserializer<TokenAnnotation, NonTokenAnnotation>(
                     })
                 })
                 addComments(list.comments, $.annotation)
-                return p.value(null)
+                return createReturnValue()
             },
         }
     }
 }
 
-export function createTaggedUnionDeserializer<TokenAnnotation, NonTokenAnnotation>(
+export function createTaggedUnionDeserializer<TokenAnnotation, NonTokenAnnotation, ReturnType>(
     $: def.TaggedUnionDefinition,
     propKey: string,
     nodeBuilder: buildAPI.Node,
     sideEffectsAPIs: sideEffectAPI.PropertyHandler<TokenAnnotation>[],
     onError: OnError<TokenAnnotation>,
     flagNonDefaultPropertiesFound: () => void,
-): astncore.OnTaggedUnion<TokenAnnotation, NonTokenAnnotation> {
+    createReturnValue: () => ReturnType,
+): astncore.OnTaggedUnion<TokenAnnotation, NonTokenAnnotation, ReturnType> {
     return $$ => {
         return {
             option: $$$ => {
 
-                function doOption<TokenAnnotation, NonTokenAnnotation>(
+                function doOption(
                     $: def.TaggedUnionDefinition,
                     propKey: string,
                     nodeBuilder: buildAPI.Node,
@@ -264,7 +272,7 @@ export function createTaggedUnionDeserializer<TokenAnnotation, NonTokenAnnotatio
                     sgse: sideEffectAPI.TaggedUnionHandler<TokenAnnotation>[],
                     onError: OnError<TokenAnnotation>,
                     flagNonDefaultPropertiesFound: () => void,
-                ): astncore.RequiredValueHandler<TokenAnnotation, NonTokenAnnotation> {
+                ): astncore.RequiredValueHandler<TokenAnnotation, NonTokenAnnotation, ReturnType> {
                     const optionName = stringData.value
                     const option = $.options.get(stringData.value)
                     const stateGroup = nodeBuilder.getTaggedUnion(propKey)
@@ -283,7 +291,7 @@ export function createTaggedUnionDeserializer<TokenAnnotation, NonTokenAnnotatio
                                 },
                             })
                         })
-                        return astncore.createDummyRequiredValueHandler()
+                        return astncore.createDummyRequiredValueHandler(createReturnValue)
                     } else {
 
                         const state = stateGroup.setState(optionName, errorMessage => onError(errorMessage, annotation, DiagnosticSeverity.error))
@@ -312,6 +320,7 @@ export function createTaggedUnionDeserializer<TokenAnnotation, NonTokenAnnotatio
                                 onError,
                                 flagNonDefaultPropertiesFound,
                                 stateGroup.comments,
+                                createReturnValue,
                             ),
                         )
                     }
@@ -337,36 +346,39 @@ export function createTaggedUnionDeserializer<TokenAnnotation, NonTokenAnnotatio
                 onError("missing option", $$.annotation, DiagnosticSeverity.error)
             },
             end: () => {
-                //
+                return createReturnValue()
             },
         }
     }
 }
 
-export function createMultilineStringDeserializer<TokenAnnotation>(
+export function createMultilineStringDeserializer<TokenAnnotation, ReturnType>(
     _$: def.StringValueDefinition,
     propKey: string,
     nodeBuilder: buildAPI.Node,
     _sideEffectsAPIs: sideEffectAPI.PropertyHandler<TokenAnnotation>[],
     _onError: OnError<TokenAnnotation>,
     _flagNonDefaultPropertiesFound: () => void,
-): astncore.OnMultilineString<TokenAnnotation> {
+    createReturnValue: () => ReturnType,
+): astncore.OnMultilineString<TokenAnnotation, ReturnType> {
     return $$ => {
         const valueBuilder = nodeBuilder.getValue(propKey)
 
         addComments(valueBuilder.comments, $$.annotation)
         throw new Error("IMPLEMENT MULTILINE")
+        return createReturnValue()
     }
 }
 
-export function createSimpleStringDeserializer<TokenAnnotation>(
+export function createSimpleStringDeserializer<TokenAnnotation, ReturnType>(
     $: def.StringValueDefinition,
     propKey: string,
     nodeBuilder: buildAPI.Node,
     sideEffectsAPIs: sideEffectAPI.PropertyHandler<TokenAnnotation>[],
     onError: OnError<TokenAnnotation>,
     flagNonDefaultPropertiesFound: () => void,
-): astncore.OnSimpleString<TokenAnnotation> {
+    createReturnValue: () => ReturnType,
+): astncore.OnSimpleString<TokenAnnotation, ReturnType> {
     return $$ => {
         const valueBuilder = nodeBuilder.getValue(propKey)
 
@@ -414,7 +426,7 @@ export function createSimpleStringDeserializer<TokenAnnotation>(
             default:
                 assertUnreachable($$.data.wrapping[0])
         }
-        return p.value(false)
+        return createReturnValue()
     }
 }
 
@@ -474,7 +486,7 @@ export function defaultInitializeProperty<TokenAnnotation>(
     }
 }
 
-export function createNodeDeserializer<TokenAnnotation, NonTokenAnnotation>(
+export function createNodeDeserializer<TokenAnnotation, NonTokenAnnotation, ReturnType>(
     nodeDefinition: def.NodeDefinition,
     _keyPropertyDefinition: def.PropertyDefinition | null,
     nodeBuilder: buildAPI.Node,
@@ -483,7 +495,8 @@ export function createNodeDeserializer<TokenAnnotation, NonTokenAnnotation>(
     onError: OnError<TokenAnnotation>,
     flagNonDefaultPropertiesFound: () => void,
     targetComments: buildAPI.Comments,
-): astncore.ValueHandler<TokenAnnotation, NonTokenAnnotation> {
+    createReturnValue: () => ReturnType,
+): astncore.ValueHandler<TokenAnnotation, NonTokenAnnotation, ReturnType> {
     return {
         array: createShorthandNodeDeserializer(
             nodeDefinition,
@@ -494,6 +507,7 @@ export function createNodeDeserializer<TokenAnnotation, NonTokenAnnotation>(
             onError,
             flagNonDefaultPropertiesFound,
             targetComments,
+            createReturnValue,
         ),
         object: createVerboseNodeDeserializer(
             nodeDefinition,
@@ -504,15 +518,23 @@ export function createNodeDeserializer<TokenAnnotation, NonTokenAnnotation>(
             onError,
             flagNonDefaultPropertiesFound,
             targetComments,
+            createReturnValue,
         ),
         taggedUnion: $ => {
-            return createUnexpectedTaggedUnionHandler(`expected a type`, $.annotation, onError)
+            return createUnexpectedTaggedUnionHandler(
+                `expected a type`,
+                $.annotation,
+                onError,
+                createReturnValue,
+            )
         },
         simpleString: $ => {
-            return createUnexpectedStringHandler(`expected a type`, $.annotation, onError)
+            onError(`expected a type`, $.annotation, DiagnosticSeverity.error)
+            return createReturnValue()
         },
         multilineString: $ => {
-            return createUnexpectedStringHandler(`expected a type`, $.annotation, onError)
+            onError(`expected a type`, $.annotation, DiagnosticSeverity.error)
+            return createReturnValue()
         },
     }
 }

@@ -35,7 +35,7 @@ export function createSchemaDeserializer(
                         console.error(`unknown schema schema '${$.data.value},`)
                         onSchemaError(["unknown schema schema", { name: $.data.value }], $.annotation.range)
                     }
-                    return p.value(false)
+                    return p.value(null)
                 },
                 () => {
                     //ignore end commends

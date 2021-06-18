@@ -42,7 +42,7 @@ export function createInternalSchemaBuilder<Annotation>(
 
     function createInternalSchemaHandler<Result>(
         onSchemaError: (error: InternalSchemaError, annotation: Annotation) => void,
-        valueHandler: astncore.ValueHandler<Annotation, null>,
+        valueHandler: astncore.ValueHandler<Annotation, null, p.IValue<null>>,
         onEnd: () => p.IUnsafeValue<Result, null>
     ): astncore.ITreeBuilder<Annotation, Result, null> {
         return astncore.createStackedParser(
@@ -58,7 +58,7 @@ export function createInternalSchemaBuilder<Annotation>(
                 onSchemaError(["stacked", error.type], error.annotation)
             },
             onEnd,
-            astncore.createDummyValueHandler
+            () => astncore.createDummyValueHandler(() => p.value(null))
         )
     }
     return createInternalSchemaHandler(
@@ -75,7 +75,8 @@ export function createInternalSchemaBuilder<Annotation>(
             },
             md2 => {
                 metaData = md2
-            }
+            },
+            () => p.value(null)
         ),
         (): p.IUnsafeValue<t.Schema, null> => {
             if (metaData === null) {

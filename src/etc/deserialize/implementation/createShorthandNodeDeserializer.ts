@@ -1,4 +1,3 @@
-import * as p from "pareto"
 import * as astncore from "astn-core"
 import * as buildAPI from "../../../interfaces/buildAPI"
 import * as def from "../../../interfaces/typedParserDefinitions"
@@ -32,7 +31,7 @@ function addComments<TokenAnnotation>(_target: buildAPI.Comments, _annotation: T
     // }
 }
 
-export function createShorthandNodeDeserializer<TokenAnnotation, NonTokenAnnotation>(
+export function createShorthandNodeDeserializer<TokenAnnotation, NonTokenAnnotation, ReturnType>(
     nodeDefinition: def.NodeDefinition,
     keyPropertyDefinition: def.PropertyDefinition | null,
     nodeBuilderX: buildAPI.Node,
@@ -41,7 +40,8 @@ export function createShorthandNodeDeserializer<TokenAnnotation, NonTokenAnnotat
     onError: OnError<TokenAnnotation>,
     flagNonDefaultPropertiesFound: () => void,
     targetComments: buildAPI.Comments,
-): astncore.OnArray<TokenAnnotation, NonTokenAnnotation> {
+    createReturnValue: () => ReturnType
+): astncore.OnArray<TokenAnnotation, NonTokenAnnotation, ReturnType> {
     return $3 => {
         if ($3.data.type[0] !== "shorthand type") {
             onError("array is not a shorthand type", $3.annotation, DiagnosticSeverity.error)
@@ -183,7 +183,7 @@ export function createShorthandNodeDeserializer<TokenAnnotation, NonTokenAnnotat
             data: astncore.ObjectData
             annotation: TokenAnnotation
             stackContext: astncore.StackContext
-        }): astncore.ObjectHandler<TokenAnnotation, NonTokenAnnotation> {
+        }): astncore.ObjectHandler<TokenAnnotation, NonTokenAnnotation, ReturnType> {
             if (optionContext !== null) {
 
                 if ($$.data.type[0] === "verbose type") {
@@ -199,6 +199,7 @@ export function createShorthandNodeDeserializer<TokenAnnotation, NonTokenAnnotat
                         onError,
                         flagNonDefaultPropertiesFound,
                         oc.stateGroup.comments,
+                        createReturnValue,
                     )($$)
                 } else {
                     pushMixedInTaggedUnionData(optionContext)
@@ -211,7 +212,7 @@ export function createShorthandNodeDeserializer<TokenAnnotation, NonTokenAnnotat
 
             if (nextProperty === null) {
                 onError(`superfluous element: object`, $$.annotation, DiagnosticSeverity.error)
-                return astncore.createDummyObjectHandler()
+                return astncore.createDummyObjectHandler(createReturnValue)
             }
             switch (nextProperty.definition.type[0]) {
                 case "collection": {
@@ -233,10 +234,16 @@ export function createShorthandNodeDeserializer<TokenAnnotation, NonTokenAnnotat
                                 }),
                                 onError,
                                 flagNonDefaultPropertiesFound,
+                                createReturnValue,
                             )($$)
                         }
                         case "list": {
-                            return createUnexpectedObjectHandler(`expected a list: '${nextProperty.name}'`, $$.annotation, onError)
+                            return createUnexpectedObjectHandler(
+                                `expected a list: '${nextProperty.name}'`,
+                                $$.annotation,
+                                onError,
+                                createReturnValue,
+                            )
                         }
                         default:
                             return assertUnreachable($$$.type[0])
@@ -268,6 +275,7 @@ export function createShorthandNodeDeserializer<TokenAnnotation, NonTokenAnnotat
                                 onError,
                                 flagNonDefaultPropertiesFound,
                                 componentBuilder.comments,
+                                createReturnValue,
                             )($$)
                         }
                         default:
@@ -275,17 +283,27 @@ export function createShorthandNodeDeserializer<TokenAnnotation, NonTokenAnnotat
                     }
                 }
                 case "string": {
-                    return createUnexpectedObjectHandler(`expected a string: '${nextProperty.name}'`, $$.annotation, onError)
+                    return createUnexpectedObjectHandler(
+                        `expected a string: '${nextProperty.name}'`,
+                        $$.annotation,
+                        onError,
+                        createReturnValue,
+                    )
                 }
                 case "tagged union": {
-                    return createUnexpectedObjectHandler(`expected a tagged union: '${nextProperty.name}'`, $$.annotation, onError)
+                    return createUnexpectedObjectHandler(
+                        `expected a tagged union: '${nextProperty.name}'`,
+                        $$.annotation,
+                        onError,
+                        createReturnValue,
+                    )
                 }
                 default:
                     return assertUnreachable(nextProperty.definition.type[0])
             }
         }
 
-        const onArray: astncore.OnArray<TokenAnnotation, NonTokenAnnotation> = $$ => {
+        const onArray: astncore.OnArray<TokenAnnotation, NonTokenAnnotation, ReturnType> = $$ => {
             if (optionContext !== null) {
 
                 if ($$.data.type[0] === "shorthand type") {
@@ -302,6 +320,7 @@ export function createShorthandNodeDeserializer<TokenAnnotation, NonTokenAnnotat
                         onError,
                         flagNonDefaultPropertiesFound,
                         oc.stateGroup.comments,
+                        createReturnValue,
                     )($$)
 
                 } else {
@@ -314,14 +333,19 @@ export function createShorthandNodeDeserializer<TokenAnnotation, NonTokenAnnotat
 
             if (nextProperty === null) {
                 onError(`superfluous element: array`, $$.annotation, DiagnosticSeverity.error)
-                return astncore.createDummyArrayHandler()
+                return astncore.createDummyArrayHandler(createReturnValue)
             }
             switch (nextProperty.definition.type[0]) {
                 case "collection": {
                     const $$$ = nextProperty.definition.type[1]
                     switch ($$$.type[0]) {
                         case "dictionary": {
-                            return createUnexpectedArrayHandler(`expected a dictionary: '${nextProperty.name}'`, $$.annotation, onError)
+                            return createUnexpectedArrayHandler(
+                                `expected a dictionary: '${nextProperty.name}'`,
+                                $$.annotation,
+                                onError,
+                                createReturnValue,
+                            )
                         }
                         case "list": {
                             const $$$$ = $$$.type[1]
@@ -339,6 +363,7 @@ export function createShorthandNodeDeserializer<TokenAnnotation, NonTokenAnnotat
                                 }),
                                 onError,
                                 flagNonDefaultPropertiesFound,
+                                createReturnValue,
                             )($$)
                         }
                         default:
@@ -372,6 +397,7 @@ export function createShorthandNodeDeserializer<TokenAnnotation, NonTokenAnnotat
                                 onError,
                                 flagNonDefaultPropertiesFound,
                                 componentBuilder.comments,
+                                createReturnValue,
                             )($$)
                         }
                         default:
@@ -380,17 +406,27 @@ export function createShorthandNodeDeserializer<TokenAnnotation, NonTokenAnnotat
 
                 }
                 case "string": {
-                    return createUnexpectedArrayHandler(`expected a string: '${nextProperty.name}'`, $$.annotation, onError)
+                    return createUnexpectedArrayHandler(
+                        `expected a string: '${nextProperty.name}'`,
+                        $$.annotation,
+                        onError,
+                        createReturnValue,
+                    )
                 }
                 case "tagged union": {
-                    return createUnexpectedArrayHandler(`expected a tagged union: '${nextProperty.name}'`, $$.annotation, onError)
+                    return createUnexpectedArrayHandler(
+                        `expected a tagged union: '${nextProperty.name}'`,
+                        $$.annotation,
+                        onError,
+                        createReturnValue,
+                    )
                 }
                 default:
                     return assertUnreachable(nextProperty.definition.type[0])
             }
         }
 
-        const onTaggedUnion: astncore.OnTaggedUnion<TokenAnnotation, NonTokenAnnotation> = $$ => {
+        const onTaggedUnion: astncore.OnTaggedUnion<TokenAnnotation, NonTokenAnnotation, ReturnType> = $$ => {
             if (optionContext !== null) {
                 pushMixedInTaggedUnionData(optionContext)
 
@@ -400,17 +436,27 @@ export function createShorthandNodeDeserializer<TokenAnnotation, NonTokenAnnotat
             const nextProperty = findNextProperty()
             if (nextProperty === null) {
                 onError(`superfluous element: tagged union`, $$.annotation, DiagnosticSeverity.error)
-                return astncore.createDummyValueHandler().taggedUnion($$)
+                return astncore.createDummyValueHandler(createReturnValue).taggedUnion($$)
             }
             switch (nextProperty.definition.type[0]) {
                 case "collection": {
                     const $$$ = nextProperty.definition.type[1]
                     switch ($$$.type[0]) {
                         case "dictionary": {
-                            return createUnexpectedTaggedUnionHandler(`expected a dictionary: '${nextProperty.name}'`, $$.annotation, onError)
+                            return createUnexpectedTaggedUnionHandler(
+                                `expected a dictionary: '${nextProperty.name}'`,
+                                $$.annotation,
+                                onError,
+                                createReturnValue,
+                            )
                         }
                         case "list": {
-                            return createUnexpectedTaggedUnionHandler(`expected a list: '${nextProperty.name}'`, $$.annotation, onError)
+                            return createUnexpectedTaggedUnionHandler(
+                                `expected a list: '${nextProperty.name}'`,
+                                $$.annotation,
+                                onError,
+                                createReturnValue,
+                            )
                         }
                         default:
                             return assertUnreachable($$$.type[0])
@@ -422,7 +468,12 @@ export function createShorthandNodeDeserializer<TokenAnnotation, NonTokenAnnotat
                     return onTaggedUnion($$)
                 }
                 case "string": {
-                    return createUnexpectedTaggedUnionHandler(`expected a string: '${nextProperty.name}'`, $$.annotation, onError)
+                    return createUnexpectedTaggedUnionHandler(
+                        `expected a string: '${nextProperty.name}'`,
+                        $$.annotation,
+                        onError,
+                        createReturnValue,
+                    )
                 }
                 case "tagged union": {
                     const $ = nextProperty.definition.type[1]
@@ -440,6 +491,7 @@ export function createShorthandNodeDeserializer<TokenAnnotation, NonTokenAnnotat
                         }),
                         onError,
                         flagNonDefaultPropertiesFound,
+                        createReturnValue,
                     )($$)
                 }
                 default:
@@ -447,7 +499,7 @@ export function createShorthandNodeDeserializer<TokenAnnotation, NonTokenAnnotat
             }
         }
 
-        const onSimpleString: astncore.OnSimpleString<TokenAnnotation> = $$ => {
+        const onSimpleString: astncore.OnSimpleString<TokenAnnotation, ReturnType> = $$ => {
             if (optionContext !== null) {
                 pushMixedInTaggedUnionData(optionContext)
 
@@ -457,17 +509,27 @@ export function createShorthandNodeDeserializer<TokenAnnotation, NonTokenAnnotat
             const nextProperty = findNextProperty()
             if (nextProperty === null) {
                 onError(`superfluous element ('${$$.data.value}')`, $$.annotation, DiagnosticSeverity.error)
-                return p.value(false)
+                return createReturnValue()
             }
             switch (nextProperty.definition.type[0]) {
                 case "collection": {
                     const $$$ = nextProperty.definition.type[1]
                     switch ($$$.type[0]) {
                         case "dictionary": {
-                            return createUnexpectedStringHandler(`expected a dictionary: '${nextProperty.name}'`, $$.annotation, onError)
+                            return createUnexpectedStringHandler(
+                                `expected a dictionary: '${nextProperty.name}'`,
+                                $$.annotation,
+                                onError,
+                                createReturnValue,
+                            )
                         }
                         case "list": {
-                            return createUnexpectedStringHandler(`expected a list: '${nextProperty.name}'`, $$.annotation, onError)
+                            return createUnexpectedStringHandler(
+                                `expected a list: '${nextProperty.name}'`,
+                                $$.annotation,
+                                onError,
+                                createReturnValue,
+                            )
                         }
                         default:
                             return assertUnreachable($$$.type[0])
@@ -494,6 +556,7 @@ export function createShorthandNodeDeserializer<TokenAnnotation, NonTokenAnnotat
                         }),
                         onError,
                         flagNonDefaultPropertiesFound,
+                        createReturnValue,
                     )($$)
                 }
                 case "tagged union": {
@@ -534,7 +597,7 @@ export function createShorthandNodeDeserializer<TokenAnnotation, NonTokenAnnotat
                                 },
                             })
                         })
-                        return p.value(false)
+                        return createReturnValue()
                     } else {
                         const state = stateGroup.setState(optionName, errorMessage => onError(errorMessage, $$.annotation, DiagnosticSeverity.error))
                         addComments(stateGroup.comments, $$.annotation)
@@ -558,14 +621,14 @@ export function createShorthandNodeDeserializer<TokenAnnotation, NonTokenAnnotat
                             stateGroup: stateGroup,
                         }
                     }
-                    return p.value(false)
+                    return createReturnValue()
                 }
                 default:
                     return assertUnreachable(nextProperty.definition.type[0])
             }
         }
 
-        const onMultilineString: astncore.OnMultilineString<TokenAnnotation> = $$ => {
+        const onMultilineString: astncore.OnMultilineString<TokenAnnotation, ReturnType> = ($$): ReturnType => {
             if (optionContext !== null) {
                 pushMixedInTaggedUnionData(optionContext)
                 optionContext = null
@@ -574,17 +637,27 @@ export function createShorthandNodeDeserializer<TokenAnnotation, NonTokenAnnotat
             const nextProperty = findNextProperty()
             if (nextProperty === null) {
                 onError(`superfluous element ('${$$.data.lines.join("\n")}')`, $$.annotation, DiagnosticSeverity.error)
-                return p.value(false)
+                return createReturnValue()
             }
             switch (nextProperty.definition.type[0]) {
                 case "collection": {
                     const $$$ = nextProperty.definition.type[1]
                     switch ($$$.type[0]) {
                         case "dictionary": {
-                            return createUnexpectedStringHandler(`expected a dictionary: '${nextProperty.name}'`, $$.annotation, onError)
+                            return createUnexpectedStringHandler(
+                                `expected a dictionary: '${nextProperty.name}'`,
+                                $$.annotation,
+                                onError,
+                                createReturnValue,
+                            )
                         }
                         case "list": {
-                            return createUnexpectedStringHandler(`expected a list: '${nextProperty.name}'`, $$.annotation, onError)
+                            return createUnexpectedStringHandler(
+                                `expected a list: '${nextProperty.name}'`,
+                                $$.annotation,
+                                onError,
+                                createReturnValue,
+                            )
                         }
                         default:
                             return assertUnreachable($$$.type[0])
@@ -612,10 +685,16 @@ export function createShorthandNodeDeserializer<TokenAnnotation, NonTokenAnnotat
                         }),
                         onError,
                         flagNonDefaultPropertiesFound,
+                        createReturnValue,
                     )($$)
                 }
                 case "tagged union": {
-                    return createUnexpectedStringHandler(`expected a tagged union: '${nextProperty.name}'`, $$.annotation, onError)
+                    return createUnexpectedStringHandler(
+                        `expected a tagged union: '${nextProperty.name}'`,
+                        $$.annotation,
+                        onError,
+                        createReturnValue,
+                    )
                 }
                 default:
                     return assertUnreachable(nextProperty.definition.type[0])
@@ -673,7 +752,7 @@ export function createShorthandNodeDeserializer<TokenAnnotation, NonTokenAnnotat
                     })
                 })
 
-                return p.value(null)
+                return createReturnValue()
             },
         }
     }

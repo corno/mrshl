@@ -101,21 +101,22 @@ export function deserializeDataset(
                                 specification: [InternalSchemaSpecificationType.Embedded],
                             }
                         }
-                    }
+                    },
+                    () => p.value(null)
                 ),
                 $ => {
                     const value = $.data.value
                     return createSchemaAndSideEffectsFromStream(resolveExternalSchema(value)).reworkAndCatch(
                         error => {
                             onSchemaError(["schema reference resolving", error], $.annotation.range)
-                            return p.value(false)
+                            return p.value(null)
                         },
                         schemaAndSideEffects => {
                             internalSchema = {
                                 schemaAndSideEffects: schemaAndSideEffects,
                                 specification: [InternalSchemaSpecificationType.Reference, { name: value }],
                             }
-                            return p.value(false)
+                            return p.value(null)
 
                         },
                     )
@@ -179,6 +180,7 @@ export function deserializeDataset(
                     dataset.dataset.build,
                     sideEffectsHandlers.map(h => h.node),
                     (message, annotation, severity) => onError(createDiagnostic(["deserializer", { message: message }]), annotation.range, severity),
+                    () => p.value(null),
                 ),
                 error => {
                     onError(createDiagnostic(["stacked", error.type]), error.annotation.range, DiagnosticSeverity.error)
@@ -189,7 +191,7 @@ export function deserializeDataset(
                     })
                     return p.success(dataset)
                 },
-                astncore.createDummyValueHandler
+                () => astncore.createDummyValueHandler(() => p.value(null))
             )
         },
         (error, range) => {

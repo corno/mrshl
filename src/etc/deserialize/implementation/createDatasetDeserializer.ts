@@ -3,11 +3,12 @@ import * as sideEffectAPI from "../../../interfaces/streamingValidationAPI"
 import * as id from "../../../interfaces/buildAPI/IDataset"
 import { createNodeDeserializer, OnError, wrap } from "./shared"
 
-export function createDatasetDeserializer<TokenAnnotation, NonTokenAnnotation>(
+export function createDatasetDeserializer<TokenAnnotation, NonTokenAnnotation, ReturnType>(
     dataset: id.IDataset,
     sideEffectsHandlers: sideEffectAPI.NodeHandler<TokenAnnotation>[],
     onError: OnError<TokenAnnotation>,
-): astncore.TreeHandler<TokenAnnotation, NonTokenAnnotation> {
+    createReturnValue: () => ReturnType
+): astncore.TreeHandler<TokenAnnotation, NonTokenAnnotation, ReturnType> {
 
     return {
         root: wrap(
@@ -21,7 +22,8 @@ export function createDatasetDeserializer<TokenAnnotation, NonTokenAnnotation>(
                 () => {
                     //
                 },
-                dataset.rootComments
+                dataset.rootComments,
+                createReturnValue,
             ),
         ),
     }

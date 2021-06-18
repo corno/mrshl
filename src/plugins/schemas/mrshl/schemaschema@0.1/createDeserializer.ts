@@ -2,7 +2,6 @@
     quote-props: "off",
 
 */
-import * as p from "pareto"
 import * as astncore from "astn-core"
 import * as def from "../../../../interfaces/typedParserDefinitions"
 import {
@@ -32,15 +31,16 @@ type AnnotatedString<TokenAnnotation> = {
     annotation: TokenAnnotation
 }
 
-function createExpectedNodeHandler<TokenAnnotation, NonTokenAnnotation>(
-    context: astncore.IExpectContext<TokenAnnotation, NonTokenAnnotation>,
+function createExpectedNodeHandler<TokenAnnotation, NonTokenAnnotation, ReturnType>(
+    context: astncore.IExpectContext<TokenAnnotation, NonTokenAnnotation, ReturnType>,
     raiseValidationError: (message: string, annotation: TokenAnnotation) => void,
     componentTypes: def.IReadonlyDictionary<t.ComponentType>,
     callback: (node: t.Node) => void,
     resolveRegistry: ResolveRegistry,
-): astncore.ExpectedProperty<TokenAnnotation, NonTokenAnnotation> {
+    createReturnValue: () => ReturnType
+): astncore.ExpectedProperty<TokenAnnotation, NonTokenAnnotation, ReturnType> {
 
-    function wrap(handler: astncore.ValueHandler<TokenAnnotation, NonTokenAnnotation>): astncore.RequiredValueHandler<TokenAnnotation, NonTokenAnnotation> {
+    function wrap(handler: astncore.ValueHandler<TokenAnnotation, NonTokenAnnotation, ReturnType>): astncore.RequiredValueHandler<TokenAnnotation, NonTokenAnnotation, ReturnType> {
         return {
             exists: handler,
             missing: () => {
@@ -77,6 +77,7 @@ function createExpectedNodeHandler<TokenAnnotation, NonTokenAnnotation>(
                                                                         targetNode = node
                                                                     },
                                                                     resolveRegistry,
+                                                                    createReturnValue,
                                                                 ),
                                                                 "type": {
                                                                     onExists: () => wrap(context.expectTaggedUnion({
@@ -93,7 +94,7 @@ function createExpectedNodeHandler<TokenAnnotation, NonTokenAnnotation>(
                                                                                                         value: $.value,
                                                                                                         annotation: $.annotation,
                                                                                                     }
-                                                                                                    return p.value(false)
+                                                                                                    return createReturnValue()
                                                                                                 },
                                                                                             })),
                                                                                             onNotExists: $ => {
@@ -159,7 +160,7 @@ function createExpectedNodeHandler<TokenAnnotation, NonTokenAnnotation>(
                                                                                 value: $.value,
                                                                                 annotation: $.annotation,
                                                                             }
-                                                                            return p.value(false)
+                                                                            return createReturnValue()
                                                                         },
                                                                     })),
                                                                     onNotExists: data => {
@@ -207,6 +208,7 @@ function createExpectedNodeHandler<TokenAnnotation, NonTokenAnnotation>(
                                                                                             targetNode = node
                                                                                         },
                                                                                         resolveRegistry,
+                                                                                        createReturnValue,
                                                                                     ),
                                                                                 },
                                                                                 onEnd: () => {
@@ -230,7 +232,7 @@ function createExpectedNodeHandler<TokenAnnotation, NonTokenAnnotation>(
                                                                                 value: $.value,
                                                                                 annotation: $.annotation,
                                                                             }
-                                                                            return p.value(false)
+                                                                            return createReturnValue()
                                                                         },
                                                                     })),
                                                                     onNotExists: data => {
@@ -288,7 +290,7 @@ function createExpectedNodeHandler<TokenAnnotation, NonTokenAnnotation>(
                                                                         warningOnly: true,
                                                                         callback: $ => {
                                                                             defaultValue = $.value
-                                                                            return p.value(false)
+                                                                            return createReturnValue()
                                                                         },
                                                                     })),
                                                                     onNotExists: () => {
@@ -343,30 +345,32 @@ function createExpectedNodeHandler<TokenAnnotation, NonTokenAnnotation>(
     }
 }
 
-export function createDeserializer<TokenAnnotation, NonTokenAnnotation>(
+export function createDeserializer<TokenAnnotation, NonTokenAnnotation, ReturnType>(
     onExpectError: (error: astncore.ExpectError, annotation: TokenAnnotation) => void,
     onValidationError: (message: string, annotation: TokenAnnotation) => void,
-    callback: (metaData: null | t.Schema) => void
-): astncore.ValueHandler<TokenAnnotation, NonTokenAnnotation> {
+    callback: (metaData: null | t.Schema) => void,
+    createReturnValue: () => ReturnType
+): astncore.ValueHandler<TokenAnnotation, NonTokenAnnotation, ReturnType> {
     const componentTypes = createDictionary<t.ComponentType>({})
     let rootName: AnnotatedString<TokenAnnotation> | null = null
 
-    const context = astncore.createExpectContext<TokenAnnotation, NonTokenAnnotation>(
+    const context = astncore.createExpectContext<TokenAnnotation, NonTokenAnnotation, ReturnType>(
         $ => {
             onExpectError($.issue, $.annotation)
         },
         _warningMessage => {
             //ignore
         },
-        () => astncore.createDummyValueHandler(),
-        () => astncore.createDummyValueHandler(),
+        () => astncore.createDummyValueHandler(createReturnValue),
+        () => astncore.createDummyValueHandler(createReturnValue),
+        () => createReturnValue(),
         astncore.Severity.warning,
         astncore.OnDuplicateEntry.ignore,
         astncore.createSerializedString,
     )
     const resolveRegistry = new ResolveRegistry()
 
-    function wrap(handler: astncore.ValueHandler<TokenAnnotation, NonTokenAnnotation>): astncore.RequiredValueHandler<TokenAnnotation, NonTokenAnnotation> {
+    function wrap(handler: astncore.ValueHandler<TokenAnnotation, NonTokenAnnotation, ReturnType>): astncore.RequiredValueHandler<TokenAnnotation, NonTokenAnnotation, ReturnType> {
         return {
             exists: handler,
             missing: () => {
@@ -393,6 +397,7 @@ export function createDeserializer<TokenAnnotation, NonTokenAnnotation>(
                                         targetNode = node
                                     },
                                     resolveRegistry,
+                                    createReturnValue,
                                 ),
                             },
                             onEnd: () => {
@@ -416,7 +421,7 @@ export function createDeserializer<TokenAnnotation, NonTokenAnnotation>(
                             value: $.value,
                             annotation: $.annotation,
                         }
-                        return p.value(false)
+                        return createReturnValue()
                     },
                 })),
                 onNotExists: data => {

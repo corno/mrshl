@@ -1,4 +1,3 @@
-import * as p from "pareto"
 import * as astncore from "astn-core"
 import * as buildAPI from "../../../interfaces/buildAPI"
 import * as def from "../../../interfaces/typedParserDefinitions"
@@ -33,7 +32,7 @@ function addComments<TokenAnnotation>(_target: buildAPI.Comments, _annotation: T
     // }
 }
 
-export function createVerboseNodeDeserializer<TokenAnnotation, NonTokenAnnotation>(
+export function createVerboseNodeDeserializer<TokenAnnotation, NonTokenAnnotation, ReturnType>(
     nodeDefinition: def.NodeDefinition,
     keyPropertyDefinition: def.PropertyDefinition | null,
     nodeBuilder: buildAPI.Node,
@@ -42,7 +41,8 @@ export function createVerboseNodeDeserializer<TokenAnnotation, NonTokenAnnotatio
     onError: OnError<TokenAnnotation>,
     flagNonDefaultPropertiesFound: () => void,
     targetComments: buildAPI.Comments,
-): astncore.OnObject<TokenAnnotation, NonTokenAnnotation> {
+    createReturnValue: () => ReturnType,
+): astncore.OnObject<TokenAnnotation, NonTokenAnnotation, ReturnType> {
     return $n => {
 
         if ($n.data.type[0] !== "verbose type") {
@@ -84,7 +84,7 @@ export function createVerboseNodeDeserializer<TokenAnnotation, NonTokenAnnotatio
                             },
                         })
                     })
-                    return p.value(astncore.createDummyRequiredValueHandler())
+                    return astncore.createDummyRequiredValueHandler(createReturnValue)
                 } else {
 
                     const pp = {
@@ -105,7 +105,7 @@ export function createVerboseNodeDeserializer<TokenAnnotation, NonTokenAnnotatio
                                 },
                             })
                         })
-                        return p.value(astncore.createDummyRequiredValueHandler())
+                        return astncore.createDummyRequiredValueHandler(createReturnValue)
                     } else {
 
 
@@ -116,7 +116,7 @@ export function createVerboseNodeDeserializer<TokenAnnotation, NonTokenAnnotatio
                             sideEffectsAPIs: sideEffectAPI.PropertyHandler<TokenAnnotation>[],
                             onError: OnError<TokenAnnotation>,
                             flagNonDefaultPropertiesFound: () => void,
-                        ): astncore.ValueHandler<TokenAnnotation, NonTokenAnnotation> {
+                        ): astncore.ValueHandler<TokenAnnotation, NonTokenAnnotation, ReturnType> {
 
                             switch (propertyDefinition.type[0]) {
                                 case "collection": {
@@ -129,7 +129,12 @@ export function createVerboseNodeDeserializer<TokenAnnotation, NonTokenAnnotatio
 
                                             return {
                                                 array: $ => {
-                                                    return createUnexpectedArrayHandler(`expected a dictionary`, $.annotation, onError)
+                                                    return createUnexpectedArrayHandler(
+                                                        `expected a dictionary`,
+                                                        $.annotation,
+                                                        onError,
+                                                        createReturnValue,
+                                                    )
                                                 },
                                                 object: createDictionaryDeserializer(
                                                     $$,
@@ -138,15 +143,31 @@ export function createVerboseNodeDeserializer<TokenAnnotation, NonTokenAnnotatio
                                                     sideEffectsAPIs,
                                                     onError,
                                                     flagNonDefaultPropertiesFound,
+                                                    createReturnValue,
                                                 ),
                                                 taggedUnion: $ => {
-                                                    return createUnexpectedTaggedUnionHandler(`expected a dictionary`, $.annotation, onError)
+                                                    return createUnexpectedTaggedUnionHandler(
+                                                        `expected a dictionary`,
+                                                        $.annotation,
+                                                        onError,
+                                                        createReturnValue,
+                                                    )
                                                 },
                                                 simpleString: $ => {
-                                                    return createUnexpectedStringHandler(`expected a dictionary`, $.annotation, onError)
+                                                    return createUnexpectedStringHandler(
+                                                        `expected a dictionary`,
+                                                        $.annotation,
+                                                        onError,
+                                                        createReturnValue,
+                                                    )
                                                 },
                                                 multilineString: $ => {
-                                                    return createUnexpectedStringHandler(`expected a dictionary`, $.annotation, onError)
+                                                    return createUnexpectedStringHandler(
+                                                        `expected a dictionary`,
+                                                        $.annotation,
+                                                        onError,
+                                                        createReturnValue,
+                                                    )
                                                 },
                                             }
 
@@ -163,18 +184,39 @@ export function createVerboseNodeDeserializer<TokenAnnotation, NonTokenAnnotatio
                                                     sideEffectsAPIs,
                                                     onError,
                                                     flagNonDefaultPropertiesFound,
+                                                    createReturnValue,
                                                 ),
                                                 object: $ => {
-                                                    return createUnexpectedObjectHandler(`expected a list`, $.annotation, onError)
+                                                    return createUnexpectedObjectHandler(
+                                                        `expected a list`,
+                                                        $.annotation,
+                                                        onError,
+                                                        createReturnValue,
+                                                    )
                                                 },
                                                 taggedUnion: $ => {
-                                                    return createUnexpectedTaggedUnionHandler(`expected a list`, $.annotation, onError)
+                                                    return createUnexpectedTaggedUnionHandler(
+                                                        `expected a list`,
+                                                        $.annotation,
+                                                        onError,
+                                                        createReturnValue,
+                                                    )
                                                 },
                                                 simpleString: $ => {
-                                                    return createUnexpectedStringHandler(`expected a list`, $.annotation, onError)
+                                                    return createUnexpectedStringHandler(
+                                                        `expected a list`,
+                                                        $.annotation,
+                                                        onError,
+                                                        createReturnValue,
+                                                    )
                                                 },
                                                 multilineString: $ => {
-                                                    return createUnexpectedStringHandler(`expected a list`, $.annotation, onError)
+                                                    return createUnexpectedStringHandler(
+                                                        `expected a list`,
+                                                        $.annotation,
+                                                        onError,
+                                                        createReturnValue,
+                                                    )
                                                 },
                                             }
                                         }
@@ -198,6 +240,7 @@ export function createVerboseNodeDeserializer<TokenAnnotation, NonTokenAnnotatio
                                         onError,
                                         flagNonDefaultPropertiesFound,
                                         componentBuilder.comments,
+                                        createReturnValue,
                                     )
                                 }
                                 case "tagged union": {
@@ -206,10 +249,20 @@ export function createVerboseNodeDeserializer<TokenAnnotation, NonTokenAnnotatio
 
                                     return {
                                         array: $ => {
-                                            return createUnexpectedArrayHandler(`expected a tagged union`, $.annotation, onError)
+                                            return createUnexpectedArrayHandler(
+                                                `expected a tagged union`,
+                                                $.annotation,
+                                                onError,
+                                                createReturnValue,
+                                            )
                                         },
                                         object: $ => {
-                                            return createUnexpectedObjectHandler(`expected a tagged union`, $.annotation, onError)
+                                            return createUnexpectedObjectHandler(
+                                                `expected a tagged union`,
+                                                $.annotation,
+                                                onError,
+                                                createReturnValue,
+                                            )
                                         },
                                         taggedUnion: createTaggedUnionDeserializer(
                                             $,
@@ -218,12 +271,23 @@ export function createVerboseNodeDeserializer<TokenAnnotation, NonTokenAnnotatio
                                             sideEffectsAPIs,
                                             onError,
                                             flagNonDefaultPropertiesFound,
+                                            createReturnValue,
                                         ),
                                         simpleString: $ => {
-                                            return createUnexpectedStringHandler(`expected a tagged union`, $.annotation, onError)
+                                            return createUnexpectedStringHandler(
+                                                `expected a tagged union`,
+                                                $.annotation,
+                                                onError,
+                                                createReturnValue,
+                                            )
                                         },
                                         multilineString: $ => {
-                                            return createUnexpectedStringHandler(`expected a tagged union`, $.annotation, onError)
+                                            return createUnexpectedStringHandler(
+                                                `expected a tagged union`,
+                                                $.annotation,
+                                                onError,
+                                                createReturnValue,
+                                            )
                                         },
                                     }
                                 }
@@ -233,13 +297,28 @@ export function createVerboseNodeDeserializer<TokenAnnotation, NonTokenAnnotatio
 
                                     return {
                                         array: $ => {
-                                            return createUnexpectedArrayHandler(`expected a string`, $.annotation, onError)
+                                            return createUnexpectedArrayHandler(
+                                                `expected a string`,
+                                                $.annotation,
+                                                onError,
+                                                createReturnValue,
+                                            )
                                         },
                                         object: $ => {
-                                            return createUnexpectedObjectHandler(`expected a string`, $.annotation, onError)
+                                            return createUnexpectedObjectHandler(
+                                                `expected a string`,
+                                                $.annotation,
+                                                onError,
+                                                createReturnValue,
+                                            )
                                         },
                                         taggedUnion: $ => {
-                                            return createUnexpectedTaggedUnionHandler(`expected a string`, $.annotation, onError)
+                                            return createUnexpectedTaggedUnionHandler(
+                                                `expected a string`,
+                                                $.annotation,
+                                                onError,
+                                                createReturnValue,
+                                            )
                                         },
                                         multilineString: createMultilineStringDeserializer(
                                             $,
@@ -248,6 +327,7 @@ export function createVerboseNodeDeserializer<TokenAnnotation, NonTokenAnnotatio
                                             sideEffectsAPIs,
                                             onError,
                                             flagNonDefaultPropertiesFound,
+                                            createReturnValue,
                                         ),
                                         simpleString: createSimpleStringDeserializer(
                                             $,
@@ -256,6 +336,7 @@ export function createVerboseNodeDeserializer<TokenAnnotation, NonTokenAnnotatio
                                             sideEffectsAPIs,
                                             onError,
                                             flagNonDefaultPropertiesFound,
+                                            createReturnValue,
                                         ),
                                     }
                                 }
@@ -263,7 +344,7 @@ export function createVerboseNodeDeserializer<TokenAnnotation, NonTokenAnnotatio
                                     return assertUnreachable(propertyDefinition.type[0])
                             }
                         }
-                        return p.value(wrap(createPropertyDeserializer(
+                        return wrap(createPropertyDeserializer(
                             propertyDefinition,
                             key,
                             nodeBuilder,
@@ -281,7 +362,7 @@ export function createVerboseNodeDeserializer<TokenAnnotation, NonTokenAnnotatio
                             () => {
                                 pp.isNonDefault = true
                             },
-                        )))
+                        ))
                     }
                 }
 
@@ -321,7 +402,7 @@ export function createVerboseNodeDeserializer<TokenAnnotation, NonTokenAnnotatio
                         },
                     })
                 })
-                return p.value(null)
+                return createReturnValue()
             },
         }
     }

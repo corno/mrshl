@@ -6,7 +6,7 @@ import * as astncore from "astn-core"
 import { RootImp } from "../Root"
 import { InternalSchemaSpecification, InternalSchemaSpecificationType } from "../../../../etc/interfaces/InternalSchemaSpecification"
 import { serializeMetaData } from "./serializeMetaData"
-import { serializeRoot } from "./serializeInstanceData"
+import { SerializeOut, serializeRoot } from "./serializeInstanceData"
 
 function assertUnreachable<RT>(_x: never): RT {
     throw new Error("unreachable")
@@ -30,7 +30,10 @@ export function serialize(
         const treeBuilder = astncore.createStackedParser<null, null, null>(
             astncore.createDecoratedTree(
                 formatter.schemaFormatter,
-                astncore.createTreeConcatenator(writer),
+                astncore.createTreeConcatenator(
+                    writer,
+                    () => p.value(null)
+                ),
             ),
             _error => {
                 //
@@ -41,7 +44,7 @@ export function serialize(
                 //no need to return an value, we're only here for the side effects, so return 'null'
                 return p.success(null)
             },
-            astncore.createDummyValueHandler,
+            () => astncore.createDummyValueHandler(() => p.value(null)),
         )
         return p20.createArray(events).streamify().tryToConsume(null, treeBuilder).catch(error => {
             console.log(error)
@@ -75,6 +78,34 @@ export function serialize(
         }
 
     })().mapResult(() => {
-        return serializeEvents(serializeRoot(root, style))
+        const events: astncore.TreeBuilderEvent<null>[] = []
+
+        function createOut(): SerializeOut {
+            return {
+                sendBlock: (eventpair, callback) => {
+                    events.push({
+                        type: eventpair.open,
+                        annotation: null,
+                    })
+                    callback(createOut())
+                    events.push({
+                        type: eventpair.close,
+                        annotation: null,
+                    })
+                },
+                sendEvent: event => {
+                    events.push({
+                        type: event,
+                        annotation: null,
+                    })
+                },
+            }
+        }
+        serializeRoot(
+            root,
+            style,
+            createOut(),
+        )
+        return serializeEvents(events)
     })
 }

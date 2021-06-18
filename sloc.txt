@@ -1,0 +1,328 @@
+      0 .
+      0 ./.vscode
+      3 ./.vscode/settings.json
+     47 ./.vscode/launch.json
+      3 ./README.md
+      6 ./.travis.yml
+      2 ./tsbin/astnCompact.ts
+     88 ./tsbin/serialize.ts
+      2 ./tsbin/astnExpand.ts
+      4 ./src/index.ts
+      2 ./src/etc/index.ts
+     13 ./src/etc/interfaces/dataset.ts
+     11 ./src/etc/interfaces/InternalSchemaSpecification.ts
+      1 ./src/etc/deserialize/index.ts
+     59 ./src/etc/deserialize/implementation/createInternalSchemaHandler.ts
+    327 ./src/etc/deserialize/implementation/createVerboseNodeDeserializer.ts
+    518 ./src/etc/deserialize/implementation/shared.ts
+    679 ./src/etc/deserialize/implementation/createShorthandNodeDeserializer.ts
+     28 ./src/etc/deserialize/implementation/createDatasetDeserializer.ts
+     10 ./src/etc/deserialize/IDeserializedDataset.ts
+      1 ./src/interfaces/asyncAPI/index.ts
+    132 ./src/interfaces/asyncAPI/asyncAPI.ts
+      0 ./src/interfaces/asyncAPI/generic/index.ts
+     20 ./src/interfaces/asyncAPI/generic/subscribables.ts
+      5 ./src/interfaces/index.ts
+      1 ./src/interfaces/buildAPI/index.ts
+      9 ./src/interfaces/buildAPI/IDataset.ts
+     88 ./src/interfaces/buildAPI/builders.ts
+      5 ./src/interfaces/schemaPlugin/DiagnosticSeverity.ts
+     16 ./src/interfaces/schemaPlugin/SchemaAndSideEffects.ts
+     27 ./src/interfaces/schemaPlugin/internalSchemaDerializationError.ts
+      5 ./src/interfaces/DiagnosticSeverity.ts
+      2 ./src/interfaces/typedParserDefinitions/generics/index.ts
+      3 ./src/interfaces/typedParserDefinitions/generics/IReference.ts
+     12 ./src/interfaces/typedParserDefinitions/generics/IReadonlyDictionary.ts
+      1 ./src/interfaces/typedParserDefinitions/index.ts
+     65 ./src/interfaces/typedParserDefinitions/definitions.ts
+      0 ./src/interfaces/streamingValidationAPI/index.ts
+    157 ./src/interfaces/streamingValidationAPI/handlers.ts
+      5 ./src/interfaces/ExternalSchemaDeserializationError.ts
+      0 ./src/plugins/schemas/mrshl/metadata@0.1
+     40 ./src/plugins/schemas/mrshl/metadata@0.1/Reference.ts
+    102 ./src/plugins/schemas/mrshl/metadata@0.1/index.ts
+     82 ./src/plugins/schemas/mrshl/metadata@0.1/Dictionary.ts
+    116 ./src/plugins/schemas/mrshl/metadata@0.1/createTypedParserDefinitions.ts
+    491 ./src/plugins/schemas/mrshl/metadata@0.1/deserialize.ts
+    124 ./src/plugins/schemas/mrshl/metadata@0.1/NOPSideEffects.ts
+     65 ./src/plugins/schemas/mrshl/metadata@0.1/definitions.ts
+      0 ./src/plugins/schemas/mrshl/schemaschema@0.1
+    218 ./src/plugins/schemas/mrshl/schemaschema@0.1/sideEffects.ts
+     40 ./src/plugins/schemas/mrshl/schemaschema@0.1/Reference.ts
+      2 ./src/plugins/schemas/mrshl/schemaschema@0.1/index.ts
+     82 ./src/plugins/schemas/mrshl/schemaschema@0.1/Dictionary.ts
+    127 ./src/plugins/schemas/mrshl/schemaschema@0.1/createTypedParserDefinitions.ts
+    452 ./src/plugins/schemas/mrshl/schemaschema@0.1/createDeserializer.ts
+     90 ./src/plugins/schemas/mrshl/schemaschema@0.1/createSchemaAndSideEffects.ts
+    129 ./src/plugins/schemas/mrshl/schemaschema@0.1/schema.astn
+     73 ./src/plugins/schemas/mrshl/schemaschema@0.1/types.ts
+      1 ./src/implementations/ide-integration/index.ts
+     42 ./src/implementations/ide-integration/cloneFountainPenTypes.ts
+    283 ./src/implementations/ide-integration/createHoverTextsGenerator.ts
+    496 ./src/implementations/ide-integration/createCodeCompletionsGenerator.ts
+     20 ./src/implementations/getSchemaSchemaBuilder.ts
+     38 ./src/implementations/errorPrinters/printInternalSchemaError.ts
+      2 ./src/implementations/errorPrinters/index.ts
+     49 ./src/implementations/errorPrinters/printInternalSchemaDeserializationError.ts
+      0 ./src/implementations/inMemoryDataset/index.ts
+      7 ./src/implementations/inMemoryDataset/implementation/Global.ts
+      1 ./src/implementations/inMemoryDataset/implementation/serialize/index.ts
+    108 ./src/implementations/inMemoryDataset/implementation/serialize/serialize.ts
+    203 ./src/implementations/inMemoryDataset/implementation/serialize/serializeMetaData.ts
+    246 ./src/implementations/inMemoryDataset/implementation/serialize/serializeInstanceData.ts
+     40 ./src/implementations/inMemoryDataset/implementation/createDataset.ts
+     21 ./src/implementations/inMemoryDataset/implementation/internals/Comments.ts
+      7 ./src/implementations/inMemoryDataset/implementation/internals/index.ts
+     91 ./src/implementations/inMemoryDataset/implementation/internals/Value.ts
+     32 ./src/implementations/inMemoryDataset/implementation/internals/Component.ts
+    151 ./src/implementations/inMemoryDataset/implementation/internals/Collection.ts
+    123 ./src/implementations/inMemoryDataset/implementation/internals/ErrorManager.ts
+     22 ./src/implementations/inMemoryDataset/implementation/internals/Node.ts
+     88 ./src/implementations/inMemoryDataset/implementation/internals/StateGroup.ts
+    382 ./src/implementations/inMemoryDataset/implementation/buildAPIImplementation.ts
+     79 ./src/implementations/inMemoryDataset/implementation/initializeNode.ts
+      7 ./src/implementations/inMemoryDataset/implementation/genericimp/index.ts
+      8 ./src/implementations/inMemoryDataset/implementation/genericimp/raw.ts
+     95 ./src/implementations/inMemoryDataset/implementation/genericimp/Dictionary.ts
+     19 ./src/implementations/inMemoryDataset/implementation/genericimp/Maybe.ts
+     98 ./src/implementations/inMemoryDataset/implementation/genericimp/ReactiveCollection.ts
+     13 ./src/implementations/inMemoryDataset/implementation/genericimp/Mutable.ts
+    133 ./src/implementations/inMemoryDataset/implementation/genericimp/ReactiveValue.ts
+     16 ./src/implementations/inMemoryDataset/implementation/genericimp/Subscribers.ts
+     26 ./src/implementations/inMemoryDataset/implementation/genericimp/Array.ts
+     82 ./src/implementations/inMemoryDataset/implementation/changeControl/collection.ts
+    261 ./src/implementations/inMemoryDataset/implementation/changeControl/ChangeController.ts
+      4 ./src/implementations/inMemoryDataset/implementation/changeControl/index.ts
+     21 ./src/implementations/inMemoryDataset/implementation/changeControl/value.ts
+     53 ./src/implementations/inMemoryDataset/implementation/changeControl/stategroup.ts
+    433 ./src/implementations/inMemoryDataset/implementation/asyncAPIImplementation.ts
+     37 ./src/implementations/inMemoryDataset/implementation/Root.ts
+     72 ./src/implementations/inMemoryDataset/implementation/copyEntry.ts
+     71 ./src/implementations/makeNativeHTTPrequest.ts
+     28 ./src/implementations/parserSpecific/DeserializeASTNTextIntoDataset.ts
+      9 ./src/implementations/parserSpecific/index.ts
+     28 ./src/implementations/parserSpecific/createHoverTextFinder.ts
+    274 ./src/implementations/parserSpecific/deserializeTextIntoDataset.ts
+     53 ./src/implementations/parserSpecific/createCodeCompletionFinder.ts
+     43 ./src/implementations/parserSpecific/printDeserializeDiagnostic.ts
+     13 ./src/implementations/parserSpecific/ResolveExternalSchema.ts
+     12 ./src/implementations/parserSpecific/SchemaSchemaError.ts
+    231 ./src/implementations/parserSpecific/deserializeDataset.ts
+    125 ./src/implementations/parserSpecific/NOPSideEffects.ts
+     23 ./src/implementations/parserSpecific/DeserializationDiagnostic.ts
+     49 ./src/implementations/parserSpecific/createSchemaAndSideEffectsFromStream.ts
+     90 ./src/implementations/parserSpecific/createSchemaDeserializer.ts
+     12 ./src/implementations/parserSpecific/isPositionBeforeLocation.ts
+     54 ./src/implementations/parserSpecific/printLoadDocumentDiagnostic.ts
+     33 ./src/implementations/parserSpecific/deserializeSchemaFromStream.ts
+     35 ./src/implementations/parserSpecific/printSchemaSchemaError.ts
+     51 ./package.json
+    119 ./sloc.txt
+   4597 ./package-lock.json
+      9 ./schemaHost.ts
+      3 ./bin/astnExpand.mjs
+      3 ./bin/astnCompact.mjs
+    452 ./test/index.ts
+     28 ./test/schemas/mrshl/dummy-schema.astn-schema
+    129 ./test/schemas/mrshl/schemaschema@0.1
+     23 ./test/tests/valid number property/codecompletions.expected.json
+      0 ./test/tests/valid number property/issues.expected.json
+      3 ./test/tests/valid number property/output.expected.verbose.astn
+      1 ./test/tests/valid number property/output.expected.compact.astn
+     23 ./test/tests/valid number property/codecompletions.actual.json
+      2 ./test/tests/valid number property/data.astn.test
+      4 ./test/tests/valid number property/hovertexts.expected.json
+     16 ./test/tests/valid number property/schema.astn-schema
+   1343 ./test/tests/schemaschema as reference/codecompletions.expected.json
+      0 ./test/tests/schemaschema as reference/issues.expected.json
+    129 ./test/tests/schemaschema as reference/output.expected.verbose.astn
+     43 ./test/tests/schemaschema as reference/output.expected.compact.astn
+   1343 ./test/tests/schemaschema as reference/codecompletions.actual.json
+    127 ./test/tests/schemaschema as reference/data.astn.test
+    253 ./test/tests/schemaschema as reference/hovertexts.expected.json
+     51 ./test/tests/shorthand type with tagged union/codecompletions.expected.json
+      0 ./test/tests/shorthand type with tagged union/issues.expected.json
+     10 ./test/tests/shorthand type with tagged union/issues.actual.json
+     11 ./test/tests/shorthand type with tagged union/output.expected.verbose.astn
+      1 ./test/tests/shorthand type with tagged union/output.expected.compact.astn
+     22 ./test/tests/shorthand type with tagged union/hovertexts.actual.json
+     51 ./test/tests/shorthand type with tagged union/codecompletions.actual.json
+     11 ./test/tests/shorthand type with tagged union/output.actual.astn.test
+      0 ./test/tests/shorthand type with tagged union/data.astn.test
+     22 ./test/tests/shorthand type with tagged union/hovertexts.expected.json
+     70 ./test/tests/shorthand type with tagged union/schema.astn-schema
+      0 ./test/tests/empty external schema id/codecompletions.expected.json
+     19 ./test/tests/empty external schema id/issues.expected.json
+      0 ./test/tests/empty external schema id/output.expected.verbose.astn
+      0 ./test/tests/empty external schema id/output.expected.compact.astn
+      0 ./test/tests/empty external schema id/data.astn.test
+      0 ./test/tests/empty external schema id/hovertexts.expected.json
+     43 ./test/tests/schema in directory/codecompletions.expected.json
+     19 ./test/tests/schema in directory/issues.expected.json
+      4 ./test/tests/schema in directory/output.expected.verbose.astn
+      1 ./test/tests/schema in directory/output.expected.compact.astn
+     43 ./test/tests/schema in directory/codecompletions.actual.json
+      7 ./test/tests/schema in directory/data.astn.test
+      7 ./test/tests/schema in directory/hovertexts.expected.json
+     19 ./test/tests/schema in directory/schema.astn-schema
+      0 ./test/tests/invalid schema in directory: empty schema/expected.astn.test
+      0 ./test/tests/invalid schema in directory: empty schema/codecompletions.expected.json
+     10 ./test/tests/invalid schema in directory: empty schema/issues.expected.json
+      0 ./test/tests/invalid schema in directory: empty schema/output.expected.verbose.astn
+      0 ./test/tests/invalid schema in directory: empty schema/output.expected.compact.astn
+      0 ./test/tests/invalid schema in directory: empty schema/data.astn.test
+      0 ./test/tests/invalid schema in directory: empty schema/hovertexts.expected.json
+      2 ./test/tests/invalid schema in directory: empty schema/schema.astn-schema
+     43 ./test/tests/internal schema and schema in directory/codecompletions.expected.json
+     28 ./test/tests/internal schema and schema in directory/issues.expected.json
+     33 ./test/tests/internal schema and schema in directory/output.expected.verbose.astn
+     30 ./test/tests/internal schema and schema in directory/output.expected.compact.astn
+     43 ./test/tests/internal schema and schema in directory/codecompletions.actual.json
+     21 ./test/tests/internal schema and schema in directory/data.astn.test
+      7 ./test/tests/internal schema and schema in directory/hovertexts.expected.json
+     28 ./test/tests/internal schema and schema in directory/schema.astn-schema
+     43 ./test/tests/internal schema/codecompletions.expected.json
+     28 ./test/tests/internal schema/issues.expected.json
+     28 ./test/tests/internal schema/issues.actual.json
+     33 ./test/tests/internal schema/output.expected.verbose.astn
+     30 ./test/tests/internal schema/output.expected.compact.astn
+     43 ./test/tests/internal schema/codecompletions.actual.json
+     33 ./test/tests/internal schema/data.astn.test
+      7 ./test/tests/internal schema/hovertexts.expected.json
+      0 ./test/tests/invalid internal schema: empty schema/expected.astn.test
+      0 ./test/tests/invalid internal schema: empty schema/codecompletions.expected.json
+     19 ./test/tests/invalid internal schema: empty schema/issues.expected.json
+      0 ./test/tests/invalid internal schema: empty schema/output.expected.verbose.astn
+      0 ./test/tests/invalid internal schema: empty schema/output.expected.compact.astn
+      3 ./test/tests/invalid internal schema: empty schema/data.astn.test
+      0 ./test/tests/invalid internal schema: empty schema/hovertexts.expected.json
+   1343 ./test/tests/schemaschema in directory/codecompletions.expected.json
+     10 ./test/tests/schemaschema in directory/issues.expected.json
+    129 ./test/tests/schemaschema in directory/output.expected.verbose.astn
+     43 ./test/tests/schemaschema in directory/output.expected.compact.astn
+   1343 ./test/tests/schemaschema in directory/codecompletions.actual.json
+    127 ./test/tests/schemaschema in directory/data.astn.test
+    253 ./test/tests/schemaschema in directory/hovertexts.expected.json
+    127 ./test/tests/schemaschema in directory/schema.astn-schema
+      0 ./test/tests/invalid schema in directory: invalid reference to component type/expected.astn.test
+      0 ./test/tests/invalid schema in directory: invalid reference to component type/codecompletions.expected.json
+     10 ./test/tests/invalid schema in directory: invalid reference to component type/issues.expected.json
+      0 ./test/tests/invalid schema in directory: invalid reference to component type/output.expected.verbose.astn
+      0 ./test/tests/invalid schema in directory: invalid reference to component type/output.expected.compact.astn
+      0 ./test/tests/invalid schema in directory: invalid reference to component type/data.astn.test
+      0 ./test/tests/invalid schema in directory: invalid reference to component type/hovertexts.expected.json
+      2 ./test/tests/invalid schema in directory: invalid reference to component type/schema.astn-schema
+     20 ./test/tests/invalid schema reference/expected.astn.test
+     11 ./test/tests/invalid schema reference/codecompletions.expected.json
+     19 ./test/tests/invalid schema reference/issues.expected.json
+      1 ./test/tests/invalid schema reference/output.expected.verbose.astn
+      1 ./test/tests/invalid schema reference/output.expected.compact.astn
+     11 ./test/tests/invalid schema reference/codecompletions.actual.json
+      1 ./test/tests/invalid schema reference/data.astn.test
+      0 ./test/tests/invalid schema reference/hovertexts.expected.json
+     16 ./test/tests/invalid schema reference/schema.astn-schema
+     11 ./test/tests/empty shorthand type/codecompletions.expected.json
+     10 ./test/tests/empty shorthand type/issues.expected.json
+      1 ./test/tests/empty shorthand type/output.expected.verbose.astn
+      1 ./test/tests/empty shorthand type/output.expected.compact.astn
+      7 ./test/tests/empty shorthand type/codecompletions.actual.json
+      0 ./test/tests/empty shorthand type/data.astn.test
+      0 ./test/tests/empty shorthand type/hovertexts.expected.json
+     28 ./test/tests/empty shorthand type/schema.astn-schema
+     20 ./test/tests/invalid number property/expected.astn.test
+     23 ./test/tests/invalid number property/codecompletions.expected.json
+     10 ./test/tests/invalid number property/issues.expected.json
+      3 ./test/tests/invalid number property/output.expected.verbose.astn
+      1 ./test/tests/invalid number property/output.expected.compact.astn
+     23 ./test/tests/invalid number property/codecompletions.actual.json
+      3 ./test/tests/invalid number property/data.astn.test
+      4 ./test/tests/invalid number property/hovertexts.expected.json
+     16 ./test/tests/invalid number property/schema.astn-schema
+   1343 ./test/tests/schemaschema with schema in directory/codecompletions.expected.json
+     10 ./test/tests/schemaschema with schema in directory/issues.expected.json
+    129 ./test/tests/schemaschema with schema in directory/output.expected.verbose.astn
+     43 ./test/tests/schemaschema with schema in directory/output.expected.compact.astn
+   1343 ./test/tests/schemaschema with schema in directory/codecompletions.actual.json
+    127 ./test/tests/schemaschema with schema in directory/data.astn.test
+    253 ./test/tests/schemaschema with schema in directory/hovertexts.expected.json
+    127 ./test/tests/schemaschema with schema in directory/schema.astn-schema
+     39 ./test/tests/schema reference/codecompletions.expected.json
+     46 ./test/tests/schema reference/issues.expected.json
+      2 ./test/tests/schema reference/output.expected.verbose.astn
+      2 ./test/tests/schema reference/output.expected.compact.astn
+     39 ./test/tests/schema reference/codecompletions.actual.json
+      7 ./test/tests/schema reference/data.astn.test
+      7 ./test/tests/schema reference/hovertexts.expected.json
+      0 ./test/tests/missing schema/expected.astn.test
+      0 ./test/tests/missing schema/codecompletions.expected.json
+     10 ./test/tests/missing schema/issues.expected.json
+      0 ./test/tests/missing schema/output.expected.verbose.astn
+      0 ./test/tests/missing schema/output.expected.compact.astn
+      0 ./test/tests/missing schema/data.astn.test
+      0 ./test/tests/missing schema/hovertexts.expected.json
+    512 ./test/tests/schema in shorthand type/codecompletions.expected.json
+      0 ./test/tests/schema in shorthand type/issues.expected.json
+     10 ./test/tests/schema in shorthand type/issues.actual.json
+     37 ./test/tests/schema in shorthand type/output.expected.verbose.astn
+     13 ./test/tests/schema in shorthand type/output.expected.compact.astn
+    121 ./test/tests/schema in shorthand type/hovertexts.actual.json
+    512 ./test/tests/schema in shorthand type/codecompletions.actual.json
+     37 ./test/tests/schema in shorthand type/output.actual.astn.test
+     21 ./test/tests/schema in shorthand type/data.astn.test
+    121 ./test/tests/schema in shorthand type/hovertexts.expected.json
+    125 ./test/tests/schema in shorthand type/schema.astn-schema
+     20 ./test/tests/invalid option/expected.astn.test
+     25 ./test/tests/invalid option/codecompletions.expected.json
+     19 ./test/tests/invalid option/issues.expected.json
+      1 ./test/tests/invalid option/output.expected.verbose.astn
+      1 ./test/tests/invalid option/output.expected.compact.astn
+     25 ./test/tests/invalid option/codecompletions.actual.json
+      3 ./test/tests/invalid option/data.astn.test
+      4 ./test/tests/invalid option/hovertexts.expected.json
+     19 ./test/tests/invalid option/schema.astn-schema
+     23 ./test/tests/shorthand type with too many and wrong elements/codecompletions.expected.json
+     37 ./test/tests/shorthand type with too many and wrong elements/issues.expected.json
+     37 ./test/tests/shorthand type with too many and wrong elements/issues.actual.json
+      1 ./test/tests/shorthand type with too many and wrong elements/output.expected.verbose.astn
+      1 ./test/tests/shorthand type with too many and wrong elements/output.expected.compact.astn
+     19 ./test/tests/shorthand type with too many and wrong elements/codecompletions.actual.json
+      0 ./test/tests/shorthand type with too many and wrong elements/data.astn.test
+      7 ./test/tests/shorthand type with too many and wrong elements/hovertexts.expected.json
+     28 ./test/tests/shorthand type with too many and wrong elements/schema.astn-schema
+      0 ./test/tests/invalid embedded schema: incomplete property 'bar'/codecompletions.expected.json
+    109 ./test/tests/invalid embedded schema: incomplete property 'bar'/issues.expected.json
+    109 ./test/tests/invalid embedded schema: incomplete property 'bar'/issues.actual.json
+     24 ./test/tests/invalid embedded schema: incomplete property 'bar'/output.expected.verbose.astn
+     24 ./test/tests/invalid embedded schema: incomplete property 'bar'/output.expected.compact.astn
+     20 ./test/tests/invalid embedded schema: incomplete property 'bar'/data.astn.test
+      0 ./test/tests/invalid embedded schema: incomplete property 'bar'/hovertexts.expected.json
+     17 ./test/tests/missing property value/codecompletions.expected.json
+     19 ./test/tests/missing property value/issues.expected.json
+     18 ./test/tests/missing property value/output.expected.verbose.astn
+     18 ./test/tests/missing property value/output.expected.compact.astn
+     17 ./test/tests/missing property value/codecompletions.actual.json
+     17 ./test/tests/missing property value/data.astn.test
+      0 ./test/tests/missing property value/hovertexts.expected.json
+     17 ./test/tests/incomplete shorthand type/codecompletions.expected.json
+     10 ./test/tests/incomplete shorthand type/issues.expected.json
+      3 ./test/tests/incomplete shorthand type/output.expected.verbose.astn
+      1 ./test/tests/incomplete shorthand type/output.expected.compact.astn
+     13 ./test/tests/incomplete shorthand type/codecompletions.actual.json
+      0 ./test/tests/incomplete shorthand type/data.astn.test
+      4 ./test/tests/incomplete shorthand type/hovertexts.expected.json
+     28 ./test/tests/incomplete shorthand type/schema.astn-schema
+      0 ./test/tests/empty/codecompletions.expected.json
+     19 ./test/tests/empty/issues.expected.json
+      0 ./test/tests/empty/output.expected.verbose.astn
+      0 ./test/tests/empty/output.expected.compact.astn
+      0 ./test/tests/empty/data.astn.test
+      0 ./test/tests/empty/hovertexts.expected.json
+     51 ./test/parked_tests/lots of comments/codecompletions.expected.json
+     10 ./test/parked_tests/lots of comments/issues.expected.json
+     25 ./test/parked_tests/lots of comments/events.expected.json
+     49 ./test/parked_tests/lots of comments/data.astn.test
+     10 ./test/parked_tests/lots of comments/hovertexts.expected.json
+     65 ./tsconfig.json
+      2 ./.gitignore
+    172 ./.eslintrc.js
+  29112 total

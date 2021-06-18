@@ -13,8 +13,8 @@ export function createSchemaAndSideEffects<Annotation>(
 
     function createInternalSchemaHandler<Result>(
         onSchemaError: (error: InternalSchemaError, annotation: Annotation) => void,
-        onObject: astncore.OnObject<Annotation, null> | null,
-        onSimpleValue: astncore.OnSimpleString<Annotation> | null,
+        onObject: astncore.OnObject<Annotation, null, p.IValue<null>> | null,
+        onSimpleValue: astncore.OnSimpleString<Annotation, p.IValue<null>> | null,
         onEnd: () => p.IUnsafeValue<Result, null>
     ): astncore.ITreeBuilder<Annotation, Result, null> {
         return astncore.createStackedParser(
@@ -23,33 +23,33 @@ export function createSchemaAndSideEffects<Annotation>(
                     exists: {
                         array: data => {
                             onSchemaError(["unexpected schema format", { found: ["array"] }], data.annotation)
-                            return astncore.createDummyArrayHandler()
+                            return astncore.createDummyArrayHandler(() => p.value(null))
                         },
                         object: onObject !== null
                             ? onObject
                             : data => {
                                 onSchemaError(["unexpected schema format", { found: ["object"] }], data.annotation)
-                                return astncore.createDummyObjectHandler()
+                                return astncore.createDummyObjectHandler(() => p.value(null))
                             },
                         multilineString: data => {
                             onSchemaError(["unexpected schema format", { found: ["multiline string"] }], data.annotation)
-                            return p.value(false)
+                            return p.value(null)
                         },
                         simpleString: onSimpleValue !== null
                             ? onSimpleValue
                             : data => {
                                 onSchemaError(["unexpected schema format", { found: ["simple value"] }], data.annotation)
-                                return p.value(false)
+                                return p.value(null)
                             },
                         taggedUnion: data => {
                             onSchemaError(["unexpected schema format", { found: ["tagged union"] }], data.annotation)
                             return {
-                                option: (): astncore.RequiredValueHandler<Annotation, null> => astncore.createDummyRequiredValueHandler(),
+                                option: (): astncore.RequiredValueHandler<Annotation, null, p.IValue<null>> => astncore.createDummyRequiredValueHandler(() => p.value(null)),
                                 missingOption: (): void => {
                                     //
                                 },
                                 end: () => {
-                                    //
+                                    return p.value(null)
                                 },
                             }
                         },
@@ -63,7 +63,7 @@ export function createSchemaAndSideEffects<Annotation>(
                 onSchemaError(["stacked", error.type], error.annotation)
             },
             onEnd,
-            astncore.createDummyValueHandler,
+            () => astncore.createDummyValueHandler(() => p.value(null)),
         )
     }
     return createInternalSchemaHandler(
@@ -71,7 +71,7 @@ export function createSchemaAndSideEffects<Annotation>(
             onSchemaError(["internal schema", error], range)
             foundError = true
         },
-        createDeserializer<Annotation, null>(
+        createDeserializer<Annotation, null, p.IValue<null>>(
             (error, annotation) => {
                 onSchemaError(["expect", error], annotation)
             },
@@ -86,7 +86,8 @@ export function createSchemaAndSideEffects<Annotation>(
                         createStreamingValidator: () => createNOPSideEffects(),
                         //createAsyncValidator: () => createNOPSideEffects(),
                     }
-            }
+            },
+            () => p.value(null),
         ),
         null,
         () => {
