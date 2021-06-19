@@ -1,14 +1,14 @@
 import * as fs from "fs"
-import * as stream from "stream"
 import * as p from "pareto"
 import * as p20 from "pareto-20"
 import * as db5 from "../src"
 import * as path from "path"
 import { schemaHost } from "../schemaHost"
+import { SerializationStyle } from "../src/etc/interfaces/dataset"
 
-export function serialize(style: ["verbose"] | ["shorthand"]): void {
+export function serialize(style: SerializationStyle): void {
 
-    const [, , sourcePath, targetPath] = process.argv
+    const [, , sourcePath] = process.argv
 
 
     if (sourcePath === undefined) {
@@ -17,11 +17,6 @@ export function serialize(style: ["verbose"] | ["shorthand"]): void {
     }
 
     const dataAsString = fs.readFileSync(sourcePath, { encoding: "utf-8" })
-
-    const ws: stream.Writable = targetPath !== undefined
-        ? fs.createWriteStream(targetPath, { encoding: "utf-8" })
-        : process.stdout
-
 
     function readFileFromFileSystem(
         dir: string,
@@ -42,7 +37,7 @@ export function serialize(style: ["verbose"] | ["shorthand"]): void {
                             //the path is a directory
                             onError(["not found", {}])
                         } else {
-                            console.log(err.code)
+                            console.error(err.code)
                             onError(["other", { description: err.message }])
                         }
                     }
@@ -76,7 +71,7 @@ export function serialize(style: ["verbose"] | ["shorthand"]): void {
         return dataset.dataset.serialize(
             dataset.internalSchemaSpecification,
             style,
-            $ => ws.write($),
+            $ => process.stdout.write($),
         )
     }).catch(
         _e => {
@@ -84,6 +79,6 @@ export function serialize(style: ["verbose"] | ["shorthand"]): void {
             return p.value(null)
         }
     ).handle(() => {
-        ws.end()
+        process.stdout.end()
     })
 }

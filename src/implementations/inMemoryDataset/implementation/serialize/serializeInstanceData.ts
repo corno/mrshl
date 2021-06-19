@@ -2,6 +2,7 @@ import * as astncore from "astn-core"
 import { RootImp } from "../Root"
 import { Node } from "../internals/Node"
 import { NodeDefinition, PropertyDefinition } from "../../../../interfaces/typedParserDefinitions"
+import { SerializationStyle } from "../../../../etc/interfaces/dataset"
 
 function assertUnreachable<RT>(_x: never): RT {
     throw new Error("unreachable")
@@ -64,7 +65,7 @@ export type SerializeOut = Out<astncore.TreeBuilderEventType, {
 
 export function serializeRoot(
     root: RootImp,
-    style: ["verbose"] | ["shorthand"],
+    style: SerializationStyle,
     out: SerializeOut
 ): void {
     // function out.sendEventBlock(
@@ -153,8 +154,16 @@ export function serializeRoot(
                 }
                 case "tagged union": {
                     const $ = propDef.type[1]
-                    if (style[0] === "verbose") {
-                        out.sendEvent(["tagged union", {}])
+                    switch (style[0]) {
+                        case "expanded": {
+                            out.sendEvent(["tagged union", {}])
+                            break
+                        }
+                        case "compact": {
+                            break
+                        }
+                        default:
+                            assertUnreachable(style[0])
                     }
                     const sg = node.taggedUnions.getUnsafe(key)
                     out.sendEvent(["simple string", {
@@ -182,43 +191,16 @@ export function serializeRoot(
             }
 
         }
-        if (style[0] === "verbose") {
-            out.sendBlock(
-                {
-                    open: ["open object", {
-                        type: ["verbose type"],
-                    }],
-                    close:
-                        ["close object", {
-                            //
-                        }],
-                },
-                out => {
-                    definition.properties.forEach((propDef, key) => {
-                        if (key === keyProp) {
-                            //don't serialize the key property
-                            return
-                        }
-                        if (propertyIsDefault(node, key, propDef)) {
-                            return
-                        }
-                        out.sendEvent(["simple string", {
-                            value: key,
-                            wrapping: ["apostrophe", {}],
-                        }])
-                        serializeProperty(key, propDef, out)
-                    })
-                },
-            )
-        } else {
-            if (isOuterNode) {
+        switch (style[0]) {
+            case "expanded": {
+                const $ = style[1]
                 out.sendBlock(
                     {
-                        open: ["open array", {
-                            type: ["shorthand type"],
+                        open: ["open object", {
+                            type: ["verbose type"],
                         }],
                         close:
-                            ["close array", {
+                            ["close object", {
                                 //
                             }],
                     },
@@ -228,19 +210,84 @@ export function serializeRoot(
                                 //don't serialize the key property
                                 return
                             }
+                            if ($.omitPropertiesWithDefaultValues && propertyIsDefault(node, key, propDef)) {
+                                return
+                            }
+                            out.sendEvent(["simple string", {
+                                value: key,
+                                wrapping: ["apostrophe", {}],
+                            }])
                             serializeProperty(key, propDef, out)
                         })
                     },
                 )
-            } else {
-                definition.properties.forEach((propDef, key) => {
-                    if (key === keyProp) {
-                        //don't serialize the key property
-                        return
-                    }
-                    serializeProperty(key, propDef, out)
-                })
+                break
             }
+            case "compact": {
+                if (isOuterNode) {
+                    out.sendBlock(
+                        {
+                            open: ["open array", {
+                                type: ["shorthand type"],
+                            }],
+                            close:
+                                ["close array", {
+                                    //
+                                }],
+                        },
+                        out => {
+                            definition.properties.forEach((propDef, key) => {
+                                if (key === keyProp) {
+                                    //don't serialize the key property
+                                    return
+                                }
+                                serializeProperty(key, propDef, out)
+                            })
+                        },
+                    )
+                } else {
+                    definition.properties.forEach((propDef, key) => {
+                        if (key === keyProp) {
+                            //don't serialize the key property
+                            return
+                        }
+                        serializeProperty(key, propDef, out)
+                    })
+                }
+                break
+            }
+            case "expanded": {
+                out.sendBlock(
+                    {
+                        open: ["open object", {
+                            type: ["verbose type"],
+                        }],
+                        close:
+                            ["close object", {
+                                //
+                            }],
+                    },
+                    out => {
+                        definition.properties.forEach((propDef, key) => {
+                            if (key === keyProp) {
+                                //don't serialize the key property
+                                return
+                            }
+                            if (propertyIsDefault(node, key, propDef)) {
+                                return
+                            }
+                            out.sendEvent(["simple string", {
+                                value: key,
+                                wrapping: ["apostrophe", {}],
+                            }])
+                            serializeProperty(key, propDef, out)
+                        })
+                    },
+                )
+                break
+            }
+            default:
+                assertUnreachable(style[0])
         }
     }
     serializeNode(root.rootNode, root.schema["root type"].get().node, null, true, out)

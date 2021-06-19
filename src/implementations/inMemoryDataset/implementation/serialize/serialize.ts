@@ -7,6 +7,7 @@ import { RootImp } from "../Root"
 import { InternalSchemaSpecification, InternalSchemaSpecificationType } from "../../../../etc/interfaces/InternalSchemaSpecification"
 import { serializeMetaData } from "./serializeMetaData"
 import { SerializeOut, serializeRoot } from "./serializeInstanceData"
+import { SerializationStyle } from "../../../../etc/interfaces/dataset"
 
 function assertUnreachable<RT>(_x: never): RT {
     throw new Error("unreachable")
@@ -15,7 +16,7 @@ function assertUnreachable<RT>(_x: never): RT {
 export function serialize(
     root: RootImp,
     internalSchemaSpecification: InternalSchemaSpecification,
-    style: ["verbose"] | ["shorthand"],
+    style: SerializationStyle,
     writer: (str: string) => void,
 ): p.IValue<null> {
     // const rootComments = dataset.rootComments.getComments()

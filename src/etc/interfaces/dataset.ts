@@ -3,12 +3,16 @@ import * as async from "../../interfaces/asyncAPI/asyncAPI"
 import * as build from "../../interfaces/buildAPI/IDataset"
 import { InternalSchemaSpecification } from "./InternalSchemaSpecification"
 
+export type SerializationStyle =
+    | ["expanded", { omitPropertiesWithDefaultValues: boolean }]
+    | ["compact"]
+
 export type IDataset = {
-	build: build.IDataset
-	async: async.Dataset
+    build: build.IDataset
+    async: async.Dataset
     serialize: (
         iss: InternalSchemaSpecification,
-        style: ["verbose"] | ["shorthand"],
+        style: SerializationStyle,
         writer: (str: string) => void,
     ) => p.IValue<null>
 }

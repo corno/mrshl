@@ -173,8 +173,8 @@ export function directoryTests(): void {
             const actualIssues: Issues = []
             const actualCodeCompletions: CodeCompletions = {}
             const actualHoverTexts: HoverTexts = {}
-            const verbose: string[] = []
-            const shorthand: string[] = []
+            const expanded: string[] = []
+            const compact: string[] = []
 
             // const schemaReferenceResolver = (reference: string) => {
             //     const schemasDir = "./test/schemas"
@@ -313,13 +313,13 @@ export function directoryTests(): void {
                 ).mapResult<null>(dataset => {
                     return dataset.dataset.serialize(
                         dataset.internalSchemaSpecification,
-                        ["verbose"],
-                        $ => verbose.push($),
+                        ["expanded", { omitPropertiesWithDefaultValues: true }],
+                        $ => expanded.push($),
                     ).mapResult(() => {
                         return dataset.dataset.serialize(
                             dataset.internalSchemaSpecification,
-                            ["shorthand"],
-                            $ => shorthand.push($),
+                            ["compact"],
+                            $ => compact.push($),
                         )
                     })
                 }).catch(
@@ -341,16 +341,16 @@ export function directoryTests(): void {
                         "output",
                         "verbose.astn",
                         str => str,
-                        verbose.join(""),
-                        verbose.join(""),
+                        expanded.join(""),
+                        expanded.join(""),
                     )
                     deepEqual(
                         testDirPath,
                         "output",
                         "compact.astn",
                         str => str,
-                        shorthand.join(""),
-                        shorthand.join(""),
+                        compact.join(""),
+                        compact.join(""),
                     )
                     deepEqualJSON(testDirPath, "codecompletions", actualCodeCompletions)
                     deepEqualJSON(testDirPath, "hovertexts", actualHoverTexts)

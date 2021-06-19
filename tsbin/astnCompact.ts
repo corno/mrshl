@@ -1,3 +1,3 @@
 import { serialize } from "./serialize";
 
-serialize(["shorthand"])
+serialize(["compact"])
