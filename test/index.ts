@@ -90,13 +90,12 @@ function deepEqual(
     const expectedPath = path.join(testDirPath, `${name}.expected.${extension}`)
 
     //fs.writeFileSync(expectedPath, actualAsString)
-
+    const actualPath = path.join(".", testDirPath, `${name}.actual.${extension}`)
 
     const expectedAsString = fs.readFileSync(expectedPath, { encoding: "utf-8" })
     try {
         chai.assert.deepEqual(actual, parseExpected(expectedAsString))
     } catch (e) {
-        const actualPath = path.join(".", testDirPath, `${name}.actual.${extension}`)
         fs.writeFileSync(actualPath, actualAsString)
         throw e
     }
