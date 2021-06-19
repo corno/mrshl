@@ -18,7 +18,9 @@
 		"afterToken": null
 	},
 	"1:18-19": {
-		"inToken": null,
+		"inToken": [
+			" \"\" \"\""
+		],
 		"afterToken": null
 	}
 }

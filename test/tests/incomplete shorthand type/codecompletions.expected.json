@@ -12,7 +12,9 @@
 		"afterToken": null
 	},
 	"1:8-9": {
-		"inToken": null,
+		"inToken": [
+			" \"\" \"\""
+		],
 		"afterToken": null
 	}
 }

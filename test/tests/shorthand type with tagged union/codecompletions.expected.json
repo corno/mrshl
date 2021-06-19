@@ -46,7 +46,9 @@
 		"afterToken": null
 	},
 	"1:41-42": {
-		"inToken": null,
+		"inToken": [
+			" \"\" \"this is default\"  'e'  \"\" \"\""
+		],
 		"afterToken": null
 	}
 }

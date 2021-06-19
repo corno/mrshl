@@ -6,7 +6,9 @@
 		]
 	},
 	"1:3-4": {
-		"inToken": null,
+		"inToken": [
+			" \"\" \"\""
+		],
 		"afterToken": null
 	}
 }

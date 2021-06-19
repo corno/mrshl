@@ -410,11 +410,14 @@ function createCodeCompletionForNodeGenerator<Annotation>(
                     onProperty: () => {
                         return createCodeCompletionsForPropertyGenerator(onToken)
                     },
-                    onShorthandTypeClose: $ => {
-                        if ($.annotation.annotation !== null) {
+                    onShorthandTypeClose: $$ => {
+                        if ($$.annotation.annotation !== null) {
                             onToken(
-                                $.annotation.annotation,
-                                null,
+                                $$.annotation.annotation,
+                                serializeAlternatives(createCodeCompletionForShorthandNode(
+                                    $.annotation.nodeDefinition,
+                                    $.annotation.keyPropertyDefinition
+                                )),
                                 null,
                                 //"onShorthandTypeClose",
                             )
