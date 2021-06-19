@@ -2,7 +2,7 @@
 	"1:9-10": {
 		"inToken": null,
 		"afterToken": [
-			"\n    'y':\n"
+			"\n    'y': \n"
 		]
 	},
 	"2:1-2": {

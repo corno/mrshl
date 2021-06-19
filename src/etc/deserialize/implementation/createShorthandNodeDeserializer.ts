@@ -568,8 +568,8 @@ export function createShorthandNodeDeserializer<TokenAnnotation, NonTokenAnnotat
 
                     const optionName = $$.data.value
                     const option = $$$.options.get(optionName)
-                    const stateGroup = nextProperty.nodeBuilder.getTaggedUnion(nextProperty.name)
-                    addComments(stateGroup.comments, $$.annotation)
+                    const taggedUnion = nextProperty.nodeBuilder.getTaggedUnion(nextProperty.name)
+                    addComments(taggedUnion.comments, $$.annotation)
 
                     const tuHandlers = nextProperty.nodeHandlers.map(s => {
                         return s.onProperty({
@@ -579,6 +579,7 @@ export function createShorthandNodeDeserializer<TokenAnnotation, NonTokenAnnotat
                             },
                         }).onTaggedUnion({
                             annotation: {
+                                definition: $$$,
                                 annotation: null,
                             },
                         })
@@ -599,8 +600,8 @@ export function createShorthandNodeDeserializer<TokenAnnotation, NonTokenAnnotat
                         })
                         return createReturnValue()
                     } else {
-                        const state = stateGroup.setState(optionName, errorMessage => onError(errorMessage, $$.annotation, DiagnosticSeverity.error))
-                        addComments(stateGroup.comments, $$.annotation)
+                        const state = taggedUnion.setState(optionName, errorMessage => onError(errorMessage, $$.annotation, DiagnosticSeverity.error))
+                        addComments(taggedUnion.comments, $$.annotation)
                         if ($$$["default option"].get() !== option) {
                             flagNonDefaultPropertiesFound()
                         }
@@ -618,7 +619,7 @@ export function createShorthandNodeDeserializer<TokenAnnotation, NonTokenAnnotat
                                 })
                             }),
                             state: state,
-                            stateGroup: stateGroup,
+                            stateGroup: taggedUnion,
                         }
                     }
                     return createReturnValue()

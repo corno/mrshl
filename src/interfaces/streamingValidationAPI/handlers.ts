@@ -67,6 +67,7 @@ export interface PropertyHandler<Annotation> {
     onComponent(): NodeHandler<Annotation>
     onTaggedUnion($: {
         annotation: {
+            definition: def.TaggedUnionDefinition
             annotation: Annotation | null //is null for shorthand notations
         }
     }): TaggedUnionHandler<Annotation>

@@ -16,7 +16,10 @@
 		"afterToken": null
 	},
 	"2:12-15": {
-		"inToken": null,
+		"inToken": [
+			"a",
+			"b"
+		],
 		"afterToken": null
 	},
 	"3:1-2": {

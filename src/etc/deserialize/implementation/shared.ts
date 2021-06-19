@@ -334,6 +334,7 @@ export function createTaggedUnionDeserializer<TokenAnnotation, NonTokenAnnotatio
                     sideEffectsAPIs.map(s => {
                         return s.onTaggedUnion({
                             annotation: {
+                                definition: $,
                                 annotation: $$.annotation,
                             },
                         })

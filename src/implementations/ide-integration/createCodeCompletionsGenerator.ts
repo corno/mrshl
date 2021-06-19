@@ -327,7 +327,9 @@ function createCodeCompletionsForPropertyGenerator<Annotation>(
                 onUnexpectedOption: $$ => {
                     onToken(
                         $$.annotation.annotation,
-                        null,
+                        () => {
+                            return $.annotation.definition.options.getKeys()
+                        },
                         null,
                         //"onTaggedUnion",
                     )
