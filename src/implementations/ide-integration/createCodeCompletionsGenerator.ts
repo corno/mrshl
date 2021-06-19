@@ -19,7 +19,7 @@ function serialize(inlineSegment: fp.InlineSegment): string {
             fp.line(inlineSegment),
         ],
         "    ",
-        true,
+        false,
         codeCompletion => {
             out.push(codeCompletion)
         }
@@ -392,14 +392,17 @@ function createCodeCompletionForNodeGenerator<Annotation>(
 ): streamVal.NodeHandler<Annotation> {
     return {
         onShorthandTypeOpen: $ => {
+            function serialize() {
+                return serializeAlternatives(createCodeCompletionForShorthandNode(
+                    $.annotation.nodeDefinition,
+                    $.annotation.keyPropertyDefinition
+                ))
+            }
             if ($.annotation.annotation !== null) {
                 onToken(
                     $.annotation.annotation,
                     null,
-                    serializeAlternatives(createCodeCompletionForShorthandNode(
-                        $.annotation.nodeDefinition,
-                        $.annotation.keyPropertyDefinition
-                    )),
+                    serialize(),
                     //"onShorthandTypeOpen",
                 )
             }
@@ -414,10 +417,7 @@ function createCodeCompletionForNodeGenerator<Annotation>(
                         if ($$.annotation.annotation !== null) {
                             onToken(
                                 $$.annotation.annotation,
-                                serializeAlternatives(createCodeCompletionForShorthandNode(
-                                    $.annotation.nodeDefinition,
-                                    $.annotation.keyPropertyDefinition
-                                )),
+                                serialize(),
                                 null,
                                 //"onShorthandTypeClose",
                             )
