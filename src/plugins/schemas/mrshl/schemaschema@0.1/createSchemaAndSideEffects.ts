@@ -61,6 +61,7 @@ export function createInternalSchemaBuilder<Annotation>(
             () => astncore.createDummyValueHandler(() => p.value(null))
         )
     }
+
     return createInternalSchemaHandler(
         (error, annotation) => {
             onSchemaError(["internal schema", error], annotation)

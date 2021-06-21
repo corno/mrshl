@@ -178,7 +178,7 @@ export function deserializeTextIntoDataset(
 		if (!diagnosticFound) {
 			addDiagnostic(
 				['schema retrieval', {
-					issue: [error.problem],
+					issue: error.problem === "missing schema" ? [ "missing schema"] : ["no valid schema"],
 				}],
 				DiagnosticSeverity.error,
 			)

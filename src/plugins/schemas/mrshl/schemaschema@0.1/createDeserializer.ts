@@ -110,7 +110,7 @@ function createExpectedNodeHandler<TokenAnnotation, NonTokenAnnotation, ReturnTy
 
                                                                                         const assertedTargetKeyProperty = assertNotNull(targetKeyProperty)
                                                                                         targetCollectionType = ["dictionary", {
-                                                                                            "key propertyx": createReference(
+                                                                                            "key property": createReference(
                                                                                                 assertedTargetKeyProperty.value,
                                                                                                 assertedTargetNode.properties,
                                                                                                 resolveRegistry,

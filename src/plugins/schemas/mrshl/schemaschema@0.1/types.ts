@@ -1,9 +1,5 @@
 import * as def from "../../../../interfaces/typedParserDefinitions"
 
-export interface X {
-    x: string
-}
-
 export type CollectionType =
     | ["dictionary", Dictionary]
     | ["list", List]
@@ -22,7 +18,7 @@ export type ComponentType = {
 }
 
 export type Dictionary = {
-    readonly "key propertyx": def.IReference<Property>
+    readonly "key property": def.IReference<Property>
 }
 
 export type List = {

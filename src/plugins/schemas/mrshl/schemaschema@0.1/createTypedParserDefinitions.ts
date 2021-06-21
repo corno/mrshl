@@ -34,11 +34,11 @@ function convertToGenericNode(
                                 switch ($.type[0]) {
                                     case "dictionary": {
                                         const $$ = $.type[1]
-                                        const targetNode = convertToGenericNode($.node, componentTypes, $$["key propertyx"].get(), resolveRegistry)
+                                        const targetNode = convertToGenericNode($.node, componentTypes, $$["key property"].get(), resolveRegistry)
                                         return ["dictionary", {
                                             "node": targetNode,
-                                            "key property": createReference($$["key propertyx"].name, targetNode.properties, resolveRegistry, keys => {
-                                                throw new Error(`UNEXPECTED: KEY Property not found: ${$$["key propertyx"].name}, available keys: ${keys.join()}`);
+                                            "key property": createReference($$["key property"].name, targetNode.properties, resolveRegistry, keys => {
+                                                throw new Error(`UNEXPECTED: KEY Property not found: ${$$["key property"].name}, available keys: ${keys.join()}`);
                                             }),
                                         }]
                                     }
