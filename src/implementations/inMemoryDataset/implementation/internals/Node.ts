@@ -1,5 +1,5 @@
 import * as g from "../genericimp"
-import * as def from "../../../../interfaces/typedParserDefinitions"
+import * as def from "../../../../deserialize/interfaces/typedParserDefinitions"
 import { Collection } from "./Collection"
 import { Component } from "./Component"
 import { StateGroup } from "./StateGroup"

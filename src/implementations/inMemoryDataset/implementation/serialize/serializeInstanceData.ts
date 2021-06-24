@@ -1,8 +1,8 @@
 import * as astncore from "astn-core"
 import { RootImp } from "../Root"
 import { Node } from "../internals/Node"
-import { NodeDefinition, PropertyDefinition } from "../../../../interfaces/typedParserDefinitions"
-import { SerializationStyle } from "../../../../etc/interfaces/dataset"
+import { NodeDefinition, PropertyDefinition } from "../../../../deserialize/interfaces/typedParserDefinitions"
+import { SerializationStyle } from "../../../../deserialize/interfaces/dataset"
 
 function assertUnreachable<RT>(_x: never): RT {
     throw new Error("unreachable")
@@ -25,7 +25,11 @@ function propertyIsDefault(node: Node, propertyName: string, propertyDef: Proper
             const $ = propertyDef.type[1]
             return nodeIsDefault(node.components.getUnsafe(propertyName).node, $.type.get().node)
         }
-        case "collection": {
+        case "dictionary": {
+            //const $ = propertyDef.type[1]
+            return node.collections.getUnsafe(propertyName).entries.isEmpty()
+        }
+        case "list": {
             //const $ = propertyDef.type[1]
             return node.collections.getUnsafe(propertyName).entries.isEmpty()
         }
@@ -93,58 +97,51 @@ export function serializeRoot(
             out: SerializeOut,
         ) {
             switch (propDef.type[0]) {
-                case "collection": {
-                    const $ = propDef.type[1]
+                case "dictionary": {
+                    const $$ = propDef.type[1]
+                    const collection = node.collections.getUnsafe(key)
+                    out.sendBlock(
+                        {
+                            open: ["open object", {
+                                type: ["dictionary"],
+                            }],
+                            close:
+                                ["close object", {
+                                    //
+                                }],
+                        },
+                        out => {
+                            collection.entries.forEach(e => {
+                                out.sendEvent(["simple string", {
+                                    value: e.node.values.getUnsafe($$["key property"].name).value.get(),
+                                    wrapping: ["quote", {}],
+                                }])
+                                serializeNode(e.node, $$.node, $$["key property"].name, true, out)
+                            })
+                        },
+                    )
+                    break
+                }
+                case "list": {
+                    const $$ = propDef.type[1]
                     const collection = node.collections.getUnsafe(key)
 
-                    switch ($.type[0]) {
-                        case "dictionary": {
-                            const $$ = $.type[1]
-                            out.sendBlock(
-                                {
-                                    open: ["open object", {
-                                        type: ["dictionary"],
-                                    }],
-                                    close:
-                                        ["close object", {
-                                            //
-                                        }],
-                                },
-                                out => {
-                                    collection.entries.forEach(e => {
-                                        out.sendEvent(["simple string", {
-                                            value: e.node.values.getUnsafe($$["key property"].name).value.get(),
-                                            wrapping: ["quote", {}],
-                                        }])
-                                        serializeNode(e.node, $$.node, $$["key property"].name, true, out)
-                                    })
-                                },
-                            )
-                            break
-                        }
-                        case "list": {
-                            const $$ = $.type[1]
-                            out.sendBlock(
-                                {
-                                    open: ["open array", {
-                                        type: ["shorthand type"],
-                                    }],
-                                    close:
-                                        ["close array", {
-                                            //
-                                        }],
-                                },
-                                out => {
-                                    collection.entries.forEach(e => {
-                                        serializeNode(e.node, $$.node, null, true, out)
-                                    })
-                                },
-                            )
-                            break
-                        }
-                        default:
-                            assertUnreachable($.type[0])
-                    }
+                    out.sendBlock(
+                        {
+                            open: ["open array", {
+                                type: ["shorthand type"],
+                            }],
+                            close:
+                                ["close array", {
+                                    //
+                                }],
+                        },
+                        out => {
+                            collection.entries.forEach(e => {
+                                serializeNode(e.node, $$.node, null, true, out)
+                            })
+                        },
+                    )
                     break
                 }
                 case "component": {

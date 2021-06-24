@@ -1,4 +1,4 @@
-import * as def from "../../../../interfaces/typedParserDefinitions"
+import * as def from "../../../../deserialize/interfaces/typedParserDefinitions"
 
 export type CollectionType =
     | ["dictionary", Dictionary]

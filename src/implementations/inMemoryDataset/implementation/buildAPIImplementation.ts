@@ -2,8 +2,8 @@
     "max-classes-per-file": off,
 */
 
-import * as buildAPI from "../../../interfaces/buildAPI"
-import * as def from "../../../interfaces/typedParserDefinitions"
+import * as buildAPI from "../../../deserialize/interfaces/buildAPI"
+import * as def from "../../../deserialize/interfaces/typedParserDefinitions"
 import * as imp from "./internals"
 import { Global } from "./Global"
 import { initializeNode } from "./initializeNode"
@@ -59,30 +59,23 @@ class Property implements buildAPI.Property {
                         keyProperty,
                     )]
                 }
-                case "collection": {
-                    const $ = definition.type[1]
-                    switch ($.type[0]) {
-                        case "dictionary": {
-                            const $$ = $.type[1]
-                            return ["dictionary", new Dictionary(
-                                nodeImp.collections.getUnsafe(propertyKey),
-                                $$,
-                                global,
-                            )]
+                case "dictionary": {
+                    const $$ = definition.type[1]
+                    return ["dictionary", new Dictionary(
+                        nodeImp.collections.getUnsafe(propertyKey),
+                        $$,
+                        global,
+                    )]
 
-                        }
-                        case "list": {
-                            //const $$ = $.type[1]
-                            return ["list", new List(
-                                nodeImp.collections.getUnsafe(propertyKey),
-                                //$$,
-                                global,
-                            )]
+                }
+                case "list": {
+                    //const $$ = $.type[1]
+                    return ["list", new List(
+                        nodeImp.collections.getUnsafe(propertyKey),
+                        //$$,
+                        global,
+                    )]
 
-                        }
-                        default:
-                            return assertUnreachable($.type[0])
-                    }
                 }
                 case "tagged union": {
                     const $ = definition.type[1]
@@ -125,23 +118,15 @@ export class Node implements buildAPI.Node {
     }
     public getDictionary(key: string): Dictionary {
         const propDef = this.definition.properties.getUnsafe(key)
-        if (propDef.type[0] !== "collection") {
-            throw new Error("not a collection")
-        }
-        const $ = propDef.type[1]
-        if ($.type[0] !== "dictionary") {
+        if (propDef.type[0] !== "dictionary") {
             throw new Error("not a dicionary")
         }
         const collection = this.imp.collections.getUnsafe(key)
-        return new Dictionary(collection, $.type[1], this.global)
+        return new Dictionary(collection, propDef.type[1], this.global)
     }
     public getList(key: string): List {
         const propDef = this.definition.properties.getUnsafe(key)
-        if (propDef.type[0] !== "collection") {
-            throw new Error("not a collection")
-        }
-        const $ = propDef.type[1]
-        if ($.type[0] !== "list") {
+        if (propDef.type[0] !== "list") {
             throw new Error("not a list")
         }
         const collection = this.imp.collections.getUnsafe(key)
@@ -193,7 +178,7 @@ export class Node implements buildAPI.Node {
 }
 
 
-class TaggedUnion implements buildAPI.StateGroup {
+class TaggedUnion implements buildAPI.TaggedUnion {
     private readonly imp: imp.StateGroup
     public readonly comments: imp.Comments
     private readonly global: Global
@@ -232,7 +217,7 @@ class TaggedUnion implements buildAPI.StateGroup {
     }
 }
 
-class State implements buildAPI.State {
+class State implements buildAPI.Option {
     public readonly node: Node
     private readonly imp: imp.State
     constructor(stateImp: imp.State, definition: def.OptionDefinition, global: Global) {

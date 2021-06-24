@@ -4,10 +4,10 @@ import * as astncore from "astn-core"
 //import { serializeNode } from "./serializeInstanceData"
 //import { serializeMetaData } from "./serializeMetaData"
 import { RootImp } from "../Root"
-import { InternalSchemaSpecification, InternalSchemaSpecificationType } from "../../../../etc/interfaces/InternalSchemaSpecification"
+import { InternalSchemaSpecification, InternalSchemaSpecificationType } from "../../../../deserialize/interfaces/InternalSchemaSpecification"
 import { serializeMetaData } from "./serializeMetaData"
 import { SerializeOut, serializeRoot } from "./serializeInstanceData"
-import { SerializationStyle } from "../../../../etc/interfaces/dataset"
+import { SerializationStyle } from "../../../../deserialize/interfaces/dataset"
 
 function assertUnreachable<RT>(_x: never): RT {
     throw new Error("unreachable")

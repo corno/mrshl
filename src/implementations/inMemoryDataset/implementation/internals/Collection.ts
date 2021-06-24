@@ -3,7 +3,7 @@
 */
 
 import * as g from "../genericimp"
-import * as def from "../../../../interfaces/typedParserDefinitions"
+import * as def from "../../../../deserialize/interfaces/typedParserDefinitions"
 import { FlexibleErrorsAggregator, IParentErrorsAggregator, ErrorManager } from "./ErrorManager"
 import { Node } from "./Node"
 import { Comments } from "./Comments"
@@ -121,7 +121,11 @@ export class Collection {
     public readonly dictionary: Dictionary | null
     public readonly comments = new Comments()
     constructor(
-        definition: def.CollectionDefinition,
+        definition: {
+            type:
+            | ["list", def.ListDefinition]
+            | ["dictionary", def.DictionaryDefinition]
+        },
         errorsAggregator: IParentErrorsAggregator,
         dictionary: Dictionary | null,
     ) {

@@ -1,4 +1,4 @@
-import * as def from "../../../interfaces/typedParserDefinitions"
+import * as def from "../../../deserialize/interfaces/typedParserDefinitions"
 import { RootErrorsAggregator } from "./internals/ErrorManager"
 import { Global } from "./Global"
 import { Node } from "./internals/Node"

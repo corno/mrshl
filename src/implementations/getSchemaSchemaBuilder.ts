@@ -1,9 +1,9 @@
-import { SchemaAndSideEffects } from "../interfaces/schemaPlugin/SchemaAndSideEffects"
+import { SchemaAndSideEffects } from "../deserialize/interfaces/schemaPlugin/SchemaAndSideEffects"
 import * as astncore from "astn-core"
 
 import * as mrshlschemaschema01 from "../plugins/schemas/mrshl/schemaschema@0.1"
 import * as metadata01 from "../plugins/schemas/mrshl/metadata@0.1"
-import { InternalSchemaDeserializationError } from "../interfaces/schemaPlugin/internalSchemaDerializationError"
+import { InternalSchemaDeserializationError } from "../interfaces/internalSchemaDerializationError"
 
 export type SchemaSchemaBuilder<Annotation> = (
     onSchemaError: (error: InternalSchemaDeserializationError, annotation: Annotation) => void

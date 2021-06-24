@@ -1,4 +1,4 @@
-import * as def from "../../../../interfaces/typedParserDefinitions"
+import * as def from "../../../../deserialize/interfaces/typedParserDefinitions"
 import {
     ResolveRegistry,
     createReference,
@@ -27,32 +27,26 @@ function convertToGenericNode(
                 switch (prop.type[0]) {
                     case "collection": {
                         const $ = prop.type[1]
-
-                        return ["collection", {
-
-                            type: ((): def.CollectionTypeDefinition => {
-                                switch ($.type[0]) {
-                                    case "dictionary": {
-                                        const $$ = $.type[1]
-                                        const targetNode = convertToGenericNode($.node, componentTypes, $$["key property"].get(), resolveRegistry)
-                                        return ["dictionary", {
-                                            "node": targetNode,
-                                            "key property": createReference($$["key property"].name, targetNode.properties, resolveRegistry, keys => {
-                                                throw new Error(`UNEXPECTED: KEY Property not found: ${$$["key property"].name}, available keys: ${keys.join()}`);
-                                            }),
-                                        }]
-                                    }
-                                    case "list": {
-                                        const targetNode = convertToGenericNode($.node, componentTypes, null, resolveRegistry)
-                                        return ["list", {
-                                            node: targetNode,
-                                        }]
-                                    }
-                                    default:
-                                        return assertUnreachable($.type[0])
-                                }
-                            })(),
-                        }]
+                        switch ($.type[0]) {
+                            case "dictionary": {
+                                const $$ = $.type[1]
+                                const targetNode = convertToGenericNode($.node, componentTypes, $$["key property"].get(), resolveRegistry)
+                                return ["dictionary", {
+                                    "node": targetNode,
+                                    "key property": createReference($$["key property"].name, targetNode.properties, resolveRegistry, keys => {
+                                        throw new Error(`UNEXPECTED: KEY Property not found: ${$$["key property"].name}, available keys: ${keys.join()}`);
+                                    }),
+                                }]
+                            }
+                            case "list": {
+                                const targetNode = convertToGenericNode($.node, componentTypes, null, resolveRegistry)
+                                return ["list", {
+                                    node: targetNode,
+                                }]
+                            }
+                            default:
+                                return assertUnreachable($.type[0])
+                        }
                     }
                     case "component": {
                         const $ = prop.type[1]

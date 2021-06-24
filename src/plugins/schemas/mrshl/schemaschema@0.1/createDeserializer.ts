@@ -3,7 +3,7 @@
 
 */
 import * as astncore from "astn-core"
-import * as def from "../../../../interfaces/typedParserDefinitions"
+import * as def from "../../../../deserialize/interfaces/typedParserDefinitions"
 import {
     createDictionary,
 } from "./Dictionary"
@@ -31,7 +31,7 @@ type AnnotatedString<TokenAnnotation> = {
     annotation: TokenAnnotation
 }
 
-function createExpectedNodeHandler<TokenAnnotation, NonTokenAnnotation, ReturnType>(
+function createExpectedValueHandler<TokenAnnotation, NonTokenAnnotation, ReturnType>(
     context: astncore.IExpectContext<TokenAnnotation, NonTokenAnnotation, ReturnType>,
     raiseValidationError: (message: string, annotation: TokenAnnotation) => void,
     componentTypes: def.IReadonlyDictionary<t.ComponentType>,
@@ -69,7 +69,7 @@ function createExpectedNodeHandler<TokenAnnotation, NonTokenAnnotation, ReturnTy
 
                                                         return wrap(context.expectVerboseType({
                                                             properties: {
-                                                                "node": createExpectedNodeHandler(
+                                                                "node": createExpectedValueHandler(
                                                                     context,
                                                                     raiseValidationError,
                                                                     componentTypes,
@@ -200,7 +200,7 @@ function createExpectedNodeHandler<TokenAnnotation, NonTokenAnnotation, ReturnTy
                                                                             let targetNode: t.Node | null = null
                                                                             return wrap(context.expectVerboseType({
                                                                                 properties: {
-                                                                                    "node": createExpectedNodeHandler(
+                                                                                    "node": createExpectedValueHandler(
                                                                                         context,
                                                                                         raiseValidationError,
                                                                                         componentTypes,
@@ -389,7 +389,7 @@ export function createDeserializer<TokenAnnotation, NonTokenAnnotation, ReturnTy
                         let targetNode: t.Node | null = null
                         return wrap(context.expectVerboseType({
                             properties: {
-                                "node": createExpectedNodeHandler(
+                                "node": createExpectedValueHandler(
                                     context,
                                     onValidationError,
                                     componentTypes,

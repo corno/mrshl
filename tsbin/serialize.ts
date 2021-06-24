@@ -4,7 +4,7 @@ import * as p20 from "pareto-20"
 import * as db5 from "../src"
 import * as path from "path"
 import { schemaHost } from "../schemaHost"
-import { SerializationStyle } from "../src/etc/interfaces/dataset"
+import { SerializationStyle } from "../src/deserialize/interfaces/dataset"
 
 export function serialize(style: SerializationStyle): void {
 

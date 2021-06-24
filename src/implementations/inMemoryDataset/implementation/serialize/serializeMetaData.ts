@@ -6,8 +6,8 @@ import * as astncore from "astn-core"
 // import * as md from "../API/types"
 // import * as gapi from "../API/generics"
 
-import { IReference, NodeDefinition, Schema } from "../../../../interfaces/typedParserDefinitions"
-import { IReadonlyDictionary } from "../../../../interfaces/typedParserDefinitions"
+import { IReference, NodeDefinition, Schema } from "../../../../deserialize/interfaces/typedParserDefinitions"
+import { IReadonlyDictionary } from "../../../../deserialize/interfaces/typedParserDefinitions"
 
 function assertUnreachable<RT>(_x: never): RT {
     throw new Error("unreachable")
@@ -96,40 +96,26 @@ export function serializeMetaData(
                         type: () => {
                             serializeTaggedUnion(propDef.type[0], () => {
                                 switch (propDef.type[0]) {
-                                    case "collection": {
-                                        const $ = propDef.type[1]
+                                    case "dictionary": {
+                                        const $$ = propDef.type[1]
                                         serializeVerboseType({
-                                            type: () => {
-                                                serializeTaggedUnion($.type[0], () => {
-                                                    switch ($.type[0]) {
-                                                        case "dictionary": {
-                                                            const $$ = $.type[1]
-                                                            serializeVerboseType({
-                                                                "key property": () => {
-                                                                    serializeReference($$["key property"])
-                                                                },
-                                                                "node": () => {
-                                                                    serializeNodeDefinition($$.node)
-                                                                },
-                                                            })
-                                                            break
-                                                        }
-                                                        case "list": {
-                                                            const $$ = $.type[1]
-                                                            serializeVerboseType({
-                                                                "key property": () => {
-                                                                    //
-                                                                },
-                                                                "node": () => {
-                                                                    serializeNodeDefinition($$.node)
-                                                                },
-                                                            })
-                                                            break
-                                                        }
-                                                        default:
-                                                            assertUnreachable($.type[0])
-                                                    }
-                                                })
+                                            "key property": () => {
+                                                serializeReference($$["key property"])
+                                            },
+                                            "node": () => {
+                                                serializeNodeDefinition($$.node)
+                                            },
+                                        })
+                                        break
+                                    }
+                                    case "list": {
+                                        const $$ = propDef.type[1]
+                                        serializeVerboseType({
+                                            "key property": () => {
+                                                //
+                                            },
+                                            "node": () => {
+                                                serializeNodeDefinition($$.node)
                                             },
                                         })
                                         break

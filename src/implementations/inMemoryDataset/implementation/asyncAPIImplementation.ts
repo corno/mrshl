@@ -4,11 +4,11 @@
 
 import * as asyncAPI from "../../../interfaces/asyncAPI/asyncAPI"
 import * as cc from "./changeControl"
-import * as def from "../../../interfaces/typedParserDefinitions"
+import * as def from "../../../deserialize/interfaces/typedParserDefinitions"
 import * as g from "./genericimp"
 //import * as s from "../serialize"
-import * as id from "../../../interfaces/buildAPI/IDataset"
-import * as iss from "../../../etc/interfaces/InternalSchemaSpecification"
+import * as id from "../../../deserialize/interfaces/buildAPI/IDataset"
+import * as iss from "../../../deserialize/interfaces/InternalSchemaSpecification"
 import * as syncAPIImp from "./buildAPIImplementation"
 import { copyEntry } from "./copyEntry"
 import { Global } from "./Global"
@@ -197,8 +197,6 @@ export function createDataset(
     return new Dataset()
 }
 
-
-
 class Entry implements asyncAPI.Entry {
     public readonly node: Node
     public readonly hasSubEntryErrors: ISubscribableValue<boolean>
@@ -255,7 +253,19 @@ class Node implements asyncAPI.Node {
         this.definition.properties.forEach((p, pKey) => {
             //const isKeyProperty = this.imp.keyProperty === null ? false : p === this.imp.keyProperty
             switch (p.type[0]) {
-                case "collection": {
+                case "dictionary": {
+                    //const $ = p.type[1]
+                    callback(
+                        new Property(
+                            p,
+                            ["collection", this.getCollection(pKey)],
+                            //isKeyProperty,
+                        ),
+                        pKey
+                    )
+                    break
+                }
+                case "list": {
                     //const $ = p.type[1]
                     callback(
                         new Property(
@@ -307,22 +317,27 @@ class Node implements asyncAPI.Node {
     }
     public getCollection(key: string): asyncAPI.Collection {
         const propDef = this.definition.properties.getUnsafe(key)
-        if (propDef.type[0] !== "collection") {
-            throw new Error("unexpected")
-        }
-        const $ = propDef.type[1]
         const nodeDefinition = ((): def.NodeDefinition => {
-            switch ($.type[0]) {
+            switch (propDef.type[0]) {
                 case "dictionary": {
-                    const $$ = $.type[1]
+                    const $$ = propDef.type[1]
                     return $$.node
                 }
                 case "list": {
-                    const $$ = $.type[1]
+                    const $$ = propDef.type[1]
                     return $$.node
                 }
+                case "component": {
+                    throw new Error("unexpected")
+                }
+                case "string": {
+                    throw new Error("unexpected")
+                }
+                case "tagged union": {
+                    throw new Error("unexpected")
+                }
                 default:
-                    return assertUnreachable($.type[0])
+                    return assertUnreachable(propDef.type[0])
             }
         })()
         return createCollection(this.imp.collections.getUnsafe(key), nodeDefinition, this.global)

@@ -1,5 +1,5 @@
 import * as astncore from "astn-core"
-import { InternalSchemaError } from "../../interfaces/schemaPlugin/internalSchemaDerializationError"
+import { InternalSchemaError } from "../../deserialize/interfaces/schemaPlugin/InternalSchemaError"
 
 function assertUnreachable<RT>(_x: never): RT {
     throw new Error("unreachable")

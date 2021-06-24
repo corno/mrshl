@@ -1,4 +1,4 @@
-import * as def from "../../../interfaces/typedParserDefinitions"
+import * as def from "../../../deserialize/interfaces/typedParserDefinitions"
 import * as cc from "./changeControl"
 import { Collection, Dictionary, Node } from "./internals"
 import { Component } from "./internals/Component"
@@ -20,26 +20,29 @@ export function initializeNode(
 ): void {
     definition.properties.forEach((property, key) => {
         switch (property.type[0]) {
-            case "collection": {
+            case "dictionary": {
                 const $ = property.type[1]
                 const collection = new Collection(
-                    $,
+                    { type: ["dictionary", $] },
                     subEntriesErrorsAggregator,
-                    ((): Dictionary | null => {
-                        if ($.type[0] === "dictionary") {
-                            const $$ = $.type[1]
-                            return new Dictionary(
-                                $.type[1]["key property"].name,
-                                $.type[1]["key property"].get(),
-                                (oldValue: string, newValue: string) => {
-                                    cc.checkDuplicates(collection, oldValue, $$["key property"].name)
-                                    cc.checkDuplicates(collection, newValue, $$["key property"].name)
-                                },
-                            )
-                        } else {
-                            return null
-                        }
-                    })()
+                    new Dictionary(
+                        property.type[1]["key property"].name,
+                        property.type[1]["key property"].get(),
+                        (oldValue: string, newValue: string) => {
+                            cc.checkDuplicates(collection, oldValue, $["key property"].name)
+                            cc.checkDuplicates(collection, newValue, $["key property"].name)
+                        },
+                    ),
+                )
+                node.collections.add(key, collection)
+                break
+            }
+            case "list": {
+                const $ = property.type[1]
+                const collection = new Collection(
+                    { type: ["list", $] },
+                    subEntriesErrorsAggregator,
+                    null,
                 )
                 node.collections.add(key, collection)
                 break

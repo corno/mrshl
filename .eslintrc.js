@@ -148,10 +148,10 @@ module.exports = {
         ],
         "prefer-arrow-callback": "error",
         "prefer-const": "error",
-        "quote-props": [
-            "error",
-            "consistent-as-needed"
-        ],
+        // "quote-props": [
+        //     "error",
+        //     "consistent-as-needed"
+        // ],
         "radix": "error",
         "spaced-comment": [
             "off",

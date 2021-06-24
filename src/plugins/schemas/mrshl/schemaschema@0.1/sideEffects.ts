@@ -3,8 +3,8 @@
 */
 
 import * as t from "./types"
-import * as streamVal from "../../../../interfaces/streamingValidationAPI"
-import { DiagnosticSeverity } from "../../../../interfaces/DiagnosticSeverity"
+import * as streamVal from "../../../../deserialize/interfaces/streamingValidationAPI"
+import { DiagnosticSeverity } from "../../../../deserialize/interfaces/DiagnosticSeverity"
 
 export * from "./types"
 
@@ -64,7 +64,7 @@ function createProp<Annotation>(
     name: string,
     nodedefinition: t.Node,
     onError: (message: string, annotation: Annotation, severity: DiagnosticSeverity) => void,
-): streamVal.PropertyHandler<Annotation> {
+): streamVal.ValueHandler<Annotation> {
     return {
         onDictionary: () => {
             const prop = nodedefinition.properties.getUnsafe(name)
@@ -155,6 +155,12 @@ function createProp<Annotation>(
                     assertUnreachable($$.type[0])
             }
         },
+        onShorthandTypeOpen: () => {
+            throw new Error("unexpected")
+        },
+        onVerboseTypeOpen: () => {
+            throw new Error("unexpected")
+        },
     }
 }
 
@@ -195,8 +201,29 @@ function createType<Annotation>(
 function createNode<Annotation>(
     definition: t.Node,
     onError: (message: string, annotation: Annotation, severity: DiagnosticSeverity) => void,
-): streamVal.NodeHandler<Annotation> {
+): streamVal.ValueHandler<Annotation> {
     return {
+        onDictionary: () => {
+            throw new Error("unexpected")
+        },
+        onList: () => {
+            throw new Error("unexpected")
+        },
+        onTaggedUnion: () => {
+            throw new Error("unexpected")
+        },
+        onComponent: () => {
+            throw new Error("unexpected")
+        },
+        onNull: () => {
+            throw new Error("unexpected")
+        },
+        onMultilineString: _$ => {
+            throw new Error("unexpected")
+        },
+        onSimpleString: _$ => {
+            throw new Error("unexpected")
+        },
         onShorthandTypeOpen: () => {
             return createShorthandType(definition, onError)
         },
@@ -211,7 +238,7 @@ export function createRoot<Annotation>(
     onError: (message: string, annotation: Annotation, severity: DiagnosticSeverity) => void
 ): streamVal.RootHandler<Annotation> {
     return {
-        node: createNode(schema["root type"].get().node, onError),
+        root: createNode(schema["root type"].get().node, onError),
         onEnd: () => {
             //
         },

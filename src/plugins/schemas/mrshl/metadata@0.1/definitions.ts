@@ -1,4 +1,4 @@
-import * as g from "../../../../interfaces/typedParserDefinitions/generics"
+import * as g from "../../../../deserialize/interfaces/typedParserDefinitions/generics"
 
 /**
  * this set of types defines a schema that only describes the data structure,

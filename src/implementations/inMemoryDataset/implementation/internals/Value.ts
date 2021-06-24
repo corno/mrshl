@@ -1,6 +1,6 @@
 import * as g from "../genericimp"
 import * as asyncAPI from "../../../../interfaces/asyncAPI/asyncAPI"
-import * as def from "../../../../interfaces/typedParserDefinitions"
+import * as def from "../../../../deserialize/interfaces/typedParserDefinitions"
 import { IParentErrorsAggregator, PotentialError, ErrorManager } from "./ErrorManager"
 import { Comments } from "./Comments"
 import { ISubscribableValue } from "../../../../interfaces/asyncAPI/generic"

@@ -2,29 +2,50 @@
     "max-classes-per-file": off,
 */
 
-import * as streamVal from "../../../../interfaces/streamingValidationAPI"
+import * as streamVal from "../../../../deserialize/interfaces/streamingValidationAPI"
 
 export function createNOPSideEffects<Annotation>(): streamVal.RootHandler<Annotation> {
     return new NOPSideEffects()
 }
 
 class NOPSideEffects<Annotation> implements streamVal.RootHandler<Annotation> {
-    node: streamVal.NodeHandler<Annotation>
+    root: streamVal.ValueHandler<Annotation>
     constructor() {
-        this.node = createNodeNOPSideEffects()
+        this.root = createValueNOPSideEffects()
     }
     onEnd() {
         //
     }
 }
 
-function createNodeNOPSideEffects<Annotation>(): streamVal.NodeHandler<Annotation> {
+function createValueNOPSideEffects<Annotation>(): streamVal.ValueHandler<Annotation> {
     return {
         onShorthandTypeOpen: () => {
             return new ShorthandTypeNOPSideEffects()
         },
         onVerboseTypeOpen: () => {
             return createVerboseTypeNOPSideEffects()
+        },
+        onDictionary: () => {
+            return new DictionaryNOPSideEffects()
+        },
+        onList: () => {
+            return new ListNOPSideEffects()
+        },
+        onTaggedUnion: () => {
+            return new StateGroupNOPSideEffects()
+        },
+        onSimpleString: () => {
+            //
+        },
+        onMultilineString: () => {
+            //
+        },
+        onNull: () => {
+            //
+        },
+        onComponent: () => {
+            return createValueNOPSideEffects()
         },
     }
 }
@@ -35,7 +56,7 @@ function createVerboseTypeNOPSideEffects<Annotation>(): streamVal.VerboseTypeHan
             //
         },
         onProperty: () => {
-            return new PropertyNOPSideEffects()
+            return createValueNOPSideEffects()
         },
         // onUnexpectedProperty() {
         //     //
@@ -54,7 +75,7 @@ class ShorthandTypeNOPSideEffects<Annotation> implements streamVal.ShorthandType
         //
     }
     onProperty() {
-        return new PropertyNOPSideEffects()
+        return createValueNOPSideEffects()
     }
 }
 
@@ -69,36 +90,10 @@ class StateGroupNOPSideEffects<Annotation> implements streamVal.TaggedUnionHandl
         //
     }
     onOption() {
-        return createNodeNOPSideEffects()
+        return createValueNOPSideEffects()
     }
 }
 
-class PropertyNOPSideEffects<Annotation> implements streamVal.PropertyHandler<Annotation> {
-    constructor() {
-        //
-    }
-    onDictionary() {
-        return new DictionaryNOPSideEffects()
-    }
-    onList() {
-        return new ListNOPSideEffects()
-    }
-    onTaggedUnion() {
-        return new StateGroupNOPSideEffects()
-    }
-    onSimpleString() {
-        //
-    }
-    onMultilineString() {
-        //
-    }
-    onNull() {
-        //
-    }
-    onComponent() {
-        return createNodeNOPSideEffects()
-    }
-}
 
 class DictionaryNOPSideEffects<Annotation> implements streamVal.DictionaryHandler<Annotation> {
     constructor() {
@@ -108,7 +103,7 @@ class DictionaryNOPSideEffects<Annotation> implements streamVal.DictionaryHandle
         //
     }
     onEntry() {
-        return createNodeNOPSideEffects()
+        return createValueNOPSideEffects()
     }
 }
 
@@ -120,6 +115,6 @@ class ListNOPSideEffects<Annotation> implements streamVal.ListHandler<Annotation
         //
     }
     onEntry() {
-        return createNodeNOPSideEffects()
+        return createValueNOPSideEffects()
     }
 }

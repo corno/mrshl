@@ -1,9 +1,9 @@
-import * as def from "../../../interfaces/typedParserDefinitions"
+import * as def from "../../../deserialize/interfaces/typedParserDefinitions"
 import * as sync from "./buildAPIImplementation"
 import { RootImp } from "./Root"
-import { IDataset } from "../../../etc/interfaces/dataset"
-import * as id from "../../../interfaces/buildAPI/IDataset"
-import * as asyncAPIImp from "./asyncAPIImplementation"
+import { IDataset } from "../../../deserialize/interfaces/dataset"
+import * as id from "../../../deserialize/interfaces/buildAPI/IDataset"
+//import * as asyncAPIImp from "./asyncAPIImplementation"
 import { Comments } from "./internals"
 import { serialize } from "./serialize/serialize"
 
@@ -28,7 +28,7 @@ export function createInMemoryDataset(schema: def.Schema): IDataset {
     const syncDataset = new SyncDataset(rootImp)
     return {
         build: syncDataset,
-        async: asyncAPIImp.createDataset(rootImp, rootImp.global, syncDataset),
+        //async: asyncAPIImp.createDataset(rootImp, rootImp.global, syncDataset),
         serialize: (internalSchemaSpecification, style, writer) => {
             return serialize(
                 rootImp,

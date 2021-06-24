@@ -4,8 +4,8 @@
 */
 import * as astncore from "astn-core"
 import * as def from "./definitions"
-import * as g2 from "../../../../interfaces/typedParserDefinitions/generics"
-import * as extDef from "../../../../interfaces/typedParserDefinitions"
+import * as g2 from "../../../../deserialize/interfaces/typedParserDefinitions/generics"
+import * as extDef from "../../../../deserialize/interfaces/typedParserDefinitions"
 import {
     createReference,
     ResolveRegistry,
@@ -24,7 +24,7 @@ type AnnotatedString<TokenAnnotation> = {
     annotation: TokenAnnotation
 }
 
-function createNodeHandler<TokenAnnotation, NonTokenAnnotation, ReturnType>(
+function createValueHandler<TokenAnnotation, NonTokenAnnotation, ReturnType>(
     context: astncore.IExpectContext<TokenAnnotation, NonTokenAnnotation, ReturnType>,
     raiseValidationError: (message: string, annotation: TokenAnnotation) => void,
     componentTypes: g2.IReadonlyDictionary<def.ComponentTypeDefinition>,
@@ -76,7 +76,7 @@ function createNodeHandler<TokenAnnotation, NonTokenAnnotation, ReturnType>(
                                                                                     let keyPropertyName: AnnotatedString<TokenAnnotation> | null = null
                                                                                     return wrap(context.expectType({
                                                                                         properties: {
-                                                                                            "node": createNodeHandler(
+                                                                                            "node": createValueHandler(
                                                                                                 context,
                                                                                                 raiseValidationError,
                                                                                                 componentTypes,
@@ -132,7 +132,7 @@ function createNodeHandler<TokenAnnotation, NonTokenAnnotation, ReturnType>(
                                                                                     let targetNode: def.NodeDefinition | null = null
                                                                                     return wrap(context.expectType({
                                                                                         properties: {
-                                                                                            "node": createNodeHandler(
+                                                                                            "node": createValueHandler(
                                                                                                 context,
                                                                                                 raiseValidationError,
                                                                                                 componentTypes,
@@ -223,7 +223,7 @@ function createNodeHandler<TokenAnnotation, NonTokenAnnotation, ReturnType>(
                                                                                 let targetNode: def.NodeDefinition | null = null
                                                                                 return wrap(context.expectType({
                                                                                     properties: {
-                                                                                        "node": createNodeHandler(
+                                                                                        "node": createValueHandler(
                                                                                             context,
                                                                                             raiseValidationError,
                                                                                             componentTypes,
@@ -426,7 +426,7 @@ export function createDeserializer<TokenAnnotation, NonTokenAnnotation, ReturnTy
                             let targetNode: def.NodeDefinition | null = null
                             return wrap(context.expectType({
                                 properties: {
-                                    "node": createNodeHandler(
+                                    "node": createValueHandler(
                                         context,
                                         onValidationError,
                                         componentTypes,

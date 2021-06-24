@@ -1,4 +1,4 @@
-import * as buildAPI from "../../../interfaces/buildAPI"
+import * as buildAPI from "../../../deserialize/interfaces/buildAPI"
 
 import { Node, Entry } from "./buildAPIImplementation"
 export { Entry } from "./buildAPIImplementation"

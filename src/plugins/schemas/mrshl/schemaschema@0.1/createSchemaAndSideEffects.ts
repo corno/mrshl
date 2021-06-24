@@ -4,9 +4,10 @@ import * as t from "./types"
 import { convertToGenericSchema } from "./createTypedParserDefinitions"
 import * as p from "pareto-20"
 import * as sideEffects from "./sideEffects"
-import { DiagnosticSeverity } from "../../../../interfaces/DiagnosticSeverity"
-import { SchemaAndSideEffects } from "../../../../interfaces/schemaPlugin/SchemaAndSideEffects"
-import { InternalSchemaDeserializationError, InternalSchemaError } from "../../../../interfaces/schemaPlugin/internalSchemaDerializationError"
+import { DiagnosticSeverity } from "../../../../deserialize/interfaces/DiagnosticSeverity"
+import { SchemaAndSideEffects } from "../../../../deserialize/interfaces/schemaPlugin/SchemaAndSideEffects"
+import { InternalSchemaDeserializationError } from "../../../../interfaces/internalSchemaDerializationError"
+import { InternalSchemaError } from "../../../../deserialize/interfaces/schemaPlugin/InternalSchemaError"
 
 export function createSchemaAndSideEffects<Annotation>(
     onSchemaError: (error: InternalSchemaDeserializationError, annotation: Annotation) => void,
