@@ -10,6 +10,7 @@ import { Comments } from "./Comments"
 import { initializeNode } from "../initializeNode"
 import { ISubscribableValue } from "../../../../interfaces/asyncAPI/generic"
 import { Global } from "../Global"
+import { Value } from "./Value"
 
 function assertUnreachable<RT>(_x: never): RT {
     throw new Error("unreachable")
@@ -20,13 +21,19 @@ export class Entry {
     public readonly subentriesErrorsAggregator = new FlexibleErrorsAggregator()
     public readonly node: Node
     public readonly comments = new Comments()
+    public readonly key: Value | null
     constructor(
         nodeDefinition: def.NodeDefinition,
         errorManager: ErrorManager,
         dictionary: Dictionary | null
     ) {
+        this.key = dictionary === null ? null : new Value(
+            dictionary.keyDefinition,
+            this.errorsAggregator,
+            true,
+            errorManager,
+        )
         this.node = new Node(
-            dictionary === null ? null : dictionary.keyProperty,
             node => {
                 initializeNode(
                     node,
@@ -91,13 +98,9 @@ export class EntryPlaceholder {
     }
 }
 
-/**
- *
- */
 export class Dictionary {
     public readonly duplicatesCheckFunction: (oldValue: string, newValue: string) => void
-    public readonly keyPropertyName: string
-    public readonly keyProperty: def.PropertyDefinition
+    public readonly keyDefinition: def.StringValueDefinition
     /**
      *
      * @param keyPropertyName
@@ -105,13 +108,11 @@ export class Dictionary {
      * @param duplicatesCheckFunction a function that can be used to subscribe to the keys of the entries to check for duplicates
      */
     constructor(
-        keyPropertyName: string,
-        keyProperty: def.PropertyDefinition,
+        keyDefinition: def.StringValueDefinition,
         duplicatesCheckFunction: (oldValue: string, newValue: string) => void,
     ) {
         this.duplicatesCheckFunction = duplicatesCheckFunction
-        this.keyProperty = keyProperty
-        this.keyPropertyName = keyPropertyName
+        this.keyDefinition = keyDefinition
     }
 }
 

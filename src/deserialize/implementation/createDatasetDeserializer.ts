@@ -14,9 +14,7 @@ export function createDatasetDeserializer<TokenAnnotation, NonTokenAnnotation, R
         root: wrap(
             createNodeDeserializer(
                 dataset.schema["root type"].get().node,
-                null,
                 dataset.root,
-                null,
                 sideEffectsHandlers,
                 onError,
                 () => {

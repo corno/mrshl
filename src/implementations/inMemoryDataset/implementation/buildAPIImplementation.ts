@@ -24,59 +24,94 @@ export function createNode(
     node: imp.Node,
     definition: def.NodeDefinition,
     global: Global,
-    keyProperty: def.PropertyDefinition | null,
 ): buildAPI.Node {
 
-    function createEntry(
-        entryImp: imp.Entry,
-        collectionImp: imp.Collection,
-    ): buildAPI.Entry {
-        class Entry {
-            public readonly node: buildAPI.Node
+    function getValue(
+        valueImp: imp.Value,
+        definition: def.StringValueDefinition,
+    ) {
+
+        class Value {
             public readonly comments: imp.Comments
-            constructor(
-            ) {
-                this.comments = entryImp.comments
-                this.node = createNode(
-                    entryImp.node,
-                    collectionImp.nodeDefinition,
-                    global,
-                    collectionImp.dictionary === null ? null : collectionImp.dictionary.keyProperty,
-                )
+            private readonly imp: imp.Value
+            public readonly isQuoted: boolean
+            public readonly definition: def.StringValueDefinition
+            constructor(valueImp: imp.Value, definition: def.StringValueDefinition) {
+                this.imp = valueImp
+                this.comments = valueImp.comments
+                this.isQuoted = definition.quoted
+                this.definition = definition
             }
-            // public insert() {
-            //     const entryPlaceHolder = new imp.EntryPlaceholder(
-            //         this.entry,
-            //         this.collection,
-            //         false //Not sure if this is always false
-            //     )
-            //     entryPlaceHolder.entry.errorsAggregator.attach(entryPlaceHolder.parent.errorsAggregator)
-            //     entryPlaceHolder.entry.subentriesErrorsAggregator.attach(entryPlaceHolder.parent.errorsAggregator)
-            //     this.collection.entries.addEntry(entryPlaceHolder)
-            // }
+            public setValue(value: string, _onError: (message: string) => void): void {
+                imp.setValue(this.imp, this.imp.value.get(), value)
+                //FIXME handle onError
+            }
+            public getValue(): string {
+                return this.imp.value.get()
+            }
+            public getSuggestions(): string[] {
+                return [this.definition["default value"]]
+            }
         }
-        return new Entry()
+        return new Value(valueImp, definition)
     }
+
     class Node {
         private readonly imp: imp.Node
         private readonly definition: def.NodeDefinition
         private readonly global: Global
-        private readonly keyProperty: def.PropertyDefinition | null
         constructor(
         ) {
             this.definition = definition
             this.imp = node
             this.global = global
-            this.keyProperty = keyProperty
         }
         public getDictionary(key: string): buildAPI.Dictionary {
             const propDef = this.definition.properties.getUnsafe(key)
             if (propDef.type[0] !== "dictionary") {
                 throw new Error("not a dicionary")
             }
+            const dictDef = propDef.type[1]
             const collection = this.imp.collections.getUnsafe(key)
 
 
+            function createEntry(
+                entryImp: imp.Entry,
+                collectionImp: imp.Collection,
+            ): buildAPI.Entry {
+                class Entry {
+                    public readonly node: buildAPI.Node
+                    public readonly comments: imp.Comments
+                    public readonly key: buildAPI.Value
+                    constructor(
+                    ) {
+                        this.comments = entryImp.comments
+                        this.node = createNode(
+                            entryImp.node,
+                            collectionImp.nodeDefinition,
+                            global,
+                        )
+                        if (entryImp.key === null) {
+                            throw new Error("unexpected")
+                        }
+                        this.key = getValue(
+                            entryImp.key,
+                            dictDef.key,
+                        )
+                    }
+                    // public insert() {
+                    //     const entryPlaceHolder = new imp.EntryPlaceholder(
+                    //         this.entry,
+                    //         this.collection,
+                    //         false //Not sure if this is always false
+                    //     )
+                    //     entryPlaceHolder.entry.errorsAggregator.attach(entryPlaceHolder.parent.errorsAggregator)
+                    //     entryPlaceHolder.entry.subentriesErrorsAggregator.attach(entryPlaceHolder.parent.errorsAggregator)
+                    //     this.collection.entries.addEntry(entryPlaceHolder)
+                    // }
+                }
+                return new Entry()
+            }
             class Dictionary {
                 readonly comments: imp.Comments
                 public readonly imp: imp.Collection
@@ -106,15 +141,17 @@ export function createNode(
                     return entry
                 }
                 public forEachEntry(callback: (entry: buildAPI.Entry, key: string) => void): void {
-                    const keyPropertyName = this.definition["key property"].name
                     this.imp.entries.forEach(e => {
                         if (e.status.get()[0] !== "inactive") {
+                            if (e.entry.key === null) {
+                                throw new Error("unexpected")
+                            }
                             callback(
                                 createEntry(
                                     e.entry,
                                     this.imp,
                                 ),
-                                e.entry.node.values.getUnsafe(keyPropertyName).value.get()
+                                e.entry.key.value.get()
                             )
                         }
                     })
@@ -129,6 +166,19 @@ export function createNode(
             }
             const collection = this.imp.collections.getUnsafe(key)
 
+            function createEntry(
+                entryImp: imp.Entry,
+                collectionImp: imp.Collection,
+            ): buildAPI.Element {
+                return {
+                    node: createNode(
+                        entryImp.node,
+                        collectionImp.nodeDefinition,
+                        global,
+                    ),
+                    comments: entryImp.comments,
+                }
+            }
             class List {
                 readonly comments: imp.Comments
 
@@ -147,7 +197,7 @@ export function createNode(
                 public isEmpty(): boolean {
                     return this.imp.entries.isEmpty()
                 }
-                public createEntry(): buildAPI.Entry {
+                public createEntry(): buildAPI.Element {
                     const entryImp = new imp.Entry(this.imp.nodeDefinition, this.global.errorManager, this.imp.dictionary)
 
                     const entryPlaceHolder = new imp.EntryPlaceholder(entryImp, this.imp, true)
@@ -155,7 +205,7 @@ export function createNode(
                     imp.addEntry(this.imp, entryPlaceHolder)
                     return entry
                 }
-                public forEachEntry(callback: (entry: buildAPI.Entry) => void): void {
+                public forEachEntry(callback: (entry: buildAPI.Element) => void): void {
                     this.imp.entries.forEach(e => {
                         if (e.status.get()[0] !== "inactive") {
                             callback(createEntry(
@@ -178,14 +228,12 @@ export function createNode(
                 definition: def.ComponentDefinition,
                 component: imp.Component,
                 global: Global,
-                keyProperty: def.PropertyDefinition | null,
             ): buildAPI.Component {
                 return {
                     node: createNode(
                         component.node,
                         definition.type.get().node,
                         global,
-                        keyProperty,
                     ),
                     comments: component.comments,
                 }
@@ -194,7 +242,6 @@ export function createNode(
                 propDef.type[1],
                 component,
                 this.global,
-                this.keyProperty,
             )
         }
         public getTaggedUnion(key: string): buildAPI.TaggedUnion {
@@ -213,7 +260,7 @@ export function createNode(
                     public readonly node: buildAPI.Node
                     private readonly imp: imp.State
                     constructor(stateImp: imp.State, definition: def.OptionDefinition, global: Global) {
-                        this.node = createNode(stateImp.node, definition.node, global, null)
+                        this.node = createNode(stateImp.node, definition.node, global)
                         this.imp = stateImp
                     }
                     public getStateKey(): string {
@@ -253,29 +300,11 @@ export function createNode(
                 throw new Error("not a string")
             }
 
-            class Value {
-                public readonly comments: imp.Comments
-                private readonly imp: imp.Value
-                public readonly isQuoted: boolean
-                public readonly definition: def.StringValueDefinition
-                constructor(valueImp: imp.Value, definition: def.StringValueDefinition) {
-                    this.imp = valueImp
-                    this.comments = valueImp.comments
-                    this.isQuoted = definition.quoted
-                    this.definition = definition
-                }
-                public setValue(value: string, _onError: (message: string) => void): void {
-                    imp.setValue(this.imp, this.imp.value.get(), value)
-                    //FIXME handle onError
-                }
-                public getValue(): string {
-                    return this.imp.value.get()
-                }
-                public getSuggestions(): string[] {
-                    return [this.definition["default value"]]
-                }
-            }
-            return new Value(this.imp.values.getUnsafe(key), propDef.type[1])
+            return getValue(
+                this.imp.values.getUnsafe(key),
+                propDef.type[1]
+            )
+
         }
         public forEachProperty(callback: (property: buildAPI.Property, key: string) => void): void {
 
@@ -284,10 +313,8 @@ export function createNode(
 
                 class Property {
                     public readonly type: PropertyType
-                    public readonly isKeyProperty: boolean
                     constructor(
                         definition: def.PropertyDefinition,
-                        keyProperty: def.PropertyDefinition | null,
                     ) {
                         this.type = ((): PropertyType => {
                             switch (definition.type[0]) {
@@ -310,14 +337,12 @@ export function createNode(
                                     return assertUnreachable(definition.type[0])
                             }
                         })()
-                        this.isKeyProperty = keyProperty === definition
                     }
                 }
 
                 callback(
                     new Property(
                         p,
-                        this.keyProperty,
                     ),
                     pKey
                 )

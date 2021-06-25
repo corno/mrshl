@@ -25,7 +25,6 @@ export class RootImp {
 
     constructor(schema: def.Schema) {
         this.rootNode = new Node(
-            null,
             node => {
                 initializeNode(
                     node,

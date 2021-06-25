@@ -20,7 +20,6 @@ class SyncDataset implements id.IDataset {
             rootImp.rootNode,
             rootImp.schema["root type"].get().node,
             rootImp.global,
-            null,
         )
     }
 }

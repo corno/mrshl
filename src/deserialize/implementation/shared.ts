@@ -133,7 +133,10 @@ export function createDictionaryDeserializer<TokenAnnotation, NonTokenAnnotation
                 foundKeys.push($p.data.keyString.value)
                 const entry = dictionary.createEntry()
                 //const entry = collBuilder.createEntry(errorMessage => onError(errorMessage, propertyData.keyRange))
-                entry.node.getValue($$["key property"].name).setValue($p.data.keyString.value, errorMessage => onError(errorMessage, $p.annotation, DiagnosticSeverity.error))
+                if (entry.key === null) {
+                    throw new Error('unexpected')
+                }
+                entry.key.setValue($p.data.keyString.value, errorMessage => onError(errorMessage, $p.annotation, DiagnosticSeverity.error))
                 addComments(entry.comments, $p.annotation)
 
 
@@ -143,16 +146,13 @@ export function createDictionaryDeserializer<TokenAnnotation, NonTokenAnnotation
                         annotation: {
                             annotation: $p.annotation,
                             nodeDefinition: $$.node,
-                            keyProperty: $$["key property"].get(),
                         },
                     })
                 })
                 return wrap(
                     createNodeDeserializer(
                         $$.node,
-                        $$["key property"].get(),
                         entry.node,
-                        $$["key property"].get(),
                         propertySideEffects,
                         onError,
                         () => {
@@ -220,9 +220,7 @@ export function createListDeserializer<TokenAnnotation, NonTokenAnnotation, Retu
                 })
                 return createNodeDeserializer(
                     $$.node,
-                    null,
                     entry.node,
-                    null,
                     elementSideEffects,
                     onError,
                     () => {
@@ -302,9 +300,7 @@ export function createTaggedUnionDeserializer<TokenAnnotation, NonTokenAnnotatio
                         return wrap(
                             createNodeDeserializer(
                                 option.node,
-                                null,
                                 state.node,
-                                null,
                                 sgse.map(s => {
                                     return s.onOption({
                                         data: {
@@ -495,9 +491,7 @@ export function defaultInitializeProperty<TokenAnnotation>(
 
 export function createNodeDeserializer<TokenAnnotation, NonTokenAnnotation, ReturnType>(
     nodeDefinition: def.NodeDefinition,
-    _keyPropertyDefinition: def.PropertyDefinition | null,
     nodeBuilder: buildAPI.Node,
-    keyProperty: def.PropertyDefinition | null,
     sideEffectsAPI: sideEffectAPI.ValueHandler<TokenAnnotation>[],
     onError: OnError<TokenAnnotation>,
     flagNonDefaultPropertiesFound: () => void,
@@ -507,9 +501,7 @@ export function createNodeDeserializer<TokenAnnotation, NonTokenAnnotation, Retu
     return {
         array: createShorthandNodeDeserializer(
             nodeDefinition,
-            keyProperty,
             nodeBuilder,
-            keyProperty,
             sideEffectsAPI,
             onError,
             flagNonDefaultPropertiesFound,
@@ -518,9 +510,7 @@ export function createNodeDeserializer<TokenAnnotation, NonTokenAnnotation, Retu
         ),
         object: createVerboseNodeDeserializer(
             nodeDefinition,
-            keyProperty,
             nodeBuilder,
-            keyProperty,
             sideEffectsAPI,
             onError,
             flagNonDefaultPropertiesFound,

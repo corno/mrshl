@@ -86,11 +86,11 @@ function createCodeCompletionForShorthandProperty(
     return createCodeCompletionForProperty(
         prop,
         $ => {
-            return createCodeCompletionForShorthandNode($.type.get().node, null)
+            return createCodeCompletionForShorthandNode($.type.get().node)
         },
         $ => {
             return mergeAlternatives($.options.toArray((option, optionName) => {
-                const ccsh = createCodeCompletionForShorthandNode(option.node, null)
+                const ccsh = createCodeCompletionForShorthandNode(option.node)
                 return {
                     alternatives: ccsh.alternatives.map(a => {
                         return [
@@ -142,13 +142,9 @@ function mergeAlternatives(entries: Alternatives[]) {
 
 function createCodeCompletionForShorthandNode(
     node: def.NodeDefinition,
-    keyProperty: def.PropertyDefinition | null,
 ): Alternatives {
     const propertyCodeCompletions: Alternatives[] = []
     node.properties.forEach((prop, _propKey) => {
-        if (prop === keyProperty) {
-            return
-        }
         propertyCodeCompletions.push(createCodeCompletionForShorthandProperty(prop))
     })
     return createAlternativesProduct(propertyCodeCompletions)
@@ -158,10 +154,10 @@ function createCodeCompletionForVerboseProperty(prop: def.PropertyDefinition): A
     return createCodeCompletionForProperty(
         prop,
         $ => {
-            return createCodeCompletionAlternativesForVerboseNode($.type.get().node, null)
+            return createCodeCompletionAlternativesForVerboseNode($.type.get().node)
         },
         $ => {
-            const ccvh = createCodeCompletionAlternativesForVerboseNode($["default option"].get().node, null)
+            const ccvh = createCodeCompletionAlternativesForVerboseNode($["default option"].get().node)
             return {
                 alternatives: ccvh.alternatives.map(a => {
                     return [
@@ -190,13 +186,10 @@ function createCodeCompletionForVerboseProperty(prop: def.PropertyDefinition): A
 //     return x
 // }
 
-function createCodeCompletionForVerboseProperties(node: def.NodeDefinition, keyProperty: def.PropertyDefinition | null): Alternatives {
+function createCodeCompletionForVerboseProperties(node: def.NodeDefinition): Alternatives {
     const propertyCodeCompletions: Alternatives[] = []
     let dirty = false
     node.properties.forEach((prop, propKey) => {
-        if (prop === keyProperty) {
-            return
-        }
         dirty = true
         propertyCodeCompletions.push({
             alternatives: createCodeCompletionForVerboseProperty(prop).alternatives.map(alt => {
@@ -220,9 +213,9 @@ function createCodeCompletionForVerboseProperties(node: def.NodeDefinition, keyP
     return createAlternativesProduct(propertyCodeCompletions)
 }
 
-function createCodeCompletionAlternativesForVerboseNode(node: def.NodeDefinition, keyProperty: def.PropertyDefinition | null): Alternatives {
+function createCodeCompletionAlternativesForVerboseNode(node: def.NodeDefinition): Alternatives {
     return {
-        alternatives: createCodeCompletionForVerboseProperties(node, keyProperty).alternatives.map(alt => {
+        alternatives: createCodeCompletionForVerboseProperties(node).alternatives.map(alt => {
             return [' (', alt, ')']
         }),
     }
@@ -265,11 +258,11 @@ function createCodeCompletionsForValueGenerator<Annotation>(
                             null,
                             serializeAlternatives(mergeAlternatives([
                                 {
-                                    alternatives: createCodeCompletionForShorthandNode($.annotation.nodeDefinition, $.annotation.keyProperty).alternatives.map(alt => {
+                                    alternatives: createCodeCompletionForShorthandNode($.annotation.nodeDefinition).alternatives.map(alt => {
                                         return [' <', alt, ' >']
                                     }),
                                 },
-                                createCodeCompletionAlternativesForVerboseNode($.annotation.nodeDefinition, $.annotation.keyProperty),
+                                createCodeCompletionAlternativesForVerboseNode($.annotation.nodeDefinition),
                             ]))
                         )
                         return createCodeCompletionsForValueGenerator(onToken)
@@ -383,7 +376,6 @@ function createCodeCompletionsForValueGenerator<Annotation>(
             function serialize() {
                 return serializeAlternatives(createCodeCompletionForShorthandNode(
                     $.annotation.nodeDefinition,
-                    $.annotation.keyPropertyDefinition
                 ))
             }
             if ($.annotation.annotation !== null) {
@@ -421,7 +413,7 @@ function createCodeCompletionsForValueGenerator<Annotation>(
                 $.annotation.annotation,
                 null,
                 serializeAlternatives({
-                    alternatives: createCodeCompletionForVerboseProperties($.annotation.nodeDefinition, $.annotation.keyPropertyDefinition).alternatives.map(alt => {
+                    alternatives: createCodeCompletionForVerboseProperties($.annotation.nodeDefinition).alternatives.map(alt => {
                         return [
                             '',
                             alt,

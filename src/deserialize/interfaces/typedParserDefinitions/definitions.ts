@@ -14,7 +14,7 @@ export type ComponentTypeDefinition = {
 }
 
 export type DictionaryDefinition = {
-    readonly "key property": g.IReference<PropertyDefinition>
+    readonly "key": StringValueDefinition
     readonly "node": NodeDefinition
 }
 

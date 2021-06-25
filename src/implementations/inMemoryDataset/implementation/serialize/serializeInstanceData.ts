@@ -87,7 +87,6 @@ export function serializeRoot(
     function serializeNode(
         node: Node,
         definition: NodeDefinition,
-        keyProp: string | null,
         isOuterNode: boolean,
         out: SerializeOut,
     ) {
@@ -112,11 +111,15 @@ export function serializeRoot(
                         },
                         out => {
                             collection.entries.forEach(e => {
+                                const keyVal = e.entry.key
+                                if (keyVal === null) {
+                                    throw new Error("unexpected")
+                                }
                                 out.sendEvent(["simple string", {
-                                    value: e.node.values.getUnsafe($$["key property"].name).value.get(),
+                                    value: keyVal?.value.get(),
                                     wrapping: ["quote", {}],
                                 }])
-                                serializeNode(e.node, $$.node, $$["key property"].name, true, out)
+                                serializeNode(e.node, $$.node, true, out)
                             })
                         },
                     )
@@ -138,7 +141,7 @@ export function serializeRoot(
                         },
                         out => {
                             collection.entries.forEach(e => {
-                                serializeNode(e.node, $$.node, null, true, out)
+                                serializeNode(e.node, $$.node, true, out)
                             })
                         },
                     )
@@ -146,7 +149,7 @@ export function serializeRoot(
                 }
                 case "component": {
                     const $ = propDef.type[1]
-                    serializeNode(node.components.getUnsafe(key).node, $.type.get().node, null, false, out)
+                    serializeNode(node.components.getUnsafe(key).node, $.type.get().node, false, out)
                     break
                 }
                 case "tagged union": {
@@ -167,7 +170,7 @@ export function serializeRoot(
                         value: sg.currentStateKey.get(),
                         wrapping: ["apostrophe", {}],
                     }])
-                    serializeNode(node.taggedUnions.getUnsafe(key).currentState.get().node, $.options.getUnsafe(sg.currentStateKey.get()).node, null, false, out)
+                    serializeNode(node.taggedUnions.getUnsafe(key).currentState.get().node, $.options.getUnsafe(sg.currentStateKey.get()).node, false, out)
 
                     break
                 }
@@ -203,10 +206,6 @@ export function serializeRoot(
                     },
                     out => {
                         definition.properties.forEach((propDef, key) => {
-                            if (key === keyProp) {
-                                //don't serialize the key property
-                                return
-                            }
                             if ($.omitPropertiesWithDefaultValues && propertyIsDefault(node, key, propDef)) {
                                 return
                             }
@@ -234,20 +233,12 @@ export function serializeRoot(
                         },
                         out => {
                             definition.properties.forEach((propDef, key) => {
-                                if (key === keyProp) {
-                                    //don't serialize the key property
-                                    return
-                                }
                                 serializeProperty(key, propDef, out)
                             })
                         },
                     )
                 } else {
                     definition.properties.forEach((propDef, key) => {
-                        if (key === keyProp) {
-                            //don't serialize the key property
-                            return
-                        }
                         serializeProperty(key, propDef, out)
                     })
                 }
@@ -266,10 +257,6 @@ export function serializeRoot(
                     },
                     out => {
                         definition.properties.forEach((propDef, key) => {
-                            if (key === keyProp) {
-                                //don't serialize the key property
-                                return
-                            }
                             if (propertyIsDefault(node, key, propDef)) {
                                 return
                             }
@@ -287,5 +274,5 @@ export function serializeRoot(
                 assertUnreachable(style[0])
         }
     }
-    serializeNode(root.rootNode, root.schema["root type"].get().node, null, true, out)
+    serializeNode(root.rootNode, root.schema["root type"].get().node, true, out)
 }

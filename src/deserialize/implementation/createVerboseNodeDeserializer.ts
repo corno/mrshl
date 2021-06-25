@@ -34,9 +34,7 @@ function addComments<TokenAnnotation>(_target: buildAPI.Comments, _annotation: T
 
 export function createVerboseNodeDeserializer<TokenAnnotation, NonTokenAnnotation, ReturnType>(
     nodeDefinition: def.NodeDefinition,
-    keyPropertyDefinition: def.PropertyDefinition | null,
     nodeBuilder: buildAPI.Node,
-    keyProperty: def.PropertyDefinition | null,
     sideEffectsAPI: sideEffectAPI.ValueHandler<TokenAnnotation>[],
     onError: OnError<TokenAnnotation>,
     flagNonDefaultPropertiesFound: () => void,
@@ -57,7 +55,6 @@ export function createVerboseNodeDeserializer<TokenAnnotation, NonTokenAnnotatio
                 annotation: {
                     annotation: $n.annotation,
                     nodeDefinition: nodeDefinition,
-                    keyPropertyDefinition: keyPropertyDefinition,
                 },
             })
         })
@@ -93,269 +90,250 @@ export function createVerboseNodeDeserializer<TokenAnnotation, NonTokenAnnotatio
                     }
                     processedProperties[key] = pp
 
-                    if (propertyDefinition === keyProperty) {
-                        onError("unexpected identifying property", $p.annotation, DiagnosticSeverity.error)
-                        typeSideEffects.forEach(s => {
-                            s.onUnexpectedProperty({
+                    function createPropertyDeserializer<TokenAnnotation, NonTokenAnnotation>(
+                        propertyDefinition: def.PropertyDefinition,
+                        key: string,
+                        nodeBuilder: buildAPI.Node,
+                        sideEffectsAPIs: sideEffectAPI.ValueHandler<TokenAnnotation>[],
+                        onError: OnError<TokenAnnotation>,
+                        flagNonDefaultPropertiesFound: () => void,
+                    ): astncore.ValueHandler<TokenAnnotation, NonTokenAnnotation, ReturnType> {
+
+                        switch (propertyDefinition.type[0]) {
+                            case "dictionary": {
+                                const $$ = propertyDefinition.type[1]
+                                addComments(nodeBuilder.getDictionary(key).comments, $p.annotation)
+
+                                return {
+                                    array: $ => {
+                                        return createUnexpectedArrayHandler(
+                                            `expected a dictionary`,
+                                            $.annotation,
+                                            onError,
+                                            createReturnValue,
+                                        )
+                                    },
+                                    object: createDictionaryDeserializer(
+                                        $$,
+                                        key,
+                                        nodeBuilder,
+                                        sideEffectsAPIs,
+                                        onError,
+                                        flagNonDefaultPropertiesFound,
+                                        createReturnValue,
+                                    ),
+                                    taggedUnion: $ => {
+                                        return createUnexpectedTaggedUnionHandler(
+                                            `expected a dictionary`,
+                                            $.annotation,
+                                            onError,
+                                            createReturnValue,
+                                        )
+                                    },
+                                    simpleString: $ => {
+                                        return createUnexpectedStringHandler(
+                                            `expected a dictionary`,
+                                            $.annotation,
+                                            onError,
+                                            createReturnValue,
+                                        )
+                                    },
+                                    multilineString: $ => {
+                                        return createUnexpectedStringHandler(
+                                            `expected a dictionary`,
+                                            $.annotation,
+                                            onError,
+                                            createReturnValue,
+                                        )
+                                    },
+                                }
+
+                            }
+                            case "list": {
+                                const $$ = propertyDefinition.type[1]
+                                addComments(nodeBuilder.getList(key).comments, $p.annotation)
+
+                                return {
+                                    array: createListDeserializer(
+                                        $$,
+                                        key,
+                                        nodeBuilder,
+                                        sideEffectsAPIs,
+                                        onError,
+                                        flagNonDefaultPropertiesFound,
+                                        createReturnValue,
+                                    ),
+                                    object: $ => {
+                                        return createUnexpectedObjectHandler(
+                                            `expected a list`,
+                                            $.annotation,
+                                            onError,
+                                            createReturnValue,
+                                        )
+                                    },
+                                    taggedUnion: $ => {
+                                        return createUnexpectedTaggedUnionHandler(
+                                            `expected a list`,
+                                            $.annotation,
+                                            onError,
+                                            createReturnValue,
+                                        )
+                                    },
+                                    simpleString: $ => {
+                                        return createUnexpectedStringHandler(
+                                            `expected a list`,
+                                            $.annotation,
+                                            onError,
+                                            createReturnValue,
+                                        )
+                                    },
+                                    multilineString: $ => {
+                                        return createUnexpectedStringHandler(
+                                            `expected a list`,
+                                            $.annotation,
+                                            onError,
+                                            createReturnValue,
+                                        )
+                                    },
+                                }
+                            }
+                            case "component": {
+                                const $ = propertyDefinition.type[1]
+                                const componentBuilder = nodeBuilder.getComponent(key)
+                                addComments(nodeBuilder.getComponent(key).comments, $p.annotation)
+
+                                return createNodeDeserializer(
+                                    $.type.get().node,
+                                    componentBuilder.node,
+                                    sideEffectsAPIs.map(s => {
+                                        return s.onComponent()
+                                    }),
+                                    onError,
+                                    flagNonDefaultPropertiesFound,
+                                    componentBuilder.comments,
+                                    createReturnValue,
+                                )
+                            }
+                            case "tagged union": {
+                                const $ = propertyDefinition.type[1]
+                                addComments(nodeBuilder.getTaggedUnion(key).comments, $p.annotation)
+
+                                return {
+                                    array: $ => {
+                                        return createUnexpectedArrayHandler(
+                                            `expected a tagged union`,
+                                            $.annotation,
+                                            onError,
+                                            createReturnValue,
+                                        )
+                                    },
+                                    object: $ => {
+                                        return createUnexpectedObjectHandler(
+                                            `expected a tagged union`,
+                                            $.annotation,
+                                            onError,
+                                            createReturnValue,
+                                        )
+                                    },
+                                    taggedUnion: createTaggedUnionDeserializer(
+                                        $,
+                                        key,
+                                        nodeBuilder,
+                                        sideEffectsAPIs,
+                                        onError,
+                                        flagNonDefaultPropertiesFound,
+                                        createReturnValue,
+                                    ),
+                                    simpleString: $ => {
+                                        return createUnexpectedStringHandler(
+                                            `expected a tagged union`,
+                                            $.annotation,
+                                            onError,
+                                            createReturnValue,
+                                        )
+                                    },
+                                    multilineString: $ => {
+                                        return createUnexpectedStringHandler(
+                                            `expected a tagged union`,
+                                            $.annotation,
+                                            onError,
+                                            createReturnValue,
+                                        )
+                                    },
+                                }
+                            }
+                            case "string": {
+                                const $ = propertyDefinition.type[1]
+                                addComments(nodeBuilder.getValue(key).comments, $p.annotation)
+
+                                return {
+                                    array: $ => {
+                                        return createUnexpectedArrayHandler(
+                                            `expected a string`,
+                                            $.annotation,
+                                            onError,
+                                            createReturnValue,
+                                        )
+                                    },
+                                    object: $ => {
+                                        return createUnexpectedObjectHandler(
+                                            `expected a string`,
+                                            $.annotation,
+                                            onError,
+                                            createReturnValue,
+                                        )
+                                    },
+                                    taggedUnion: $ => {
+                                        return createUnexpectedTaggedUnionHandler(
+                                            `expected a string`,
+                                            $.annotation,
+                                            onError,
+                                            createReturnValue,
+                                        )
+                                    },
+                                    multilineString: createMultilineStringDeserializer(
+                                        $,
+                                        key,
+                                        nodeBuilder,
+                                        sideEffectsAPIs,
+                                        onError,
+                                        flagNonDefaultPropertiesFound,
+                                        createReturnValue,
+                                    ),
+                                    simpleString: createSimpleStringDeserializer(
+                                        $,
+                                        key,
+                                        nodeBuilder,
+                                        sideEffectsAPIs,
+                                        onError,
+                                        flagNonDefaultPropertiesFound,
+                                        createReturnValue,
+                                    ),
+                                }
+                            }
+                            default:
+                                return assertUnreachable(propertyDefinition.type[0])
+                        }
+                    }
+                    return wrap(createPropertyDeserializer(
+                        propertyDefinition,
+                        key,
+                        nodeBuilder,
+                        typeSideEffects.map(s => {
+                            return s.onProperty({
                                 data: $p.data,
                                 annotation: {
-                                    nodeDefinition: nodeDefinition,
+                                    definition: propertyDefinition,
                                     key: key,
                                     annotation: $p.annotation,
                                 },
                             })
-                        })
-                        return astncore.createDummyRequiredValueHandler(createReturnValue)
-                    } else {
-
-
-                        function createPropertyDeserializer<TokenAnnotation, NonTokenAnnotation>(
-                            propertyDefinition: def.PropertyDefinition,
-                            key: string,
-                            nodeBuilder: buildAPI.Node,
-                            sideEffectsAPIs: sideEffectAPI.ValueHandler<TokenAnnotation>[],
-                            onError: OnError<TokenAnnotation>,
-                            flagNonDefaultPropertiesFound: () => void,
-                        ): astncore.ValueHandler<TokenAnnotation, NonTokenAnnotation, ReturnType> {
-
-                            switch (propertyDefinition.type[0]) {
-                                case "dictionary": {
-                                    const $$ = propertyDefinition.type[1]
-                                    addComments(nodeBuilder.getDictionary(key).comments, $p.annotation)
-
-                                    return {
-                                        array: $ => {
-                                            return createUnexpectedArrayHandler(
-                                                `expected a dictionary`,
-                                                $.annotation,
-                                                onError,
-                                                createReturnValue,
-                                            )
-                                        },
-                                        object: createDictionaryDeserializer(
-                                            $$,
-                                            key,
-                                            nodeBuilder,
-                                            sideEffectsAPIs,
-                                            onError,
-                                            flagNonDefaultPropertiesFound,
-                                            createReturnValue,
-                                        ),
-                                        taggedUnion: $ => {
-                                            return createUnexpectedTaggedUnionHandler(
-                                                `expected a dictionary`,
-                                                $.annotation,
-                                                onError,
-                                                createReturnValue,
-                                            )
-                                        },
-                                        simpleString: $ => {
-                                            return createUnexpectedStringHandler(
-                                                `expected a dictionary`,
-                                                $.annotation,
-                                                onError,
-                                                createReturnValue,
-                                            )
-                                        },
-                                        multilineString: $ => {
-                                            return createUnexpectedStringHandler(
-                                                `expected a dictionary`,
-                                                $.annotation,
-                                                onError,
-                                                createReturnValue,
-                                            )
-                                        },
-                                    }
-
-                                }
-                                case "list": {
-                                    const $$ = propertyDefinition.type[1]
-                                    addComments(nodeBuilder.getList(key).comments, $p.annotation)
-
-                                    return {
-                                        array: createListDeserializer(
-                                            $$,
-                                            key,
-                                            nodeBuilder,
-                                            sideEffectsAPIs,
-                                            onError,
-                                            flagNonDefaultPropertiesFound,
-                                            createReturnValue,
-                                        ),
-                                        object: $ => {
-                                            return createUnexpectedObjectHandler(
-                                                `expected a list`,
-                                                $.annotation,
-                                                onError,
-                                                createReturnValue,
-                                            )
-                                        },
-                                        taggedUnion: $ => {
-                                            return createUnexpectedTaggedUnionHandler(
-                                                `expected a list`,
-                                                $.annotation,
-                                                onError,
-                                                createReturnValue,
-                                            )
-                                        },
-                                        simpleString: $ => {
-                                            return createUnexpectedStringHandler(
-                                                `expected a list`,
-                                                $.annotation,
-                                                onError,
-                                                createReturnValue,
-                                            )
-                                        },
-                                        multilineString: $ => {
-                                            return createUnexpectedStringHandler(
-                                                `expected a list`,
-                                                $.annotation,
-                                                onError,
-                                                createReturnValue,
-                                            )
-                                        },
-                                    }
-                                }
-                                case "component": {
-                                    const $ = propertyDefinition.type[1]
-                                    const componentBuilder = nodeBuilder.getComponent(key)
-                                    addComments(nodeBuilder.getComponent(key).comments, $p.annotation)
-
-                                    return createNodeDeserializer(
-                                        $.type.get().node,
-                                        null,
-                                        componentBuilder.node,
-                                        null,
-                                        sideEffectsAPIs.map(s => {
-                                            return s.onComponent()
-                                        }),
-                                        onError,
-                                        flagNonDefaultPropertiesFound,
-                                        componentBuilder.comments,
-                                        createReturnValue,
-                                    )
-                                }
-                                case "tagged union": {
-                                    const $ = propertyDefinition.type[1]
-                                    addComments(nodeBuilder.getTaggedUnion(key).comments, $p.annotation)
-
-                                    return {
-                                        array: $ => {
-                                            return createUnexpectedArrayHandler(
-                                                `expected a tagged union`,
-                                                $.annotation,
-                                                onError,
-                                                createReturnValue,
-                                            )
-                                        },
-                                        object: $ => {
-                                            return createUnexpectedObjectHandler(
-                                                `expected a tagged union`,
-                                                $.annotation,
-                                                onError,
-                                                createReturnValue,
-                                            )
-                                        },
-                                        taggedUnion: createTaggedUnionDeserializer(
-                                            $,
-                                            key,
-                                            nodeBuilder,
-                                            sideEffectsAPIs,
-                                            onError,
-                                            flagNonDefaultPropertiesFound,
-                                            createReturnValue,
-                                        ),
-                                        simpleString: $ => {
-                                            return createUnexpectedStringHandler(
-                                                `expected a tagged union`,
-                                                $.annotation,
-                                                onError,
-                                                createReturnValue,
-                                            )
-                                        },
-                                        multilineString: $ => {
-                                            return createUnexpectedStringHandler(
-                                                `expected a tagged union`,
-                                                $.annotation,
-                                                onError,
-                                                createReturnValue,
-                                            )
-                                        },
-                                    }
-                                }
-                                case "string": {
-                                    const $ = propertyDefinition.type[1]
-                                    addComments(nodeBuilder.getValue(key).comments, $p.annotation)
-
-                                    return {
-                                        array: $ => {
-                                            return createUnexpectedArrayHandler(
-                                                `expected a string`,
-                                                $.annotation,
-                                                onError,
-                                                createReturnValue,
-                                            )
-                                        },
-                                        object: $ => {
-                                            return createUnexpectedObjectHandler(
-                                                `expected a string`,
-                                                $.annotation,
-                                                onError,
-                                                createReturnValue,
-                                            )
-                                        },
-                                        taggedUnion: $ => {
-                                            return createUnexpectedTaggedUnionHandler(
-                                                `expected a string`,
-                                                $.annotation,
-                                                onError,
-                                                createReturnValue,
-                                            )
-                                        },
-                                        multilineString: createMultilineStringDeserializer(
-                                            $,
-                                            key,
-                                            nodeBuilder,
-                                            sideEffectsAPIs,
-                                            onError,
-                                            flagNonDefaultPropertiesFound,
-                                            createReturnValue,
-                                        ),
-                                        simpleString: createSimpleStringDeserializer(
-                                            $,
-                                            key,
-                                            nodeBuilder,
-                                            sideEffectsAPIs,
-                                            onError,
-                                            flagNonDefaultPropertiesFound,
-                                            createReturnValue,
-                                        ),
-                                    }
-                                }
-                                default:
-                                    return assertUnreachable(propertyDefinition.type[0])
-                            }
-                        }
-                        return wrap(createPropertyDeserializer(
-                            propertyDefinition,
-                            key,
-                            nodeBuilder,
-                            typeSideEffects.map(s => {
-                                return s.onProperty({
-                                    data: $p.data,
-                                    annotation: {
-                                        definition: propertyDefinition,
-                                        key: key,
-                                        annotation: $p.annotation,
-                                    },
-                                })
-                            }),
-                            onError,
-                            () => {
-                                pp.isNonDefault = true
-                            },
-                        ))
-                    }
+                        }),
+                        onError,
+                        () => {
+                            pp.isNonDefault = true
+                        },
+                    ))
                 }
 
             },
@@ -364,9 +342,6 @@ export function createVerboseNodeDeserializer<TokenAnnotation, NonTokenAnnotatio
                 let hadNonDefaultProperties = false
 
                 nodeDefinition.properties.forEach((propDefinition, propKey) => {
-                    if (propDefinition === keyProperty) {
-                        return
-                    }
                     const pp = processedProperties[propKey]
                     if (pp === undefined) {
                         defaultInitializeProperty(

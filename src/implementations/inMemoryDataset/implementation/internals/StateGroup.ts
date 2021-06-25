@@ -23,7 +23,6 @@ export class State {
     ) {
         this.key = key
         this.node = new Node(
-            null,
             node => {
                 initializeStateNode(node, this.errorsAggregator, this.subentriesErrorsAggregator)
             },

@@ -15,7 +15,6 @@ export interface DictionaryHandler<Annotation> {
         annotation: {
             annotation: Annotation
             nodeDefinition: def.NodeDefinition
-            keyProperty: def.PropertyDefinition
             //entry: BSEEntry
         }
     }): ValueHandler<Annotation>
@@ -94,7 +93,6 @@ export interface ValueHandler<Annotation> {
         data: astncore.ObjectData
         annotation: {
             nodeDefinition: def.NodeDefinition
-            keyPropertyDefinition: def.PropertyDefinition | null
             annotation: Annotation
         }
     }): VerboseTypeHandler<Annotation>
@@ -102,7 +100,6 @@ export interface ValueHandler<Annotation> {
         data: astncore.ArrayData
         annotation: {
             nodeDefinition: def.NodeDefinition
-            keyPropertyDefinition: def.PropertyDefinition | null
             annotation: Annotation | null //null if the shorthand type is mixed in
         }
     }): ShorthandTypeHandler<Annotation>

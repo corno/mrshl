@@ -15,7 +15,6 @@ export class Component {
         createdInNewContext: boolean,
     ) {
         this.node = new Node(
-            null,
             node => {
                 initializeNode(
                     node,

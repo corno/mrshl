@@ -33,9 +33,7 @@ function addComments<TokenAnnotation>(_target: buildAPI.Comments, _annotation: T
 
 export function createShorthandNodeDeserializer<TokenAnnotation, NonTokenAnnotation, ReturnType>(
     nodeDefinition: def.NodeDefinition,
-    keyPropertyDefinition: def.PropertyDefinition | null,
     nodeBuilderX: buildAPI.Node,
-    keyProperty: def.PropertyDefinition | null,
     sideEffectsAPIsX: sideEffectAPI.ValueHandler<TokenAnnotation>[],
     onError: OnError<TokenAnnotation>,
     flagNonDefaultPropertiesFound: () => void,
@@ -74,14 +72,10 @@ export function createShorthandNodeDeserializer<TokenAnnotation, NonTokenAnnotat
                     annotation: {
                         annotation: ann,
                         nodeDefinition: nodeDefinition,
-                        keyPropertyDefinition: keyPropertyDefinition,
                     },
                 })
             })
             definition.properties.forEach((propDefinition, propKey) => {
-                if (keyProperty === propDefinition) {
-                    return
-                }
                 expectedElements.push({
                     name: propKey,
                     nodeBuilder: nb,
@@ -192,9 +186,7 @@ export function createShorthandNodeDeserializer<TokenAnnotation, NonTokenAnnotat
 
                     return createVerboseNodeDeserializer(
                         oc.definition.node,
-                        null,
                         oc.option.node,
-                        null,
                         oc.handlers,
                         onError,
                         flagNonDefaultPropertiesFound,
@@ -254,9 +246,7 @@ export function createShorthandNodeDeserializer<TokenAnnotation, NonTokenAnnotat
                             const componentBuilder = nextProperty.nodeBuilder.getComponent(nextProperty.name)
                             return createVerboseNodeDeserializer(
                                 $.type.get().node,
-                                null,
                                 componentBuilder.node,
-                                null,
                                 nextProperty.ValueHandlers.map(s => {
                                     return s.onProperty({
                                         annotation: {
@@ -306,9 +296,7 @@ export function createShorthandNodeDeserializer<TokenAnnotation, NonTokenAnnotat
 
                     return createShorthandNodeDeserializer(
                         oc.definition.node,
-                        null,
                         oc.option.node,
-                        null,
                         oc.handlers,
                         onError,
                         flagNonDefaultPropertiesFound,
@@ -369,9 +357,7 @@ export function createShorthandNodeDeserializer<TokenAnnotation, NonTokenAnnotat
                             const componentBuilder = nextProperty.nodeBuilder.getComponent(nextProperty.name)
                             return createShorthandNodeDeserializer(
                                 $.type.get().node,
-                                null,
                                 componentBuilder.node,
-                                null,
                                 nextProperty.ValueHandlers.map(s => {
                                     return s.onProperty({
                                         annotation: {

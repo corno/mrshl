@@ -3,7 +3,6 @@
 */
 
 import * as asyncAPI from "../../../interfaces/asyncAPI/asyncAPI"
-import * as cc from "./changeControl"
 import * as def from "../../../deserialize/interfaces/typedParserDefinitions"
 import * as g from "./genericimp"
 //import * as s from "../serialize"
@@ -20,38 +19,53 @@ import { Collection, addEntry } from "./internals"
 
 function attachKey(collection: Collection, entry: EntryPlaceholder) {
     if (collection.dictionary !== null) {
-
-        const cd = collection.dictionary
-        const keyValue = entry.node.values.getUnsafe(collection.dictionary.keyPropertyName)
-        checkDuplicates(collection, keyValue.value.get(), cd.keyPropertyName)
-        keyValue.changeSubscribers.push(cd.duplicatesCheckFunction)
+        const key = entry.entry.key
+        if (key !== null) {
+            const cd = collection.dictionary
+            checkDuplicates(collection, key.value.get())
+            key.changeSubscribers.push(cd.duplicatesCheckFunction)
+        }
     }
 }
 
-export function checkDuplicates(collection: Collection, key: string, keyPropertyName: string): void {
+export function checkDuplicates(collection: Collection, key: string): void {
     const matches = collection.entries.mapToRawArray(e => e).filter(e => {
         //if it is removed, it is never a duplicate
         if (e.status.get()[0] === "inactive") {
             return false
         }
-        return e.node.values.getUnsafe(keyPropertyName).value.get() === key
+        const keyData = e.entry.key
+        if (keyData === null) {
+            return false
+        }
+        return keyData.value.get() === key
     })
     if (matches.length > 1) {
         matches.forEach(m => {
-            m.entry.node.values.getUnsafe(keyPropertyName).isDuplicateImp.update(true)
+            if (m.entry.key === null) {
+                return
+            }
+            m.entry.key.isDuplicateImp.update(true)
         })
     }
     if (matches.length === 1) {
-        matches[0].entry.node.values.getUnsafe(keyPropertyName).isDuplicateImp.update(false)
+        const keyVal = matches[0].entry.key
+        if (keyVal === null) {
+            throw new Error("unexpected")
+        }
+        keyVal.isDuplicateImp.update(false)
     }
 }
 
 function detachKey(collection: Collection, entry: EntryPlaceholder) {
     if (collection.dictionary !== null) {
         const cd = collection.dictionary
-        g.removeFromArray(entry.node.values.getUnsafe(collection.dictionary.keyPropertyName).changeSubscribers, e => e === cd.duplicatesCheckFunction)
-        const keyValue = entry.node.values.getUnsafe(collection.dictionary.keyPropertyName)
-        checkDuplicates(collection, keyValue.value.get(), cd.keyPropertyName)
+        if (entry.entry.key === null) {
+            throw new Error("unexpected")
+        }
+        g.removeFromArray(entry.entry.key.changeSubscribers, e => e === cd.duplicatesCheckFunction)
+        const keyValue = entry.entry.key
+        checkDuplicates(collection, keyValue.value.get())
     }
 }
 

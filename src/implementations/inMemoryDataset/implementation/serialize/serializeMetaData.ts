@@ -99,8 +99,15 @@ export function serializeMetaData(
                                     case "dictionary": {
                                         const $$ = propDef.type[1]
                                         serializeVerboseType({
-                                            "key property": () => {
-                                                serializeReference($$["key property"])
+                                            "key": () => {
+                                                serializeVerboseType({
+                                                    "default value": () => {
+                                                        serializeQuotedString($$.key["default value"])
+                                                    },
+                                                    "quoted": () => {
+                                                        serializeNonWrappedString($$.key.quoted ? "true" : "false")
+                                                    },
+                                                })
                                             },
                                             "node": () => {
                                                 serializeNodeDefinition($$.node)
@@ -111,9 +118,6 @@ export function serializeMetaData(
                                     case "list": {
                                         const $$ = propDef.type[1]
                                         serializeVerboseType({
-                                            "key property": () => {
-                                                //
-                                            },
                                             "node": () => {
                                                 serializeNodeDefinition($$.node)
                                             },

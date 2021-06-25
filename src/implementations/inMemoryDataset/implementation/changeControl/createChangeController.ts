@@ -1,5 +1,5 @@
 import * as g from "../genericimp"
-import { IChangeController, IChanges, IEntryAddition, IEntryRemoval, IStateChange, IValue } from "./ChangeController"
+import { IChangeController, IEntryAddition, IEntryRemoval, IStateChange, IValue } from "./ChangeController"
 
 function assertUnreachable(_x: never) {
     throw new Error("Unreachable")

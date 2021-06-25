@@ -41,7 +41,7 @@ export interface Dictionary {
 export interface List {
     readonly comments: Comments
     //forEachEntry(callback: (entry: Entry) => void): void
-    createEntry(): Entry
+    createEntry(): Element
     //isEmpty(): boolean
 }
 
@@ -51,6 +51,12 @@ export interface Component {
 }
 
 export interface Entry {
+    readonly node: Node
+    readonly key: Value
+    readonly comments: Comments
+}
+
+export interface Element {
     readonly node: Node
     readonly comments: Comments
 }

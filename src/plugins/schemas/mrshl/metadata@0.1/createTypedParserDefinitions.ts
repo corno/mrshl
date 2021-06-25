@@ -20,7 +20,7 @@ function convertToGenericNode(
     const properties = createDictionary<targetDef.PropertyDefinition>({})
     node.properties.forEach((prop, key) => {
         if (prop === keyProperty) {
-            //return
+            return
         }
         properties.add(key, {
             type: ((): targetDef.PropertyTypeDefinition => {
@@ -31,11 +31,19 @@ function convertToGenericNode(
                             case "dictionary": {
                                 const $$ = $.type[1]
                                 const targetNode = convertToGenericNode($$.node, componentTypes, $$["key property"].get(), resolveRegistry)
+                                const foo = $$["key property"].get()
+                                if (foo.type[0] !== "value") {
+                                    throw new Error("unexpected")
+                                }
                                 return ["dictionary", {
                                     "node": targetNode,
-                                    "key property": createReference($$["key property"].name, targetNode.properties, resolveRegistry, keys => {
-                                        throw new Error(`UNEXPECTED: KEY Property not found: ${$$["key property"].name}, available keys: ${keys.join()}`);
-                                    }),
+                                    "key": {
+                                        "default value": foo.type[1]["default value"],
+                                        "quoted": foo.type[1].quoted,
+                                    },
+                                    // "key property": createReference($$["key property"].name, targetNode.properties, resolveRegistry, keys => {
+                                    //     throw new Error(`UNEXPECTED: KEY Property not found: ${$$["key property"].name}, available keys: ${keys.join()}`);
+                                    // }),
                                 }]
                             }
                             case "list": {

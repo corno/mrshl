@@ -26,11 +26,10 @@ export function initializeNode(
                     { type: ["dictionary", $] },
                     subEntriesErrorsAggregator,
                     new Dictionary(
-                        property.type[1]["key property"].name,
-                        property.type[1]["key property"].get(),
+                        property.type[1].key,
                         (oldValue: string, newValue: string) => {
-                            checkDuplicates(collection, oldValue, $["key property"].name)
-                            checkDuplicates(collection, newValue, $["key property"].name)
+                            checkDuplicates(collection, oldValue)
+                            checkDuplicates(collection, newValue)
                         },
                     ),
                 )
