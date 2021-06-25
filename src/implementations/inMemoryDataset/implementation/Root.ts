@@ -1,8 +1,21 @@
 import * as def from "../../../deserialize/interfaces/typedParserDefinitions"
-import { RootErrorsAggregator } from "./internals/ErrorManager"
+import * as g from "./genericimp"
 import { Global } from "./Global"
 import { Node } from "./internals/Node"
 import { initializeNode } from "./initializeNode"
+import { IParentErrorsAggregator } from "./internals"
+
+
+export class RootErrorsAggregator implements IParentErrorsAggregator {
+    public readonly isAttached = new g.ReactiveValue<boolean>(true)
+    public readonly errorCount: g.ReactiveValue<number>
+    constructor() {
+        this.errorCount = new g.ReactiveValue<number>(0)
+    }
+    public add(errorCount: number):void {
+        this.errorCount.update(this.errorCount.get() + errorCount)
+    }
+}
 
 export class RootImp {
     public readonly errorsAggregator = new RootErrorsAggregator()

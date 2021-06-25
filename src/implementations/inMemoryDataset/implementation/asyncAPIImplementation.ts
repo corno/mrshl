@@ -16,8 +16,6 @@ import * as imp from "./internals"
 import { initializeNode } from "./initializeNode"
 import { ISubscribableValue } from "../../../interfaces/asyncAPI/generic"
 import { State, StateGroup, setInitializedState, EntryPlaceholder } from "./internals"
-import { IStateChange } from "./changeControl/ChangeController"
-import { IValue } from "./changeControl/ChangeController"
 import { Collection, addEntry } from "./internals"
 
 function attachKey(collection: Collection, entry: EntryPlaceholder) {

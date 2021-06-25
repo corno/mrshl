@@ -107,17 +107,6 @@ export class FlexibleErrorsAggregator implements IParentErrorsAggregator {
     }
 }
 
-export class RootErrorsAggregator implements IParentErrorsAggregator {
-    public readonly isAttached = new g.ReactiveValue<boolean>(true)
-    public readonly errorCount: g.ReactiveValue<number>
-    constructor() {
-        this.errorCount = new g.ReactiveValue<number>(0)
-    }
-    public add(errorCount: number):void {
-        this.errorCount.update(this.errorCount.get() + errorCount)
-    }
-}
-
 export class ErrorManager {
     public readonly validationErrors = new g.ReactiveArray<ValidationError>()
 }
