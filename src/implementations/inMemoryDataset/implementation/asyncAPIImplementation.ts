@@ -15,8 +15,47 @@ import { Command, RootImp } from "./Root"
 import * as imp from "./internals"
 import { initializeNode } from "./initializeNode"
 import { ISubscribableValue } from "../../../interfaces/asyncAPI/generic"
-import { State, StateGroup, setInitializedState } from "./internals"
+import { State, StateGroup, setInitializedState, EntryPlaceholder } from "./internals"
 import { IStateChange } from "./changeControl/ChangeController"
+import { IValue } from "./changeControl/ChangeController"
+import { Collection, addEntry } from "./internals"
+
+function attachKey(collection: Collection, entry: EntryPlaceholder) {
+    if (collection.dictionary !== null) {
+
+        const cd = collection.dictionary
+        const keyValue = entry.node.values.getUnsafe(collection.dictionary.keyPropertyName)
+        checkDuplicates(collection, keyValue.value.get(), cd.keyPropertyName)
+        keyValue.changeSubscribers.push(cd.duplicatesCheckFunction)
+    }
+}
+
+export function checkDuplicates(collection: Collection, key: string, keyPropertyName: string): void {
+    const matches = collection.entries.mapToRawArray(e => e).filter(e => {
+        //if it is removed, it is never a duplicate
+        if (e.status.get()[0] === "inactive") {
+            return false
+        }
+        return e.node.values.getUnsafe(keyPropertyName).value.get() === key
+    })
+    if (matches.length > 1) {
+        matches.forEach(m => {
+            m.entry.node.values.getUnsafe(keyPropertyName).isDuplicateImp.update(true)
+        })
+    }
+    if (matches.length === 1) {
+        matches[0].entry.node.values.getUnsafe(keyPropertyName).isDuplicateImp.update(false)
+    }
+}
+
+function detachKey(collection: Collection, entry: EntryPlaceholder) {
+    if (collection.dictionary !== null) {
+        const cd = collection.dictionary
+        g.removeFromArray(entry.node.values.getUnsafe(collection.dictionary.keyPropertyName).changeSubscribers, e => e === cd.duplicatesCheckFunction)
+        const keyValue = entry.node.values.getUnsafe(collection.dictionary.keyPropertyName)
+        checkDuplicates(collection, keyValue.value.get(), cd.keyPropertyName)
+    }
+}
 
 function assertUnreachable<RT>(_x: never): RT {
     throw new Error("unreachable")
@@ -60,7 +99,7 @@ export function createDataset(
     global: Global,
     _syncDataset: id.IDataset,
 ): asyncAPI.Dataset {
-    class Dataset implements asyncAPI.Dataset {
+    class Dataset {
 
         public readonly errorAmount: g.ReactiveValue<number>
         public readonly errorManager: imp.ErrorManager
@@ -139,7 +178,7 @@ function createNode(
     definition: def.NodeDefinition,
     global: Global,
 ): asyncAPI.Node {
-    class Node implements asyncAPI.Node {
+    class Node {
         public readonly imp: imp.Node
         private readonly global: Global
         private readonly definition: def.NodeDefinition
@@ -248,7 +287,27 @@ function createNode(
                 }
             })()
             function createCollection(collectionImp: imp.Collection, nodeDefinition: def.NodeDefinition, global: Global): asyncAPI.Collection {
-                class Collection implements asyncAPI.Collection {
+
+                class EntryAddition {
+                    public readonly collection: imp.Collection
+                    public readonly entry: EntryPlaceholder
+                    constructor(collection: imp.Collection, entry: EntryPlaceholder) {
+                        this.collection = collection
+                        this.entry = entry
+                    }
+                    public apply(): void {
+                        //console.log("ATTACHING Entry")
+                        addEntry(this.collection, this.entry)
+                        attachKey(this.collection, this.entry)
+                    }
+                    public revert(): void {
+                        this.collection.entries.removeEntry(this.entry)
+                        this.entry.entry.errorsAggregator.detach()
+                        this.entry.entry.subentriesErrorsAggregator.detach()
+                        detachKey(this.collection, this.entry)
+                    }
+                }
+                class Collection {
                     public readonly entries: g.ReactiveArray<asyncAPI.Entry>
                     private readonly global: Global
                     private readonly imp: imp.Collection
@@ -268,7 +327,28 @@ function createNode(
                                         console.error("trying to delete a already inactive entry")
                                         return
                                     }
-                                    this.global.changeController.deleteEntry(new cc.EntryRemoval(entryImp.parent, entryImp))
+
+                                    class EntryRemoval {
+                                        public readonly collection: imp.Collection
+                                        public readonly entry: EntryPlaceholder
+                                        constructor(collection: imp.Collection, entry: EntryPlaceholder) {
+                                            this.collection = collection
+                                            this.entry = entry
+                                        }
+                                        public apply(): void {
+                                            this.entry.entry.errorsAggregator.detach()
+                                            this.entry.entry.subentriesErrorsAggregator.detach()
+                                            this.entry.status.update(["inactive", { reason: ["deleted"] }])
+                                            detachKey(this.collection, this.entry)
+                                        }
+                                        public revert(): void {
+                                            this.entry.entry.errorsAggregator.attach(this.collection.errorsAggregator)
+                                            this.entry.entry.subentriesErrorsAggregator.attach(this.collection.errorsAggregator)
+                                            this.entry.status.update(["active"])
+                                            attachKey(this.collection, this.entry)
+                                        }
+                                    }
+                                    this.global.changeController.deleteEntry(new EntryRemoval(entryImp.parent, entryImp))
                                 },
                             }
                             return entry
@@ -293,7 +373,7 @@ function createNode(
                                     global,
                                 )
 
-                                callback(new cc.EntryAddition(
+                                callback(new EntryAddition(
                                     this.imp,
                                     new imp.EntryPlaceholder(
                                         newEntry,
@@ -311,7 +391,7 @@ function createNode(
                             this.imp.dictionary,
                         )
 
-                        this.global.changeController.addEntry(new cc.EntryAddition(
+                        this.global.changeController.addEntry(new EntryAddition(
                             this.imp,
                             new imp.EntryPlaceholder(entry, this.imp, true)
                         ))
@@ -377,7 +457,7 @@ function createNode(
                         state.subentriesErrorsAggregator.detach()
                     }
 
-                    class StateChange implements IStateChange {
+                    class StateChange {
                         private readonly stateGroup: StateGroup
                         private readonly oldState: State
                         private readonly newState: State
@@ -450,7 +530,25 @@ function createNode(
                 changeStatus: valueImp.changeStatus,
                 createdInNewContext: valueImp.createdInNewContext,
                 updateValue: (v: string): void => {
-                    global.changeController.updateValue(new cc.ValueUpdate(valueImp), v)
+                    class ValueUpdate {
+                        private readonly imp: imp.Value
+                        constructor(valueImp: imp.Value) {
+                            this.imp = valueImp
+                        }
+                        getValue(): string {
+                            return this.imp.value.get()
+                        }
+                        public setValue(newValue: string, _onError?: (messsage: string) => void): void {
+                            const previousValue = this.imp.value.get()
+                            if (previousValue === newValue) {
+                                return
+                            } else {
+                                imp.setValue(this.imp, previousValue, newValue)
+                            }
+                            //FIXME call onError
+                        }
+                    }
+                    global.changeController.updateValue(new ValueUpdate(valueImp), v)
                 },
                 setMainFocussableRepresentation: (f: asyncAPI.IFocussable): void => {
                     valueImp.focussable.update(new g.Maybe(f))

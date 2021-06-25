@@ -31,7 +31,7 @@ export function createNode(
         entryImp: imp.Entry,
         collectionImp: imp.Collection,
     ): buildAPI.Entry {
-        class Entry implements buildAPI.Entry {
+        class Entry {
             public readonly node: buildAPI.Node
             public readonly comments: imp.Comments
             constructor(
@@ -57,7 +57,7 @@ export function createNode(
         }
         return new Entry()
     }
-    class Node implements buildAPI.Node {
+    class Node {
         private readonly imp: imp.Node
         private readonly definition: def.NodeDefinition
         private readonly global: Global
@@ -77,7 +77,7 @@ export function createNode(
             const collection = this.imp.collections.getUnsafe(key)
 
 
-            class Dictionary implements buildAPI.Dictionary {
+            class Dictionary {
                 readonly comments: imp.Comments
                 public readonly imp: imp.Collection
                 private readonly definition: def.DictionaryDefinition
@@ -129,7 +129,7 @@ export function createNode(
             }
             const collection = this.imp.collections.getUnsafe(key)
 
-            class List implements buildAPI.List {
+            class List {
                 readonly comments: imp.Comments
 
                 private readonly imp: imp.Collection
@@ -209,7 +209,7 @@ export function createNode(
                 definition: def.TaggedUnionDefinition,
                 global: Global
             ): buildAPI.TaggedUnion {
-                class State implements buildAPI.Option {
+                class State {
                     public readonly node: buildAPI.Node
                     private readonly imp: imp.State
                     constructor(stateImp: imp.State, definition: def.OptionDefinition, global: Global) {
@@ -220,7 +220,7 @@ export function createNode(
                         return this.imp.key
                     }
                 }
-                class TaggedUnion implements buildAPI.TaggedUnion {
+                class TaggedUnion {
                     public readonly comments: imp.Comments
                     public readonly definition: def.TaggedUnionDefinition
                     constructor() {
@@ -253,7 +253,7 @@ export function createNode(
                 throw new Error("not a string")
             }
 
-            class Value implements buildAPI.Value {
+            class Value {
                 public readonly comments: imp.Comments
                 private readonly imp: imp.Value
                 public readonly isQuoted: boolean
@@ -282,7 +282,7 @@ export function createNode(
             const thisNode = this
             this.definition.properties.forEach((p, pKey) => {
 
-                class Property implements buildAPI.Property {
+                class Property {
                     public readonly type: PropertyType
                     public readonly isKeyProperty: boolean
                     constructor(

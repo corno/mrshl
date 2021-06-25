@@ -6,7 +6,7 @@ import * as streamVal from "../../../../deserialize/interfaces/streamingValidati
 
 export function createNOPSideEffects<Annotation>(): streamVal.RootHandler<Annotation> {
 
-    class NOPSideEffects<Annotation> implements streamVal.RootHandler<Annotation> {
+    class NOPSideEffects<Annotation> {
         root: streamVal.ValueHandler<Annotation>
         constructor() {
             this.root = createValueNOPSideEffects()
@@ -22,7 +22,7 @@ function createValueNOPSideEffects<Annotation>(): streamVal.ValueHandler<Annotat
     return {
         onShorthandTypeOpen: () => {
 
-            class ShorthandTypeNOPSideEffects<Annotation> implements streamVal.ShorthandTypeHandler<Annotation> {
+            class ShorthandTypeNOPSideEffects {
                 constructor() {
                     //
                 }
@@ -57,7 +57,7 @@ function createValueNOPSideEffects<Annotation>(): streamVal.ValueHandler<Annotat
         },
         onDictionary: () => {
 
-            class DictionaryNOPSideEffects<Annotation> implements streamVal.DictionaryHandler<Annotation> {
+            class DictionaryNOPSideEffects {
                 constructor() {
                     //
                 }
@@ -72,7 +72,7 @@ function createValueNOPSideEffects<Annotation>(): streamVal.ValueHandler<Annotat
         },
         onList: () => {
 
-            class ListNOPSideEffects<Annotation> implements streamVal.ListHandler<Annotation> {
+            class ListNOPSideEffects {
                 constructor() {
                     //
                 }
@@ -86,7 +86,7 @@ function createValueNOPSideEffects<Annotation>(): streamVal.ValueHandler<Annotat
             return new ListNOPSideEffects()
         },
         onTaggedUnion: () => {
-            class StateGroupNOPSideEffects<Annotation> implements streamVal.TaggedUnionHandler<Annotation> {
+            class StateGroupNOPSideEffects {
                 constructor() {
                     //
                 }

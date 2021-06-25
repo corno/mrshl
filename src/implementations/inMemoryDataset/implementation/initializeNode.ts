@@ -1,4 +1,5 @@
 import * as def from "../../../deserialize/interfaces/typedParserDefinitions"
+import { checkDuplicates } from "./asyncAPIImplementation"
 import * as cc from "./changeControl"
 import { Collection, Dictionary, Node } from "./internals"
 import { Component } from "./internals/Component"
@@ -29,8 +30,8 @@ export function initializeNode(
                         property.type[1]["key property"].name,
                         property.type[1]["key property"].get(),
                         (oldValue: string, newValue: string) => {
-                            cc.checkDuplicates(collection, oldValue, $["key property"].name)
-                            cc.checkDuplicates(collection, newValue, $["key property"].name)
+                            checkDuplicates(collection, oldValue, $["key property"].name)
+                            checkDuplicates(collection, newValue, $["key property"].name)
                         },
                     ),
                 )

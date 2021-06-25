@@ -5,7 +5,7 @@ export interface MutableDictionary<T> extends def.IReadonlyDictionary<T> {
 }
 
 export function createDictionary<T>(imp: { [key: string]: T }): MutableDictionary<T> {
-    class Dictionary implements def.IReadonlyDictionary<T>, def.IReadonlyLookup<T> {
+    class Dictionary {
         private readonly imp: { [key: string]: T } = {}
         constructor() {
             this.imp = imp
