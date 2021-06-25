@@ -21,7 +21,7 @@ export class Value {
     public readonly initialValue: string
 
     constructor(
-        definition: def.StringValueDefinition,
+        definition: def.SimpleStringDefinition,
         errorsAggregator: IParentErrorsAggregator,
         createdInNewContext: boolean,
         errorManager: ErrorManager,

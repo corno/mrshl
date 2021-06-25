@@ -64,7 +64,7 @@ function copyNode(
                     })
                 })
                 break
-            case "string":
+            case "simple string":
                 cc($.type[1], _$ => {
                     setValue(
                         targetNode.values.getUnsafe(pKey),
@@ -72,6 +72,16 @@ function copyNode(
                         sourceNode.values.getUnsafe(pKey).value.get(),
                     )
                 })
+                break
+            case "multiline string":
+                throw new Error("IMPLEMENT ME")
+                // cc($.type[1], _$ => {
+                //     setValue(
+                //         targetNode.values.getUnsafe(pKey),
+                //         targetNode.values.getUnsafe(pKey).value.get(),
+                //         sourceNode.values.getUnsafe(pKey).value.get(),
+                //     )
+                // })
                 break
             case "tagged union":
                 cc($.type[1], $ => {

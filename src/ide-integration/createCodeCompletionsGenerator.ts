@@ -67,13 +67,17 @@ function createCodeCompletionForProperty(
             const $ = prop.type[1]
             return onTaggedUnion($)
         }
-        case "string": {
+        case "simple string": {
             const $ = prop.type[1]
             if ($.quoted) {
                 return createLeaf(` "${$["default value"]}"`)
             } else {
                 return createLeaf(` ${$["default value"]}`)
             }
+        }
+        case "multiline string": {
+            //const $ = prop.type[1]
+            return createLeaf(` \`\``)
         }
         default:
             return assertUnreachable(prop.type[0])

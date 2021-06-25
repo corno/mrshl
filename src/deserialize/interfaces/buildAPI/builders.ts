@@ -83,7 +83,7 @@ export interface Option {
 }
 
 export interface Value {
-    readonly definition: t.StringValueDefinition
+    readonly definition: t.SimpleStringDefinition
     //readonly isQuoted: boolean
     setValue(value: string, onError: (message: string) => void): void
     readonly comments: Comments

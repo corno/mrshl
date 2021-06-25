@@ -28,15 +28,15 @@ export function createNode(
 
     function getValue(
         valueImp: imp.Value,
-        definition: def.StringValueDefinition,
+        definition: def.SimpleStringDefinition,
     ) {
 
         class Value {
             public readonly comments: imp.Comments
             private readonly imp: imp.Value
             public readonly isQuoted: boolean
-            public readonly definition: def.StringValueDefinition
-            constructor(valueImp: imp.Value, definition: def.StringValueDefinition) {
+            public readonly definition: def.SimpleStringDefinition
+            constructor(valueImp: imp.Value, definition: def.SimpleStringDefinition) {
                 this.imp = valueImp
                 this.comments = valueImp.comments
                 this.isQuoted = definition.quoted
@@ -296,7 +296,7 @@ export function createNode(
         }
         public getValue(key: string): buildAPI.Value {
             const propDef = this.definition.properties.getUnsafe(key)
-            if (propDef.type[0] !== "string") {
+            if (propDef.type[0] !== "simple string") {
                 throw new Error("not a string")
             }
 
@@ -330,7 +330,11 @@ export function createNode(
                                 case "tagged union": {
                                     return ["state group", thisNode.getTaggedUnion(pKey)]
                                 }
-                                case "string": {
+                                case "simple string": {
+                                    return ["value", thisNode.getValue(pKey)]
+                                }
+                                case "multiline string": {
+                                    throw new Error("IMPLEMENT ME")
                                     return ["value", thisNode.getValue(pKey)]
                                 }
                                 default:

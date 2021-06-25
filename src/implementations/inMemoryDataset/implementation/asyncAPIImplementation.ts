@@ -257,7 +257,7 @@ function createNode(
                         )
                         break
                     }
-                    case "string": {
+                    case "simple string": {
                         callback(
                             createProperty(
                                 p,
@@ -267,6 +267,18 @@ function createNode(
                             pKey
                         )
                         break
+                    }
+                    case "multiline string": {
+                        throw new Error("IMPLEMENT ME")
+                        // callback(
+                        //     createProperty(
+                        //         p,
+                        //         ["value", this.getValue(pKey)],
+                        //         //isKeyProperty,
+                        //     ),
+                        //     pKey
+                        // )
+                        // break
                     }
                     default:
                         assertUnreachable(p.type[0])
@@ -288,7 +300,10 @@ function createNode(
                     case "component": {
                         throw new Error("unexpected")
                     }
-                    case "string": {
+                    case "simple string": {
+                        throw new Error("unexpected")
+                    }
+                    case "multiline string": {
                         throw new Error("unexpected")
                     }
                     case "tagged union": {

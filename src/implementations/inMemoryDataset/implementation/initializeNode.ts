@@ -70,10 +70,16 @@ export function initializeNode(
                 node.taggedUnions.add(key, sg)
                 break
             }
-            case "string": {
+            case "simple string": {
                 const $ = property.type[1]
                 node.values.add(key, new Value($, errorsAggregator, createdInNewContext, errorManager))
                 break
+            }
+            case "multiline string": {
+                throw new Error("IMPLEMENT ME")
+                // const $ = property.type[1]
+                // node.values.add(key, new Value($, errorsAggregator, createdInNewContext, errorManager))
+                // break
             }
             default:
                 return assertUnreachable(property.type[0])

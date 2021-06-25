@@ -3,72 +3,9 @@
 */
 
 import * as streamVal from "../deserialize/interfaces/streamingValidationAPI"
-import * as def from "../deserialize/interfaces/typedParserDefinitions"
-import * as fp from "fountain-pen"
-
-function assertUnreachable<RT>(_x: never): RT {
-    throw new Error("Unreachable")
-}
 
 type GetHoverText = () => string
 
-function createPropertyHoverText(prop: def.PropertyDefinition): fp.InlineSegment {
-    switch (prop.type[0]) {
-        case "dictionary": {
-            return `{}`
-        }
-        case "list": {
-            return `[]`
-        }
-        case "component": {
-            const $ = prop.type[1]
-
-            return createHoverTextsForNode($.type.get().node, null)
-        }
-        case "tagged union": {
-            const $ = prop.type[1]
-            return [
-                `| '${$["default option"].name}' `,
-                createHoverTextsForNode($["default option"].get().node, null),
-            ]
-        }
-        case "string": {
-            const $ = prop.type[1]
-            if ($.quoted) {
-                return `"${$["default value"]}"`
-            } else {
-                return `${$["default value"]}`
-
-            }
-        }
-        default:
-            return assertUnreachable(prop.type[0])
-    }
-}
-
-function createHoverTextsForProperties(node: def.NodeDefinition, keyProperty: def.PropertyDefinition | null): fp.Block {
-    const x: fp.Block[] = []
-    node.properties.forEach((prop, propKey) => {
-        if (prop === keyProperty) {
-            return
-        }
-        x.push(fp.line([
-            `'${propKey}': `,
-            createPropertyHoverText(prop),
-        ]))
-    })
-    return x
-}
-
-function createHoverTextsForNode(node: def.NodeDefinition, keyProperty: def.PropertyDefinition | null): fp.InlineSegment {
-    return [
-        '(',
-        () => {
-            return createHoverTextsForProperties(node, keyProperty)
-        },
-        ')',
-    ]
-}
 
 export type OnTokenHoverText<Annotation> = (
     annotation: Annotation,

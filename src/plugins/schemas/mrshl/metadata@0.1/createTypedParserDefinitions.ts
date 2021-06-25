@@ -81,7 +81,7 @@ function convertToGenericNode(
                     }
                     case "value": {
                         const $ = prop.type[1]
-                        return ["string", {
+                        return ["simple string", {
                             "default value": $["default value"],
                             "quoted": $.quoted,
                         }]

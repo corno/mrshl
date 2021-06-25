@@ -14,7 +14,7 @@ export type ComponentTypeDefinition = {
 }
 
 export type DictionaryDefinition = {
-    readonly "key": StringValueDefinition
+    readonly "key": SimpleStringDefinition
     readonly "node": NodeDefinition
 }
 
@@ -35,7 +35,8 @@ export type PropertyTypeDefinition =
     | ["list", ListDefinition]
     | ["component", ComponentDefinition]
     | ["tagged union", TaggedUnionDefinition]
-    | ["string", StringValueDefinition]
+    | ["simple string", SimpleStringDefinition]
+    | ["multiline string", MultiLineStringDefinition]
 
 export type Schema = {
     readonly "component types": g.IReadonlyDictionary<ComponentTypeDefinition>
@@ -51,7 +52,10 @@ export type TaggedUnionDefinition = {
     readonly "default option": g.IReference<OptionDefinition>
 }
 
-export type StringValueDefinition = {
+export type SimpleStringDefinition = {
     readonly "default value": string
     readonly "quoted": boolean
+}
+
+export type MultiLineStringDefinition = {
 }

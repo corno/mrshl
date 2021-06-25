@@ -127,7 +127,7 @@ export interface ValueHandler<Annotation> {
         data: astncore.SimpleStringData
         annotation: {
             getSuggestions(): string[]
-            definition: def.StringValueDefinition
+            definition: def.SimpleStringDefinition
             annotation: Annotation
         }
     }): void
@@ -136,7 +136,7 @@ export interface ValueHandler<Annotation> {
         data: astncore.MultilineStringValueData
         annotation: {
             getSuggestions(): string[]
-            definition: def.StringValueDefinition
+            definition: def.SimpleStringDefinition
             annotation: Annotation
         }
     }): void

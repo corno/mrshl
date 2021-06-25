@@ -265,9 +265,17 @@ export function createShorthandNodeDeserializer<TokenAnnotation, NonTokenAnnotat
                             return assertUnreachable($$.data.type[0])
                     }
                 }
-                case "string": {
+                case "multiline string": {
                     return createUnexpectedObjectHandler(
-                        `expected a string: '${nextProperty.name}'`,
+                        `expected a simple string: '${nextProperty.name}'`,
+                        $$.annotation,
+                        onError,
+                        createReturnValue,
+                    )
+                }
+                case "simple string": {
+                    return createUnexpectedObjectHandler(
+                        `expected a multiline string: '${nextProperty.name}'`,
                         $$.annotation,
                         onError,
                         createReturnValue,
@@ -377,9 +385,17 @@ export function createShorthandNodeDeserializer<TokenAnnotation, NonTokenAnnotat
                     }
 
                 }
-                case "string": {
+                case "simple string": {
                     return createUnexpectedArrayHandler(
-                        `expected a string: '${nextProperty.name}'`,
+                        `expected a simple string: '${nextProperty.name}'`,
+                        $$.annotation,
+                        onError,
+                        createReturnValue,
+                    )
+                }
+                case "multiline string": {
+                    return createUnexpectedArrayHandler(
+                        `expected a multiline string: '${nextProperty.name}'`,
                         $$.annotation,
                         onError,
                         createReturnValue,
@@ -432,9 +448,17 @@ export function createShorthandNodeDeserializer<TokenAnnotation, NonTokenAnnotat
                     pushMixedInComponent($$$, nextProperty)
                     return onTaggedUnion($$)
                 }
-                case "string": {
+                case "simple string": {
                     return createUnexpectedTaggedUnionHandler(
-                        `expected a string: '${nextProperty.name}'`,
+                        `expected a simple string: '${nextProperty.name}'`,
+                        $$.annotation,
+                        onError,
+                        createReturnValue,
+                    )
+                }
+                case "multiline string": {
+                    return createUnexpectedTaggedUnionHandler(
+                        `expected a multiline string: '${nextProperty.name}'`,
                         $$.annotation,
                         onError,
                         createReturnValue,
@@ -498,7 +522,7 @@ export function createShorthandNodeDeserializer<TokenAnnotation, NonTokenAnnotat
                     pushMixedInComponent($$$, nextProperty)
                     return onSimpleString($$)
                 }
-                case "string": {
+                case "simple string": {
                     const $ = nextProperty.definition.type[1]
                     return createSimpleStringDeserializer(
                         $,
@@ -516,6 +540,14 @@ export function createShorthandNodeDeserializer<TokenAnnotation, NonTokenAnnotat
                         flagNonDefaultPropertiesFound,
                         createReturnValue,
                     )($$)
+                }
+                case "multiline string": {
+                    return createUnexpectedStringHandler(
+                        `expected a multiline string: '${nextProperty.name}'`,
+                        $$.annotation,
+                        onError,
+                        createReturnValue,
+                    )
                 }
                 case "tagged union": {
                     const $$$ = nextProperty.definition.type[1]
@@ -620,7 +652,15 @@ export function createShorthandNodeDeserializer<TokenAnnotation, NonTokenAnnotat
                     pushMixedInComponent($$$, nextProperty)
                     return onMultilineString($$)
                 }
-                case "string": {
+                case "simple string": {
+                    return createUnexpectedStringHandler(
+                        `expected a simple string: '${nextProperty.name}'`,
+                        $$.annotation,
+                        onError,
+                        createReturnValue,
+                    )
+                }
+                case "multiline string": {
                     const $ = nextProperty.definition.type[1]
 
                     return createMultilineStringDeserializer(

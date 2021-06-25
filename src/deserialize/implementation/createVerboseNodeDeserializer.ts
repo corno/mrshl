@@ -262,7 +262,55 @@ export function createVerboseNodeDeserializer<TokenAnnotation, NonTokenAnnotatio
                                     },
                                 }
                             }
-                            case "string": {
+                            case "simple string": {
+                                const $ = propertyDefinition.type[1]
+                                addComments(nodeBuilder.getValue(key).comments, $p.annotation)
+
+                                return {
+                                    array: $ => {
+                                        return createUnexpectedArrayHandler(
+                                            `expected a string`,
+                                            $.annotation,
+                                            onError,
+                                            createReturnValue,
+                                        )
+                                    },
+                                    object: $ => {
+                                        return createUnexpectedObjectHandler(
+                                            `expected a string`,
+                                            $.annotation,
+                                            onError,
+                                            createReturnValue,
+                                        )
+                                    },
+                                    taggedUnion: $ => {
+                                        return createUnexpectedTaggedUnionHandler(
+                                            `expected a string`,
+                                            $.annotation,
+                                            onError,
+                                            createReturnValue,
+                                        )
+                                    },
+                                    multilineString: $ => {
+                                        return createUnexpectedStringHandler(
+                                            `expected a simple string`,
+                                            $.annotation,
+                                            onError,
+                                            createReturnValue,
+                                        )
+                                    },
+                                    simpleString: createSimpleStringDeserializer(
+                                        $,
+                                        key,
+                                        nodeBuilder,
+                                        sideEffectsAPIs,
+                                        onError,
+                                        flagNonDefaultPropertiesFound,
+                                        createReturnValue,
+                                    ),
+                                }
+                            }
+                            case "multiline string": {
                                 const $ = propertyDefinition.type[1]
                                 addComments(nodeBuilder.getValue(key).comments, $p.annotation)
 
@@ -300,15 +348,14 @@ export function createVerboseNodeDeserializer<TokenAnnotation, NonTokenAnnotatio
                                         flagNonDefaultPropertiesFound,
                                         createReturnValue,
                                     ),
-                                    simpleString: createSimpleStringDeserializer(
-                                        $,
-                                        key,
-                                        nodeBuilder,
-                                        sideEffectsAPIs,
-                                        onError,
-                                        flagNonDefaultPropertiesFound,
-                                        createReturnValue,
-                                    ),
+                                    simpleString: $ => {
+                                        return createUnexpectedStringHandler(
+                                            `expected a multiline string`,
+                                            $.annotation,
+                                            onError,
+                                            createReturnValue,
+                                        )
+                                    },
                                 }
                             }
                             default:

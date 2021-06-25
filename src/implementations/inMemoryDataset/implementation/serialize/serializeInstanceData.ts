@@ -45,9 +45,14 @@ function propertyIsDefault(node: Node, propertyName: string, propertyDef: Proper
             }
             return nodeIsDefault(tu.currentState.get().node, $.options.getUnsafe(optionKey).node)
         }
-        case "string": {
+        case "simple string": {
             const $ = propertyDef.type[1]
             return node.values.getUnsafe(propertyName).value.get() === $["default value"]
+        }
+        case "multiline string": {
+            throw new Error("IMPLEMENT ME")
+            // const $ = propertyDef.type[1]
+            // return node.values.getUnsafe(propertyName).value.get() === $["default value"]
         }
         default:
             return assertUnreachable(propertyDef.type[0])
@@ -174,7 +179,7 @@ export function serializeRoot(
 
                     break
                 }
-                case "string": {
+                case "simple string": {
                     const $ = propDef.type[1]
                     out.sendEvent(["simple string", {
                         value: node.values.getUnsafe(key).value.get(),
@@ -185,6 +190,19 @@ export function serializeRoot(
                             }],
                     }])
                     break
+                }
+                case "multiline string": {
+                    throw new Error("IMPLEMENT ME")
+                    // const $ = propDef.type[1]
+                    // out.sendEvent(["multiline string", {
+                    //     value: node.values.getUnsafe(key).value.get(),
+                    //     wrapping: $.quoted
+                    //         ? ["quote", {
+                    //         }]
+                    //         : ["none", {
+                    //         }],
+                    // }])
+                    //break
                 }
                 default:
                     assertUnreachable(propDef.type[0])

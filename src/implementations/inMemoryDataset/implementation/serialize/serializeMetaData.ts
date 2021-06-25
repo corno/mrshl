@@ -153,7 +153,7 @@ export function serializeMetaData(
                                         })
                                         break
                                     }
-                                    case "string": {
+                                    case "simple string": {
                                         const $ = propDef.type[1]
                                         serializeVerboseType({
                                             "default value": () => {
@@ -162,6 +162,12 @@ export function serializeMetaData(
                                             "quoted": () => {
                                                 serializeNonWrappedString($.quoted ? "true" : "false")
                                             },
+                                        })
+                                        break
+                                    }
+                                    case "multiline string": {
+                                        //const $ = propDef.type[1]
+                                        serializeVerboseType({
                                         })
                                         break
                                     }

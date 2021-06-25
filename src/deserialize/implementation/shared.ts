@@ -350,7 +350,7 @@ export function createTaggedUnionDeserializer<TokenAnnotation, NonTokenAnnotatio
 }
 
 export function createMultilineStringDeserializer<TokenAnnotation, ReturnType>(
-    _$: def.StringValueDefinition,
+    _$: def.MultiLineStringDefinition,
     propKey: string,
     nodeBuilder: buildAPI.Node,
     _sideEffectsAPIs: sideEffectAPI.ValueHandler<TokenAnnotation>[],
@@ -368,7 +368,7 @@ export function createMultilineStringDeserializer<TokenAnnotation, ReturnType>(
 }
 
 export function createSimpleStringDeserializer<TokenAnnotation, ReturnType>(
-    $: def.StringValueDefinition,
+    $: def.SimpleStringDefinition,
     propKey: string,
     nodeBuilder: buildAPI.Node,
     sideEffectsAPIs: sideEffectAPI.ValueHandler<TokenAnnotation>[],
@@ -479,9 +479,14 @@ export function defaultInitializeProperty<TokenAnnotation>(
             nodeBuilder.getTaggedUnion(propKey).setState($["default option"].name, errorMessage => onError(errorMessage, annotation, DiagnosticSeverity.error))
             break
         }
-        case "string": {
+        case "simple string": {
             const $ = propDefinition.type[1]
             nodeBuilder.getValue(propKey).setValue($["default value"], errorMessage => onError(errorMessage, annotation, DiagnosticSeverity.error))
+            break
+        }
+        case "multiline string": {
+            //const $ = propDefinition.type[1]
+            nodeBuilder.getValue(propKey).setValue("", errorMessage => onError(errorMessage, annotation, DiagnosticSeverity.error))
             break
         }
         default:

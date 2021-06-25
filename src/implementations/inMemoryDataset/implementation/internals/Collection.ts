@@ -100,7 +100,7 @@ export class EntryPlaceholder {
 
 export class Dictionary {
     public readonly duplicatesCheckFunction: (oldValue: string, newValue: string) => void
-    public readonly keyDefinition: def.StringValueDefinition
+    public readonly keyDefinition: def.SimpleStringDefinition
     /**
      *
      * @param keyPropertyName
@@ -108,7 +108,7 @@ export class Dictionary {
      * @param duplicatesCheckFunction a function that can be used to subscribe to the keys of the entries to check for duplicates
      */
     constructor(
-        keyDefinition: def.StringValueDefinition,
+        keyDefinition: def.SimpleStringDefinition,
         duplicatesCheckFunction: (oldValue: string, newValue: string) => void,
     ) {
         this.duplicatesCheckFunction = duplicatesCheckFunction
