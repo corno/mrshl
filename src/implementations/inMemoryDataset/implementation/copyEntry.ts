@@ -1,72 +1,115 @@
-import * as buildAPI from "../../../deserialize/interfaces/buildAPI"
+import { Node, Entry, initializeState, setValue, createEntry } from "./internals"
+import * as def from "../../../deserialize/interfaces/typedParserDefinitions"
+import { Global } from "./Global"
 
-import { Node, Entry } from "./buildAPIImplementation"
-export { Entry } from "./buildAPIImplementation"
+function assertUnreachable<RT>(_x: never): RT {
+    throw new Error("unreachable")
+}
+function cc<T>(input: T, callback: (output: T) => void): void {
+    callback(input)
+}
 
 function copyNode(
+    definition: def.NodeDefinition,
     sourceNode: Node,
-    targetNode: buildAPI.Node,
+    targetNode: Node,
+    global: Global,
 ) {
-    sourceNode.forEachProperty((property, pKey) => {
-        if (property.type[0] !== "dictionary") {
-            return
+    definition.properties.forEach(($, pKey) => {
+        switch ($.type[0]) {
+            case "component":
+                cc($.type[1], $ => {
+                    const comp = targetNode.components.getUnsafe(pKey)
+                    copyNode(
+                        $.type.get().node,
+                        sourceNode.components.getUnsafe(pKey).node,
+                        comp.node,
+                        global,
+                    )
+                })
+                break
+            case "dictionary":
+                cc($.type[1], $ => {
+                    const targetCollection = targetNode.collections.getUnsafe(pKey)
+                    sourceNode.collections.getUnsafe(pKey).entries.forEach(e => {
+                        const entry = createEntry(
+                            $.node,
+                            targetCollection,
+                            global,
+                        )
+                        copyEntry(
+                            $.node,
+                            e.entry,
+                            entry,
+                            global,
+                        )
+                    })
+                })
+                break
+            case "list":
+                cc($.type[1], $ => {
+                    const targetCollection = targetNode.collections.getUnsafe(pKey)
+                    sourceNode.collections.getUnsafe(pKey).entries.forEach(e => {
+                        const entry = createEntry(
+                            $.node,
+                            targetCollection,
+                            global,
+                        )
+                        copyEntry(
+                            $.node,
+                            e.entry,
+                            entry,
+                            global
+                        )
+                    })
+                })
+                break
+            case "string":
+                cc($.type[1], _$ => {
+                    setValue(
+                        targetNode.values.getUnsafe(pKey),
+                        targetNode.values.getUnsafe(pKey).value.get(),
+                        sourceNode.values.getUnsafe(pKey).value.get(),
+                    )
+                })
+                break
+            case "tagged union":
+                cc($.type[1], $ => {
+                    const sourceState = sourceNode.taggedUnions.getUnsafe(pKey).currentState
+                    const optionName = sourceState.get().key
+                    const targetState = initializeState(
+                        $.options.getUnsafe(optionName),
+                        targetNode.taggedUnions.getUnsafe(pKey),
+                        optionName,
+                        global,
+                        () => {
+                            throw new Error(`IMPLEMENT ME ONERROR`)
+                        }
+                    )
+                    copyNode(
+                        $.options.getUnsafe(sourceState.get().key).node,
+                        sourceState.get().node,
+                        targetState.node,
+                        global,
+                    )
+                })
+                break
+            default:
+                assertUnreachable($.type[0])
         }
-        const $ = property.type[1]
-        const targetCollection = targetNode.getDictionary(pKey)
-        $.forEachEntry(e => {
-            const entry = targetCollection.createEntry()
-            copyEntry(e, entry)
-        })
-    })
-    sourceNode.forEachProperty((property, pKey) => {
-        if (property.type[0] !== "list") {
-            return
-        }
-        const $ = property.type[1]
-        const targetCollection = targetNode.getList(pKey)
-        $.forEachEntry(e => {
-            const entry = targetCollection.createEntry()
-            copyEntry(e, entry)
-        })
-    })
-    sourceNode.forEachProperty((property, pKey) => {
-        if (property.type[0] !== "component") {
-            return
-        }
-        const comp = targetNode.getComponent(pKey)
-
-        copyNode(
-            sourceNode.getComponent(pKey).node,
-            comp.node
-        )
-    })
-    sourceNode.forEachProperty((property, pKey) => {
-        if (property.type[0] !== "state group") {
-            return
-        }
-        const $ = property.type[1]
-        const sourceState = $.getCurrentState()
-        const targetState = targetNode.getTaggedUnion(pKey).setState(sourceState.getStateKey(), () => {
-            //FIXME
-        })
-        copyNode(
-            sourceState.node,
-            targetState.node,
-        )
-    })
-    sourceNode.forEachProperty((property, pKey) => {
-        if (property.type[0] !== "value") {
-            return
-        }
-        targetNode.getValue(pKey).setValue(sourceNode.getValue(pKey).getValue(), () => {
-            //FIXME
-        })
     })
 }
 
 export function copyEntry(
+    definition: def.NodeDefinition,
     sourceEntry: Entry,
-    targetEntry: buildAPI.Entry
+    targetEntry: Entry,
+    global: Global,
 ): void {
-    copyNode(sourceEntry.node, targetEntry.node)
+    copyNode(
+        definition,
+        sourceEntry.node,
+        targetEntry.node,
+        global,
+    )
 }

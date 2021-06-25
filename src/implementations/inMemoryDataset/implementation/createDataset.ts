@@ -1,5 +1,7 @@
 import * as def from "../../../deserialize/interfaces/typedParserDefinitions"
-import * as sync from "./buildAPIImplementation"
+import * as buildAPI from "../../../deserialize/interfaces/buildAPI"
+import * as buildImp from "./buildAPIImplementation"
+
 import { RootImp } from "./Root"
 import { IDataset } from "../../../deserialize/interfaces/dataset"
 import * as id from "../../../deserialize/interfaces/buildAPI/IDataset"
@@ -9,12 +11,12 @@ import { serialize } from "./serialize/serialize"
 
 class SyncDataset implements id.IDataset {
     public readonly schema: def.Schema
-    public readonly root: sync.Node
+    public readonly root: buildAPI.Node
     public readonly documentComments = new Comments()
     public readonly rootComments = new Comments()
     constructor(rootImp: RootImp) {
         this.schema = rootImp.schema
-        this.root = new sync.Node(
+        this.root = buildImp.createNode(
             rootImp.rootNode,
             rootImp.schema["root type"].get().node,
             rootImp.global,

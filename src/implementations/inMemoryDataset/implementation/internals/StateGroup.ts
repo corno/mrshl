@@ -5,6 +5,7 @@ import { FlexibleErrorsAggregator, IParentErrorsAggregator, ErrorManager } from 
 import { Node } from "./Node"
 import { Comments } from "./Comments"
 import { initializeNode } from "../initializeNode"
+import { Global } from "../Global"
 
 export class State {
     public readonly key: string
@@ -83,7 +84,33 @@ export class StateGroup {
     }
 }
 
-export function setState(stateGroup: StateGroup, state: State): void {
+export function setInitializedState(stateGroup: StateGroup, state: State): void {
     stateGroup.currentState.update(state)
     stateGroup.currentStateKey.update(state.key)
+}
+
+export function initializeState(
+    definition: def.OptionDefinition,
+    sgImp: StateGroup,
+    stateName: string,
+    global: Global,
+    _onError: (errorMessage: string) => void
+): State {
+
+    const stateImp = new State(
+        stateName,
+        (stateNode, errorsAggregator, subEntriesErrorsAggregator) => {
+            initializeNode(
+                stateNode,
+                definition.node,
+                global.errorManager,
+                errorsAggregator,
+                subEntriesErrorsAggregator,
+                false,
+            )
+        }
+    )
+    setInitializedState(sgImp, stateImp)
+    return stateImp
+    //FIXME call onError
 }

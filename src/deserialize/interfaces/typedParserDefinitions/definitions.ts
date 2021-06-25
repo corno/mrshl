@@ -3,7 +3,6 @@ import * as g from "./generics"
 /**
  * this set of types defines a schema that only describes the data structure,
  * not any additional validation rules to which a dataset should confirm.
- * The DB5 database requires an instance of this schema to load the data
  */
 
 export type ComponentDefinition = {

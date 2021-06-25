@@ -9,6 +9,7 @@ import { Node } from "./Node"
 import { Comments } from "./Comments"
 import { initializeNode } from "../initializeNode"
 import { ISubscribableValue } from "../../../../interfaces/asyncAPI/generic"
+import { Global } from "../Global"
 
 function assertUnreachable<RT>(_x: never): RT {
     throw new Error("unreachable")
@@ -152,4 +153,19 @@ export function addEntry(collection: Collection, entryPlaceholder: EntryPlacehol
     entryPlaceholder.entry.errorsAggregator.attach(entryPlaceholder.parent.errorsAggregator)
     entryPlaceholder.entry.subentriesErrorsAggregator.attach(entryPlaceholder.parent.errorsAggregator)
     collection.entries.addEntry(entryPlaceholder)
+}
+
+export function createEntry(
+    nodeDefinition: def.NodeDefinition,
+    collection: Collection,
+    global: Global,
+): Entry {
+    const entryImp = new Entry(
+        nodeDefinition,
+        global.errorManager,
+        collection.dictionary,
+    )
+    const entryPlaceHolder = new EntryPlaceholder(entryImp, collection, true)
+    addEntry(collection, entryPlaceHolder)
+    return entryImp
 }

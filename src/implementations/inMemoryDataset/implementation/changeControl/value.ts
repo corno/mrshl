@@ -7,10 +7,10 @@ export class ValueUpdate implements IValue {
     constructor(valueImp: imp.Value) {
         this.imp = valueImp
     }
-    getValue() {
+    getValue(): string {
         return this.imp.value.get()
     }
-    public setValue(newValue: string, _onError?: (messsage: string) => void) {
+    public setValue(newValue: string, _onError?: (messsage: string) => void): void {
         const previousValue = this.imp.value.get()
         if (previousValue === newValue) {
             return

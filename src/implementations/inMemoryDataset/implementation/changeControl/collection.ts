@@ -12,7 +12,7 @@ function attachKey(collection: Collection, entry: EntryPlaceholder) {
     }
 }
 
-export function checkDuplicates(collection: Collection, key: string, keyPropertyName: string) {
+export function checkDuplicates(collection: Collection, key: string, keyPropertyName: string): void {
     const matches = collection.entries.mapToRawArray(e => e).filter(e => {
         //if it is removed, it is never a duplicate
         if (e.status.get()[0] === "inactive") {
@@ -46,12 +46,12 @@ export class EntryAddition implements cc.IEntryAddition {
         this.collection = collection
         this.entry = entry
     }
-    public apply() {
+    public apply(): void {
         //console.log("ATTACHING Entry")
         addEntry(this.collection, this.entry)
         attachKey(this.collection, this.entry)
     }
-    public revert() {
+    public revert(): void {
         this.collection.entries.removeEntry(this.entry)
         this.entry.entry.errorsAggregator.detach()
         this.entry.entry.subentriesErrorsAggregator.detach()
@@ -66,13 +66,13 @@ export class EntryRemoval implements cc.IEntryRemoval {
         this.collection = collection
         this.entry = entry
     }
-    public apply() {
+    public apply(): void {
         this.entry.entry.errorsAggregator.detach()
         this.entry.entry.subentriesErrorsAggregator.detach()
         this.entry.status.update(["inactive", { reason: ["deleted"] }])
         detachKey(this.collection, this.entry)
     }
-    public revert() {
+    public revert(): void {
 
         this.entry.entry.errorsAggregator.attach(this.collection.errorsAggregator)
         this.entry.entry.subentriesErrorsAggregator.attach(this.collection.errorsAggregator)

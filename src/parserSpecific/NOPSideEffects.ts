@@ -8,16 +8,11 @@ import * as streamVal from "../deserialize/interfaces/streamingValidationAPI"
 */
 
 export function createNOPSideEffects<Annotation>(): streamVal.RootHandler<Annotation> {
-    return new NOPSideEffects()
-}
-
-class NOPSideEffects<Annotation> implements streamVal.RootHandler<Annotation> {
-    root: streamVal.ValueHandler<Annotation>
-    constructor() {
-        this.root = createValueNOPSideEffects()
-    }
-    onEnd() {
-        //
+    return {
+        root: createValueNOPSideEffects(),
+        onEnd: () => {
+            //
+        },
     }
 }
 
@@ -26,39 +21,37 @@ function createVerboseTypeNOPSideEffects<Annotation>(): streamVal.VerboseTypeHan
         onUnexpectedProperty: () => {
             //
         },
-        onProperty:() =>{
+        onProperty: () => {
             return createValueNOPSideEffects()
         },
-        // onUnexpectedProperty() {
+        // onUnexpectedProperty: () => {
         //     //
         // }
-        onVerboseTypeClose:() => {
+        onVerboseTypeClose: () => {
             //
         },
     }
 }
 
-class ShorthandTypeNOPSideEffects<Annotation> implements streamVal.ShorthandTypeHandler<Annotation> {
-    constructor() {
-        //
-    }
-    onShorthandTypeClose() {
-        //
-    }
-    onProperty() {
-        return createValueNOPSideEffects()
+function createShorthandTypeNOPSideEffects<Annotation>(): streamVal.ShorthandTypeHandler<Annotation> {
+    return {
+        onShorthandTypeClose: () => {
+            //
+        },
+        onProperty: () => {
+            return createValueNOPSideEffects()
+        },
     }
 }
 
-class StateGroupNOPSideEffects<Annotation> implements streamVal.TaggedUnionHandler<Annotation> {
-    constructor() {
-        //
-    }
-    onUnexpectedOption() {
-        //
-    }
-    onOption() {
-        return createValueNOPSideEffects()
+function createStateGroupNOPSideEffects<Annotation>(): streamVal.TaggedUnionHandler<Annotation> {
+    return {
+        onUnexpectedOption: () => {
+            //
+        },
+        onOption: () => {
+            return createValueNOPSideEffects()
+        },
     }
 }
 
@@ -66,13 +59,13 @@ function createValueNOPSideEffects<Annotation>(): streamVal.ValueHandler<Annotat
 
     return {
         onDictionary: () => {
-            return new DictionaryNOPSideEffects()
+            return createDictionaryNOPSideEffects()
         },
         onList: () => {
-            return new ListNOPSideEffects()
+            return createListNOPSideEffects()
         },
         onTaggedUnion: () => {
-            return new StateGroupNOPSideEffects()
+            return createStateGroupNOPSideEffects()
         },
         onSimpleString: () => {
             //
@@ -86,36 +79,34 @@ function createValueNOPSideEffects<Annotation>(): streamVal.ValueHandler<Annotat
         onComponent: () => {
             return createValueNOPSideEffects()
         },
-        onShorthandTypeOpen:() => {
-            return new ShorthandTypeNOPSideEffects()
+        onShorthandTypeOpen: () => {
+            return createShorthandTypeNOPSideEffects()
         },
-        onVerboseTypeOpen:() => {
+        onVerboseTypeOpen: () => {
             return createVerboseTypeNOPSideEffects()
         },
     }
 }
 
 
-class DictionaryNOPSideEffects<Annotation> implements streamVal.DictionaryHandler<Annotation> {
-    constructor() {
-        //
-    }
-    onClose() {
-        //
-    }
-    onEntry() {
-        return createValueNOPSideEffects()
+function createDictionaryNOPSideEffects<Annotation>(): streamVal.DictionaryHandler<Annotation> {
+    return {
+        onClose: () => {
+            //
+        },
+        onEntry: () => {
+            return createValueNOPSideEffects()
+        },
     }
 }
 
-class ListNOPSideEffects<Annotation> implements streamVal.ListHandler<Annotation> {
-    constructor() {
-        //
-    }
-    onClose() {
-        //
-    }
-    onEntry() {
-        return createValueNOPSideEffects()
+function createListNOPSideEffects<Annotation>(): streamVal.ListHandler<Annotation> {
+    return {
+        onClose: () => {
+            //
+        },
+        onEntry: () => {
+            return createValueNOPSideEffects()
+        },
     }
 }
