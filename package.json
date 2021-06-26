@@ -24,9 +24,6 @@
     "type": "git",
     "url": "https://github.com/corno/db5.git"
   },
-  "files": [
-    "dist/*"
-  ],
   "dependencies": {
     "astn": "^0.81.0"
   },
