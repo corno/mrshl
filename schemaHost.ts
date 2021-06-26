@@ -1,8 +1,4 @@
-
-export type SchemaHost = {
-	host: string
-	pathStart: string
-}
+import { SchemaHost } from "./src";
 
 export const schemaHost: SchemaHost = {
     host: 'astn.io',
