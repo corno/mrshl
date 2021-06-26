@@ -1,6 +1,6 @@
 {
   "name": "db5",
-  "version": "0.6.28",
+  "version": "0.6.29",
   "description": "database engine for ASTN texts",
   "main": "dist/src/index.js",
   "scripts": {
