@@ -18,6 +18,7 @@ import { makeNativeHTTPrequest } from "../src/implementations/makeNativeHTTPrequ
 import * as p20 from "pareto-20"
 import { schemaHost } from "../schemaHost"
 import * as astncore from "astn-core"
+import { getSchemaSchemaBuilder } from "../src/implementations/getSchemaSchemaBuilder"
 
 function readFileFromFileSystem(
     dir: string,
@@ -282,7 +283,7 @@ export function directoryTests(): void {
                     //     actualIssues.push([warningMessage, "warning", range.start.line, range.start.column, range.end.line, range.end.column])
                     // },
                     [
-                        db5.createCodeCompletionsGenerator(
+                        astncore.createCodeCompletionsGenerator(
                             (annotation, getIntraCodeCompletions, getCodeCompletionsAfter) => {
                                 if (actualCodeCompletions[astn.printRange(annotation.range)] !== undefined) {
                                     throw new Error(`double registration @ ${astn.printRange(annotation.range)}`)
@@ -295,7 +296,7 @@ export function directoryTests(): void {
                             () => {
                                 //
                             },
-                        ), db5.createHoverTextsGenerator(
+                        ), astncore.createHoverTextsGenerator(
                             (annotation, getHoverText) => {
                                 actualHoverTexts[astn.printRange(annotation.range)] = {
                                     hoverText: getHoverText === null ? null : getHoverText(),
@@ -308,7 +309,8 @@ export function directoryTests(): void {
                     ],
                     schema => {
                         return db5.createInMemoryDataset(schema)
-                    }
+                    },
+                    getSchemaSchemaBuilder,
                 ).mapResult<null>(dataset => {
                     return dataset.dataset.serialize(
                         dataset.internalSchemaSpecification,

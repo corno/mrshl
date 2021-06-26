@@ -4,8 +4,8 @@ import * as t from "./types"
 import { convertToGenericSchema } from "./createTypedParserDefinitions"
 import * as p from "pareto-20"
 import * as sideEffects from "./sideEffects"
-import { SchemaAndSideEffects } from "../../../../parserSpecific/SchemaAndSideEffects"
-import { InternalSchemaDeserializationError } from "../../../../interfaces/internalSchemaDerializationError"
+import { SchemaAndSideEffects } from "../../../../parserSpecific"
+import { InternalSchemaDeserializationError } from "../../../../parserSpecific"
 import { InternalSchemaError } from "../../../../parserSpecific"
 
 export function createSchemaAndSideEffects<Annotation>(

@@ -1,14 +1,18 @@
 import * as astn from "astn"
 import { createSchemaDeserializer } from "./createSchemaDeserializer"
 import * as p from "pareto"
-import { SchemaAndSideEffects } from "./SchemaAndSideEffects"
-import { SchemaSchemaError } from "./SchemaSchemaError"
-import { ExternalSchemaDeserializationError } from "../interfaces/ExternalSchemaDeserializationError"
+import { SchemaAndSideEffects } from "../interface/SchemaAndSideEffects"
+import { SchemaSchemaError } from "../interface/SchemaSchemaError"
+import { ExternalSchemaDeserializationError } from "../interface/ExternalSchemaDeserializationError"
+import { SchemaSchemaBuilder } from "../interface"
 
 
 export function deserializeSchemaFromStream(
     schemaStream: p.IStream<string, null>,
     onError: (error: SchemaSchemaError, range: astn.Range) => void,
+    getSchemaSchemaBuilder: (
+        name: string,
+    ) => SchemaSchemaBuilder<astn.ParserAnnotationData> | null,
 ): p.IUnsafeValue<SchemaAndSideEffects<astn.ParserAnnotationData>, ExternalSchemaDeserializationError> {
     //console.log("FROM STRING")
 
@@ -16,6 +20,7 @@ export function deserializeSchemaFromStream(
         null,
         createSchemaDeserializer(
             onError,
+            getSchemaSchemaBuilder,
         ),
     ).mapError(
         () => {

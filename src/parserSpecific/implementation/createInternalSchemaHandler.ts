@@ -1,16 +1,6 @@
 import * as astncore from "astn-core"
 import * as p from "pareto"
-
-export type InternalSchemaError =
-    | ["unexpected schema format", {
-        found:
-        | ["multiline string"]
-        | ["array"]
-        | ["object"]
-        | ["simple value"]
-        | ["tagged union"]
-    }]
-    | ["stacked", astncore.StackedDataErrorType]
+import { InternalSchemaError } from "../interface"
 
 export function createInternalSchemaHandler<Annotation, Result>(
     onSchemaError: (error: InternalSchemaError, annotation: Annotation) => void,

@@ -7,19 +7,20 @@ import * as astncore from "astn-core"
 import {
 	 IDataset,
 	 IDeserializedDataset,
-	 } from "./Dataset"
+	 } from "../interface/Dataset"
 
-import { ResolveExternalSchema } from "./ResolveExternalSchema"
+import { ResolveExternalSchema } from "../interface/ResolveExternalSchema"
 
 import { deserializeDataset } from "./deserializeDataset"
 import { deserializeSchemaFromStream } from "./deserializeSchemaFromStream"
 import { ContextSchemaData } from "./DeserializeASTNTextIntoDataset"
-import { ExternalSchemaDeserializationError } from "../interfaces/ExternalSchemaDeserializationError"
+import { ExternalSchemaDeserializationError } from "../interface/ExternalSchemaDeserializationError"
 
 
-import { SchemaSchemaError } from "./SchemaSchemaError"
+import { SchemaSchemaError } from "../interface/SchemaSchemaError"
 import { DeserializationDiagnostic } from "./DeserializationDiagnostic"
-import { SchemaAndSideEffects } from "./SchemaAndSideEffects"
+import { SchemaAndSideEffects } from "../interface/SchemaAndSideEffects"
+import { SchemaSchemaBuilder } from "../interface"
 
 function assertUnreachable<RT>(_x: never): RT {
 	throw new Error("unreachable")
@@ -66,6 +67,9 @@ function validateDocumentAfterContextSchemaResolution(
 	createDataset: (
 		schema: astncore.Schema,
 	) => IDataset,
+    getSchemaSchemaBuilder: (
+        name: string,
+    ) => SchemaSchemaBuilder<astn.ParserAnnotationData> | null,
 ): p.IUnsafeValue<IDeserializedDataset, ExternalSchemaDeserializationError> {
 
 	const allSideEffects = sideEffectHandlers.slice(0)
@@ -140,6 +144,7 @@ function validateDocumentAfterContextSchemaResolution(
 			)
 		},
 		allSideEffects,
+		getSchemaSchemaBuilder,
 	)
 }
 
@@ -154,6 +159,9 @@ export function deserializeTextIntoDataset(
 	createInitialDataset: (
 		schema: astncore.Schema,
 	) => IDataset,
+    getSchemaSchemaBuilder: (
+        name: string,
+    ) => SchemaSchemaBuilder<astn.ParserAnnotationData> | null,
 ): p.IUnsafeValue<IDeserializedDataset, null> {
 	let diagnosticFound = false
 	const dc: DiagnosticCallback = (
@@ -210,6 +218,7 @@ export function deserializeTextIntoDataset(
 				}
 			)]),
 			createInitialDataset,
+			getSchemaSchemaBuilder,
 		).mapError(validateThatErrorsAreFound)
 	}
 
@@ -264,6 +273,7 @@ export function deserializeTextIntoDataset(
 						severity: astncore.DiagnosticSeverity.error,
 					})
 				},
+				getSchemaSchemaBuilder,
 			).mapError(validateThatErrorsAreFound).try(
 				schemaAndSideEffects => {
 

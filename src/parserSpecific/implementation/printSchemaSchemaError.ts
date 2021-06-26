@@ -1,7 +1,7 @@
 import * as astn from "astn"
 import { printInternalSchemaError } from "./printInternalSchemaError"
-import { printInternalSchemaDeserializationError } from "../implementations/errorPrinters/printInternalSchemaDeserializationError"
-import { SchemaSchemaError } from "./SchemaSchemaError"
+import { printInternalSchemaDeserializationError } from "./printInternalSchemaDeserializationError"
+import { SchemaSchemaError } from "../interface/SchemaSchemaError"
 
 function assertUnreachable<RT>(_x: never): RT {
     throw new Error("unreachable")

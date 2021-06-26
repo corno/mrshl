@@ -1,6 +1,6 @@
 import * as astncore from "astn-core"
-import { InternalSchemaDeserializationError } from "../../interfaces/internalSchemaDerializationError"
-import { printInternalSchemaError } from "../../parserSpecific/printInternalSchemaError"
+import { InternalSchemaDeserializationError } from ".."
+import { printInternalSchemaError } from ".."
 
 function assertUnreachable<RT>(_x: never): RT {
     throw new Error("unreachable")

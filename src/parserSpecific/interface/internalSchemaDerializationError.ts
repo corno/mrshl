@@ -1,5 +1,15 @@
 import * as astncore from "astn-core"
-import { InternalSchemaError } from "../parserSpecific"
+
+export type InternalSchemaError =
+    | ["unexpected schema format", {
+        found:
+        | ["multiline string"]
+        | ["array"]
+        | ["object"]
+        | ["simple value"]
+        | ["tagged union"]
+    }]
+    | ["stacked", astncore.StackedDataErrorType]
 
 export type ExternalSchemaResolvingError =
     | ["schema id cannot be an empty string"]

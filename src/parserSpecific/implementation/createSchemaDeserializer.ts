@@ -1,13 +1,16 @@
 import * as astncore from "astn-core"
 import * as astn from "astn"
 import * as p from "pareto"
-import { getSchemaSchemaBuilder, SchemaSchemaBuilder } from "../implementations/getSchemaSchemaBuilder"
+import { SchemaSchemaBuilder } from "../interface"
 import { createInternalSchemaHandler } from "./createInternalSchemaHandler"
-import { SchemaAndSideEffects } from "./SchemaAndSideEffects"
-import { SchemaSchemaError } from "./SchemaSchemaError"
+import { SchemaAndSideEffects } from "../interface/SchemaAndSideEffects"
+import { SchemaSchemaError } from "../interface/SchemaSchemaError"
 
 export function createSchemaDeserializer(
     onError: (error: SchemaSchemaError, range: astn.Range) => void,
+    getSchemaSchemaBuilder: (
+        name: string,
+    ) => SchemaSchemaBuilder<astn.ParserAnnotationData> | null,
 ): p.IUnsafeStreamConsumer<string, null, SchemaAndSideEffects<astn.ParserAnnotationData>, null> {
     let foundError = false
 

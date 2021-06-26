@@ -2,9 +2,9 @@ import * as astncore from "astn-core"
 import * as p from "pareto-20"
 import { createDeserializer } from "./deserialize"
 import { createNOPSideEffects } from "./NOPSideEffects"
-import { SchemaAndSideEffects } from "../../../../parserSpecific/SchemaAndSideEffects"
+import { SchemaAndSideEffects } from "../../../../parserSpecific"
 import { InternalSchemaError } from "../../../../parserSpecific"
-import { InternalSchemaDeserializationError } from "../../../../interfaces/internalSchemaDerializationError"
+import { InternalSchemaDeserializationError } from "../../../../parserSpecific"
 
 export function createSchemaAndSideEffects<Annotation>(
     onSchemaError: (error: InternalSchemaDeserializationError, annotation: Annotation) => void,

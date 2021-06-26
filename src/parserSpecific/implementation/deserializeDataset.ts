@@ -9,20 +9,20 @@ import * as astn from "astn"
 
 import * as streamVal from "astn-core"
 
-import { InternalSchemaSpecification, InternalSchemaSpecificationType } from "./Dataset"
-import { SchemaAndSideEffects } from "./SchemaAndSideEffects"
+import { InternalSchemaSpecification, InternalSchemaSpecificationType } from "../interface/Dataset"
+import { SchemaAndSideEffects } from "../interface/SchemaAndSideEffects"
 
-import { createDeserializer as createMetaDataDeserializer } from "../plugins/schemas/mrshl/metadata@0.1/deserialize"
+import { createDeserializer } from "../../plugins/schemas/mrshl/metadata@0.1/deserialize"
 
-import { ExternalSchemaDeserializationError } from "../interfaces/ExternalSchemaDeserializationError"
+import { ExternalSchemaDeserializationError } from "../interface/ExternalSchemaDeserializationError"
 import { createInternalSchemaHandler } from "./createInternalSchemaHandler"
 import { createNOPSideEffects } from "./NOPSideEffects"
 import { DeserializationDiagnostic, DeserializationDiagnosticType } from "./DeserializationDiagnostic"
-import { IDeserializedDataset } from "./Dataset"
-import { IDataset } from "./Dataset"
-import { ResolveExternalSchema } from "./ResolveExternalSchema"
+import { IDeserializedDataset } from "../interface/Dataset"
+import { IDataset } from "../interface/Dataset"
+import { ResolveExternalSchema } from "../interface/ResolveExternalSchema"
 import { createSchemaAndSideEffectsFromStream } from "./createSchemaAndSideEffectsFromStream"
-import { InternalSchemaDeserializationError } from "../interfaces/internalSchemaDerializationError"
+import { InternalSchemaDeserializationError, SchemaSchemaBuilder } from "../interface"
 
 function assertUnreachable<RT>(_x: never): RT {
     throw new Error("unreachable")
@@ -49,6 +49,9 @@ export function deserializeDataset(
     onNoInternalSchema: () => IDataset | null,
     onError: (diagnostic: DeserializationDiagnostic, range: astn.Range, severity: astncore.DiagnosticSeverity) => void,
     sideEffectsHandlers: streamVal.RootHandler<astn.ParserAnnotationData>[],
+    getSchemaSchemaBuilder: (
+        name: string,
+    ) => SchemaSchemaBuilder<astn.ParserAnnotationData> | null,
 ): p.IUnsafeValue<IDeserializedDataset, ExternalSchemaDeserializationError> {
 
     /*
@@ -80,7 +83,7 @@ export function deserializeDataset(
                 (error, annotation) => {
                     onSchemaError(["internal schema", error], annotation.range)
                 },
-                createMetaDataDeserializer(
+                createDeserializer(
                     (error, annotation) => {
                         onSchemaError(["expect", error], annotation.range)
                     },
@@ -103,7 +106,10 @@ export function deserializeDataset(
                 ),
                 $ => {
                     const value = $.data.value
-                    return createSchemaAndSideEffectsFromStream(resolveExternalSchema(value)).reworkAndCatch(
+                    return createSchemaAndSideEffectsFromStream(
+                        resolveExternalSchema(value),
+                        getSchemaSchemaBuilder,
+                    ).reworkAndCatch(
                         error => {
                             onSchemaError(["schema reference resolving", error], $.annotation.range)
                             return p.value(null)

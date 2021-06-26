@@ -1,6 +1,5 @@
 import * as astn from "astn"
 import * as astncore from "astn-core"
-import { createCodeCompletionsGenerator } from "../ide-integration/createCodeCompletionsGenerator"
 import { isPositionBeforeLocation } from "./isPositionBeforeLocation"
 
 export function createCodeCompletionFinder(
@@ -23,7 +22,7 @@ export function createCodeCompletionFinder(
 
     }
 
-    return createCodeCompletionsGenerator(
+    return astncore.createCodeCompletionsGenerator(
         (annotation, intra, after) => {
             //console.log("LOCATION", range.start.line, range.start.column, range.end.line, range.end.column)
 

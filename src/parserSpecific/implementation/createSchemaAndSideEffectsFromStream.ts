@@ -1,16 +1,19 @@
 import { createSchemaDeserializer } from "./createSchemaDeserializer"
 import * as p from "pareto"
 import * as astn from "astn"
-import { SchemaAndSideEffects } from "./SchemaAndSideEffects"
-import { RetrievalError } from "./ResolveExternalSchema"
-import { ExternalSchemaResolvingError } from "../interfaces/internalSchemaDerializationError"
+import { SchemaAndSideEffects } from "../interface/SchemaAndSideEffects"
+import { RetrievalError } from "../interface/ResolveExternalSchema"
+import { ExternalSchemaResolvingError, SchemaSchemaBuilder } from "../interface"
 
 function assertUnreachable<RT>(_x: never): RT {
     throw new Error("unreachable")
 }
 
 export function createSchemaAndSideEffectsFromStream(
-    schemaStream: p.IUnsafeValue<p.IStream<string, null>, RetrievalError>
+    schemaStream: p.IUnsafeValue<p.IStream<string, null>, RetrievalError>,
+    getSchemaSchemaBuilder: (
+        name: string,
+    ) => SchemaSchemaBuilder<astn.ParserAnnotationData> | null,
 ): p.IUnsafeValue<SchemaAndSideEffects<astn.ParserAnnotationData>, ExternalSchemaResolvingError> {
     return schemaStream.mapError<ExternalSchemaResolvingError>(error => {
         switch (error[0]) {
@@ -33,6 +36,7 @@ export function createSchemaAndSideEffectsFromStream(
                     //do nothing with errors
                     console.error("SCHEMA ERROR", message)
                 },
+                getSchemaSchemaBuilder,
             )
 
             return stream.tryToConsume<SchemaAndSideEffects<astn.ParserAnnotationData>, null>(

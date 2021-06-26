@@ -1,4 +1,4 @@
 //export * from "./asyncAPI"
-export * from "./ExternalSchemaDeserializationError"
+export * from "../parserSpecific/interface/ExternalSchemaDeserializationError"
 //export * from "./asyncAPI"
 //export * from "./buildAPI"
