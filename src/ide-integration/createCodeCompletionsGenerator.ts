@@ -3,238 +3,141 @@
 */
 
 import * as astncore from "astn-core"
-import * as fp from "fountain-pen"
 
 function assertUnreachable<RT>(_x: never): RT {
-    throw new Error("Unreachable")
+    throw new Error("unreachable")
+}
+function cc<T>(input: T, callback: (output: T) => void): void {
+    callback(input)
 }
 
 type GetCodeCompletions = () => string[]
-
-function serialize(inlineSegment: fp.InlineSegment): string {
-    const out: string[] = []
-    fp.serialize(
-        [
-            fp.line(inlineSegment),
-        ],
-        "    ",
-        false,
-        codeCompletion => {
-            out.push(codeCompletion)
-        }
-    )
-    return out.join("\n")
-}
-
-function serializeAlternatives(alts: Alternatives): GetCodeCompletions {
-    return () => {
-        return alts.alternatives.map(alt => {
-            return serialize(alt)
-        })
-    }
-}
-
-type Alternatives = {
-    alternatives: fp.InlineSegment[]
-}
-
 interface AlternativesRoot {
-    root: AlternativesAPI
-    serialize: () => void
+    root: Line
+    serialize: () => string[]
 }
 
-interface AlternativesAPI {
-    addLeaf(str: string): void
-    addProduct: () => AlternativesProductAPI
+interface Step {
+    addOption: () => Line
 }
 
-interface AlternativesProductAPI {
-    branch: () => AlternativesAPI
-    end: () => void
+interface Block {
+    addLine: () => Line
 }
 
-function createLeaf(str: string, alternatives: AlternativesAPI): Alternatives {
-    alternatives.addLeaf(str)
-    return {
-        alternatives: [
-            str,
-        ],
-    }
+interface Line {
+    snippet(str: string): void
+    indent(callback: ($: Block) => void): void
+    addTaggedUnionStep: () => Step
 }
 
 function createCodeCompletionForProperty(
     prop: astncore.PropertyDefinition,
-    onComponent: (def: astncore.ComponentDefinition) => Alternatives,
-    onTaggedUnion: (def: astncore.TaggedUnionDefinition) => Alternatives,
-    alternatives: AlternativesAPI,
-): Alternatives {
+    sequence: Line,
+    onComponent: (def: astncore.ComponentDefinition) => void,
+    onTaggedUnion: (def: astncore.TaggedUnionDefinition) => void,
+): void {
     switch (prop.type[0]) {
         case "dictionary": {
-            return createLeaf(` { }`, alternatives)
+            sequence.snippet(` { }`)
+            break
         }
         case "list": {
-            return createLeaf(` [ ]`, alternatives)
+            sequence.snippet(` [ ]`)
+            break
         }
         case "component": {
             const $ = prop.type[1]
-            return onComponent($)
+            onComponent($)
+            break
         }
         case "tagged union": {
             const $ = prop.type[1]
-            return onTaggedUnion($)
+            onTaggedUnion($)
+            break
         }
         case "simple string": {
             const $ = prop.type[1]
             if ($.quoted) {
-                return createLeaf(` "${$["default value"]}"`, alternatives)
+                sequence.snippet(` "${$["default value"]}"`)
             } else {
-                return createLeaf(` ${$["default value"]}`, alternatives)
+                sequence.snippet(` ${$["default value"]}`)
             }
+            break
         }
         case "multiline string": {
             //const $ = prop.type[1]
-            return createLeaf(` \`\``, alternatives)
+            sequence.snippet(` \`\``)
+            break
         }
         default:
-            return assertUnreachable(prop.type[0])
+            assertUnreachable(prop.type[0])
     }
-}
-
-function createAlternativesProduct(options: Alternatives[]) {
-    const out: Alternatives = {
-        alternatives: [],
-    }
-
-    //create the (mathematical) product of all combinations
-    function nextProp(index: number, current: fp.InlineSegment[]) {
-        const currentProp = options[index]
-        if (currentProp === undefined) {
-            out.alternatives.push(current)
-        } else {
-            currentProp.alternatives.forEach(a => {
-                const sliced = current.slice(0)
-                sliced.push(a)
-                nextProp(index + 1, sliced)
-            })
-        }
-    }
-    nextProp(0, [])
-    return out
-}
-
-function mergeAlternatives(entries: Alternatives[]) {
-    const out: Alternatives = {
-        alternatives: [],
-    }
-    entries.forEach(e => {
-        e.alternatives.forEach(e2 => {
-            out.alternatives.push(e2)
-        })
-    })
-    return out
 }
 
 function createCodeCompletionForShorthandNode(
     node: astncore.NodeDefinition,
-    alternatives: AlternativesAPI,
-): Alternatives {
-    const propertyCodeCompletions: Alternatives[] = []
+    sequence: Line,
+): void {
 
-    const product = alternatives.addProduct()
     node.properties.forEach((prop, _propKey) => {
-        function createCodeCompletionForShorthandProperty(
-            prop: astncore.PropertyDefinition,
-            alternatives: AlternativesAPI,
-        ): Alternatives {
-            return createCodeCompletionForProperty(
-                prop,
-                $ => {
-                    return createCodeCompletionForShorthandNode($.type.get().node, alternatives)
-                },
-                $ => {
-                    return mergeAlternatives($.options.toArray((option, optionName) => {
-                        const ccsh = createCodeCompletionForShorthandNode(option.node, alternatives)
-                        return {
-                            alternatives: ccsh.alternatives.map(a => {
-                                return [
-                                    [
-                                        ` '${optionName}'`,
-                                        a,
-                                    ],
-                                ]
-                            }),
-                        }
-                    }))
-                },
-                alternatives,
-            )
-        }
-        propertyCodeCompletions.push(createCodeCompletionForShorthandProperty(prop, product.branch()))
+        createCodeCompletionForProperty(
+            prop,
+            sequence,
+            $ => {
+                createCodeCompletionForShorthandNode($.type.get().node, sequence)
+            },
+            $ => {
+                const step = sequence.addTaggedUnionStep()
+                $.options.forEach((option, optionName) => {
+                    const seq = step.addOption()
+                    seq.snippet(` '${optionName}'`)
+                    createCodeCompletionForShorthandNode(option.node, seq)
+                })
+            },
+        )
     })
-    product.end()
-    return createAlternativesProduct(propertyCodeCompletions)
 }
 
-function createCodeCompletionForVerboseProperty(prop: astncore.PropertyDefinition, alternatives: AlternativesAPI): Alternatives {
-    return createCodeCompletionForProperty(
+function createCodeCompletionForVerboseProperty(prop: astncore.PropertyDefinition, sequence: Line): void {
+    createCodeCompletionForProperty(
         prop,
+        sequence,
         $ => {
-            return createCodeCompletionAlternativesForVerboseNode($.type.get().node, alternatives)
+            createCodeCompletionAlternativesForVerboseNode($.type.get().node, sequence)
         },
         $ => {
-            const ccvh = createCodeCompletionAlternativesForVerboseNode($["default option"].get().node, alternatives)
-            return {
-                alternatives: ccvh.alternatives.map(a => {
-                    return [
-                        [
-                            ` | '${$["default option"].name}'`,
-                            a,
-                        ],
-                    ]
-                }),
-            }
+            sequence.snippet(` | '${$["default option"].name}'`)
+            createCodeCompletionAlternativesForVerboseNode($["default option"].get().node, sequence)
         },
-        alternatives,
     )
 }
 
 function createCodeCompletionForVerboseProperties(
     node: astncore.NodeDefinition,
-    alternatives: AlternativesAPI,
-): Alternatives {
-    const propertyCodeCompletions: Alternatives[] = []
-    const product = alternatives.addProduct()
+    sequence: Line,
+): void {
     let dirty = false
-    node.properties.forEach((prop, propKey) => {
-        dirty = true
-        propertyCodeCompletions.push({
-            alternatives: createCodeCompletionForVerboseProperty(prop, product.branch()).alternatives.map(alt => {
-                return () => {
-                    return fp.line([
-                        `'${propKey}':`,
-                        alt,
-                    ])
-                }
-            }),
+    sequence.indent($ => {
+        node.properties.forEach((prop, propKey) => {
+            dirty = true
+            const line = $.addLine()
+            line.snippet(`'${propKey}':`)
+            createCodeCompletionForVerboseProperty(prop, line)
         })
     })
     if (!dirty) {
-        propertyCodeCompletions.push({
-            alternatives: [
-                [' '],
-            ],
-        })
-
+        sequence.snippet(' ')
     }
-    return createAlternativesProduct(propertyCodeCompletions)
 }
 
-function createCodeCompletionAlternativesForVerboseNode(node: astncore.NodeDefinition, alternatives: AlternativesAPI): Alternatives {
-    return {
-        alternatives: createCodeCompletionForVerboseProperties(node, alternatives).alternatives.map(alt => {
-            return [' (', alt, ')']
-        }),
-    }
+function createCodeCompletionAlternativesForVerboseNode(
+    node: astncore.NodeDefinition,
+    sequence: Line,
+): void {
+    sequence.snippet(` (`)
+    createCodeCompletionForVerboseProperties(node, sequence)
+    sequence.snippet(`)`)
 }
 
 export type OnToken<Annotation> = (
@@ -250,31 +153,125 @@ function createCodeCompletionsForValueGenerator<Annotation>(
 ): astncore.TypedValueHandler<Annotation> {
 
     function createAlternativesRoot(): AlternativesRoot {
-        function createAlternativesAPI(): AlternativesAPI {
+        type StepType =
+            | ["block", {
+                block: ABlock
+            }]
+            | ["snippet", {
+                value: string
+            }]
+            | ["tagged union", {
+                "alts": ASequence[]
+            }]
+        type ASequence = StepType[]
+
+        type ABlock = {
+            lines: ASequence[]
+        }
+
+        const rootSequence: ASequence = []
+
+        function createBlock(imp: ABlock): Block {
             return {
-                addLeaf: () => {
-                    //
-                },
-                addProduct: () => {
-                    return createAlternativesProductAPI()
+                addLine: () => {
+                    const seq: ASequence = []
+                    imp.lines.push(seq)
+                    return createSequence(seq)
                 },
             }
         }
 
-        function createAlternativesProductAPI(): AlternativesProductAPI {
+        function createSequence(imp: ASequence): Line {
             return {
-                branch: () => {
-                    return createAlternativesAPI()
+                indent: callback => {
+                    const block: ABlock = {
+                        lines: [],
+                    }
+                    imp.push(["block", {
+                        block: block,
+                    }])
+                    callback(createBlock(block))
                 },
-                end: () => {
-                    //
+                snippet: (str: string) => {
+                    imp.push(["snippet", { value: str }])
+                },
+                addTaggedUnionStep: () => {
+                    function createStep(sequence: ASequence): Step {
+                        const alts: ASequence[] = []
+                        sequence.push(["tagged union", { alts: alts }])
+                        return {
+                            addOption: () => {
+                                const subSeq: ASequence = []
+                                alts.push(subSeq)
+                                return createSequence(subSeq)
+                            },
+                        }
+                    }
+                    return createStep(imp)
                 },
             }
         }
+
         return {
-            root: createAlternativesAPI(),
+            root: createSequence(rootSequence),
             serialize: () => {
-                //
+                let indentationLevel = 0
+                function createIndentation() {
+                    let str = ""
+                    for (let i = 0; i!== indentationLevel; i+=1) {
+                        str += "    "
+                    }
+                    return str
+                }
+                function ser(seed: string[], s: ASequence, add: (str: string) => void): void {
+                    let out = seed
+                    for (let i = 0; i !== s.length; i += 1) {
+                        const step = s[i]
+                        switch (step[0]) {
+                            case "block":
+                                cc(step[1], step => {
+                                    indentationLevel += 1
+                                    step.block.lines.forEach(l => {
+                                        const temp: string[] = []
+                                        ser(out.map(str => `${str}\n${createIndentation()}`), l, str => temp.push(str))
+                                        out = temp
+                                    })
+                                    indentationLevel -= 1
+                                    if (step.block.lines.length !== 0) {
+                                        out = out.map(str => `${str}\n${createIndentation()}`)
+                                    }
+                                    //
+                                })
+                                break
+                            case "snippet":
+                                cc(step[1], step => {
+                                    out = out.map(str => {
+                                        return str + step.value
+                                    })
+                                })
+                                break
+                            case "tagged union":
+                                cc(step[1], step => {
+                                    const temp: string[] = []
+                                    for (let j = 0; j !== step.alts.length; j += 1) {
+                                        const alt = step.alts[j]
+                                        ser(out, alt, str => temp.push(str))
+                                    }
+                                    out = temp
+                                })
+                                break
+                            default:
+                                assertUnreachable(step[0])
+                        }
+                    }
+
+                    out.forEach(str => {
+                        add(str)
+                    })
+                }
+                const res: string[] = []
+                ser([""], rootSequence, str => res.push(str))
+                return res
             },
         }
     }
@@ -300,18 +297,20 @@ function createCodeCompletionsForValueGenerator<Annotation>(
                         )
                     },
                     onEntry: $ => {
-                        const alternatives = createAlternativesRoot()
+                        const shorthandAlternatives = createAlternativesRoot()
+                        shorthandAlternatives.root.snippet(` <`)
+                        createCodeCompletionForShorthandNode($.annotation.nodeDefinition, shorthandAlternatives.root)
+                        shorthandAlternatives.root.snippet(` >`)
+
+                        const verboseAlternatives = createAlternativesRoot()
+                        createCodeCompletionAlternativesForVerboseNode($.annotation.nodeDefinition, verboseAlternatives.root)
+
+                        const alts = shorthandAlternatives.serialize().concat(verboseAlternatives.serialize())
+
                         onToken(
                             $.annotation.annotation,
                             null,
-                            serializeAlternatives(mergeAlternatives([
-                                {
-                                    alternatives: createCodeCompletionForShorthandNode($.annotation.nodeDefinition, alternatives.root).alternatives.map(alt => {
-                                        return [' <', alt, ' >']
-                                    }),
-                                },
-                                createCodeCompletionAlternativesForVerboseNode($.annotation.nodeDefinition, alternatives.root),
-                            ]))
+                            () => alts
                         )
                         return createCodeCompletionsForValueGenerator(onToken)
                     },
@@ -423,10 +422,11 @@ function createCodeCompletionsForValueGenerator<Annotation>(
         onShorthandTypeOpen: $ => {
             function serialize() {
                 const alternatives = createAlternativesRoot()
-                return serializeAlternatives(createCodeCompletionForShorthandNode(
+                createCodeCompletionForShorthandNode(
                     $.annotation.nodeDefinition,
                     alternatives.root,
-                ))
+                )
+                return () => alternatives.serialize()
             }
             if ($.annotation.annotation !== null) {
                 onToken(
@@ -460,18 +460,13 @@ function createCodeCompletionsForValueGenerator<Annotation>(
         },
         onVerboseTypeOpen: $ => {
             const alternatives = createAlternativesRoot()
+            createCodeCompletionForVerboseProperties($.annotation.nodeDefinition, alternatives.root)
             onToken(
                 $.annotation.annotation,
                 null,
-                serializeAlternatives({
-                    alternatives: createCodeCompletionForVerboseProperties($.annotation.nodeDefinition, alternatives.root).alternatives.map(alt => {
-                        return [
-                            '',
-                            alt,
-                            '',
-                        ]
-                    }),
-                }),
+                () => {
+                    return alternatives.serialize()
+                },
                 //"onVerboseTypeClose",
             )
             function createCodeCompletionForVerboseTypeGenerator<Annotation>(
@@ -490,10 +485,11 @@ function createCodeCompletionsForValueGenerator<Annotation>(
                     },
                     onProperty: $ => {
                         const alternatives = createAlternativesRoot()
+                        createCodeCompletionForVerboseProperty($.annotation.definition, alternatives.root)
                         onToken(
                             $.annotation.annotation,
                             null,
-                            serializeAlternatives(createCodeCompletionForVerboseProperty($.annotation.definition, alternatives.root)),
+                            () => alternatives.serialize(),
                         )
                         return createCodeCompletionsForValueGenerator(onToken)
                     },
