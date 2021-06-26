@@ -1,10 +1,10 @@
 import * as astncore from "astn-core"
 import * as astn from "astn"
 import * as p from "pareto"
-import { SchemaSchemaBuilder } from "../interface"
+import { SchemaSchemaBuilder } from "../interfaces"
 import { createInternalSchemaHandler } from "./createInternalSchemaHandler"
-import { SchemaAndSideEffects } from "../interface/SchemaAndSideEffects"
-import { SchemaSchemaError } from "../interface/SchemaSchemaError"
+import { SchemaAndSideEffects } from "../interfaces/SchemaAndSideEffects"
+import { SchemaSchemaError } from "../interfaces/SchemaSchemaError"
 
 export function createSchemaDeserializer(
     onError: (error: SchemaSchemaError, range: astn.Range) => void,

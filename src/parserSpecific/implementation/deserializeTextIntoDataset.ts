@@ -7,52 +7,22 @@ import * as astncore from "astn-core"
 import {
 	 IDataset,
 	 IDeserializedDataset,
-	 } from "../interface/Dataset"
+	 } from "../interfaces/Dataset"
 
-import { ResolveExternalSchema } from "../interface/ResolveExternalSchema"
+import { ResolveExternalSchema } from "../interfaces/ResolveExternalSchema"
 
 import { deserializeDataset } from "./deserializeDataset"
 import { deserializeSchemaFromStream } from "./deserializeSchemaFromStream"
 import { ContextSchemaData } from "./DeserializeASTNTextIntoDataset"
-import { ExternalSchemaDeserializationError } from "../interface/ExternalSchemaDeserializationError"
+import { ExternalSchemaDeserializationError } from "../interfaces/ExternalSchemaDeserializationError"
 
 
-import { SchemaSchemaError } from "../interface/SchemaSchemaError"
-import { DeserializationDiagnostic } from "./DeserializationDiagnostic"
-import { SchemaAndSideEffects } from "../interface/SchemaAndSideEffects"
-import { SchemaSchemaBuilder } from "../interface"
+import { SchemaAndSideEffects } from "../interfaces/SchemaAndSideEffects"
+import { SchemaSchemaBuilder } from "../interfaces"
+import { LoadDocumentDiagnostic, LoadDocumentDiagnosticType } from "../interfaces/LoadDocumentDiagnostic"
 
 function assertUnreachable<RT>(_x: never): RT {
 	throw new Error("unreachable")
-}
-
-
-export type LoadDocumentDiagnosticType =
-	| ["schema retrieval", {
-		issue:
-		| ["unknown retrieval error", { "description": string }]
-		| ["validating schema file against internal schema"]
-		| ["found both external and internal schema. ignoring internal schema"]
-		| ["error in external schema", SchemaSchemaError]
-		| ["no valid schema"]
-		| ["missing schema"]
-	}]
-	| ["validation", {
-		range: astn.Range
-		message: string
-	}]
-	| ["structure", {
-		message: "missing (valid) schema"
-	}]
-	| ["deserialization", {
-		data: DeserializationDiagnostic
-		range: astn.Range
-	}]
-
-
-export type LoadDocumentDiagnostic = {
-	type: LoadDocumentDiagnosticType
-	severity: astncore.DiagnosticSeverity
 }
 
 export type DiagnosticCallback = (diagnostic: LoadDocumentDiagnostic) => void

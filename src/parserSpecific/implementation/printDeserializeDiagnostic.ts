@@ -5,7 +5,7 @@
 import * as astncore from "astn-core"
 import * as astn from "astn"
 import { printInternalSchemaDeserializationError } from "./printInternalSchemaDeserializationError"
-import { DeserializationDiagnostic } from "./DeserializationDiagnostic"
+import { DeserializationDiagnostic } from "../interfaces/DeserializationDiagnostic"
 
 function assertUnreachable<RT>(_x: never): RT {
     throw new Error("unreachable")

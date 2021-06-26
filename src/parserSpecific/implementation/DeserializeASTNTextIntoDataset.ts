@@ -3,8 +3,8 @@ import * as p from "pareto"
 import * as astncore from "astn-core"
 import * as astn from "astn"
 
-import { IDeserializedDataset } from "../interface/Dataset"
-import { RetrievalError, ResolveExternalSchema } from "../interface/ResolveExternalSchema"
+import { IDeserializedDataset } from "../interfaces/Dataset"
+import { RetrievalError, ResolveExternalSchema } from "../interfaces/ResolveExternalSchema"
 import { DiagnosticCallback } from "./deserializeTextIntoDataset"
 
 export type ContextSchemaData = {

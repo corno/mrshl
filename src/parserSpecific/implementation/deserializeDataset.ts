@@ -9,20 +9,20 @@ import * as astn from "astn"
 
 import * as streamVal from "astn-core"
 
-import { InternalSchemaSpecification, InternalSchemaSpecificationType } from "../interface/Dataset"
-import { SchemaAndSideEffects } from "../interface/SchemaAndSideEffects"
+import { InternalSchemaSpecification, InternalSchemaSpecificationType } from "../interfaces/Dataset"
+import { SchemaAndSideEffects } from "../interfaces/SchemaAndSideEffects"
 
 import { createDeserializer } from "../../plugins/schemas/mrshl/metadata@0.1/deserialize"
 
-import { ExternalSchemaDeserializationError } from "../interface/ExternalSchemaDeserializationError"
+import { ExternalSchemaDeserializationError } from "../interfaces/ExternalSchemaDeserializationError"
 import { createInternalSchemaHandler } from "./createInternalSchemaHandler"
 import { createNOPSideEffects } from "./NOPSideEffects"
-import { DeserializationDiagnostic, DeserializationDiagnosticType } from "./DeserializationDiagnostic"
-import { IDeserializedDataset } from "../interface/Dataset"
-import { IDataset } from "../interface/Dataset"
-import { ResolveExternalSchema } from "../interface/ResolveExternalSchema"
+import { DeserializationDiagnostic, DeserializationDiagnosticType } from "../interfaces/DeserializationDiagnostic"
+import { IDeserializedDataset } from "../interfaces/Dataset"
+import { IDataset } from "../interfaces/Dataset"
+import { ResolveExternalSchema } from "../interfaces/ResolveExternalSchema"
 import { createSchemaAndSideEffectsFromStream } from "./createSchemaAndSideEffectsFromStream"
-import { InternalSchemaDeserializationError, SchemaSchemaBuilder } from "../interface"
+import { InternalSchemaDeserializationError, SchemaSchemaBuilder } from "../interfaces"
 
 function assertUnreachable<RT>(_x: never): RT {
     throw new Error("unreachable")

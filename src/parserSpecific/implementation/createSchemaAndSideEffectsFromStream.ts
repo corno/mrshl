@@ -1,9 +1,9 @@
 import { createSchemaDeserializer } from "./createSchemaDeserializer"
 import * as p from "pareto"
 import * as astn from "astn"
-import { SchemaAndSideEffects } from "../interface/SchemaAndSideEffects"
-import { RetrievalError } from "../interface/ResolveExternalSchema"
-import { ExternalSchemaResolvingError, SchemaSchemaBuilder } from "../interface"
+import { SchemaAndSideEffects } from "../interfaces/SchemaAndSideEffects"
+import { RetrievalError } from "../interfaces/ResolveExternalSchema"
+import { ExternalSchemaResolvingError, SchemaSchemaBuilder } from "../interfaces"
 
 function assertUnreachable<RT>(_x: never): RT {
     throw new Error("unreachable")

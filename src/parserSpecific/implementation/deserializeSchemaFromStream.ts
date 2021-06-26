@@ -1,10 +1,10 @@
 import * as astn from "astn"
 import { createSchemaDeserializer } from "./createSchemaDeserializer"
 import * as p from "pareto"
-import { SchemaAndSideEffects } from "../interface/SchemaAndSideEffects"
-import { SchemaSchemaError } from "../interface/SchemaSchemaError"
-import { ExternalSchemaDeserializationError } from "../interface/ExternalSchemaDeserializationError"
-import { SchemaSchemaBuilder } from "../interface"
+import { SchemaAndSideEffects } from "../interfaces/SchemaAndSideEffects"
+import { SchemaSchemaError } from "../interfaces/SchemaSchemaError"
+import { ExternalSchemaDeserializationError } from "../interfaces/ExternalSchemaDeserializationError"
+import { SchemaSchemaBuilder } from "../interfaces"
 
 
 export function deserializeSchemaFromStream(

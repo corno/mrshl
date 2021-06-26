@@ -1,16 +1,6 @@
 // tslint:disable: interface-name
+import { InternalSchemaSpecification } from "../../parserSpecific"
 import * as g from "./generic"
-
-export enum InternalSchemaSpecificationType {
-    Reference,
-    None,
-    Embedded
-}
-
-export type InternalSchemaSpecification =
-    | [InternalSchemaSpecificationType.Embedded]
-    | [InternalSchemaSpecificationType.Reference, { name: string }]
-    | [InternalSchemaSpecificationType.None]
 
 export interface IFocussable {
     setFocus(): void

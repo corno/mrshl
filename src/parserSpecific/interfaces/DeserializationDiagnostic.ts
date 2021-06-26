@@ -4,7 +4,7 @@
 
 import * as astncore from "astn-core"
 import * as astn from "astn"
-import { InternalSchemaDeserializationError } from "../interface"
+import { InternalSchemaDeserializationError } from "./internalSchemaDerializationError"
 
 export type DeserializationDiagnosticType =
     | ["structure", {
