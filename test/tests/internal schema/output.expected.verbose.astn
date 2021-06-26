@@ -4,19 +4,19 @@
             'node': (
                 'properties': {
                     "a29": (
-                        'type': | 'string' (
+                        'type': | 'simple string' (
                             'default value': ""
                             'quoted': true
                         )
                     )
                     "b": (
-                        'type': | 'string' (
+                        'type': | 'simple string' (
                             'default value': ""
                             'quoted': true
                         )
                     )
                     "c": (
-                        'type': | 'string' (
+                        'type': | 'simple string' (
                             'default value': ""
                             'quoted': false
                         )

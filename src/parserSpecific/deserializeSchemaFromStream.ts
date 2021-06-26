@@ -1,7 +1,7 @@
 import * as astn from "astn"
 import { createSchemaDeserializer } from "./createSchemaDeserializer"
 import * as p from "pareto"
-import { SchemaAndSideEffects } from "../deserialize/interfaces/schemaPlugin/SchemaAndSideEffects"
+import { SchemaAndSideEffects } from "astn-core"
 import { SchemaSchemaError } from "./SchemaSchemaError"
 import { ExternalSchemaDeserializationError } from "../interfaces/ExternalSchemaDeserializationError"
 

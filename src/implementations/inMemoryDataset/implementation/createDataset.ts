@@ -1,15 +1,15 @@
-import * as def from "../../../deserialize/interfaces/typedParserDefinitions"
-import * as buildAPI from "../../../deserialize/interfaces/buildAPI"
+import * as def from "astn-core"
+import * as buildAPI from "astn-core"
 import * as buildImp from "./buildAPIImplementation"
 
 import { RootImp } from "./Root"
-import { IDataset } from "../../../deserialize/interfaces/dataset"
-import * as id from "../../../deserialize/interfaces/buildAPI/IDataset"
+import { IDataset } from "astn-core"
+import * as id from "astn-core"
 //import * as asyncAPIImp from "./asyncAPIImplementation"
 import { Comments } from "./internals"
 import { serialize } from "./serialize/serialize"
 
-class SyncDataset implements id.IDataset {
+class SyncDataset implements id.IDataset2 {
     public readonly schema: def.Schema
     public readonly root: buildAPI.Node
     public readonly documentComments = new Comments()

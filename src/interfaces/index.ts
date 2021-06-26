@@ -1,5 +1,5 @@
 //export * from "./asyncAPI"
-export * from "../deserialize/interfaces/DiagnosticSeverity"
+export * from "astn-core"
 export * from "./ExternalSchemaDeserializationError"
 //export * from "./asyncAPI"
 //export * from "./buildAPI"

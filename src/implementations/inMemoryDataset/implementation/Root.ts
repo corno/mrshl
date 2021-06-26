@@ -1,4 +1,4 @@
-import * as def from "../../../deserialize/interfaces/typedParserDefinitions"
+import * as def from "astn-core"
 import * as g from "./genericimp"
 import { Global } from "./Global"
 import { Node } from "./internals/Node"

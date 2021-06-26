@@ -6,8 +6,8 @@ import * as astncore from "astn-core"
 // import * as md from "../API/types"
 // import * as gapi from "../API/generics"
 
-import { IReference, NodeDefinition, Schema } from "../../../../deserialize/interfaces/typedParserDefinitions"
-import { IReadonlyDictionary } from "../../../../deserialize/interfaces/typedParserDefinitions"
+import { IReference, NodeDefinition, Schema } from "astn-core"
+import { IReadonlyDictionary } from "astn-core"
 
 function assertUnreachable<RT>(_x: never): RT {
     throw new Error("unreachable")

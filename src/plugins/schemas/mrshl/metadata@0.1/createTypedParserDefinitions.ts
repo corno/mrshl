@@ -1,4 +1,4 @@
-import * as targetDef from "../../../../deserialize/interfaces/typedParserDefinitions"
+import * as targetDef from "astn-core"
 import {
     ResolveRegistry,
     createReference,

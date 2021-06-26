@@ -1,11 +1,11 @@
 import * as p from "pareto"
 
-import * as streamVal from "../deserialize/interfaces/streamingValidationAPI"
-import * as def from "../deserialize/interfaces/typedParserDefinitions"
+import * as streamVal from "astn-core"
+import * as def from "astn-core"
 import * as astn from "astn"
 
-import { IDataset } from "../deserialize/interfaces/dataset"
-import { IDeserializedDataset } from "../deserialize/interfaces/IDeserializedDataset"
+import { IDataset } from "astn-core"
+import { IDeserializedDataset } from "astn-core"
 import { RetrievalError, ResolveExternalSchema } from "./ResolveExternalSchema"
 import { DiagnosticCallback } from "./deserializeTextIntoDataset"
 

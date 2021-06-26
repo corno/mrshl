@@ -1,4 +1,4 @@
-import * as g from "../../../../deserialize/interfaces/typedParserDefinitions/generics"
+import * as g from "astn-core"
 
 /**
  * this set of types defines a schema that only describes the data structure,

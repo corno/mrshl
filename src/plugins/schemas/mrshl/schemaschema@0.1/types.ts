@@ -1,4 +1,22 @@
-import * as def from "../../../../deserialize/interfaces/typedParserDefinitions"
+
+export interface IReference<T> {
+    get(): T
+    readonly name: string
+}
+
+export interface IReadonlyLookup<T> {
+    getUnsafe(key: string): T
+    get(key: string): T | null
+    getKeys(): string[]
+}
+
+export type RawObject<T> = { [key: string]: T }
+
+export interface IReadonlyDictionary<T> extends IReadonlyLookup<T> {
+    forEach(callback: (entry: T, key: string) => void): void
+    map<RT>(callback: (entry: T) => RT): RawObject<RT>
+    toArray<RT>(callback: (entry: T, key: string) => RT): RT[]
+}
 
 export type CollectionType =
     | ["dictionary", Dictionary]
@@ -10,7 +28,7 @@ export type Collection = {
 }
 
 export type Component = {
-    readonly "type": def.IReference<ComponentType>
+    readonly "type": IReference<ComponentType>
 }
 
 export type ComponentType = {
@@ -18,14 +36,14 @@ export type ComponentType = {
 }
 
 export type Dictionary = {
-    readonly "key property": def.IReference<Property>
+    readonly "key property": IReference<Property>
 }
 
 export type List = {
 }
 
 export type Node = {
-    readonly "properties": def.IReadonlyDictionary<Property>
+    readonly "properties": IReadonlyDictionary<Property>
 }
 
 export type Property = {
@@ -39,8 +57,8 @@ export type PropertyType =
     | ["state group", StateGroup]
 
 export type Schema = {
-    readonly "component types": def.IReadonlyDictionary<ComponentType>
-    readonly "root type": def.IReference<ComponentType>
+    readonly "component types": IReadonlyDictionary<ComponentType>
+    readonly "root type": IReference<ComponentType>
 }
 
 export type State = {
@@ -48,8 +66,8 @@ export type State = {
 }
 
 export type StateGroup = {
-    readonly "states": def.IReadonlyDictionary<State>
-    readonly "default state": def.IReference<State>
+    readonly "states": IReadonlyDictionary<State>
+    readonly "default state": IReference<State>
 }
 
 export type ValueType =

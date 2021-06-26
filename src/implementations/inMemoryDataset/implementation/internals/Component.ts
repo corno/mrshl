@@ -1,4 +1,4 @@
-import * as def from "../../../../deserialize/interfaces/typedParserDefinitions"
+import * as def from "astn-core"
 import { Node } from "./Node"
 import { Comments } from "./Comments"
 import { IParentErrorsAggregator, ErrorManager } from "./ErrorManager"

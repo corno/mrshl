@@ -1,4 +1,4 @@
-import * as def from "../../../../deserialize/interfaces/typedParserDefinitions"
+import * as def from "astn-core"
 
 type Resolve = () => boolean
 

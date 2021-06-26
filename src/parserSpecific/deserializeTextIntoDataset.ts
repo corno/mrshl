@@ -2,19 +2,19 @@ import * as p from "pareto"
 import * as path from "path"
 import * as astn from "astn"
 
-import * as streamVal from "../deserialize/interfaces/streamingValidationAPI"
-import * as def from "../deserialize/interfaces/typedParserDefinitions"
-import { DiagnosticSeverity } from "../deserialize/interfaces/DiagnosticSeverity"
+import * as streamVal from "astn-core"
+import * as def from "astn-core"
+import { DiagnosticSeverity } from "astn-core"
 
-import { IDataset } from "../deserialize/interfaces/dataset"
+import { IDataset } from "astn-core"
 
 import { ResolveExternalSchema } from "./ResolveExternalSchema"
-import { IDeserializedDataset } from "../deserialize/interfaces/IDeserializedDataset"
+import { IDeserializedDataset } from "astn-core"
 
 import { deserializeDataset } from "./deserializeDataset"
 import { deserializeSchemaFromStream } from "./deserializeSchemaFromStream"
 import { ContextSchemaData } from "./DeserializeASTNTextIntoDataset"
-import { SchemaAndSideEffects } from "../deserialize/interfaces/schemaPlugin/SchemaAndSideEffects"
+import { SchemaAndSideEffects } from "astn-core"
 import { ExternalSchemaDeserializationError } from "../interfaces/ExternalSchemaDeserializationError"
 
 

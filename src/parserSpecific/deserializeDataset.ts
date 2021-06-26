@@ -7,25 +7,25 @@ import * as p from "pareto"
 import * as astncore from "astn-core"
 import * as astn from "astn"
 
-import * as streamVal from "../deserialize/interfaces/streamingValidationAPI"
+import * as streamVal from "astn-core"
 
-import { InternalSchemaSpecification, InternalSchemaSpecificationType } from "../deserialize/interfaces/InternalSchemaSpecification"
-import { SchemaAndSideEffects } from "../deserialize/interfaces/schemaPlugin/SchemaAndSideEffects"
+import { InternalSchemaSpecification, InternalSchemaSpecificationType } from "astn-core"
+import { SchemaAndSideEffects } from "astn-core"
 
 import { createDeserializer as createMetaDataDeserializer } from "../plugins/schemas/mrshl/metadata@0.1/deserialize"
 
-import { createDatasetDeserializer } from "../deserialize/implementation/createDatasetDeserializer"
+import { createDatasetDeserializer } from "astn-core"
 
 import { ExternalSchemaDeserializationError } from "../interfaces/ExternalSchemaDeserializationError"
-import { createInternalSchemaHandler } from "../deserialize/implementation/createInternalSchemaHandler"
+import { createInternalSchemaHandler } from "astn-core"
 import { createNOPSideEffects } from "./NOPSideEffects"
 import { DeserializationDiagnostic, DeserializationDiagnosticType } from "./DeserializationDiagnostic"
-import { IDeserializedDataset } from "../deserialize/interfaces/IDeserializedDataset"
-import { IDataset } from "../deserialize/interfaces/dataset"
+import { IDeserializedDataset } from "astn-core"
+import { IDataset } from "astn-core"
 import { ResolveExternalSchema } from "./ResolveExternalSchema"
 import { createSchemaAndSideEffectsFromStream } from "./createSchemaAndSideEffectsFromStream"
 import { InternalSchemaDeserializationError } from "../interfaces/internalSchemaDerializationError"
-import { DiagnosticSeverity } from "../deserialize/interfaces/DiagnosticSeverity"
+import { DiagnosticSeverity } from "astn-core"
 
 function assertUnreachable<RT>(_x: never): RT {
     throw new Error("unreachable")

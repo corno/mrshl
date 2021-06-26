@@ -1,6 +1,6 @@
 import * as astn from "astn"
 import { InternalSchemaDeserializationError } from "../interfaces/internalSchemaDerializationError"
-import { InternalSchemaError } from "../deserialize/interfaces/schemaPlugin/InternalSchemaError"
+import { InternalSchemaError } from "astn-core"
 
 export type SchemaSchemaError =
     | ["internal schema", InternalSchemaError]

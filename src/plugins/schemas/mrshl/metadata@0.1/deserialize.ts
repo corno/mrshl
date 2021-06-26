@@ -4,8 +4,8 @@
 */
 import * as astncore from "astn-core"
 import * as def from "./definitions"
-import * as g2 from "../../../../deserialize/interfaces/typedParserDefinitions/generics"
-import * as extDef from "../../../../deserialize/interfaces/typedParserDefinitions"
+import * as g2 from "astn-core"
+import * as extDef from "astn-core"
 import {
     createReference,
     ResolveRegistry,

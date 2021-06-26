@@ -1,5 +1,5 @@
 import { Node, Entry, initializeState, setValue, createEntry } from "./internals"
-import * as def from "../../../deserialize/interfaces/typedParserDefinitions"
+import * as def from "astn-core"
 import { Global } from "./Global"
 
 function assertUnreachable<RT>(_x: never): RT {

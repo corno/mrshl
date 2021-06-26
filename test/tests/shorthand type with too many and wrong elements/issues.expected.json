@@ -2,7 +2,7 @@
 	[
 		"deserialization",
 		"error",
-		"expected a string: 'a25'",
+		"expected a simple string: 'a25'",
 		1,
 		3,
 		1,

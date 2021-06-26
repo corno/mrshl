@@ -4,10 +4,10 @@ import * as t from "./types"
 import { convertToGenericSchema } from "./createTypedParserDefinitions"
 import * as p from "pareto-20"
 import * as sideEffects from "./sideEffects"
-import { DiagnosticSeverity } from "../../../../deserialize/interfaces/DiagnosticSeverity"
-import { SchemaAndSideEffects } from "../../../../deserialize/interfaces/schemaPlugin/SchemaAndSideEffects"
+import { DiagnosticSeverity } from "astn-core"
+import { SchemaAndSideEffects } from "astn-core"
 import { InternalSchemaDeserializationError } from "../../../../interfaces/internalSchemaDerializationError"
-import { InternalSchemaError } from "../../../../deserialize/interfaces/schemaPlugin/InternalSchemaError"
+import { InternalSchemaError } from "astn-core"
 
 export function createSchemaAndSideEffects<Annotation>(
     onSchemaError: (error: InternalSchemaDeserializationError, annotation: Annotation) => void,

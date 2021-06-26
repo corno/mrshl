@@ -2,12 +2,12 @@
     "max-classes-per-file": off,
 */
 
-import * as streamVal from "../../../../deserialize/interfaces/streamingValidationAPI"
+import * as streamVal from "astn-core"
 
 export function createNOPSideEffects<Annotation>(): streamVal.RootHandler<Annotation> {
 
     class NOPSideEffects<Annotation> {
-        root: streamVal.ValueHandler<Annotation>
+        root: streamVal.TypedValueHandler<Annotation>
         constructor() {
             this.root = createValueNOPSideEffects()
         }
@@ -18,7 +18,7 @@ export function createNOPSideEffects<Annotation>(): streamVal.RootHandler<Annota
     return new NOPSideEffects()
 }
 
-function createValueNOPSideEffects<Annotation>(): streamVal.ValueHandler<Annotation> {
+function createValueNOPSideEffects<Annotation>(): streamVal.TypedValueHandler<Annotation> {
     return {
         onShorthandTypeOpen: () => {
 

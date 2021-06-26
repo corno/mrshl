@@ -2,7 +2,7 @@
     "max-classes-per-file": off,
 */
 
-import * as streamVal from "../deserialize/interfaces/streamingValidationAPI"
+import * as streamVal from "astn-core"
 
 type GetHoverText = () => string
 
@@ -28,7 +28,7 @@ function createTaggedUnionHoverTextGenerator<Annotation>(
 
     name: string | null,
     onToken: OnTokenHoverText<Annotation>,
-): streamVal.TaggedUnionHandler<Annotation> {
+): streamVal.TypedTaggedUnionHandler<Annotation> {
 
     return {
         onUnexpectedOption: () => {
@@ -52,7 +52,7 @@ function createTaggedUnionHoverTextGenerator<Annotation>(
 function createValueHoverTextGenerator<Annotation>(
     name: string | null,
     onToken: OnTokenHoverText<Annotation>,
-): streamVal.ValueHandler<Annotation> {
+): streamVal.TypedValueHandler<Annotation> {
     function addOnToken(annotation: Annotation) {
         if (name !== null) {
             const cn = name

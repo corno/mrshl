@@ -3,7 +3,7 @@
 
 */
 import * as astncore from "astn-core"
-import * as def from "../../../../deserialize/interfaces/typedParserDefinitions"
+import * as def from "astn-core"
 import {
     createDictionary,
 } from "./Dictionary"

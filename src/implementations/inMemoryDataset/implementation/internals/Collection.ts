@@ -3,7 +3,7 @@
 */
 
 import * as g from "../genericimp"
-import * as def from "../../../../deserialize/interfaces/typedParserDefinitions"
+import * as def from "astn-core"
 import { FlexibleErrorsAggregator, IParentErrorsAggregator, ErrorManager } from "./ErrorManager"
 import { Node } from "./Node"
 import { Comments } from "./Comments"

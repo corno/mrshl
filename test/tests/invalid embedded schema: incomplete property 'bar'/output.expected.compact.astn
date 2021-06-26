@@ -4,13 +4,13 @@
             'node': (
                 'properties': {
                     "bar": (
-                        'type': | 'string' (
+                        'type': | 'simple string' (
                             'default value': ""
                             'quoted': true
                         )
                     )
                     "foo": (
-                        'type': | 'string' (
+                        'type': | 'simple string' (
                             'default value': ""
                             'quoted': false
                         )

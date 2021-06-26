@@ -2,7 +2,7 @@
     "max-classes-per-file": off,
 */
 
-import * as streamVal from "../deserialize/interfaces/streamingValidationAPI"
+import * as streamVal from "astn-core"
 /* eslint
     "max-classes-per-file": off,
 */
@@ -44,7 +44,7 @@ function createShorthandTypeNOPSideEffects<Annotation>(): streamVal.ShorthandTyp
     }
 }
 
-function createStateGroupNOPSideEffects<Annotation>(): streamVal.TaggedUnionHandler<Annotation> {
+function createStateGroupNOPSideEffects<Annotation>(): streamVal.TypedTaggedUnionHandler<Annotation> {
     return {
         onUnexpectedOption: () => {
             //
@@ -55,7 +55,7 @@ function createStateGroupNOPSideEffects<Annotation>(): streamVal.TaggedUnionHand
     }
 }
 
-function createValueNOPSideEffects<Annotation>(): streamVal.ValueHandler<Annotation> {
+function createValueNOPSideEffects<Annotation>(): streamVal.TypedValueHandler<Annotation> {
 
     return {
         onDictionary: () => {

@@ -1,4 +1,4 @@
-import * as def from "../../../deserialize/interfaces/typedParserDefinitions"
+import * as def from "astn-core"
 import { checkDuplicates } from "./asyncAPIImplementation"
 import { Collection, Dictionary, Node } from "./internals"
 import { Component } from "./internals/Component"

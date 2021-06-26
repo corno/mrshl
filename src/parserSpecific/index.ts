@@ -1,7 +1,5 @@
 export * from "./createCodeCompletionFinder"
 export * from "./createHoverTextFinder"
-export * from "./DeserializeASTNTextIntoDataset"
-export * from "./deserializeSchemaFromStream"
 export * from "./deserializeTextIntoDataset"
 export * from "./printDeserializeDiagnostic"
 export * from "./printLoadDocumentDiagnostic"

@@ -2,8 +2,8 @@
     "max-classes-per-file": off,
 */
 
-import * as streamVal from "../deserialize/interfaces/streamingValidationAPI"
-import * as def from "../deserialize/interfaces/typedParserDefinitions"
+import * as streamVal from "astn-core"
+import * as def from "astn-core"
 import * as fp from "fountain-pen"
 
 function assertUnreachable<RT>(_x: never): RT {
@@ -245,7 +245,7 @@ export type OnToken<Annotation> = (
 
 function createCodeCompletionsForValueGenerator<Annotation>(
     onToken: OnToken<Annotation>,
-): streamVal.ValueHandler<Annotation> {
+): streamVal.TypedValueHandler<Annotation> {
 
     const alternatives: AlternativesAPI = {
         add: () => {

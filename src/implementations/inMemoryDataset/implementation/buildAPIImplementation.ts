@@ -3,8 +3,8 @@
     "@typescript-eslint/no-this-alias": off,
 */
 
-import * as buildAPI from "../../../deserialize/interfaces/buildAPI"
-import * as def from "../../../deserialize/interfaces/typedParserDefinitions"
+import * as buildAPI from "astn-core"
+import * as def from "astn-core"
 import * as imp from "./internals"
 import { Global } from "./Global"
 import { initializeState } from "./internals"

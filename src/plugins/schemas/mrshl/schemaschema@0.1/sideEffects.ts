@@ -3,8 +3,8 @@
 */
 
 import * as t from "./types"
-import * as streamVal from "../../../../deserialize/interfaces/streamingValidationAPI"
-import { DiagnosticSeverity } from "../../../../deserialize/interfaces/DiagnosticSeverity"
+import * as streamVal from "astn-core"
+import { DiagnosticSeverity } from "astn-core"
 
 export * from "./types"
 
@@ -45,7 +45,7 @@ function createList<Annotation>(
 function createStateGroup<Annotation>(
     definition: t.StateGroup,
     onError: (message: string, annotation: Annotation, severity: DiagnosticSeverity) => void,
-): streamVal.TaggedUnionHandler<Annotation> {
+): streamVal.TypedTaggedUnionHandler<Annotation> {
     return {
         onUnexpectedOption: () => {
             //
@@ -64,7 +64,7 @@ function createProp<Annotation>(
     name: string,
     nodedefinition: t.Node,
     onError: (message: string, annotation: Annotation, severity: DiagnosticSeverity) => void,
-): streamVal.ValueHandler<Annotation> {
+): streamVal.TypedValueHandler<Annotation> {
     return {
         onDictionary: () => {
             const prop = nodedefinition.properties.getUnsafe(name)
@@ -201,7 +201,7 @@ function createType<Annotation>(
 function createNode<Annotation>(
     definition: t.Node,
     onError: (message: string, annotation: Annotation, severity: DiagnosticSeverity) => void,
-): streamVal.ValueHandler<Annotation> {
+): streamVal.TypedValueHandler<Annotation> {
     return {
         onDictionary: () => {
             throw new Error("unexpected")

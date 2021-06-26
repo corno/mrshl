@@ -1,5 +1,5 @@
 import * as astn from "astn"
-import * as streamVal from "../deserialize/interfaces/streamingValidationAPI"
+import * as streamVal from "astn-core"
 import { createHoverTextsGenerator } from "../ide-integration/createHoverTextsGenerator"
 import { isPositionBeforeLocation } from "./isPositionBeforeLocation"
 

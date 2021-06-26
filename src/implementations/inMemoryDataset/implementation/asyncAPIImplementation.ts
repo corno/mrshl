@@ -3,11 +3,11 @@
 */
 
 import * as asyncAPI from "../../../interfaces/asyncAPI/asyncAPI"
-import * as def from "../../../deserialize/interfaces/typedParserDefinitions"
+import * as def from "astn-core"
 import * as g from "./genericimp"
 //import * as s from "../serialize"
-import * as id from "../../../deserialize/interfaces/buildAPI/IDataset"
-import * as iss from "../../../deserialize/interfaces/InternalSchemaSpecification"
+import * as id from "astn-core"
+import * as iss from "astn-core"
 import { copyEntry } from "./copyEntry"
 import { Global } from "./Global"
 import { Command, RootImp } from "./Root"

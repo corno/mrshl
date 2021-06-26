@@ -1,5 +1,5 @@
 import * as astncore from "astn-core"
-import { InternalSchemaError } from "../deserialize/interfaces/schemaPlugin/InternalSchemaError"
+import { InternalSchemaError } from "astn-core"
 
 export type ExternalSchemaResolvingError =
     | ["schema id cannot be an empty string"]

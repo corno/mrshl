@@ -2,8 +2,8 @@ import * as astncore from "astn-core"
 import * as astn from "astn"
 import * as p from "pareto"
 import { getSchemaSchemaBuilder, SchemaSchemaBuilder } from "../implementations/getSchemaSchemaBuilder"
-import { createInternalSchemaHandler } from "../deserialize/implementation/createInternalSchemaHandler"
-import { SchemaAndSideEffects } from "../deserialize/interfaces/schemaPlugin/SchemaAndSideEffects"
+import { createInternalSchemaHandler } from "astn-core"
+import { SchemaAndSideEffects } from "astn-core"
 import { SchemaSchemaError } from "./SchemaSchemaError"
 
 export function createSchemaDeserializer(

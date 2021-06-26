@@ -17,7 +17,7 @@ import { makeNativeHTTPrequest } from "../src/implementations/makeNativeHTTPrequ
 //import { deserializeSchemaFromString } from "../src"
 import * as p20 from "pareto-20"
 import { schemaHost } from "../schemaHost"
-import { DiagnosticSeverity } from "../src/deserialize/interfaces/DiagnosticSeverity"
+import { DiagnosticSeverity } from "astn-core"
 
 function readFileFromFileSystem(
     dir: string,
