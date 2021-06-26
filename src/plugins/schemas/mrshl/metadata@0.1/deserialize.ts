@@ -4,8 +4,6 @@
 */
 import * as astncore from "astn-core"
 import * as def from "./definitions"
-import * as g2 from "astn-core"
-import * as extDef from "astn-core"
 import {
     createReference,
     ResolveRegistry,
@@ -27,7 +25,7 @@ type AnnotatedString<TokenAnnotation> = {
 function createValueHandler<TokenAnnotation, NonTokenAnnotation, ReturnType>(
     context: astncore.IExpectContext<TokenAnnotation, NonTokenAnnotation, ReturnType>,
     raiseValidationError: (message: string, annotation: TokenAnnotation) => void,
-    componentTypes: g2.IReadonlyDictionary<def.ComponentTypeDefinition>,
+    componentTypes: astncore.IReadonlyDictionary<def.ComponentTypeDefinition>,
     callback: (node: def.NodeDefinition) => void,
     resolveRegistry: ResolveRegistry,
     createReturnValue: () => ReturnType,
@@ -380,7 +378,7 @@ function createValueHandler<TokenAnnotation, NonTokenAnnotation, ReturnType>(
 export function createDeserializer<TokenAnnotation, NonTokenAnnotation, ReturnType>(
     onExpectError: (error: astncore.ExpectError, annotation: TokenAnnotation) => void,
     onValidationError: (message: string, annotation: TokenAnnotation) => void,
-    callback: (metaData: extDef.Schema | null) => void,
+    callback: (metaData: astncore.Schema | null) => void,
     createReturnValue: () => ReturnType,
 ): astncore.OnObject<TokenAnnotation, NonTokenAnnotation, ReturnType> {
     const componentTypes = g.createDictionary<def.ComponentTypeDefinition>({})

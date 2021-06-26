@@ -1,6 +1,6 @@
 import * as g from "../genericimp"
 import * as asyncAPI from "../../../../interfaces/asyncAPI/asyncAPI"
-import * as def from "astn-core"
+import * as astncore from "astn-core"
 import { IParentErrorsAggregator, PotentialError, ErrorManager } from "./ErrorManager"
 import { Comments } from "./Comments"
 import { ISubscribableValue } from "../../../../interfaces/asyncAPI/generic"
@@ -21,7 +21,7 @@ export class Value {
     public readonly initialValue: string
 
     constructor(
-        definition: def.SimpleStringDefinition,
+        definition: astncore.SimpleStringDefinition,
         errorsAggregator: IParentErrorsAggregator,
         createdInNewContext: boolean,
         errorManager: ErrorManager,

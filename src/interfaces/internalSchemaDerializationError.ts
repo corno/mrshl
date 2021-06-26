@@ -1,5 +1,5 @@
 import * as astncore from "astn-core"
-import { InternalSchemaError } from "astn-core"
+import { InternalSchemaError } from "../parserSpecific"
 
 export type ExternalSchemaResolvingError =
     | ["schema id cannot be an empty string"]

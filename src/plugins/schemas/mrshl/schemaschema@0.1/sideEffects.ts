@@ -3,8 +3,7 @@
 */
 
 import * as t from "./types"
-import * as streamVal from "astn-core"
-import { DiagnosticSeverity } from "astn-core"
+import * as astncore from "astn-core"
 
 export * from "./types"
 
@@ -15,8 +14,8 @@ function assertUnreachable<RT>(_x: never): RT {
 function createDictionary<Annotation>(
     _definition: t.Dictionary,
     collectionDefinition: t.Collection,
-    onError: (message: string, annotation: Annotation, severity: DiagnosticSeverity) => void,
-): streamVal.DictionaryHandler<Annotation> {
+    onError: (message: string, annotation: Annotation, severity: astncore.DiagnosticSeverity) => void,
+): astncore.DictionaryHandler<Annotation> {
     return {
         onClose: () => {
             //
@@ -30,8 +29,8 @@ function createDictionary<Annotation>(
 function createList<Annotation>(
     _definition: t.List,
     collectionDefinition: t.Collection,
-    onError: (message: string, annotation: Annotation, severity: DiagnosticSeverity) => void,
-): streamVal.ListHandler<Annotation> {
+    onError: (message: string, annotation: Annotation, severity: astncore.DiagnosticSeverity) => void,
+): astncore.ListHandler<Annotation> {
     return {
         onEntry: () => {
             return createNode(collectionDefinition.node, onError)
@@ -44,8 +43,8 @@ function createList<Annotation>(
 
 function createStateGroup<Annotation>(
     definition: t.StateGroup,
-    onError: (message: string, annotation: Annotation, severity: DiagnosticSeverity) => void,
-): streamVal.TypedTaggedUnionHandler<Annotation> {
+    onError: (message: string, annotation: Annotation, severity: astncore.DiagnosticSeverity) => void,
+): astncore.TypedTaggedUnionHandler<Annotation> {
     return {
         onUnexpectedOption: () => {
             //
@@ -63,8 +62,8 @@ function createStateGroup<Annotation>(
 function createProp<Annotation>(
     name: string,
     nodedefinition: t.Node,
-    onError: (message: string, annotation: Annotation, severity: DiagnosticSeverity) => void,
-): streamVal.TypedValueHandler<Annotation> {
+    onError: (message: string, annotation: Annotation, severity: astncore.DiagnosticSeverity) => void,
+): astncore.TypedValueHandler<Annotation> {
     return {
         onDictionary: () => {
             const prop = nodedefinition.properties.getUnsafe(name)
@@ -124,30 +123,30 @@ function createProp<Annotation>(
             switch ($$.type[0]) {
                 case "boolean": {
                     if ($.data.wrapping[0] !== "none") {
-                        onError(`expected a boolean, found a quoted string`, $.annotation.annotation, DiagnosticSeverity.error)
+                        onError(`expected a boolean, found a quoted string`, $.annotation.annotation, astncore.DiagnosticSeverity.error)
                     } else {
                         const val = $.data.value
                         if (val !== "true" && val !== "false") {
-                            onError(`value '${val}' is not a boolean`, $.annotation.annotation, DiagnosticSeverity.error)
+                            onError(`value '${val}' is not a boolean`, $.annotation.annotation, astncore.DiagnosticSeverity.error)
                         }
                     }
                     break
                 }
                 case "number": {
                     if ($.data.wrapping[0] !== "none") {
-                        onError(`expected a number, found a wrapped string`, $.annotation.annotation, DiagnosticSeverity.error)
+                        onError(`expected a number, found a wrapped string`, $.annotation.annotation, astncore.DiagnosticSeverity.error)
                     } else {
                         const val = $.data.value
                         //eslint-disable-next-line no-new-wrappers
                         if (isNaN(new Number(val).valueOf())) {
-                            onError(`value '${val}' is not a number`, $.annotation.annotation, DiagnosticSeverity.error)
+                            onError(`value '${val}' is not a number`, $.annotation.annotation, astncore.DiagnosticSeverity.error)
                         }
                     }
                     break
                 }
                 case "string": {
                     if ($.data.wrapping[0] === "none") {
-                        onError(`expected a quoted string`, $.annotation.annotation, DiagnosticSeverity.error)
+                        onError(`expected a quoted string`, $.annotation.annotation, astncore.DiagnosticSeverity.error)
                     }
                     break
                 }
@@ -166,8 +165,8 @@ function createProp<Annotation>(
 
 function createShorthandType<Annotation>(
     definition: t.Node,
-    onError: (message: string, annotation: Annotation, severity: DiagnosticSeverity) => void,
-): streamVal.ShorthandTypeHandler<Annotation> {
+    onError: (message: string, annotation: Annotation, severity: astncore.DiagnosticSeverity) => void,
+): astncore.ShorthandTypeHandler<Annotation> {
     return {
         onProperty: $ => {
             return createProp($.annotation.propKey, definition, onError)
@@ -180,8 +179,8 @@ function createShorthandType<Annotation>(
 
 function createType<Annotation>(
     definition: t.Node,
-    onError: (message: string, annotation: Annotation, severity: DiagnosticSeverity) => void,
-): streamVal.VerboseTypeHandler<Annotation> {
+    onError: (message: string, annotation: Annotation, severity: astncore.DiagnosticSeverity) => void,
+): astncore.VerboseTypeHandler<Annotation> {
     return {
         onUnexpectedProperty: () => {
             //
@@ -200,8 +199,8 @@ function createType<Annotation>(
 
 function createNode<Annotation>(
     definition: t.Node,
-    onError: (message: string, annotation: Annotation, severity: DiagnosticSeverity) => void,
-): streamVal.TypedValueHandler<Annotation> {
+    onError: (message: string, annotation: Annotation, severity: astncore.DiagnosticSeverity) => void,
+): astncore.TypedValueHandler<Annotation> {
     return {
         onDictionary: () => {
             throw new Error("unexpected")
@@ -235,8 +234,8 @@ function createNode<Annotation>(
 
 export function createRoot<Annotation>(
     schema: t.Schema,
-    onError: (message: string, annotation: Annotation, severity: DiagnosticSeverity) => void
-): streamVal.RootHandler<Annotation> {
+    onError: (message: string, annotation: Annotation, severity: astncore.DiagnosticSeverity) => void
+): astncore.RootHandler<Annotation> {
     return {
         root: createNode(schema["root type"].get().node, onError),
         onEnd: () => {

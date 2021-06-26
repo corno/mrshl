@@ -1,6 +1,6 @@
 import * as g from "../genericimp"
 import * as asyncAPI from "../../../../interfaces/asyncAPI/asyncAPI"
-import * as def from "astn-core"
+import * as astncore from "astn-core"
 import { FlexibleErrorsAggregator, IParentErrorsAggregator, ErrorManager } from "./ErrorManager"
 import { Node } from "./Node"
 import { Comments } from "./Comments"
@@ -50,7 +50,7 @@ export class StateGroup {
 
     public readonly focussable: g.ReactiveValue<g.Maybe<asyncAPI.IFocussable>>
     constructor(
-        definition: def.TaggedUnionDefinition,
+        definition: astncore.TaggedUnionDefinition,
         errorManager: ErrorManager,
         thisEntryErrorsAggregator: IParentErrorsAggregator,
         subentriesErrorsAggregator: IParentErrorsAggregator,
@@ -89,7 +89,7 @@ export function setInitializedState(stateGroup: StateGroup, state: State): void 
 }
 
 export function initializeState(
-    definition: def.OptionDefinition,
+    definition: astncore.OptionDefinition,
     sgImp: StateGroup,
     stateName: string,
     global: Global,

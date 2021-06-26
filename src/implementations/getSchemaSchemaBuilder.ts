@@ -1,4 +1,4 @@
-import { SchemaAndSideEffects } from "astn-core"
+import { SchemaAndSideEffects } from "../parserSpecific/SchemaAndSideEffects"
 import * as astncore from "astn-core"
 
 import * as mrshlschemaschema01 from "../plugins/schemas/mrshl/schemaschema@0.1"

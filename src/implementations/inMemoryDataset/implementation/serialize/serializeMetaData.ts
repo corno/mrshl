@@ -1,20 +1,11 @@
-// /* eslint
-//     no-shadow: "off",
-// */
 import * as astncore from "astn-core"
-// import * as id from "../API/IDataset"
-// import * as md from "../API/types"
-// import * as gapi from "../API/generics"
-
-import { IReference, NodeDefinition, Schema } from "astn-core"
-import { IReadonlyDictionary } from "astn-core"
 
 function assertUnreachable<RT>(_x: never): RT {
     throw new Error("unreachable")
 }
 
 export function serializeMetaData(
-    schema: Schema,
+    schema: astncore.Schema,
 ): astncore.TreeBuilderEvent<null>[] {
     const events: astncore.TreeBuilderEvent<null>[] = []
     function addEvent(e: astncore.TreeBuilderEventType) {
@@ -27,7 +18,7 @@ export function serializeMetaData(
     }
 
     function serializeDictionary<T>(
-        dict: IReadonlyDictionary<T>,
+        dict: astncore.IReadonlyDictionary<T>,
         entryCallback: (t: T) => void,
     ) {
         addEvent(["open object", {
@@ -73,7 +64,7 @@ export function serializeMetaData(
             wrapping: ["quote", {}],
         }])
     }
-    function serializeReference<T>(reference: IReference<T>) {
+    function serializeReference<T>(reference: astncore.IReference<T>) {
         addEvent(["simple string", {
             value: reference.name,
             wrapping: ["quote", {}],
@@ -88,7 +79,7 @@ export function serializeMetaData(
     }
 
 
-    function serializeNodeDefinition(node: NodeDefinition) {
+    function serializeNodeDefinition(node: astncore.NodeDefinition) {
         serializeVerboseType({
             properties: () => {
                 serializeDictionary(node.properties, propDef => {

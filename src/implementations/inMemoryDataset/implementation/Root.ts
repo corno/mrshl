@@ -1,4 +1,4 @@
-import * as def from "astn-core"
+import * as astncore from "astn-core"
 import * as g from "./genericimp"
 import { Global } from "./Global"
 import { Node } from "./internals/Node"
@@ -20,10 +20,10 @@ export class RootErrorsAggregator implements IParentErrorsAggregator {
 export class RootImp {
     public readonly errorsAggregator = new RootErrorsAggregator()
     public readonly global = new Global()
-    public readonly schema: def.Schema
+    public readonly schema: astncore.Schema
     public readonly rootNode: Node
 
-    constructor(schema: def.Schema) {
+    constructor(schema: astncore.Schema) {
         this.rootNode = new Node(
             node => {
                 initializeNode(

@@ -2,12 +2,12 @@
     "max-classes-per-file": off,
 */
 
-import * as streamVal from "astn-core"
+import * as astncore from "astn-core"
 /* eslint
     "max-classes-per-file": off,
 */
 
-export function createNOPSideEffects<Annotation>(): streamVal.RootHandler<Annotation> {
+export function createNOPSideEffects<Annotation>(): astncore.RootHandler<Annotation> {
     return {
         root: createValueNOPSideEffects(),
         onEnd: () => {
@@ -16,7 +16,7 @@ export function createNOPSideEffects<Annotation>(): streamVal.RootHandler<Annota
     }
 }
 
-function createVerboseTypeNOPSideEffects<Annotation>(): streamVal.VerboseTypeHandler<Annotation> {
+function createVerboseTypeNOPSideEffects<Annotation>(): astncore.VerboseTypeHandler<Annotation> {
     return {
         onUnexpectedProperty: () => {
             //
@@ -33,7 +33,7 @@ function createVerboseTypeNOPSideEffects<Annotation>(): streamVal.VerboseTypeHan
     }
 }
 
-function createShorthandTypeNOPSideEffects<Annotation>(): streamVal.ShorthandTypeHandler<Annotation> {
+function createShorthandTypeNOPSideEffects<Annotation>(): astncore.ShorthandTypeHandler<Annotation> {
     return {
         onShorthandTypeClose: () => {
             //
@@ -44,7 +44,7 @@ function createShorthandTypeNOPSideEffects<Annotation>(): streamVal.ShorthandTyp
     }
 }
 
-function createStateGroupNOPSideEffects<Annotation>(): streamVal.TypedTaggedUnionHandler<Annotation> {
+function createStateGroupNOPSideEffects<Annotation>(): astncore.TypedTaggedUnionHandler<Annotation> {
     return {
         onUnexpectedOption: () => {
             //
@@ -55,7 +55,7 @@ function createStateGroupNOPSideEffects<Annotation>(): streamVal.TypedTaggedUnio
     }
 }
 
-function createValueNOPSideEffects<Annotation>(): streamVal.TypedValueHandler<Annotation> {
+function createValueNOPSideEffects<Annotation>(): astncore.TypedValueHandler<Annotation> {
 
     return {
         onDictionary: () => {
@@ -89,7 +89,7 @@ function createValueNOPSideEffects<Annotation>(): streamVal.TypedValueHandler<An
 }
 
 
-function createDictionaryNOPSideEffects<Annotation>(): streamVal.DictionaryHandler<Annotation> {
+function createDictionaryNOPSideEffects<Annotation>(): astncore.DictionaryHandler<Annotation> {
     return {
         onClose: () => {
             //
@@ -100,7 +100,7 @@ function createDictionaryNOPSideEffects<Annotation>(): streamVal.DictionaryHandl
     }
 }
 
-function createListNOPSideEffects<Annotation>(): streamVal.ListHandler<Annotation> {
+function createListNOPSideEffects<Annotation>(): astncore.ListHandler<Annotation> {
     return {
         onClose: () => {
             //

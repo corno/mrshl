@@ -1,11 +1,9 @@
 import * as p from "pareto"
 
-import * as streamVal from "astn-core"
-import * as def from "astn-core"
+import * as astncore from "astn-core"
 import * as astn from "astn"
 
-import { IDataset } from "astn-core"
-import { IDeserializedDataset } from "astn-core"
+import { IDeserializedDataset } from "./Dataset"
 import { RetrievalError, ResolveExternalSchema } from "./ResolveExternalSchema"
 import { DiagnosticCallback } from "./deserializeTextIntoDataset"
 
@@ -22,8 +20,8 @@ export type DeserializeASTNTextIntoDataset = (
 	astnText: string,
 	resolveExternalSchema: ResolveExternalSchema,
 	diagnosticCallback: DiagnosticCallback,
-	sideEffectHandlers: streamVal.RootHandler<astn.ParserAnnotationData>[],
+	sideEffectHandlers: astncore.RootHandler<astn.ParserAnnotationData>[],
 	createInitialDataset: (
-		schema: def.Schema,
-	) => IDataset,
+		schema: astncore.Schema,
+	) => astncore.IDataset,
 ) => p.IUnsafeValue<IDeserializedDataset, null>

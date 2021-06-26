@@ -1,5 +1,5 @@
 import * as astncore from "astn-core"
-import { InternalSchemaError } from "astn-core"
+import { InternalSchemaError } from "./createInternalSchemaHandler"
 
 function assertUnreachable<RT>(_x: never): RT {
     throw new Error("unreachable")

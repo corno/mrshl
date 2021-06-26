@@ -1,2 +1,2 @@
 export * from "./printInternalSchemaDeserializationError"
-export * from "./printInternalSchemaError"
+export * from "../../parserSpecific/printInternalSchemaError"

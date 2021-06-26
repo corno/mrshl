@@ -3,8 +3,7 @@
     "@typescript-eslint/no-this-alias": off,
 */
 
-import * as buildAPI from "astn-core"
-import * as def from "astn-core"
+import * as astncore from "astn-core"
 import * as imp from "./internals"
 import { Global } from "./Global"
 import { initializeState } from "./internals"
@@ -14,29 +13,29 @@ function assertUnreachable<RT>(_x: never): RT {
 }
 
 type PropertyType =
-    | ["list", buildAPI.List]
-    | ["dictionary", buildAPI.Dictionary]
-    | ["component", buildAPI.Component]
-    | ["state group", buildAPI.TaggedUnion]
-    | ["value", buildAPI.Value]
+    | ["list", astncore.List]
+    | ["dictionary", astncore.Dictionary]
+    | ["component", astncore.Component]
+    | ["state group", astncore.TaggedUnion]
+    | ["value", astncore.Value]
 
 export function createNode(
     node: imp.Node,
-    definition: def.NodeDefinition,
+    definition: astncore.NodeDefinition,
     global: Global,
-): buildAPI.Node {
+): astncore.Node {
 
     function getValue(
         valueImp: imp.Value,
-        definition: def.SimpleStringDefinition,
+        definition: astncore.SimpleStringDefinition,
     ) {
 
         class Value {
             public readonly comments: imp.Comments
             private readonly imp: imp.Value
             public readonly isQuoted: boolean
-            public readonly definition: def.SimpleStringDefinition
-            constructor(valueImp: imp.Value, definition: def.SimpleStringDefinition) {
+            public readonly definition: astncore.SimpleStringDefinition
+            constructor(valueImp: imp.Value, definition: astncore.SimpleStringDefinition) {
                 this.imp = valueImp
                 this.comments = valueImp.comments
                 this.isQuoted = definition.quoted
@@ -58,7 +57,7 @@ export function createNode(
 
     class Node {
         private readonly imp: imp.Node
-        private readonly definition: def.NodeDefinition
+        private readonly definition: astncore.NodeDefinition
         private readonly global: Global
         constructor(
         ) {
@@ -66,7 +65,7 @@ export function createNode(
             this.imp = node
             this.global = global
         }
-        public getDictionary(key: string): buildAPI.Dictionary {
+        public getDictionary(key: string): astncore.Dictionary {
             const propDef = this.definition.properties.getUnsafe(key)
             if (propDef.type[0] !== "dictionary") {
                 throw new Error("not a dicionary")
@@ -78,11 +77,11 @@ export function createNode(
             function createEntry(
                 entryImp: imp.Entry,
                 collectionImp: imp.Collection,
-            ): buildAPI.Entry {
+            ): astncore.Entry {
                 class Entry {
-                    public readonly node: buildAPI.Node
+                    public readonly node: astncore.Node
                     public readonly comments: imp.Comments
-                    public readonly key: buildAPI.Value
+                    public readonly key: astncore.Value
                     constructor(
                     ) {
                         this.comments = entryImp.comments
@@ -115,11 +114,11 @@ export function createNode(
             class Dictionary {
                 readonly comments: imp.Comments
                 public readonly imp: imp.Collection
-                private readonly definition: def.DictionaryDefinition
+                private readonly definition: astncore.DictionaryDefinition
                 private readonly global: Global
                 constructor(
                     collectionImp: imp.Collection,
-                    definition: def.DictionaryDefinition,
+                    definition: astncore.DictionaryDefinition,
                     global: Global,
                 ) {
                     this.imp = collectionImp
@@ -130,7 +129,7 @@ export function createNode(
                 public isEmpty(): boolean {
                     return this.imp.entries.isEmpty()
                 }
-                public createEntry(): buildAPI.Entry {
+                public createEntry(): astncore.Entry {
                     const entryImp = imp.createEntry(
                         this.definition.node,
                         this.imp,
@@ -140,7 +139,7 @@ export function createNode(
 
                     return entry
                 }
-                public forEachEntry(callback: (entry: buildAPI.Entry, key: string) => void): void {
+                public forEachEntry(callback: (entry: astncore.Entry, key: string) => void): void {
                     this.imp.entries.forEach(e => {
                         if (e.status.get()[0] !== "inactive") {
                             if (e.entry.key === null) {
@@ -159,7 +158,7 @@ export function createNode(
             }
             return new Dictionary(collection, propDef.type[1], this.global)
         }
-        public getList(key: string): buildAPI.List {
+        public getList(key: string): astncore.List {
             const propDef = this.definition.properties.getUnsafe(key)
             if (propDef.type[0] !== "list") {
                 throw new Error("not a list")
@@ -169,7 +168,7 @@ export function createNode(
             function createEntry(
                 entryImp: imp.Entry,
                 collectionImp: imp.Collection,
-            ): buildAPI.Element {
+            ): astncore.Element {
                 return {
                     node: createNode(
                         entryImp.node,
@@ -197,7 +196,7 @@ export function createNode(
                 public isEmpty(): boolean {
                     return this.imp.entries.isEmpty()
                 }
-                public createEntry(): buildAPI.Element {
+                public createEntry(): astncore.Element {
                     const entryImp = new imp.Entry(this.imp.nodeDefinition, this.global.errorManager, this.imp.dictionary)
 
                     const entryPlaceHolder = new imp.EntryPlaceholder(entryImp, this.imp, true)
@@ -205,7 +204,7 @@ export function createNode(
                     imp.addEntry(this.imp, entryPlaceHolder)
                     return entry
                 }
-                public forEachEntry(callback: (entry: buildAPI.Element) => void): void {
+                public forEachEntry(callback: (entry: astncore.Element) => void): void {
                     this.imp.entries.forEach(e => {
                         if (e.status.get()[0] !== "inactive") {
                             callback(createEntry(
@@ -218,17 +217,17 @@ export function createNode(
             }
             return new List(collection, this.global)
         }
-        public getComponent(key: string): buildAPI.Component {
+        public getComponent(key: string): astncore.Component {
             const propDef = this.definition.properties.getUnsafe(key)
             if (propDef.type[0] !== "component") {
                 throw new Error("not a component")
             }
             const component = this.imp.components.getUnsafe(key)
             function createComponent(
-                definition: def.ComponentDefinition,
+                definition: astncore.ComponentDefinition,
                 component: imp.Component,
                 global: Global,
-            ): buildAPI.Component {
+            ): astncore.Component {
                 return {
                     node: createNode(
                         component.node,
@@ -244,7 +243,7 @@ export function createNode(
                 this.global,
             )
         }
-        public getTaggedUnion(key: string): buildAPI.TaggedUnion {
+        public getTaggedUnion(key: string): astncore.TaggedUnion {
             const propDef = this.definition.properties.getUnsafe(key)
             if (propDef.type[0] !== "tagged union") {
                 throw new Error("not a tagged union")
@@ -253,13 +252,13 @@ export function createNode(
 
             function createTaggedUnion(
                 stateGroup: imp.StateGroup,
-                definition: def.TaggedUnionDefinition,
+                definition: astncore.TaggedUnionDefinition,
                 global: Global
-            ): buildAPI.TaggedUnion {
+            ): astncore.TaggedUnion {
                 class State {
-                    public readonly node: buildAPI.Node
+                    public readonly node: astncore.Node
                     private readonly imp: imp.State
-                    constructor(stateImp: imp.State, definition: def.OptionDefinition, global: Global) {
+                    constructor(stateImp: imp.State, definition: astncore.OptionDefinition, global: Global) {
                         this.node = createNode(stateImp.node, definition.node, global)
                         this.imp = stateImp
                     }
@@ -269,19 +268,19 @@ export function createNode(
                 }
                 class TaggedUnion {
                     public readonly comments: imp.Comments
-                    public readonly definition: def.TaggedUnionDefinition
+                    public readonly definition: astncore.TaggedUnionDefinition
                     constructor() {
                         this.definition = definition
                         this.comments = stateGroup.comments
                     }
-                    public setState(stateName: string, _onError: (errorMessage: string) => void): buildAPI.Option {
+                    public setState(stateName: string, _onError: (errorMessage: string) => void): astncore.Option {
                         const stateDefinition = this.definition.options.getUnsafe(stateName)
 
                         const stateImp = initializeState(stateDefinition, stateGroup, stateName, global, _onError)
 
                         return new State(stateImp, stateDefinition, global)
                     }
-                    public getCurrentState(): buildAPI.Option {
+                    public getCurrentState(): astncore.Option {
 
                         const currentStateImp = stateGroup.currentState.get()
                         const stateName = currentStateImp.key
@@ -294,7 +293,7 @@ export function createNode(
 
             return createTaggedUnion(sg, propDef.type[1], this.global)
         }
-        public getValue(key: string): buildAPI.Value {
+        public getValue(key: string): astncore.Value {
             const propDef = this.definition.properties.getUnsafe(key)
             if (propDef.type[0] !== "simple string") {
                 throw new Error("not a string")
@@ -306,7 +305,7 @@ export function createNode(
             )
 
         }
-        public forEachProperty(callback: (property: buildAPI.Property, key: string) => void): void {
+        public forEachProperty(callback: (property: astncore.Property, key: string) => void): void {
 
             const thisNode = this
             this.definition.properties.forEach((p, pKey) => {
@@ -314,7 +313,7 @@ export function createNode(
                 class Property {
                     public readonly type: PropertyType
                     constructor(
-                        definition: def.PropertyDefinition,
+                        definition: astncore.PropertyDefinition,
                     ) {
                         this.type = ((): PropertyType => {
                             switch (definition.type[0]) {

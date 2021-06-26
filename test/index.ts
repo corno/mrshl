@@ -17,7 +17,7 @@ import { makeNativeHTTPrequest } from "../src/implementations/makeNativeHTTPrequ
 //import { deserializeSchemaFromString } from "../src"
 import * as p20 from "pareto-20"
 import { schemaHost } from "../schemaHost"
-import { DiagnosticSeverity } from "astn-core"
+import * as astncore from "astn-core"
 
 function readFileFromFileSystem(
     dir: string,
@@ -204,7 +204,7 @@ export function directoryTests(): void {
                         return readFileFromFileSystem(__dirname + "/../../test/schemas", schemaID)
                     },
                     diagnostic => {
-                        const diagSev = diagnostic.severity === DiagnosticSeverity.error ? "error" : "warning"
+                        const diagSev = diagnostic.severity === astncore.DiagnosticSeverity.error ? "error" : "warning"
                         switch (diagnostic.type[0]) {
                             case "deserialization": {
                                 const $ = diagnostic.type[1]

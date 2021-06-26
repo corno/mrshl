@@ -2,12 +2,12 @@
     "max-classes-per-file": off,
 */
 
-import * as streamVal from "astn-core"
+import * as astncore from "astn-core"
 
-export function createNOPSideEffects<Annotation>(): streamVal.RootHandler<Annotation> {
+export function createNOPSideEffects<Annotation>(): astncore.RootHandler<Annotation> {
 
     class NOPSideEffects<Annotation> {
-        root: streamVal.TypedValueHandler<Annotation>
+        root: astncore.TypedValueHandler<Annotation>
         constructor() {
             this.root = createValueNOPSideEffects()
         }
@@ -18,7 +18,7 @@ export function createNOPSideEffects<Annotation>(): streamVal.RootHandler<Annota
     return new NOPSideEffects()
 }
 
-function createValueNOPSideEffects<Annotation>(): streamVal.TypedValueHandler<Annotation> {
+function createValueNOPSideEffects<Annotation>(): astncore.TypedValueHandler<Annotation> {
     return {
         onShorthandTypeOpen: () => {
 
@@ -37,7 +37,7 @@ function createValueNOPSideEffects<Annotation>(): streamVal.TypedValueHandler<An
         },
         onVerboseTypeOpen: () => {
 
-            function createVerboseTypeNOPSideEffects<Annotation>(): streamVal.VerboseTypeHandler<Annotation> {
+            function createVerboseTypeNOPSideEffects<Annotation>(): astncore.VerboseTypeHandler<Annotation> {
                 return {
                     onUnexpectedProperty: () => {
                         //

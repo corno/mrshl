@@ -4,10 +4,9 @@ import * as t from "./types"
 import { convertToGenericSchema } from "./createTypedParserDefinitions"
 import * as p from "pareto-20"
 import * as sideEffects from "./sideEffects"
-import { DiagnosticSeverity } from "astn-core"
-import { SchemaAndSideEffects } from "astn-core"
+import { SchemaAndSideEffects } from "../../../../parserSpecific/SchemaAndSideEffects"
 import { InternalSchemaDeserializationError } from "../../../../interfaces/internalSchemaDerializationError"
-import { InternalSchemaError } from "astn-core"
+import { InternalSchemaError } from "../../../../parserSpecific"
 
 export function createSchemaAndSideEffects<Annotation>(
     onSchemaError: (error: InternalSchemaDeserializationError, annotation: Annotation) => void,
@@ -22,7 +21,7 @@ export function createSchemaAndSideEffects<Annotation>(
                 return p.value({
                     schema: convertToGenericSchema(schema),
                     createStreamingValidator: (
-                        onValidationError: (message: string, annotation: Annotation, severity: DiagnosticSeverity) => void,
+                        onValidationError: (message: string, annotation: Annotation, severity: astncore.DiagnosticSeverity) => void,
                     ) => sideEffects.createRoot<Annotation>(schema, onValidationError),
                 })
             })

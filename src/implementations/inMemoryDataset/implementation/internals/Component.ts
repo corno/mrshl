@@ -1,4 +1,4 @@
-import * as def from "astn-core"
+import * as astncore from "astn-core"
 import { Node } from "./Node"
 import { Comments } from "./Comments"
 import { IParentErrorsAggregator, ErrorManager } from "./ErrorManager"
@@ -8,7 +8,7 @@ export class Component {
     public readonly node: Node
     public readonly comments = new Comments()
     constructor(
-        definition: def.ComponentDefinition,
+        definition: astncore.ComponentDefinition,
         errorManager: ErrorManager,
         errorsAggregator: IParentErrorsAggregator,
         subEntriesErrorsAggregator: IParentErrorsAggregator,

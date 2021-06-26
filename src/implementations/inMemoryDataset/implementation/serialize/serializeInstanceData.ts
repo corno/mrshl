@@ -1,15 +1,14 @@
 import * as astncore from "astn-core"
 import { RootImp } from "../Root"
 import { Node } from "../internals/Node"
-import { NodeDefinition, PropertyDefinition } from "astn-core"
-import { SerializationStyle } from "astn-core"
+import { SerializationStyle } from "../../../../parserSpecific"
 
 function assertUnreachable<RT>(_x: never): RT {
     throw new Error("unreachable")
 }
 
 
-function nodeIsDefault(node: Node, def: NodeDefinition): boolean {
+function nodeIsDefault(node: Node, def: astncore.NodeDefinition): boolean {
     let foundNonDefault = false
     def.properties.forEach((propDef, key) => {
         if (!propertyIsDefault(node, key, propDef)) {
@@ -19,7 +18,7 @@ function nodeIsDefault(node: Node, def: NodeDefinition): boolean {
     return !foundNonDefault
 }
 
-function propertyIsDefault(node: Node, propertyName: string, propertyDef: PropertyDefinition): boolean {
+function propertyIsDefault(node: Node, propertyName: string, propertyDef: astncore.PropertyDefinition): boolean {
     switch (propertyDef.type[0]) {
         case "component": {
             const $ = propertyDef.type[1]
@@ -91,13 +90,13 @@ export function serializeRoot(
     // }
     function serializeNode(
         node: Node,
-        definition: NodeDefinition,
+        definition: astncore.NodeDefinition,
         isOuterNode: boolean,
         out: SerializeOut,
     ) {
         function serializeProperty(
             key: string,
-            propDef: PropertyDefinition,
+            propDef: astncore.PropertyDefinition,
             out: SerializeOut,
         ) {
             switch (propDef.type[0]) {

@@ -3,7 +3,6 @@
 
 */
 import * as astncore from "astn-core"
-import * as def from "astn-core"
 import {
     createDictionary,
 } from "./Dictionary"
@@ -34,7 +33,7 @@ type AnnotatedString<TokenAnnotation> = {
 function createExpectedValueHandler<TokenAnnotation, NonTokenAnnotation, ReturnType>(
     context: astncore.IExpectContext<TokenAnnotation, NonTokenAnnotation, ReturnType>,
     raiseValidationError: (message: string, annotation: TokenAnnotation) => void,
-    componentTypes: def.IReadonlyDictionary<t.ComponentType>,
+    componentTypes: astncore.IReadonlyDictionary<t.ComponentType>,
     callback: (node: t.Node) => void,
     resolveRegistry: ResolveRegistry,
     createReturnValue: () => ReturnType

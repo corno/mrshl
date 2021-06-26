@@ -1,5 +1,5 @@
 import * as astn from "astn"
-import { printInternalSchemaError } from "../implementations/errorPrinters/printInternalSchemaError"
+import { printInternalSchemaError } from "./printInternalSchemaError"
 import { printInternalSchemaDeserializationError } from "../implementations/errorPrinters/printInternalSchemaDeserializationError"
 import { SchemaSchemaError } from "./SchemaSchemaError"
 

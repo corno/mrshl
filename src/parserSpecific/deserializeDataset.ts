@@ -9,23 +9,20 @@ import * as astn from "astn"
 
 import * as streamVal from "astn-core"
 
-import { InternalSchemaSpecification, InternalSchemaSpecificationType } from "astn-core"
-import { SchemaAndSideEffects } from "astn-core"
+import { InternalSchemaSpecification, InternalSchemaSpecificationType } from "./Dataset"
+import { SchemaAndSideEffects } from "./SchemaAndSideEffects"
 
 import { createDeserializer as createMetaDataDeserializer } from "../plugins/schemas/mrshl/metadata@0.1/deserialize"
 
-import { createDatasetDeserializer } from "astn-core"
-
 import { ExternalSchemaDeserializationError } from "../interfaces/ExternalSchemaDeserializationError"
-import { createInternalSchemaHandler } from "astn-core"
+import { createInternalSchemaHandler } from "./createInternalSchemaHandler"
 import { createNOPSideEffects } from "./NOPSideEffects"
 import { DeserializationDiagnostic, DeserializationDiagnosticType } from "./DeserializationDiagnostic"
-import { IDeserializedDataset } from "astn-core"
-import { IDataset } from "astn-core"
+import { IDeserializedDataset } from "./Dataset"
+import { IDataset } from "./Dataset"
 import { ResolveExternalSchema } from "./ResolveExternalSchema"
 import { createSchemaAndSideEffectsFromStream } from "./createSchemaAndSideEffectsFromStream"
 import { InternalSchemaDeserializationError } from "../interfaces/internalSchemaDerializationError"
-import { DiagnosticSeverity } from "astn-core"
 
 function assertUnreachable<RT>(_x: never): RT {
     throw new Error("unreachable")
@@ -50,7 +47,7 @@ export function deserializeDataset(
         schemaAndSideEffects: SchemaAndSideEffects<astn.ParserAnnotationData>,
     ) => IDeserializedDataset,
     onNoInternalSchema: () => IDataset | null,
-    onError: (diagnostic: DeserializationDiagnostic, range: astn.Range, severity: DiagnosticSeverity) => void,
+    onError: (diagnostic: DeserializationDiagnostic, range: astn.Range, severity: astncore.DiagnosticSeverity) => void,
     sideEffectsHandlers: streamVal.RootHandler<astn.ParserAnnotationData>[],
 ): p.IUnsafeValue<IDeserializedDataset, ExternalSchemaDeserializationError> {
 
@@ -170,20 +167,22 @@ export function deserializeDataset(
                             }],
                         ),
                         internalSchemaSpecificationStart,
-                        DiagnosticSeverity.warning,
+                        astncore.DiagnosticSeverity.warning,
                     )
                 }
             }
 
             return astncore.createStackedParser(
-                createDatasetDeserializer(
-                    dataset.dataset.build,
+                astncore.createDatasetDeserializer(
+                    dataset.dataset.build.schema,
+                    dataset.dataset.build.root,
+                    dataset.dataset.build.rootComments,
                     sideEffectsHandlers.map(h => h.root),
                     (message, annotation, severity) => onError(createDiagnostic(["deserializer", { message: message }]), annotation.range, severity),
                     () => p.value(null),
                 ),
                 error => {
-                    onError(createDiagnostic(["stacked", error.type]), error.annotation.range, DiagnosticSeverity.error)
+                    onError(createDiagnostic(["stacked", error.type]), error.annotation.range, astncore.DiagnosticSeverity.error)
                 },
                 () => {
                     sideEffectsHandlers.forEach(h => {
@@ -195,7 +194,7 @@ export function deserializeDataset(
             )
         },
         (error, range) => {
-            onError(createDiagnostic(["parsing", error]), range, DiagnosticSeverity.error)
+            onError(createDiagnostic(["parsing", error]), range, astncore.DiagnosticSeverity.error)
         },
         overheadToken => {
             switch (overheadToken.type[0]) {
@@ -217,7 +216,7 @@ export function deserializeDataset(
         }
     )
     function onSchemaError(error: InternalSchemaDeserializationError, range: astn.Range) {
-        onError(createDiagnostic(["schema error", error]), range, DiagnosticSeverity.error)
+        onError(createDiagnostic(["schema error", error]), range, astncore.DiagnosticSeverity.error)
         foundSchemaErrors = true
     }
 

@@ -1,4 +1,4 @@
-import * as targetDef from "astn-core"
+import * as astncore from "astn-core"
 import {
     ResolveRegistry,
     createReference,
@@ -13,17 +13,17 @@ function assertUnreachable<RT>(_x: never): RT {
 }
 
 function convertToGenericNode(
-    node: NodeDefinition, componentTypes: targetDef.IReadonlyLookup<targetDef.ComponentTypeDefinition>,
+    node: NodeDefinition, componentTypes: astncore.IReadonlyLookup<astncore.ComponentTypeDefinition>,
     keyProperty: null | PropertyDefinition,
     resolveRegistry: ResolveRegistry,
-): targetDef.NodeDefinition {
-    const properties = createDictionary<targetDef.PropertyDefinition>({})
+): astncore.NodeDefinition {
+    const properties = createDictionary<astncore.PropertyDefinition>({})
     node.properties.forEach((prop, key) => {
         if (prop === keyProperty) {
             return
         }
         properties.add(key, {
-            type: ((): targetDef.PropertyTypeDefinition => {
+            type: ((): astncore.PropertyTypeDefinition => {
                 switch (prop.type[0]) {
                     case "collection": {
                         const $ = prop.type[1]
@@ -97,9 +97,9 @@ function convertToGenericNode(
     }
 }
 
-export function convertToGenericSchema(schema: Schema): targetDef.Schema {
+export function convertToGenericSchema(schema: Schema): astncore.Schema {
     const resolveRegistry = new ResolveRegistry()
-    const componentTypes: MutableDictionary<targetDef.ComponentTypeDefinition> = createDictionary({})
+    const componentTypes: MutableDictionary<astncore.ComponentTypeDefinition> = createDictionary({})
     schema["component types"].forEach((ct, ctName) => {
         componentTypes.add(ctName, {
             node: convertToGenericNode(ct.node, componentTypes, null, resolveRegistry),

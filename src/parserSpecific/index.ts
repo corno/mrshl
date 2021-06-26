@@ -1,5 +1,7 @@
 export * from "./createCodeCompletionFinder"
 export * from "./createHoverTextFinder"
+export * from "./createInternalSchemaHandler"
+export * from "./Dataset"
 export * from "./deserializeTextIntoDataset"
 export * from "./printDeserializeDiagnostic"
 export * from "./printLoadDocumentDiagnostic"

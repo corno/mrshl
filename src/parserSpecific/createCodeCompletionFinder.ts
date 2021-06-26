@@ -1,5 +1,5 @@
 import * as astn from "astn"
-import * as streamVal from "astn-core"
+import * as astncore from "astn-core"
 import { createCodeCompletionsGenerator } from "../ide-integration/createCodeCompletionsGenerator"
 import { isPositionBeforeLocation } from "./isPositionBeforeLocation"
 
@@ -7,7 +7,7 @@ export function createCodeCompletionFinder(
     completionPositionLine: number,
     completionPositionCharacter: number,
     callback: (codeCompletion: string) => void
-): streamVal.RootHandler<astn.ParserAnnotationData> {
+): astncore.RootHandler<astn.ParserAnnotationData> {
     let positionAlreadyFound = false
     let previousAfter: null | (() => string[]) = null
     //console.log("FINDING COMPLETIONS", line, character)

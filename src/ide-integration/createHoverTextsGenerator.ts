@@ -2,7 +2,7 @@
     "max-classes-per-file": off,
 */
 
-import * as streamVal from "astn-core"
+import * as astncore from "astn-core"
 
 type GetHoverText = () => string
 
@@ -15,7 +15,7 @@ export type OnTokenHoverText<Annotation> = (
 function createHoverTextGenerator<Annotation>(
     onToken: OnTokenHoverText<Annotation>,
     onEnd: () => void,
-): streamVal.RootHandler<Annotation> {
+): astncore.RootHandler<Annotation> {
     return {
         root: createValueHoverTextGenerator(null, onToken),
         onEnd: () => {
@@ -28,7 +28,7 @@ function createTaggedUnionHoverTextGenerator<Annotation>(
 
     name: string | null,
     onToken: OnTokenHoverText<Annotation>,
-): streamVal.TypedTaggedUnionHandler<Annotation> {
+): astncore.TypedTaggedUnionHandler<Annotation> {
 
     return {
         onUnexpectedOption: () => {
@@ -52,7 +52,7 @@ function createTaggedUnionHoverTextGenerator<Annotation>(
 function createValueHoverTextGenerator<Annotation>(
     name: string | null,
     onToken: OnTokenHoverText<Annotation>,
-): streamVal.TypedValueHandler<Annotation> {
+): astncore.TypedValueHandler<Annotation> {
     function addOnToken(annotation: Annotation) {
         if (name !== null) {
             const cn = name
@@ -119,7 +119,7 @@ function createValueHoverTextGenerator<Annotation>(
 function createListHoverTextGenerator<Annotation>(
     name: string | null,
     onToken: OnTokenHoverText<Annotation>,
-): streamVal.ListHandler<Annotation> {
+): astncore.ListHandler<Annotation> {
     return {
 
         onClose: $ => {
@@ -138,7 +138,7 @@ function createListHoverTextGenerator<Annotation>(
 function createDictionaryHoverTextGenerator<Annotation>(
     name: string | null,
     onToken: OnTokenHoverText<Annotation>,
-): streamVal.DictionaryHandler<Annotation> {
+): astncore.DictionaryHandler<Annotation> {
     return {
         onClose: $ => {
             if (name !== null) {
@@ -156,7 +156,7 @@ function createDictionaryHoverTextGenerator<Annotation>(
 function createShorthandTypeHoverTextGenerator<Annotation>(
     componentName: string | null,
     onToken: OnTokenHoverText<Annotation>,
-): streamVal.ShorthandTypeHandler<Annotation> {
+): astncore.ShorthandTypeHandler<Annotation> {
     return {
         onProperty: $ => {
             return createValueHoverTextGenerator($.annotation.propKey, onToken)
@@ -177,7 +177,7 @@ function createShorthandTypeHoverTextGenerator<Annotation>(
 function createTypeHoverTextGenerator<Annotation>(
     componentName: string | null,
     onToken: OnTokenHoverText<Annotation>,
-): streamVal.VerboseTypeHandler<Annotation> {
+): astncore.VerboseTypeHandler<Annotation> {
     return {
         onUnexpectedProperty: () => {
             //
@@ -202,6 +202,6 @@ function createTypeHoverTextGenerator<Annotation>(
 export function createHoverTextsGenerator<Annotation>(
     onToken: OnTokenHoverText<Annotation>,
     onEnd: () => void,
-): streamVal.RootHandler<Annotation> {
+): astncore.RootHandler<Annotation> {
     return createHoverTextGenerator(onToken, onEnd)
 }

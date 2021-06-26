@@ -3,7 +3,7 @@
 */
 
 import * as g from "../genericimp"
-import * as def from "astn-core"
+import * as astncore from "astn-core"
 import { FlexibleErrorsAggregator, IParentErrorsAggregator, ErrorManager } from "./ErrorManager"
 import { Node } from "./Node"
 import { Comments } from "./Comments"
@@ -23,7 +23,7 @@ export class Entry {
     public readonly comments = new Comments()
     public readonly key: Value | null
     constructor(
-        nodeDefinition: def.NodeDefinition,
+        nodeDefinition: astncore.NodeDefinition,
         errorManager: ErrorManager,
         dictionary: Dictionary | null
     ) {
@@ -100,7 +100,7 @@ export class EntryPlaceholder {
 
 export class Dictionary {
     public readonly duplicatesCheckFunction: (oldValue: string, newValue: string) => void
-    public readonly keyDefinition: def.SimpleStringDefinition
+    public readonly keyDefinition: astncore.SimpleStringDefinition
     /**
      *
      * @param keyPropertyName
@@ -108,7 +108,7 @@ export class Dictionary {
      * @param duplicatesCheckFunction a function that can be used to subscribe to the keys of the entries to check for duplicates
      */
     constructor(
-        keyDefinition: def.SimpleStringDefinition,
+        keyDefinition: astncore.SimpleStringDefinition,
         duplicatesCheckFunction: (oldValue: string, newValue: string) => void,
     ) {
         this.duplicatesCheckFunction = duplicatesCheckFunction
@@ -119,21 +119,21 @@ export class Dictionary {
 export class Collection {
     public readonly errorsAggregator: IParentErrorsAggregator
     public readonly entries = new g.ReactiveArray<EntryPlaceholder>()
-    public readonly nodeDefinition: def.NodeDefinition
+    public readonly nodeDefinition: astncore.NodeDefinition
     public readonly dictionary: Dictionary | null
     public readonly comments = new Comments()
     constructor(
         definition: {
             type:
-            | ["list", def.ListDefinition]
-            | ["dictionary", def.DictionaryDefinition]
+            | ["list", astncore.ListDefinition]
+            | ["dictionary", astncore.DictionaryDefinition]
         },
         errorsAggregator: IParentErrorsAggregator,
         dictionary: Dictionary | null,
     ) {
         this.errorsAggregator = errorsAggregator
         this.dictionary = dictionary
-        this.nodeDefinition = ((): def.NodeDefinition => {
+        this.nodeDefinition = ((): astncore.NodeDefinition => {
             switch (definition.type[0]) {
                 case "dictionary": {
                     const $ = definition.type[1]
@@ -157,7 +157,7 @@ export function addEntry(collection: Collection, entryPlaceholder: EntryPlacehol
 }
 
 export function createEntry(
-    nodeDefinition: def.NodeDefinition,
+    nodeDefinition: astncore.NodeDefinition,
     collection: Collection,
     global: Global,
 ): Entry {

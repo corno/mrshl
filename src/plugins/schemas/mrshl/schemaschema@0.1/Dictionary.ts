@@ -1,6 +1,6 @@
-import * as def from "astn-core"
+import * as astncore from "astn-core"
 
-export interface MutableDictionary<T> extends def.IReadonlyDictionary<T> {
+export interface MutableDictionary<T> extends astncore.IReadonlyDictionary<T> {
     add(key: string, value: T): void
 }
 
@@ -13,8 +13,8 @@ export function createDictionary<T>(imp: { [key: string]: T }): MutableDictionar
         public forEach(callback: (entry: T, key: string) => void): void {
             Object.keys(this.imp).sort().forEach(key => callback(this.imp[key], key))
         }
-        public map<RT>(callback: (entry: T, key: string) => RT): def.RawObject<RT> {
-            const rt: def.RawObject<RT> = {}
+        public map<RT>(callback: (entry: T, key: string) => RT): astncore.RawObject<RT> {
+            const rt: astncore.RawObject<RT> = {}
             Object.keys(this.imp).sort().forEach(key => {
                 rt[key] = callback(this.imp[key], key)
             })
@@ -27,8 +27,8 @@ export function createDictionary<T>(imp: { [key: string]: T }): MutableDictionar
             })
             return rt
         }
-        public filter<RT>(callback: (entry: T, key: string) => null | RT): def.IReadonlyDictionary<RT> {
-            const rt: def.RawObject<RT> = {}
+        public filter<RT>(callback: (entry: T, key: string) => null | RT): astncore.IReadonlyDictionary<RT> {
+            const rt: astncore.RawObject<RT> = {}
             Object.keys(this.imp).sort().forEach(key => {
                 const result = callback(this.imp[key], key)
                 if (result !== null) {

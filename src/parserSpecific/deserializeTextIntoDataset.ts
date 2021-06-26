@@ -2,24 +2,24 @@ import * as p from "pareto"
 import * as path from "path"
 import * as astn from "astn"
 
-import * as streamVal from "astn-core"
-import * as def from "astn-core"
-import { DiagnosticSeverity } from "astn-core"
+import * as astncore from "astn-core"
 
-import { IDataset } from "astn-core"
+import {
+	 IDataset,
+	 IDeserializedDataset,
+	 } from "./Dataset"
 
 import { ResolveExternalSchema } from "./ResolveExternalSchema"
-import { IDeserializedDataset } from "astn-core"
 
 import { deserializeDataset } from "./deserializeDataset"
 import { deserializeSchemaFromStream } from "./deserializeSchemaFromStream"
 import { ContextSchemaData } from "./DeserializeASTNTextIntoDataset"
-import { SchemaAndSideEffects } from "astn-core"
 import { ExternalSchemaDeserializationError } from "../interfaces/ExternalSchemaDeserializationError"
 
 
 import { SchemaSchemaError } from "./SchemaSchemaError"
 import { DeserializationDiagnostic } from "./DeserializationDiagnostic"
+import { SchemaAndSideEffects } from "./SchemaAndSideEffects"
 
 function assertUnreachable<RT>(_x: never): RT {
 	throw new Error("unreachable")
@@ -51,7 +51,7 @@ export type LoadDocumentDiagnosticType =
 
 export type LoadDocumentDiagnostic = {
 	type: LoadDocumentDiagnosticType
-	severity: DiagnosticSeverity
+	severity: astncore.DiagnosticSeverity
 }
 
 export type DiagnosticCallback = (diagnostic: LoadDocumentDiagnostic) => void
@@ -59,12 +59,12 @@ export type DiagnosticCallback = (diagnostic: LoadDocumentDiagnostic) => void
 
 function validateDocumentAfterContextSchemaResolution(
 	documentText: string,
-	contextSchema: def.Schema | null,
+	contextSchema: astncore.Schema | null,
 	resolveExternalSchema: ResolveExternalSchema,
 	diagnosticCallback: DiagnosticCallback,
-	sideEffectHandlers: streamVal.RootHandler<astn.ParserAnnotationData>[],
+	sideEffectHandlers: astncore.RootHandler<astn.ParserAnnotationData>[],
 	createDataset: (
-		schema: def.Schema,
+		schema: astncore.Schema,
 	) => IDataset,
 ): p.IUnsafeValue<IDeserializedDataset, ExternalSchemaDeserializationError> {
 
@@ -73,7 +73,7 @@ function validateDocumentAfterContextSchemaResolution(
 
 	function addDiagnostic(
 		type: LoadDocumentDiagnosticType,
-		severity: DiagnosticSeverity,
+		severity: astncore.DiagnosticSeverity,
 	) {
 		diagnosticCallback({
 			type: type,
@@ -86,7 +86,7 @@ function validateDocumentAfterContextSchemaResolution(
 		(internalSchemaSpecification, schemaAndSideEffects): IDeserializedDataset => {
 
 			function createDeserializedDataset(
-				schema: def.Schema,
+				schema: astncore.Schema,
 			): IDeserializedDataset {
 				return {
 					dataset: createDataset(schema),
@@ -113,7 +113,7 @@ function validateDocumentAfterContextSchemaResolution(
 				["schema retrieval", {
 					issue: ["found both external and internal schema. ignoring internal schema"],
 				}],
-				DiagnosticSeverity.warning,
+				astncore.DiagnosticSeverity.warning,
 			)
 			return createDeserializedDataset(contextSchema)
 		},
@@ -123,7 +123,7 @@ function validateDocumentAfterContextSchemaResolution(
 					["structure", {
 						message: "missing (valid) schema",
 					}],
-					DiagnosticSeverity.error,
+					astncore.DiagnosticSeverity.error,
 				)
 				return null
 			}
@@ -150,9 +150,9 @@ export function deserializeTextIntoDataset(
 	documentText: string,
 	resolveExternalSchema: ResolveExternalSchema,
 	diagnosticCallback: DiagnosticCallback,
-	sideEffectHandlers: streamVal.RootHandler<astn.ParserAnnotationData>[],
+	sideEffectHandlers: astncore.RootHandler<astn.ParserAnnotationData>[],
 	createInitialDataset: (
-		schema: def.Schema,
+		schema: astncore.Schema,
 	) => IDataset,
 ): p.IUnsafeValue<IDeserializedDataset, null> {
 	let diagnosticFound = false
@@ -166,7 +166,7 @@ export function deserializeTextIntoDataset(
 
 	function addDiagnostic(
 		type: LoadDocumentDiagnosticType,
-		severity: DiagnosticSeverity,
+		severity: astncore.DiagnosticSeverity,
 	) {
 		dc({
 			type: type,
@@ -180,7 +180,7 @@ export function deserializeTextIntoDataset(
 				['schema retrieval', {
 					issue: error.problem === "missing schema" ? [ "missing schema"] : ["no valid schema"],
 				}],
-				DiagnosticSeverity.error,
+				astncore.DiagnosticSeverity.error,
 			)
 		}
 		return p.value(null)
@@ -221,7 +221,7 @@ export function deserializeTextIntoDataset(
 			type: ["schema retrieval", {
 				issue: ["validating schema file against internal schema"],
 			}],
-			severity: DiagnosticSeverity.warning,
+			severity: astncore.DiagnosticSeverity.warning,
 		})
 
 		return validateDocumentAfter(null)
@@ -244,7 +244,7 @@ export function deserializeTextIntoDataset(
 						['schema retrieval', {
 							issue: ['unknown retrieval error', { description: $.description }],
 						}],
-						DiagnosticSeverity.error,
+						astncore.DiagnosticSeverity.error,
 					)
 					return p.value(null)
 				}
@@ -261,7 +261,7 @@ export function deserializeTextIntoDataset(
 						type: ["schema retrieval", {
 							issue: ["error in external schema", error],
 						}],
-						severity: DiagnosticSeverity.error,
+						severity: astncore.DiagnosticSeverity.error,
 					})
 				},
 			).mapError(validateThatErrorsAreFound).try(

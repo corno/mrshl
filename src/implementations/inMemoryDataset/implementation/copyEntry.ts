@@ -1,5 +1,5 @@
 import { Node, Entry, initializeState, setValue, createEntry } from "./internals"
-import * as def from "astn-core"
+import * as astncore from "astn-core"
 import { Global } from "./Global"
 
 function assertUnreachable<RT>(_x: never): RT {
@@ -10,7 +10,7 @@ function cc<T>(input: T, callback: (output: T) => void): void {
 }
 
 function copyNode(
-    definition: def.NodeDefinition,
+    definition: astncore.NodeDefinition,
     sourceNode: Node,
     targetNode: Node,
     global: Global,
@@ -111,7 +111,7 @@ function copyNode(
 }
 
 export function copyEntry(
-    definition: def.NodeDefinition,
+    definition: astncore.NodeDefinition,
     sourceEntry: Entry,
     targetEntry: Entry,
     global: Global,

@@ -1,4 +1,4 @@
-import * as def from "astn-core"
+import * as astncore from "astn-core"
 
 type Resolve = () => boolean
 
@@ -19,7 +19,7 @@ export class ResolveRegistry {
     }
 }
 
-export function createReference<T>(name: string, lookup: def.IReadonlyLookup<T>, resolver: ResolveRegistry, onError: (keys: string[]) => void): def.IReference<T> {
+export function createReference<T>(name: string, lookup: astncore.IReadonlyLookup<T>, resolver: ResolveRegistry, onError: (keys: string[]) => void): astncore.IReference<T> {
     let t: T | null = null
     resolver.register(() => {
         t = lookup.get(name)

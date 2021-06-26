@@ -1,4 +1,4 @@
-import * as def from "astn-core"
+import * as astncore from "astn-core"
 import { checkDuplicates } from "./asyncAPIImplementation"
 import { Collection, Dictionary, Node } from "./internals"
 import { Component } from "./internals/Component"
@@ -12,7 +12,7 @@ function assertUnreachable<RT>(_x: never): RT {
 
 export function initializeNode(
     node: Node,
-    definition: def.NodeDefinition,
+    definition: astncore.NodeDefinition,
     errorManager: ErrorManager,
     errorsAggregator: IParentErrorsAggregator,
     subEntriesErrorsAggregator: IParentErrorsAggregator,

@@ -1,4 +1,4 @@
-import * as g from "astn-core"
+import * as astncore from "astn-core"
 
 /**
  * this set of types defines a schema that only describes the data structure,
@@ -15,7 +15,7 @@ export type CollectionTypeDefinition =
     | ["list", ListDefinition]
 
 export type ComponentDefinition = {
-    readonly "type": g.IReference<ComponentTypeDefinition>
+    readonly "type": astncore.IReference<ComponentTypeDefinition>
 }
 
 export type ComponentTypeDefinition = {
@@ -23,7 +23,7 @@ export type ComponentTypeDefinition = {
 }
 
 export type DictionaryDefinition = {
-    readonly "key property": g.IReference<PropertyDefinition>
+    readonly "key property": astncore.IReference<PropertyDefinition>
     readonly "node": NodeDefinition
 }
 
@@ -32,7 +32,7 @@ export type ListDefinition = {
 }
 
 export type NodeDefinition = {
-    readonly "properties": g.IReadonlyDictionary<PropertyDefinition>
+    readonly "properties": astncore.IReadonlyDictionary<PropertyDefinition>
 }
 
 export type PropertyDefinition = {
@@ -46,8 +46,8 @@ export type PropertyTypeDefinition =
     | ["value", ValueDefinition]
 
 export type Schema = {
-    readonly "component types": g.IReadonlyDictionary<ComponentTypeDefinition>
-    readonly "root type": g.IReference<ComponentTypeDefinition>
+    readonly "component types": astncore.IReadonlyDictionary<ComponentTypeDefinition>
+    readonly "root type": astncore.IReference<ComponentTypeDefinition>
 }
 
 export type StateDefinition = {
@@ -55,8 +55,8 @@ export type StateDefinition = {
 }
 
 export type StateGroupDefinition = {
-    readonly "states": g.IReadonlyDictionary<StateDefinition>
-    readonly "default state": g.IReference<StateDefinition>
+    readonly "states": astncore.IReadonlyDictionary<StateDefinition>
+    readonly "default state": astncore.IReference<StateDefinition>
 }
 
 export type ValueDefinition = {
