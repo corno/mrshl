@@ -25,7 +25,7 @@ export function printLoadDocumentDiagnostic(loadDiagnostic: LoadDocumentDiagnost
 				}
 				case "missing schema": {
 					return `missing schema`
-				}
+				} 
 				case "no valid schema": {
 					return `no valid schema`
 				}
