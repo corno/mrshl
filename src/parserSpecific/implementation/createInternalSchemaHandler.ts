@@ -1,9 +1,9 @@
 import * as astncore from "astn-core"
 import * as p from "pareto"
-import { InternalSchemaError } from "../interfaces"
+import { EmbeddedSchemaError } from "../interfaces"
 
 export function createInternalSchemaHandler<Annotation, Result>(
-    onSchemaError: (error: InternalSchemaError, annotation: Annotation) => void,
+    onSchemaError: (error: EmbeddedSchemaError, annotation: Annotation) => void,
     onObject: astncore.OnObject<Annotation, null, p.IValue<null>> | null,
     onString: astncore.OnSimpleString<Annotation, p.IValue<null>> | null,
     onEnd: () => p.IUnsafeValue<Result, null>

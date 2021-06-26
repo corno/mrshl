@@ -1,6 +1,6 @@
 export * from "./Dataset"
 export * from "./ExternalSchemaDeserializationError"
-export * from "./internalSchemaDerializationError"
+export * from "./SchemaDerializationErrors"
 export * from "./LoadDocumentDiagnostic"
 export * from "./ResolveExternalSchema"
 export * from "./SchemaAndSideEffects"

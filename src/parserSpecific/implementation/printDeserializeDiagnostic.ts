@@ -25,9 +25,17 @@ export function printDeserializationDiagnostic($: DeserializationDiagnostic): st
             const $$ = $.type[1]
             return astncore.printExpectError($$)
         }
-        case "parsing": {
+        case "tokenizer": {
             const $$ = $.type[1]
-            return astn.printParsingError($$)
+            return astn.printPreTokenizerError($$)
+        }
+        case "structure2": {
+            const $$ = $.type[1]
+            return astn.printTextParserError($$)
+        }
+        case "tree": {
+            const $$ = $.type[1]
+            return astn.printTreeParserError($$)
         }
         case "schema error": {
             const $$ = $.type[1]

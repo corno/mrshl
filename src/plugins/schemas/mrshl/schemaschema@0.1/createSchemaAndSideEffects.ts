@@ -6,7 +6,7 @@ import * as p from "pareto-20"
 import * as sideEffects from "./sideEffects"
 import { SchemaAndSideEffects } from "../../../../parserSpecific"
 import { InternalSchemaDeserializationError } from "../../../../parserSpecific"
-import { InternalSchemaError } from "../../../../parserSpecific"
+import { EmbeddedSchemaError } from "../../../../parserSpecific"
 
 export function createSchemaAndSideEffects<Annotation>(
     onSchemaError: (error: InternalSchemaDeserializationError, annotation: Annotation) => void,
@@ -41,7 +41,7 @@ export function createInternalSchemaBuilder<Annotation>(
     }
 
     function createInternalSchemaHandler<Result>(
-        onSchemaError: (error: InternalSchemaError, annotation: Annotation) => void,
+        onSchemaError: (error: EmbeddedSchemaError, annotation: Annotation) => void,
         valueHandler: astncore.ValueHandler<Annotation, null, p.IValue<null>>,
         onEnd: () => p.IUnsafeValue<Result, null>
     ): astncore.ITreeBuilder<Annotation, Result, null> {

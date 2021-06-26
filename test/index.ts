@@ -365,7 +365,7 @@ describe("main", () => {
     describe('functions', () => {
         function createDummyParser() {
 
-            const parser = astn.createTextParser<null, null>(
+            const parser = astn.createTextParser<astn.TokenizerAnnotationData, null, null>(
                 () => {
                     return {
                         onData: () => {

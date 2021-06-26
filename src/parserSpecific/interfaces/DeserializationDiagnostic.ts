@@ -4,7 +4,7 @@
 
 import * as astncore from "astn-core"
 import * as astn from "astn"
-import { InternalSchemaDeserializationError } from "./internalSchemaDerializationError"
+import { InternalSchemaDeserializationError } from "./SchemaDerializationErrors"
 
 export type DeserializationDiagnosticType =
     | ["structure", {
@@ -15,7 +15,9 @@ export type DeserializationDiagnosticType =
         message: string
     }]
     | ["stacked", astncore.StackedDataErrorType]
-    | ["parsing", astn.ParsingError]
+    | ["tokenizer", astn.PreTokenizerError]
+    | ["structure2", astn.TextErrorType]
+    | ["tree", astn.TreeParserError]
     | ["schema error", InternalSchemaDeserializationError]
 
 export type DeserializationDiagnostic = {

@@ -1,4 +1,3 @@
-import * as astncore from "astn-core"
 import * as astn from "astn"
 import * as p from "pareto"
 import { SchemaSchemaBuilder } from "../interfaces"
@@ -10,20 +9,19 @@ export function createSchemaDeserializer(
     onError: (error: SchemaSchemaError, range: astn.Range) => void,
     getSchemaSchemaBuilder: (
         name: string,
-    ) => SchemaSchemaBuilder<astn.ParserAnnotationData> | null,
-): p.IUnsafeStreamConsumer<string, null, SchemaAndSideEffects<astn.ParserAnnotationData>, null> {
+    ) => SchemaSchemaBuilder<astn.TokenizerAnnotationData> | null,
+): p.IUnsafeStreamConsumer<string, null, SchemaAndSideEffects<astn.TokenizerAnnotationData>, null> {
     let foundError = false
 
     let schemaDefinitionFound = false
-    let schemaSchemaBuilder: null | SchemaSchemaBuilder<astn.ParserAnnotationData> = null
+    let schemaSchemaBuilder: null | SchemaSchemaBuilder<astn.TokenizerAnnotationData> = null
     function onSchemaError(error: SchemaSchemaError, range: astn.Range) {
         onError(error, range)
         foundError = true
     }
 
     //console.log("SCHEMA DESER")
-    const schemaTok = astn.createParserStack(
-
+    return astn.createParserStack(
         () => {
             schemaDefinitionFound = true
 
@@ -46,10 +44,10 @@ export function createSchemaDeserializer(
                 }
             )
         },
-        (location: astn.Location): astncore.ITreeBuilder<astn.ParserAnnotationData, SchemaAndSideEffects<astn.ParserAnnotationData>, null> => {
+        annotation => {
             if (!schemaDefinitionFound) {
                 //console.error("missing schema schema types")
-                onSchemaError(["missing schema schema definition"], astn.createRangeFromSingleLocation(location))
+                onSchemaError(["missing schema schema definition"], annotation.range)
                 return {
                     onData: () => {
                         //
@@ -82,12 +80,17 @@ export function createSchemaDeserializer(
                 }
             }
         },
-        (error, range) => {
-            onSchemaError(["parsing", error], range)
+        {
+            onTokenizerError: $ => {
+                onSchemaError(["tokenizer", $.error], $.range)
+            },
+            onTextParserError: $ => {
+                onSchemaError(["structure", $.error], $.annotation.range)
+            },
+            onTreeParserError: $ => {
+                onSchemaError(["tree", $.error], $.annotation.range)
+            },
         }
     )
-
-    //attach the schema schema deserializer
-    return schemaTok
 }
 

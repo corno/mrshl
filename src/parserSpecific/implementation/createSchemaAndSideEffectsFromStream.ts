@@ -3,7 +3,7 @@ import * as p from "pareto"
 import * as astn from "astn"
 import { SchemaAndSideEffects } from "../interfaces/SchemaAndSideEffects"
 import { RetrievalError } from "../interfaces/ResolveExternalSchema"
-import { ExternalSchemaResolvingError, SchemaSchemaBuilder } from "../interfaces"
+import { ReferencedSchemaResolvingError, SchemaSchemaBuilder } from "../interfaces"
 
 function assertUnreachable<RT>(_x: never): RT {
     throw new Error("unreachable")
@@ -13,9 +13,9 @@ export function createSchemaAndSideEffectsFromStream(
     schemaStream: p.IUnsafeValue<p.IStream<string, null>, RetrievalError>,
     getSchemaSchemaBuilder: (
         name: string,
-    ) => SchemaSchemaBuilder<astn.ParserAnnotationData> | null,
-): p.IUnsafeValue<SchemaAndSideEffects<astn.ParserAnnotationData>, ExternalSchemaResolvingError> {
-    return schemaStream.mapError<ExternalSchemaResolvingError>(error => {
+    ) => SchemaSchemaBuilder<astn.TokenizerAnnotationData> | null,
+): p.IUnsafeValue<SchemaAndSideEffects<astn.TokenizerAnnotationData>, ReferencedSchemaResolvingError> {
+    return schemaStream.mapError<ReferencedSchemaResolvingError>(error => {
         switch (error[0]) {
             case "not found": {
                 return p.value(["loading", { message: `schema not found` }])
@@ -39,7 +39,7 @@ export function createSchemaAndSideEffectsFromStream(
                 getSchemaSchemaBuilder,
             )
 
-            return stream.tryToConsume<SchemaAndSideEffects<astn.ParserAnnotationData>, null>(
+            return stream.tryToConsume<SchemaAndSideEffects<astn.TokenizerAnnotationData>, null>(
                 null,
                 schemaTok,
             ).mapError(

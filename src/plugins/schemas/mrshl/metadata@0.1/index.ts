@@ -3,7 +3,7 @@ import * as p from "pareto-20"
 import { createDeserializer } from "./deserialize"
 import { createNOPSideEffects } from "./NOPSideEffects"
 import { SchemaAndSideEffects } from "../../../../parserSpecific"
-import { InternalSchemaError } from "../../../../parserSpecific"
+import { EmbeddedSchemaError } from "../../../../parserSpecific"
 import { InternalSchemaDeserializationError } from "../../../../parserSpecific"
 
 export function createSchemaAndSideEffects<Annotation>(
@@ -13,7 +13,7 @@ export function createSchemaAndSideEffects<Annotation>(
     let metadata: null | SchemaAndSideEffects<Annotation> = null
 
     function createInternalSchemaHandler<Result>(
-        onSchemaError: (error: InternalSchemaError, annotation: Annotation) => void,
+        onSchemaError: (error: EmbeddedSchemaError, annotation: Annotation) => void,
         onObject: astncore.OnObject<Annotation, null, p.IValue<null>> | null,
         onSimpleValue: astncore.OnSimpleString<Annotation, p.IValue<null>> | null,
         onEnd: () => p.IUnsafeValue<Result, null>

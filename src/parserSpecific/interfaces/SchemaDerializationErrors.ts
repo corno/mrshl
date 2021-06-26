@@ -1,6 +1,6 @@
 import * as astncore from "astn-core"
 
-export type InternalSchemaError =
+export type EmbeddedSchemaError =
     | ["unexpected schema format", {
         found:
         | ["multiline string"]
@@ -11,7 +11,7 @@ export type InternalSchemaError =
     }]
     | ["stacked", astncore.StackedDataErrorType]
 
-export type ExternalSchemaResolvingError =
+export type ReferencedSchemaResolvingError =
     | ["schema id cannot be an empty string"]
     | ["errors in schema"]
     | ["loading", {
@@ -23,5 +23,5 @@ export type InternalSchemaDeserializationError =
     "message": string
 }]
 | ["expect", astncore.ExpectError]
-| ["schema reference resolving", ExternalSchemaResolvingError]
-| ["internal schema", InternalSchemaError]
+| ["schema reference resolving", ReferencedSchemaResolvingError]
+| ["internal schema", EmbeddedSchemaError]

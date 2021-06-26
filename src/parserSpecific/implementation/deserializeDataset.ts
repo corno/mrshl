@@ -24,9 +24,6 @@ import { ResolveExternalSchema } from "../interfaces/ResolveExternalSchema"
 import { createSchemaAndSideEffectsFromStream } from "./createSchemaAndSideEffectsFromStream"
 import { InternalSchemaDeserializationError, SchemaSchemaBuilder } from "../interfaces"
 
-function assertUnreachable<RT>(_x: never): RT {
-    throw new Error("unreachable")
-}
 
 /**
  * this function returns a promise to a deserialized dataset and the promise is resolved when the validation has been completed
@@ -44,14 +41,14 @@ export function deserializeDataset(
     resolveExternalSchema: ResolveExternalSchema,
     onInternalSchema: (
         specification: InternalSchemaSpecification,
-        schemaAndSideEffects: SchemaAndSideEffects<astn.ParserAnnotationData>,
+        schemaAndSideEffects: SchemaAndSideEffects<astn.TokenizerAnnotationData>,
     ) => IDeserializedDataset,
     onNoInternalSchema: () => IDataset | null,
     onError: (diagnostic: DeserializationDiagnostic, range: astn.Range, severity: astncore.DiagnosticSeverity) => void,
-    sideEffectsHandlers: streamVal.RootHandler<astn.ParserAnnotationData>[],
+    sideEffectsHandlers: streamVal.RootHandler<astn.TokenizerAnnotationData>[],
     getSchemaSchemaBuilder: (
         name: string,
-    ) => SchemaSchemaBuilder<astn.ParserAnnotationData> | null,
+    ) => SchemaSchemaBuilder<astn.TokenizerAnnotationData> | null,
 ): p.IUnsafeValue<IDeserializedDataset, ExternalSchemaDeserializationError> {
 
     /*
@@ -71,14 +68,14 @@ export function deserializeDataset(
 
     type InternalSchema = {
         specification: InternalSchemaSpecification
-        schemaAndSideEffects: SchemaAndSideEffects<astn.ParserAnnotationData>
+        schemaAndSideEffects: SchemaAndSideEffects<astn.TokenizerAnnotationData>
     }
 
     let internalSchema: InternalSchema | null = null
-    const overheadComments: astn.CommentData[] = []
+    //const overheadComments: astn.CommentData[] = []
     const parserStack = astn.createParserStack<IDeserializedDataset, ExternalSchemaDeserializationError>(
         schemaStart => {
-            internalSchemaSpecificationStart = schemaStart
+            internalSchemaSpecificationStart = schemaStart.annotation.range
             return createInternalSchemaHandler(
                 (error, annotation) => {
                     onSchemaError(["internal schema", error], annotation.range)
@@ -133,7 +130,7 @@ export function deserializeDataset(
                 }
             )
         },
-        (): astncore.ITreeBuilder<astn.ParserAnnotationData, IDeserializedDataset, ExternalSchemaDeserializationError> => {
+        (): astncore.ITreeBuilder<astn.TokenizerAnnotationData, IDeserializedDataset, ExternalSchemaDeserializationError> => {
             if (internalSchemaSpecificationStart && internalSchema === null && !foundSchemaErrors) {
                 console.error("NO SCHEMA AND NO ERROR")
                 //throw new Error("Unexpected: no schema errors and no schema")
@@ -199,27 +196,35 @@ export function deserializeDataset(
                 () => astncore.createDummyValueHandler(() => p.value(null))
             )
         },
-        (error, range) => {
-            onError(createDiagnostic(["parsing", error]), range, astncore.DiagnosticSeverity.error)
-        },
-        overheadToken => {
-            switch (overheadToken.type[0]) {
-                case astn.OverheadTokenType.Comment: {
-                    const $ = overheadToken.type[1]
-                    overheadComments.push($)
-                    break
-                }
-                case astn.OverheadTokenType.NewLine: {
-                    break
-                }
-                case astn.OverheadTokenType.WhiteSpace: {
-                    break
-                }
-                default:
-                    assertUnreachable(overheadToken.type[0])
-            }
-            return p.value(false)
+        {
+            onTreeParserError: $ => {
+                onError(createDiagnostic(["tree", $.error]), $.annotation.range, astncore.DiagnosticSeverity.error)
+            },
+            onTextParserError: $ => {
+                onError(createDiagnostic(["structure2", $.error]), $.annotation.range, astncore.DiagnosticSeverity.error)
+            },
+            onTokenizerError: $ => {
+                onError(createDiagnostic(["tokenizer", $.error]), $.range, astncore.DiagnosticSeverity.error)
+            },
         }
+        // overheadToken => {
+        //     switch (overheadToken.type[0]) {
+        //         case astn.OverheadTokenType.Comment: {
+        //             const $ = overheadToken.type[1]
+        //             overheadComments.push($)
+        //             break
+        //         }
+        //         case astn.OverheadTokenType.NewLine: {
+        //             break
+        //         }
+        //         case astn.OverheadTokenType.WhiteSpace: {
+        //             break
+        //         }
+        //         default:
+        //             assertUnreachable(overheadToken.type[0])
+        //     }
+        //     return p.value(false)
+        // }
     )
     function onSchemaError(error: InternalSchemaDeserializationError, range: astn.Range) {
         onError(createDiagnostic(["schema error", error]), range, astncore.DiagnosticSeverity.error)
@@ -230,9 +235,9 @@ export function deserializeDataset(
         null,
         parserStack,
     ).mapResult(res => {
-        overheadComments.forEach(ohc => {
-            res.dataset.build.documentComments.addComment(ohc.comment, ohc.type === "block" ? ["block"] : ["line"])
-        })
+        // overheadComments.forEach(ohc => {
+        //     res.dataset.build.documentComments.addComment(ohc.comment, ohc.type === "block" ? ["block"] : ["line"])
+        // })
         return p.value(res)
     })
 }

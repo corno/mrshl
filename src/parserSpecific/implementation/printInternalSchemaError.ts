@@ -1,11 +1,11 @@
 import * as astncore from "astn-core"
-import { InternalSchemaError } from "../interfaces"
+import { EmbeddedSchemaError } from "../interfaces"
 
 function assertUnreachable<RT>(_x: never): RT {
     throw new Error("unreachable")
 }
 
-export function printInternalSchemaError(error: InternalSchemaError): string {
+export function printInternalSchemaError(error: EmbeddedSchemaError): string {
     switch (error[0]) {
         case "stacked": {
             const $$$ = error[1]

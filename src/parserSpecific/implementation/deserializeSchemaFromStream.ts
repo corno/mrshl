@@ -12,11 +12,11 @@ export function deserializeSchemaFromStream(
     onError: (error: SchemaSchemaError, range: astn.Range) => void,
     getSchemaSchemaBuilder: (
         name: string,
-    ) => SchemaSchemaBuilder<astn.ParserAnnotationData> | null,
-): p.IUnsafeValue<SchemaAndSideEffects<astn.ParserAnnotationData>, ExternalSchemaDeserializationError> {
+    ) => SchemaSchemaBuilder<astn.TokenizerAnnotationData> | null,
+): p.IUnsafeValue<SchemaAndSideEffects<astn.TokenizerAnnotationData>, ExternalSchemaDeserializationError> {
     //console.log("FROM STRING")
 
-    return schemaStream.tryToConsume<SchemaAndSideEffects<astn.ParserAnnotationData>, null>(
+    return schemaStream.tryToConsume<SchemaAndSideEffects<astn.TokenizerAnnotationData>, null>(
         null,
         createSchemaDeserializer(
             onError,

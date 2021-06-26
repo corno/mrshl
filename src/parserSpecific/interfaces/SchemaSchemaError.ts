@@ -1,13 +1,15 @@
 import * as astn from "astn"
 import { InternalSchemaDeserializationError } from "."
-import { InternalSchemaError } from "./internalSchemaDerializationError"
+import { EmbeddedSchemaError } from "./SchemaDerializationErrors"
 
 export type SchemaSchemaError =
-    | ["internal schema", InternalSchemaError]
+    | ["internal schema", EmbeddedSchemaError]
     | ["unknown schema schema", {
         name: string
     }]
     | ["missing schema schema definition"]
-    | ["parsing", astn.ParsingError]
+    | ["tokenizer", astn.PreTokenizerError]
+    | ["structure", astn.TextErrorType]
+    | ["tree", astn.TreeParserError]
     | ["schema processing", InternalSchemaDeserializationError]
 

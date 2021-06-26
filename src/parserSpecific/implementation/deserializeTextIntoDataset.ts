@@ -5,15 +5,14 @@ import * as astn from "astn"
 import * as astncore from "astn-core"
 
 import {
-	 IDataset,
-	 IDeserializedDataset,
-	 } from "../interfaces/Dataset"
+	IDataset,
+	IDeserializedDataset,
+} from "../interfaces/Dataset"
 
-import { ResolveExternalSchema } from "../interfaces/ResolveExternalSchema"
+import { ResolveExternalSchema, RetrievalError } from "../interfaces/ResolveExternalSchema"
 
 import { deserializeDataset } from "./deserializeDataset"
 import { deserializeSchemaFromStream } from "./deserializeSchemaFromStream"
-import { ContextSchemaData } from "./DeserializeASTNTextIntoDataset"
 import { ExternalSchemaDeserializationError } from "../interfaces/ExternalSchemaDeserializationError"
 
 
@@ -27,118 +26,122 @@ function assertUnreachable<RT>(_x: never): RT {
 
 export type DiagnosticCallback = (diagnostic: LoadDocumentDiagnostic) => void
 
-
-function validateDocumentAfterContextSchemaResolution(
-	documentText: string,
-	contextSchema: astncore.Schema | null,
-	resolveExternalSchema: ResolveExternalSchema,
-	diagnosticCallback: DiagnosticCallback,
-	sideEffectHandlers: astncore.RootHandler<astn.ParserAnnotationData>[],
-	createDataset: (
-		schema: astncore.Schema,
-	) => IDataset,
-    getSchemaSchemaBuilder: (
-        name: string,
-    ) => SchemaSchemaBuilder<astn.ParserAnnotationData> | null,
-): p.IUnsafeValue<IDeserializedDataset, ExternalSchemaDeserializationError> {
-
-	const allSideEffects = sideEffectHandlers.slice(0)
-
-
-	function addDiagnostic(
-		type: LoadDocumentDiagnosticType,
-		severity: astncore.DiagnosticSeverity,
-	) {
-		diagnosticCallback({
-			type: type,
-			severity: severity,
-		})
-	}
-	return deserializeDataset(
-		documentText,
-		resolveExternalSchema,
-		(internalSchemaSpecification, schemaAndSideEffects): IDeserializedDataset => {
-
-			function createDeserializedDataset(
-				schema: astncore.Schema,
-			): IDeserializedDataset {
-				return {
-					dataset: createDataset(schema),
-					internalSchemaSpecification: internalSchemaSpecification,
-				}
-			}
-			if (contextSchema === null) {
-
-
-				allSideEffects.push(schemaAndSideEffects.createStreamingValidator((
-					message,
-					annotation,
-					severity,
-				) => {
-					addDiagnostic(
-						["validation", { range: annotation.range, message: message }],
-						severity,
-					)
-				}))
-				return createDeserializedDataset(schemaAndSideEffects.schema)
-			}
-
-			addDiagnostic(
-				["schema retrieval", {
-					issue: ["found both external and internal schema. ignoring internal schema"],
-				}],
-				astncore.DiagnosticSeverity.warning,
-			)
-			return createDeserializedDataset(contextSchema)
-		},
-		(): IDataset | null => {
-			if (contextSchema === null) {
-				addDiagnostic(
-					["structure", {
-						message: "missing (valid) schema",
-					}],
-					astncore.DiagnosticSeverity.error,
-				)
-				return null
-			}
-			return createDataset(contextSchema)
-
-		},
-		(errorDiagnostic, range, severity) => {
-			addDiagnostic(
-				["deserialization", {
-					data: errorDiagnostic,
-					range: range,
-				}],
-				severity,
-			)
-		},
-		allSideEffects,
-		getSchemaSchemaBuilder,
-	)
+export type ContextSchemaData = {
+	filePath: string
+	getContextSchema: (dir: string, schemaFileName: string) => p.IUnsafeValue<p.IStream<string, null>, RetrievalError>
 }
-
 export const schemaFileName = "schema.astn-schema"
 
 export function deserializeTextIntoDataset(
 	contextSchemaData: ContextSchemaData,
 	documentText: string,
 	resolveExternalSchema: ResolveExternalSchema,
-	diagnosticCallback: DiagnosticCallback,
-	sideEffectHandlers: astncore.RootHandler<astn.ParserAnnotationData>[],
+	onDiagnostic: DiagnosticCallback,
+	sideEffectHandlers: astncore.RootHandler<astn.TokenizerAnnotationData>[],
 	createInitialDataset: (
 		schema: astncore.Schema,
 	) => IDataset,
-    getSchemaSchemaBuilder: (
-        name: string,
-    ) => SchemaSchemaBuilder<astn.ParserAnnotationData> | null,
+	getSchemaSchemaBuilder: (
+		name: string,
+	) => SchemaSchemaBuilder<astn.TokenizerAnnotationData> | null,
 ): p.IUnsafeValue<IDeserializedDataset, null> {
+
+	function validateDocumentAfterContextSchemaResolution(
+		documentText: string,
+		contextSchema: astncore.Schema | null,
+		resolveExternalSchema: ResolveExternalSchema,
+		onDiagnostic: DiagnosticCallback,
+		sideEffectHandlers: astncore.RootHandler<astn.TokenizerAnnotationData>[],
+		createDataset: (
+			schema: astncore.Schema,
+		) => IDataset,
+		getSchemaSchemaBuilder: (
+			name: string,
+		) => SchemaSchemaBuilder<astn.TokenizerAnnotationData> | null,
+	): p.IUnsafeValue<IDeserializedDataset, ExternalSchemaDeserializationError> {
+
+		const allSideEffects = sideEffectHandlers.slice(0)
+
+
+		function addDiagnostic(
+			type: LoadDocumentDiagnosticType,
+			severity: astncore.DiagnosticSeverity,
+		) {
+			onDiagnostic({
+				type: type,
+				severity: severity,
+			})
+		}
+		return deserializeDataset(
+			documentText,
+			resolveExternalSchema,
+			(internalSchemaSpecification, schemaAndSideEffects): IDeserializedDataset => {
+
+				function createDeserializedDataset(
+					schema: astncore.Schema,
+				): IDeserializedDataset {
+					return {
+						dataset: createDataset(schema),
+						internalSchemaSpecification: internalSchemaSpecification,
+					}
+				}
+				if (contextSchema === null) {
+
+
+					allSideEffects.push(schemaAndSideEffects.createStreamingValidator((
+						message,
+						annotation,
+						severity,
+					) => {
+						addDiagnostic(
+							["validation", { range: annotation.range, message: message }],
+							severity,
+						)
+					}))
+					return createDeserializedDataset(schemaAndSideEffects.schema)
+				}
+
+				addDiagnostic(
+					["schema retrieval", {
+						issue: ["found both external and internal schema. ignoring internal schema"],
+					}],
+					astncore.DiagnosticSeverity.warning,
+				)
+				return createDeserializedDataset(contextSchema)
+			},
+			(): IDataset | null => {
+				if (contextSchema === null) {
+					addDiagnostic(
+						["structure", {
+							message: "missing (valid) schema",
+						}],
+						astncore.DiagnosticSeverity.error,
+					)
+					return null
+				}
+				return createDataset(contextSchema)
+
+			},
+			(errorDiagnostic, range, severity) => {
+				addDiagnostic(
+					["deserialization", {
+						data: errorDiagnostic,
+						range: range,
+					}],
+					severity,
+				)
+			},
+			allSideEffects,
+			getSchemaSchemaBuilder,
+		)
+	}
+
 	let diagnosticFound = false
 	const dc: DiagnosticCallback = (
 		diagnostic: LoadDocumentDiagnostic
 	) => {
 		diagnosticFound = true
-		return diagnosticCallback(diagnostic)
+		return onDiagnostic(diagnostic)
 	}
 
 
@@ -156,7 +159,7 @@ export function deserializeTextIntoDataset(
 		if (!diagnosticFound) {
 			addDiagnostic(
 				['schema retrieval', {
-					issue: error.problem === "missing schema" ? [ "missing schema"] : ["no valid schema"],
+					issue: error.problem === "missing schema" ? ["missing schema"] : ["no valid schema"],
 				}],
 				astncore.DiagnosticSeverity.error,
 			)
@@ -165,7 +168,7 @@ export function deserializeTextIntoDataset(
 	}
 
 	function validateDocumentAfter(
-		schemaAndSideEffects: SchemaAndSideEffects<astn.ParserAnnotationData> | null
+		schemaAndSideEffects: SchemaAndSideEffects<astn.TokenizerAnnotationData> | null
 	) {
 		return validateDocumentAfterContextSchemaResolution(
 			documentText,

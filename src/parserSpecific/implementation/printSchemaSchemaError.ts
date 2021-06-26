@@ -13,9 +13,17 @@ export function printSchemaSchemaError($$: SchemaSchemaError): string {
             //const $$$ = $$[1]
             return `missing schema schema definition`
         }
-        case "parsing": {
+        case "tokenizer": {
             const $$$ = $$[1]
-            return astn.printParsingError($$$)
+            return astn.printPreTokenizerError($$$)
+        }
+        case "structure": {
+            const $$$ = $$[1]
+            return astn.printTextParserError($$$)
+        }
+        case "tree": {
+            const $$$ = $$[1]
+            return astn.printTreeParserError($$$)
         }
         case "schema processing": {
             const $$$ = $$[1]

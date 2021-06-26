@@ -6,7 +6,7 @@ export function createHoverTextFinder(
     positionLine: number, //the line where the hover is requested
     positionCharacter: number, //the character where the hover is requested
     callback: (hoverText: string) => void
-): astncore.RootHandler<astn.ParserAnnotationData> {
+): astncore.RootHandler<astn.TokenizerAnnotationData> {
     return astncore.createHoverTextsGenerator(
         (annotation, getHoverText) => {
             //console.log("LOCATION", range.start.line, range.start.column, range.end.line, range.end.column)
