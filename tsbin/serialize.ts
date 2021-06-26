@@ -5,6 +5,7 @@ import * as db5 from "../src"
 import * as path from "path"
 import { schemaHost } from "../schemaHost"
 import { SerializationStyle } from "../src/parserSpecific"
+import { getSchemaSchemaBuilder } from "../src/implementations/getSchemaSchemaBuilder"
 
 export function serialize(style: SerializationStyle): void {
 
@@ -66,7 +67,8 @@ export function serialize(style: SerializationStyle): void {
         [],
         schema => {
             return db5.createInMemoryDataset(schema)
-        }
+        },
+        getSchemaSchemaBuilder,
     ).mapResult<null>(dataset => {
         return dataset.dataset.serialize(
             dataset.internalSchemaSpecification,
