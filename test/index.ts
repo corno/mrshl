@@ -189,14 +189,14 @@ export function directoryTests(): void {
             function myFunc(): p.IValue<null> {
 
                 const serializedDataset = fs.readFileSync(serializedDatasetPath, { encoding: "utf-8" })
-                return db5.deserializeTextIntoDataset(
-                    {
+                return db5.deserializeTextIntoDataset({
+                    contextSchemaData: {
 
                         getContextSchema: readFileFromFileSystem,
                         filePath: serializedDatasetPath,
                     },
-                    serializedDataset,
-                    schemaID => {
+                    documentText: serializedDataset,
+                    resolveExternalSchema: schemaID => {
                         // return makeNativeHTTPrequest(
                         //     schemaHost,
                         //     schemaID,
@@ -204,7 +204,7 @@ export function directoryTests(): void {
                         // )
                         return readFileFromFileSystem(__dirname + "/../../test/schemas", schemaID)
                     },
-                    diagnostic => {
+                    onDiagnostic: diagnostic => {
                         const diagSev = diagnostic.severity === astncore.DiagnosticSeverity.error ? "error" : "warning"
                         switch (diagnostic.type[0]) {
                             case "deserialization": {
@@ -282,7 +282,7 @@ export function directoryTests(): void {
                     // (warningMessage, range) => {
                     //     actualIssues.push([warningMessage, "warning", range.start.line, range.start.column, range.end.line, range.end.column])
                     // },
-                    [
+                    sideEffectHandlers: [
                         astncore.createCodeCompletionsGenerator(
                             (annotation, getIntraCodeCompletions, getCodeCompletionsAfter) => {
                                 if (actualCodeCompletions[astn.printRange(annotation.range)] !== undefined) {
@@ -307,11 +307,11 @@ export function directoryTests(): void {
                             },
                         ),
                     ],
-                    schema => {
+                    createInitialDataset: schema => {
                         return db5.createInMemoryDataset(schema)
                     },
-                    getSchemaSchemaBuilder,
-                ).mapResult<null>(dataset => {
+                    getSchemaSchemaBuilder: getSchemaSchemaBuilder,
+                }).mapResult<null>(dataset => {
                     return dataset.dataset.serialize(
                         dataset.internalSchemaSpecification,
                         ["expanded", { omitPropertiesWithDefaultValues: true }],

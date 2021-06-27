@@ -33,19 +33,19 @@ export type ContextSchemaData = {
 }
 export const schemaFileName = "schema.astn-schema"
 
-export function deserializeTextIntoDataset(
-	contextSchemaData: ContextSchemaData,
-	documentText: string,
-	resolveExternalSchema: ResolveExternalSchema,
-	onDiagnostic: DiagnosticCallback,
-	sideEffectHandlers: astncore.RootHandler<astn.TokenizerAnnotationData>[],
+export function deserializeTextIntoDataset($: {
+	documentText: string
+	contextSchemaData: ContextSchemaData
+	resolveExternalSchema: ResolveExternalSchema
+	getSchemaSchemaBuilder: (
+		name: string
+	) => SchemaSchemaBuilder<astn.TokenizerAnnotationData> | null
+	onDiagnostic: DiagnosticCallback
 	createInitialDataset: (
 		schema: astncore.Schema,
-	) => IDataset,
-	getSchemaSchemaBuilder: (
-		name: string,
-	) => SchemaSchemaBuilder<astn.TokenizerAnnotationData> | null,
-): p.IUnsafeValue<IDeserializedDataset, null> {
+	) => IDataset
+	sideEffectHandlers: astncore.RootHandler<astn.TokenizerAnnotationData>[]
+}): p.IUnsafeValue<IDeserializedDataset, null> {
 
 
 	let diagnosticFound = false
@@ -53,7 +53,7 @@ export function deserializeTextIntoDataset(
 		diagnostic: LoadDocumentDiagnostic
 	) => {
 		diagnosticFound = true
-		return onDiagnostic(diagnostic)
+		return $.onDiagnostic(diagnostic)
 	}
 
 
@@ -82,7 +82,7 @@ export function deserializeTextIntoDataset(
 	function validateDocumentAfter(
 		schemaAndSideEffects: SchemaAndSideEffects<astn.TokenizerAnnotationData> | null
 	) {
-		const combinedSideEffectHandlers = schemaAndSideEffects === null ? sideEffectHandlers : sideEffectHandlers.concat([schemaAndSideEffects.createStreamingValidator(
+		const combinedSideEffectHandlers = schemaAndSideEffects === null ? $.sideEffectHandlers : $.sideEffectHandlers.concat([schemaAndSideEffects.createStreamingValidator(
 			(
 				message,
 				annotation,
@@ -114,14 +114,14 @@ export function deserializeTextIntoDataset(
 		}
 
 		const deser = createDeserializer(
-			resolveExternalSchema,
+			$.resolveExternalSchema,
 			(internalSchemaSpecification, schemaAndSideEffects): IDeserializedDataset => {
 
 				function createDeserializedDataset(
 					schema: astncore.Schema,
 				): IDeserializedDataset {
 					return {
-						dataset: createInitialDataset(schema),
+						dataset: $.createInitialDataset(schema),
 						internalSchemaSpecification: internalSchemaSpecification,
 					}
 				}
@@ -159,7 +159,7 @@ export function deserializeTextIntoDataset(
 					)
 					return null
 				}
-				return createInitialDataset(contextSchema)
+				return $.createInitialDataset(contextSchema)
 
 			},
 			(errorDiagnostic, range, severity) => {
@@ -172,9 +172,9 @@ export function deserializeTextIntoDataset(
 				)
 			},
 			allSideEffects,
-			getSchemaSchemaBuilder,
+			$.getSchemaSchemaBuilder,
 		)
-		return p20.createArray([documentText]).streamify().tryToConsume(
+		return p20.createArray([$.documentText]).streamify().tryToConsume(
 			null,
 			deser,
 		).mapResult(res => {
@@ -185,8 +185,8 @@ export function deserializeTextIntoDataset(
 		}).mapError(validateThatErrorsAreFound)
 	}
 
-	const basename = path.basename(contextSchemaData.filePath)
-	const dir = path.dirname(contextSchemaData.filePath)
+	const basename = path.basename($.contextSchemaData.filePath)
+	const dir = path.dirname($.contextSchemaData.filePath)
 	if (basename === schemaFileName) {
 		//don't validate the schema against itself
 		dc({
@@ -198,7 +198,7 @@ export function deserializeTextIntoDataset(
 
 		return validateDocumentAfter(null)
 	}
-	return contextSchemaData.getContextSchema(
+	return $.contextSchemaData.getContextSchema(
 		dir,
 		schemaFileName,
 	).rework(
@@ -236,7 +236,7 @@ export function deserializeTextIntoDataset(
 							severity: astncore.DiagnosticSeverity.error,
 						})
 					},
-					getSchemaSchemaBuilder,
+					$.getSchemaSchemaBuilder,
 				),
 			).mapError<ExternalSchemaDeserializationError>(
 				() => {

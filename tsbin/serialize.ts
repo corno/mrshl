@@ -47,29 +47,29 @@ export function serialize(style: SerializationStyle): void {
         })
     }
 
-    db5.deserializeTextIntoDataset(
-        {
+    db5.deserializeTextIntoDataset({
+        contextSchemaData: {
 
             getContextSchema: readFileFromFileSystem,
             filePath: sourcePath,
         },
-        dataAsString,
-        schemaID => {
+        documentText: dataAsString,
+        resolveExternalSchema: schemaID => {
             return db5.makeNativeHTTPrequest(
                 schemaHost,
                 schemaID,
                 3000,
             )
         },
-        diagnostic => {
+        onDiagnostic: diagnostic => {
             console.error(db5.printLoadDocumentDiagnostic(diagnostic))
         },
-        [],
-        schema => {
+        sideEffectHandlers: [],
+        createInitialDataset: schema => {
             return db5.createInMemoryDataset(schema)
         },
-        getSchemaSchemaBuilder,
-    ).mapResult<null>(dataset => {
+        getSchemaSchemaBuilder: getSchemaSchemaBuilder,
+    }).mapResult<null>(dataset => {
         return dataset.dataset.serialize(
             dataset.internalSchemaSpecification,
             style,
