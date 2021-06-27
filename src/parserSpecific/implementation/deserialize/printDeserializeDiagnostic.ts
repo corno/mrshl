@@ -2,10 +2,9 @@
     "max-classes-per-file": off,
 */
 
-import * as astncore from "astn-core"
 import * as astn from "astn"
 import { printInternalSchemaDeserializationError } from "./printInternalSchemaDeserializationError"
-import { DeserializationDiagnostic } from "../interfaces/DeserializationDiagnostic"
+import { DeserializationDiagnostic } from "../../interfaces/DeserializationDiagnostic"
 
 function assertUnreachable<RT>(_x: never): RT {
     throw new Error("unreachable")
@@ -21,17 +20,13 @@ export function printDeserializationDiagnostic($: DeserializationDiagnostic): st
             const $$ = $.type[1]
             return $$.message
         }
-        case "expect": {
-            const $$ = $.type[1]
-            return astncore.printExpectError($$)
-        }
         case "tokenizer": {
             const $$ = $.type[1]
             return astn.printPreTokenizerError($$)
         }
-        case "structure2": {
+        case "structure": {
             const $$ = $.type[1]
-            return astn.printTextParserError($$)
+            return astn.printStructureError($$)
         }
         case "tree": {
             const $$ = $.type[1]
@@ -41,9 +36,11 @@ export function printDeserializationDiagnostic($: DeserializationDiagnostic): st
             const $$ = $.type[1]
             return printInternalSchemaDeserializationError($$)
         }
-        case "structure": {
-            const $$ = $.type[1]
-            return $$.message
+        case "ignoring invalid embedded schema": {
+            return $.type[0]
+        }
+        case "ignoring invalid schema reference": {
+            return $.type[0]
         }
         default:
             return assertUnreachable($.type[0])

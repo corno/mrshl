@@ -11,7 +11,7 @@
 	[
 		"deserialization",
 		"warning",
-		"ignoring invalid internal schema",
+		"ignoring invalid schema reference",
 		1,
 		3,
 		1,

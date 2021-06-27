@@ -1,13 +1,13 @@
 export {
     createCodeCompletionFinder
-} from "./createCodeCompletionFinder"
+} from "./ide-integration/createCodeCompletionFinder"
 export {
     createHoverTextFinder
-} from "./createHoverTextFinder"
+} from "./ide-integration/createHoverTextFinder"
 export {
     deserializeTextIntoDataset
-} from "./deserializeTextIntoDataset"
-export * from "./printDeserializeDiagnostic"
-export * from "./printInternalSchemaError"
-export * from "./printLoadDocumentDiagnostic"
-export * from "./printSchemaSchemaError"
+} from "./deserialize/deserializeTextIntoDataset"
+export * from "./deserialize/printDeserializeDiagnostic"
+export * from "./deserialize/printInternalSchemaError"
+export * from "./deserialize/printLoadDocumentDiagnostic"
+export * from "./deserialize/printSchemaSchemaError"

@@ -40,45 +40,35 @@ export function createInternalSchemaBuilder<Annotation>(
         foundError = true
     }
 
-    function createInternalSchemaHandler<Result>(
-        onSchemaError: (error: EmbeddedSchemaError, annotation: Annotation) => void,
-        valueHandler: astncore.ValueHandler<Annotation, null, p.IValue<null>>,
-        onEnd: () => p.IUnsafeValue<Result, null>
-    ): astncore.ITreeBuilder<Annotation, Result, null> {
-        return astncore.createStackedParser(
-            {
-                root: {
-                    exists: valueHandler,
-                    missing: () => {
-                        //
-                    },
-                },
-            },
-            error => {
-                onSchemaError(["stacked", error.type], error.annotation)
-            },
-            onEnd,
-            () => astncore.createDummyValueHandler(() => p.value(null))
-        )
+    function onSchemaError2(error: EmbeddedSchemaError, annotation: Annotation) {
+        onSchemaError(["internal schema", error], annotation)
+        foundError = true
     }
 
-    return createInternalSchemaHandler(
-        (error, annotation) => {
-            onSchemaError(["internal schema", error], annotation)
-            foundError = true
+    return astncore.createStackedParser(
+        {
+            root: {
+                exists: createDeserializer(
+                    (errorMessage, range) => {
+                        onSchemaSchemaError(["expect", errorMessage], range)
+                    },
+                    (message, range) => {
+                        onSchemaSchemaError(["validation", { message: message }], range)
+                    },
+                    md2 => {
+                        metaData = md2
+                    },
+                    () => p.value(null)
+                ),
+                missing: () => {
+                    //
+                },
+            },
         },
-        createDeserializer(
-            (errorMessage, range) => {
-                onSchemaSchemaError(["expect", errorMessage], range)
-            },
-            (message, range) => {
-                onSchemaSchemaError(["validation", { message: message }], range)
-            },
-            md2 => {
-                metaData = md2
-            },
-            () => p.value(null)
-        ),
+        error => {
+            onSchemaError2(["stacked", error.type], error.annotation)
+        },
+
         (): p.IUnsafeValue<t.Schema, null> => {
             if (metaData === null) {
                 if (!foundError) {
@@ -88,6 +78,7 @@ export function createInternalSchemaBuilder<Annotation>(
             } else {
                 return p.success(metaData)
             }
-        }
+        },
+        () => astncore.createDummyValueHandler(() => p.value(null))
     )
 }

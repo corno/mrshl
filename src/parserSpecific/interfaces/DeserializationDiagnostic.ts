@@ -7,16 +7,14 @@ import * as astn from "astn"
 import { InternalSchemaDeserializationError } from "./SchemaDerializationErrors"
 
 export type DeserializationDiagnosticType =
-    | ["structure", {
-        message: "ignoring invalid internal schema"
-    }]
-    | ["expect", astncore.ExpectError]
+    | ["ignoring invalid embedded schema"]
+    | ["ignoring invalid schema reference"]
     | ["deserializer", {
         message: string
     }]
     | ["stacked", astncore.StackedDataErrorType]
-    | ["tokenizer", astn.PreTokenizerError]
-    | ["structure2", astn.TextErrorType]
+    | ["tokenizer", astn.TokenError]
+    | ["structure", astn.StructureErrorType]
     | ["tree", astn.TreeParserError]
     | ["schema error", InternalSchemaDeserializationError]
 

@@ -269,7 +269,7 @@ function createNode(
                         break
                     }
                     case "multiline string": {
-                        throw new Error("IMPLEMENT ME")
+                        throw new Error("IMPLEMENT ME: MULTILINE STRING")
                         // callback(
                         //     createProperty(
                         //         p,

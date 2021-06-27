@@ -1,7 +1,7 @@
 import * as astn from "astn"
 import { printSchemaSchemaError } from "./printSchemaSchemaError"
 import { printDeserializationDiagnostic } from "./printDeserializeDiagnostic"
-import { LoadDocumentDiagnostic } from "../interfaces/LoadDocumentDiagnostic"
+import { LoadDocumentDiagnostic } from "../../interfaces/LoadDocumentDiagnostic"
 
 function assertUnreachable<RT>(_x: never): RT {
 	throw new Error("unreachable")

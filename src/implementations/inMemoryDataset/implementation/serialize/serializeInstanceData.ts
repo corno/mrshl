@@ -49,7 +49,7 @@ function propertyIsDefault(node: Node, propertyName: string, propertyDef: astnco
             return node.values.getUnsafe(propertyName).value.get() === $["default value"]
         }
         case "multiline string": {
-            throw new Error("IMPLEMENT ME")
+            throw new Error("IMPLEMENT ME: MULTILNE STRING")
             // const $ = propertyDef.type[1]
             // return node.values.getUnsafe(propertyName).value.get() === $["default value"]
         }
@@ -191,7 +191,7 @@ export function serializeRoot(
                     break
                 }
                 case "multiline string": {
-                    throw new Error("IMPLEMENT ME")
+                    throw new Error("IMPLEMENT ME: MULTILINE STRING")
                     // const $ = propDef.type[1]
                     // out.sendEvent(["multiline string", {
                     //     value: node.values.getUnsafe(key).value.get(),

@@ -1,9 +1,9 @@
 import * as astn from "astn"
+import * as astncore from "astn-core"
 import * as p from "pareto"
-import { SchemaSchemaBuilder } from "../interfaces"
-import { createInternalSchemaHandler } from "./createInternalSchemaHandler"
-import { SchemaAndSideEffects } from "../interfaces/SchemaAndSideEffects"
-import { SchemaSchemaError } from "../interfaces/SchemaSchemaError"
+import { SchemaSchemaBuilder } from "../../interfaces"
+import { SchemaAndSideEffects } from "../../interfaces/SchemaAndSideEffects"
+import { SchemaSchemaError } from "../../interfaces/SchemaSchemaError"
 
 export function createSchemaDeserializer(
     onError: (error: SchemaSchemaError, range: astn.Range) => void,
@@ -21,36 +21,35 @@ export function createSchemaDeserializer(
     }
 
     //console.log("SCHEMA DESER")
-    return astn.createParserStack(
-        () => {
-            schemaDefinitionFound = true
-
-            return createInternalSchemaHandler(
-                (error, annotation) => {
-                    onSchemaError(["internal schema", error], annotation.range)
-                },
-                null,
-                $ => {
-                    schemaSchemaBuilder = getSchemaSchemaBuilder($.data.value)
-                    if (schemaSchemaBuilder === null) {
-                        console.error(`unknown schema schema '${$.data.value},`)
-                        onSchemaError(["unknown schema schema", { name: $.data.value }], $.annotation.range)
-                    }
-                    return p.value(null)
+    return astn.createParserStack({
+        onEmbeddedSchema: (_schemaSchemaName, annotation) => {
+            onSchemaError(["internal schema", ["unexpected schema format", { found: ["object"] }]], annotation.range)
+            return astncore.createStackedParser(
+                astncore.createDummyTreeHandler(() => p.value(null)),
+                _$ => {
+                    return p.value(false)
                 },
                 () => {
-                    //ignore end commends
-                    return p.success<null, null>(null)
-                }
+                    return p.success(null)
+                },
+                () => astncore.createDummyValueHandler(() => p.value(null))
             )
         },
-        annotation => {
+        onSchemaReference: (schemaSchemaReference, annotation) => {
+            schemaDefinitionFound = true
+            schemaSchemaBuilder = getSchemaSchemaBuilder(schemaSchemaReference.value)
+            if (schemaSchemaBuilder === null) {
+                console.error(`unknown schema schema '${schemaSchemaReference.value},`)
+                onSchemaError(["unknown schema schema", { name: schemaSchemaReference.value }], annotation.range)
+            }
+            return p.value(null)
+        },
+        onBody: annotation => {
             if (!schemaDefinitionFound) {
                 //console.error("missing schema schema types")
                 onSchemaError(["missing schema schema definition"], annotation.range)
                 return {
                     onData: () => {
-                        //
                         return p.value(false) //FIXME should be 'true', to abort
                     },
                     onEnd: () => {
@@ -80,7 +79,7 @@ export function createSchemaDeserializer(
                 }
             }
         },
-        {
+        errorStreams: {
             onTokenizerError: $ => {
                 onSchemaError(["tokenizer", $.error], $.range)
             },
@@ -90,7 +89,7 @@ export function createSchemaDeserializer(
             onTreeParserError: $ => {
                 onSchemaError(["tree", $.error], $.annotation.range)
             },
-        }
-    )
+        },
+    })
 }
 

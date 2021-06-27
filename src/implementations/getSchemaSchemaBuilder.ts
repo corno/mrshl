@@ -7,7 +7,7 @@ export function getSchemaSchemaBuilder<Annotation>(
 ): SchemaSchemaBuilder<Annotation> | null {
     switch (name) {
         case "mrshl/schemaschema@0.1": return onSchemaError => mrshlschemaschema01.createSchemaAndSideEffects<Annotation>(onSchemaError)
-        case "metadata@0.1": return onSchemaError => metadata01.createSchemaAndSideEffects<Annotation>(onSchemaError)
+        case "mrshl/metadata@0.1": return onSchemaError => metadata01.createSchemaAndSideEffects<Annotation>(onSchemaError)
         default: return null
     }
 

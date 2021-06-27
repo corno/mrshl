@@ -1,5 +1,5 @@
 import * as astncore from "astn-core"
-import { EmbeddedSchemaError } from "../interfaces"
+import { EmbeddedSchemaError } from "../../interfaces"
 
 function assertUnreachable<RT>(_x: never): RT {
     throw new Error("unreachable")

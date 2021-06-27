@@ -25,12 +25,12 @@
     "url": "https://github.com/corno/db5.git"
   },
   "dependencies": {
-    "astn": "^0.81.2"
+    "astn": "^0.81.8"
   },
   "devDependencies": {
     "@types/chai": "^4.2.19",
     "@types/mocha": "^8.2.2",
-    "@types/node": "^15.12.4",
+    "@types/node": "^15.12.5",
     "@typescript-eslint/eslint-plugin": "^4.28.0",
     "@typescript-eslint/eslint-plugin-tslint": "^4.28.0",
     "@typescript-eslint/parser": "^4.28.0",

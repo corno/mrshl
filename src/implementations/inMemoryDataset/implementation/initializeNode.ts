@@ -76,7 +76,7 @@ export function initializeNode(
                 break
             }
             case "multiline string": {
-                throw new Error("IMPLEMENT ME")
+                throw new Error("IMPLEMENT ME: MULTILINE STRING")
                 // const $ = property.type[1]
                 // node.values.add(key, new Value($, errorsAggregator, createdInNewContext, errorManager))
                 // break

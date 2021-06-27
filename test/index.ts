@@ -365,8 +365,8 @@ describe("main", () => {
     describe('functions', () => {
         function createDummyParser() {
 
-            const parser = astn.createTextParser<astn.TokenizerAnnotationData, null, null>(
-                () => {
+            const parser = astn.createStructureParser<astn.TokenizerAnnotationData, null, null>({
+                onEmbeddedSchema: () => {
                     return {
                         onData: () => {
                             return p.value(false)
@@ -376,7 +376,10 @@ describe("main", () => {
                         },
                     }
                 },
-                () => {
+                onSchemaReference: _schemaReference => {
+                    return p.value(null)
+                },
+                onBody: () => {
                     return {
                         onData: () => {
                             return p.value(false)
@@ -386,13 +389,13 @@ describe("main", () => {
                         },
                     }
                 },
-                err => {
+                onTextParserError: err => {
                     console.log(err)
                 },
-                () => {
+                onTreeParserError: () => {
                     return p.value(false)
-                }
-            )
+                },
+            })
 
             console.log("SIMPLE TEST")
             return astn.createStreamPreTokenizer(

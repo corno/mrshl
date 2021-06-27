@@ -333,7 +333,7 @@ export function createNode(
                                     return ["value", thisNode.getValue(pKey)]
                                 }
                                 case "multiline string": {
-                                    throw new Error("IMPLEMENT ME")
+                                    throw new Error("IMPLEMENT ME: MULTILINE STRING")
                                     return ["value", thisNode.getValue(pKey)]
                                 }
                                 default:

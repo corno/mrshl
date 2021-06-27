@@ -1,7 +1,7 @@
 import * as astn from "astn"
 import { printInternalSchemaError } from "./printInternalSchemaError"
 import { printInternalSchemaDeserializationError } from "./printInternalSchemaDeserializationError"
-import { SchemaSchemaError } from "../interfaces/SchemaSchemaError"
+import { SchemaSchemaError } from "../../interfaces/SchemaSchemaError"
 
 function assertUnreachable<RT>(_x: never): RT {
     throw new Error("unreachable")
@@ -19,7 +19,7 @@ export function printSchemaSchemaError($$: SchemaSchemaError): string {
         }
         case "structure": {
             const $$$ = $$[1]
-            return astn.printTextParserError($$$)
+            return astn.printStructureError($$$)
         }
         case "tree": {
             const $$$ = $$[1]

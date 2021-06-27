@@ -8,8 +8,8 @@ export type SchemaSchemaError =
         name: string
     }]
     | ["missing schema schema definition"]
-    | ["tokenizer", astn.PreTokenizerError]
-    | ["structure", astn.TextErrorType]
+    | ["tokenizer", astn.TokenError]
+    | ["structure", astn.StructureErrorType]
     | ["tree", astn.TreeParserError]
     | ["schema processing", InternalSchemaDeserializationError]
 

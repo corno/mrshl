@@ -9,6 +9,15 @@
 		5
 	],
 	[
+		"deserialization",
+		"warning",
+		"ignoring invalid schema reference",
+		1,
+		3,
+		1,
+		5
+	],
+	[
 		"structure",
 		"error",
 		"missing (valid) schema",
