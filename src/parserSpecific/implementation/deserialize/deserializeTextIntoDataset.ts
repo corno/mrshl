@@ -20,38 +20,6 @@ import { SchemaAndSideEffects } from "../../interfaces/SchemaAndSideEffects"
 import { SchemaSchemaBuilder } from "../../interfaces"
 import { LoadDocumentDiagnostic, LoadDocumentDiagnosticType } from "../../interfaces/LoadDocumentDiagnostic"
 import { createSchemaDeserializer } from "./createSchemaDeserializer"
-import { SchemaSchemaError } from "../../interfaces/SchemaSchemaError"
-
-
-export function deserializeSchemaFromStream(
-	schemaStream: p.IStream<string, null>,
-	onError: (error: SchemaSchemaError, range: astn.Range) => void,
-	getSchemaSchemaBuilder: (
-		name: string,
-	) => SchemaSchemaBuilder<astn.TokenizerAnnotationData> | null,
-): p.IUnsafeValue<SchemaAndSideEffects<astn.TokenizerAnnotationData>, ExternalSchemaDeserializationError> {
-	//console.log("FROM STRING")
-
-	return schemaStream.tryToConsume<SchemaAndSideEffects<astn.TokenizerAnnotationData>, null>(
-		null,
-		createSchemaDeserializer(
-			onError,
-			getSchemaSchemaBuilder,
-		),
-	).mapError(
-		() => {
-			return p.value({ problem: "missing schema" })
-		}
-	)
-
-	// schemaDeserializer.onData(serializedSchema)
-	// return schemaDeserializer.onEnd(false, null).mapError(
-	//     () => {
-	//         return p.value("missing schema")
-	//     }
-	// )
-
-}
 
 function assertUnreachable<RT>(_x: never): RT {
 	throw new Error("unreachable")
@@ -114,127 +82,107 @@ export function deserializeTextIntoDataset(
 	function validateDocumentAfter(
 		schemaAndSideEffects: SchemaAndSideEffects<astn.TokenizerAnnotationData> | null
 	) {
-		function validateDocumentAfterContextSchemaResolution(
-			documentText: string,
-			contextSchema: astncore.Schema | null,
-			resolveExternalSchema: ResolveExternalSchema,
-			onDiagnostic: DiagnosticCallback,
-			sideEffectHandlers: astncore.RootHandler<astn.TokenizerAnnotationData>[],
-			createDataset: (
-				schema: astncore.Schema,
-			) => IDataset,
-			getSchemaSchemaBuilder: (
-				name: string,
-			) => SchemaSchemaBuilder<astn.TokenizerAnnotationData> | null,
-		): p.IUnsafeValue<IDeserializedDataset, ExternalSchemaDeserializationError> {
-
-			const allSideEffects = sideEffectHandlers.slice(0)
-
-
-			function addDiagnostic(
-				type: LoadDocumentDiagnosticType,
-				severity: astncore.DiagnosticSeverity,
-			) {
-				onDiagnostic({
-					type: type,
-					severity: severity,
-				})
+		const combinedSideEffectHandlers = schemaAndSideEffects === null ? sideEffectHandlers : sideEffectHandlers.concat([schemaAndSideEffects.createStreamingValidator(
+			(
+				message,
+				annotation,
+				severity
+			) => {
+				addDiagnostic(
+					["validation", {
+						range: annotation.range,
+						message: message,
+					}],
+					severity,
+				)
 			}
+		)])
 
-			const deser = createDeserializer(
-				resolveExternalSchema,
-				(internalSchemaSpecification, schemaAndSideEffects): IDeserializedDataset => {
+		const allSideEffects = combinedSideEffectHandlers.slice(0)
 
-					function createDeserializedDataset(
-						schema: astncore.Schema,
-					): IDeserializedDataset {
-						return {
-							dataset: createDataset(schema),
-							internalSchemaSpecification: internalSchemaSpecification,
-						}
-					}
-					if (contextSchema === null) {
+		const contextSchema = schemaAndSideEffects !== null ? schemaAndSideEffects.schema : null
 
 
-						allSideEffects.push(schemaAndSideEffects.createStreamingValidator((
-							message,
-							annotation,
-							severity,
-						) => {
-							addDiagnostic(
-								["validation", { range: annotation.range, message: message }],
-								severity,
-							)
-						}))
-						return createDeserializedDataset(schemaAndSideEffects.schema)
-					}
-
-					addDiagnostic(
-						["schema retrieval", {
-							issue: ["found both external and internal schema. ignoring internal schema"],
-						}],
-						astncore.DiagnosticSeverity.warning,
-					)
-					return createDeserializedDataset(contextSchema)
-				},
-				(): IDataset | null => {
-					if (contextSchema === null) {
-						addDiagnostic(
-							["structure", {
-								message: "missing (valid) schema",
-							}],
-							astncore.DiagnosticSeverity.error,
-						)
-						return null
-					}
-					return createDataset(contextSchema)
-
-				},
-				(errorDiagnostic, range, severity) => {
-					addDiagnostic(
-						["deserialization", {
-							data: errorDiagnostic,
-							range: range,
-						}],
-						severity,
-					)
-				},
-				allSideEffects,
-				getSchemaSchemaBuilder,
-			)
-			return p20.createArray([documentText]).streamify().tryToConsume(
-				null,
-				deser,
-			).mapResult(res => {
-				// overheadComments.forEach(ohc => {
-				//     res.dataset.build.documentComments.addComment(ohc.comment, ohc.type === "block" ? ["block"] : ["line"])
-				// })
-				return p.value(res)
+		function addDiagnostic(
+			type: LoadDocumentDiagnosticType,
+			severity: astncore.DiagnosticSeverity,
+		) {
+			dc({
+				type: type,
+				severity: severity,
 			})
 		}
-		return validateDocumentAfterContextSchemaResolution(
-			documentText,
-			schemaAndSideEffects !== null ? schemaAndSideEffects.schema : null,
+
+		const deser = createDeserializer(
 			resolveExternalSchema,
-			dc,
-			schemaAndSideEffects === null ? sideEffectHandlers : sideEffectHandlers.concat([schemaAndSideEffects.createStreamingValidator(
-				(
-					message,
-					annotation,
-					severity
-				) => {
-					addDiagnostic(
-						["validation", {
-							range: annotation.range,
-							message: message,
-						}],
-						severity,
-					)
+			(internalSchemaSpecification, schemaAndSideEffects): IDeserializedDataset => {
+
+				function createDeserializedDataset(
+					schema: astncore.Schema,
+				): IDeserializedDataset {
+					return {
+						dataset: createInitialDataset(schema),
+						internalSchemaSpecification: internalSchemaSpecification,
+					}
 				}
-			)]),
-			createInitialDataset,
+				if (contextSchema === null) {
+
+
+					allSideEffects.push(schemaAndSideEffects.createStreamingValidator((
+						message,
+						annotation,
+						severity,
+					) => {
+						addDiagnostic(
+							["validation", { range: annotation.range, message: message }],
+							severity,
+						)
+					}))
+					return createDeserializedDataset(schemaAndSideEffects.schema)
+				}
+
+				addDiagnostic(
+					["schema retrieval", {
+						issue: ["found both external and internal schema. ignoring internal schema"],
+					}],
+					astncore.DiagnosticSeverity.warning,
+				)
+				return createDeserializedDataset(contextSchema)
+			},
+			(): IDataset | null => {
+				if (contextSchema === null) {
+					addDiagnostic(
+						["structure", {
+							message: "missing (valid) schema",
+						}],
+						astncore.DiagnosticSeverity.error,
+					)
+					return null
+				}
+				return createInitialDataset(contextSchema)
+
+			},
+			(errorDiagnostic, range, severity) => {
+				addDiagnostic(
+					["deserialization", {
+						data: errorDiagnostic,
+						range: range,
+					}],
+					severity,
+				)
+			},
+			allSideEffects,
 			getSchemaSchemaBuilder,
-		).mapError(validateThatErrorsAreFound)
+		)
+		return p20.createArray([documentText]).streamify().tryToConsume(
+			null,
+			deser,
+		).mapResult(res => {
+			// overheadComments.forEach(ohc => {
+			//     res.dataset.build.documentComments.addComment(ohc.comment, ohc.type === "block" ? ["block"] : ["line"])
+			// })
+			return p.value(res)
+		}).mapError(validateThatErrorsAreFound)
 	}
 
 	const basename = path.basename(contextSchemaData.filePath)
@@ -277,18 +225,23 @@ export function deserializeTextIntoDataset(
 			}
 		},
 		schemaStream => {
-
-			return deserializeSchemaFromStream(
-				schemaStream,
-				(error, _range) => {
-					dc({
-						type: ["schema retrieval", {
-							issue: ["error in external schema", error],
-						}],
-						severity: astncore.DiagnosticSeverity.error,
-					})
-				},
-				getSchemaSchemaBuilder,
+			return schemaStream.tryToConsume<SchemaAndSideEffects<astn.TokenizerAnnotationData>, null>(
+				null,
+				createSchemaDeserializer(
+					(error, _range) => {
+						dc({
+							type: ["schema retrieval", {
+								issue: ["error in external schema", error],
+							}],
+							severity: astncore.DiagnosticSeverity.error,
+						})
+					},
+					getSchemaSchemaBuilder,
+				),
+			).mapError<ExternalSchemaDeserializationError>(
+				() => {
+					return p.value({ problem: "missing schema" })
+				}
 			).mapError(validateThatErrorsAreFound).try(
 				schemaAndSideEffects => {
 
