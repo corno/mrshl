@@ -1,7 +1,7 @@
 import * as astncore from "astn-core"
 import { RootImp } from "../Root"
 import { Node } from "../internals/Node"
-import { SerializationStyle } from "../../../../parserSpecific"
+import { SerializationStyle } from "astn"
 
 function assertUnreachable<RT>(_x: never): RT {
     throw new Error("unreachable")

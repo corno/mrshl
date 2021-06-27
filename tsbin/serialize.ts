@@ -4,10 +4,10 @@ import * as p20 from "pareto-20"
 import * as db5 from "../src"
 import * as path from "path"
 import { schemaHost } from "../schemaHost"
-import { SerializationStyle } from "../src/parserSpecific"
+import * as astn from "astn"
 import { getSchemaSchemaBuilder } from "../src/implementations/getSchemaSchemaBuilder"
 
-export function serialize(style: SerializationStyle): void {
+export function serialize(style: astn.SerializationStyle): void {
 
     const [, , sourcePath] = process.argv
 
@@ -22,7 +22,7 @@ export function serialize(style: SerializationStyle): void {
     function readFileFromFileSystem(
         dir: string,
         schemaFileName: string,
-    ): p.IUnsafeValue<p.IStream<string, null>, db5.RetrievalError> {
+    ): p.IUnsafeValue<p.IStream<string, null>, astn.RetrievalError> {
         return p20.wrapUnsafeFunction((onError, onSuccess) => {
             fs.readFile(
                 path.join(dir, schemaFileName),
@@ -47,7 +47,7 @@ export function serialize(style: SerializationStyle): void {
         })
     }
 
-    db5.deserializeTextIntoDataset({
+    astn.deserializeTextIntoDataset({
         contextSchemaData: {
 
             getContextSchema: readFileFromFileSystem,
@@ -62,7 +62,7 @@ export function serialize(style: SerializationStyle): void {
             )
         },
         onDiagnostic: diagnostic => {
-            console.error(db5.printLoadDocumentDiagnostic(diagnostic))
+            console.error(astn.printLoadDocumentDiagnostic(diagnostic))
         },
         sideEffectHandlers: [],
         createInitialDataset: schema => {

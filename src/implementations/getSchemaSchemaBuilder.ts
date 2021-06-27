@@ -1,6 +1,6 @@
 import * as mrshlschemaschema01 from "../plugins/schemas/mrshl/schemaschema@0.1"
 import * as metadata01 from "../plugins/schemas/mrshl/metadata@0.1"
-import { SchemaSchemaBuilder } from "../parserSpecific"
+import { SchemaSchemaBuilder } from "astn"
 
 export function getSchemaSchemaBuilder<Annotation>(
     name: string,

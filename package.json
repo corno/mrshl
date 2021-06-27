@@ -25,7 +25,7 @@
     "url": "https://github.com/corno/db5.git"
   },
   "dependencies": {
-    "astn": "^0.81.8"
+    "astn": "^0.82.0"
   },
   "devDependencies": {
     "@types/chai": "^4.2.19",

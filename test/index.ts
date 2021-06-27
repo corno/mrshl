@@ -23,7 +23,7 @@ import { getSchemaSchemaBuilder } from "../src/implementations/getSchemaSchemaBu
 function readFileFromFileSystem(
     dir: string,
     schemaFileName: string,
-): p.IUnsafeValue<p.IStream<string, null>, db5.RetrievalError> {
+): p.IUnsafeValue<p.IStream<string, null>, astn.RetrievalError> {
     return p20.wrapUnsafeFunction((onError, onSuccess) => {
         fs.readFile(
             path.join(dir, schemaFileName),
@@ -189,7 +189,7 @@ export function directoryTests(): void {
             function myFunc(): p.IValue<null> {
 
                 const serializedDataset = fs.readFileSync(serializedDatasetPath, { encoding: "utf-8" })
-                return db5.deserializeTextIntoDataset({
+                return astn.deserializeTextIntoDataset({
                     contextSchemaData: {
 
                         getContextSchema: readFileFromFileSystem,
@@ -214,7 +214,7 @@ export function directoryTests(): void {
                                 actualIssues.push([
                                     "deserialization",
                                     diagSev,
-                                    db5.printDeserializationDiagnostic($.data),
+                                    astn.printDeserializationDiagnostic($.data),
                                     $.range.start.line,
                                     $.range.start.column,
                                     end.line,
@@ -231,7 +231,7 @@ export function directoryTests(): void {
                                     (() => {
                                         if ($.issue[0] === "error in external schema") {
                                             const $$ = $.issue[1]
-                                            return `${$.issue[0]}: ${db5.printSchemaSchemaError($$)}`
+                                            return `${$.issue[0]}: ${astn.printSchemaSchemaError($$)}`
                                         }
                                         return $.issue[0]
                                     })(),

@@ -2,7 +2,7 @@ import * as http from "http"
 import * as p20 from "pareto-20"
 import * as p from "pareto"
 import { SchemaHost } from "../interfaces/SchemaHost"
-import { RetrievalError } from "../parserSpecific"
+import { RetrievalError } from "astn"
 
 export function makeNativeHTTPrequest(
     schemaHost: SchemaHost,

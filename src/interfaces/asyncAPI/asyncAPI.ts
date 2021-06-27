@@ -1,5 +1,5 @@
 // tslint:disable: interface-name
-import { InternalSchemaSpecification } from "../../parserSpecific"
+import { InternalSchemaSpecification } from "astn"
 import * as g from "./generic"
 
 export interface IFocussable {

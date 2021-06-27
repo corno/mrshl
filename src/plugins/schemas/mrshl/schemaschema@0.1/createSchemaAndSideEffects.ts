@@ -4,9 +4,9 @@ import * as t from "./types"
 import { convertToGenericSchema } from "./createTypedParserDefinitions"
 import * as p from "pareto-20"
 import * as sideEffects from "./sideEffects"
-import { SchemaAndSideEffects } from "../../../../parserSpecific"
-import { InternalSchemaDeserializationError } from "../../../../parserSpecific"
-import { EmbeddedSchemaError } from "../../../../parserSpecific"
+import { SchemaAndSideEffects } from "astn"
+import { InternalSchemaDeserializationError } from "astn"
+import { EmbeddedSchemaError } from "astn"
 
 export function createSchemaAndSideEffects<Annotation>(
     onSchemaError: (error: InternalSchemaDeserializationError, annotation: Annotation) => void,
